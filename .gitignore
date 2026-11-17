@@ -1,0 +1,22 @@
+# 依赖
+node_modules/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Next.js 构建产物
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 编辑器与系统文件
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
