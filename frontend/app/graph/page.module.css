@@ -253,6 +253,65 @@
   color: #fdfbf6;
 }
 
+/* 阵营快捷入口（仅三国分期）：整行按钮 + 阵营色左缘，置于左栏顶部。 */
+.factionBlock {
+  padding: 12px;
+  border: 1px solid #ecd9cd;
+  border-radius: 4px;
+  background: #fbf5ee;
+}
+
+.factions {
+  display: grid;
+  gap: 8px;
+}
+
+.factionButton {
+  display: flex;
+  align-items: center;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.factionButton:hover {
+  background: #f7f1e7;
+  transform: translateX(2px);
+}
+
+.factionButton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.factionButton[data-camp="wei"] {
+  border-left-color: #3d6b8f;
+}
+
+.factionButton[data-camp="shu"] {
+  border-left-color: #a8433a;
+}
+
+.factionButton[data-camp="wu"] {
+  border-left-color: #4a7a4e;
+}
+
+.factionButtonActive,
+.factionButtonActive:hover {
+  background: #f2ddd3;
+  font-weight: 600;
+  transform: none;
+}
+
 .sideHint {
   margin: 0;
   padding-top: 12px;
@@ -272,6 +331,10 @@
     position: static;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
     align-items: start;
+  }
+
+  .factionBlock {
+    grid-column: 1 / -1;
   }
 
   .sideHint {
@@ -295,7 +358,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .tab,
-  .hallButton {
+  .hallButton,
+  .factionButton {
     transition: none;
   }
 }

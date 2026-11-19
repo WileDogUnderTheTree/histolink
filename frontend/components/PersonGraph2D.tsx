@@ -333,7 +333,7 @@ export function PersonGraph2D({
     <section className={styles.layout} aria-label="人物关系网络">
       <div ref={graphHostRef} className={styles.graphHost}>
         <svg ref={svgRef} className={styles.graph} role="img" />
-        <p className={styles.graphHint}>单击人物查看共同事件；长按约 0.5 秒切换中心；拖拽可调整位置。</p>
+        <p className={styles.graphHint}>单击人物查看两人关系与共同事件；长按约 0.5 秒切换中心；拖拽可调整位置。</p>
       </div>
 
       <aside className={styles.panel} aria-live="polite">
@@ -346,11 +346,31 @@ export function PersonGraph2D({
             <p className={styles.panelLead}>
               两人共同参与 {selectedRelationship.edge.weight} 件历史事件。
             </p>
+
+            {selectedRelationship.edge.relation ? (
+              <div className={styles.relationBox}>
+                <span className={styles.relationBadge}>
+                  {selectedRelationship.edge.relation.label}
+                </span>
+                {selectedRelationship.edge.relation.description ? (
+                  <p className={styles.relationNote}>
+                    {selectedRelationship.edge.relation.description}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
             <ol className={styles.eventList}>
               {selectedRelationship.edge.sharedEvents.map((event) => (
                 <li key={event.id}>
-                  <span>{formatYear(event.year)}</span>
+                  <span>
+                    {formatYear(event.year)} · {event.dynasty}
+                  </span>
                   <strong>{event.title}</strong>
+                  <p className={styles.eventSummary}>
+                    {selectedRelationship.edge.relation?.eventSummaries[event.id] ??
+                      event.summary}
+                  </p>
                 </li>
               ))}
             </ol>

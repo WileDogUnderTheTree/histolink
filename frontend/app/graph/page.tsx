@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { ChangeEvent, FocusEvent, KeyboardEvent } from "react";
 
 import { PersonGraph2D } from "@/components/PersonGraph2D";
-import { KEY_FIGURES, PERSON_GRAPH_ERAS } from "@/data/person-graph";
+import { KEY_FIGURES, PERSON_GRAPH_ERAS, SAN_GUO_FACTION_SHORTCUTS } from "@/data/person-graph";
 import type { PersonGraphEraId } from "@/data/person-graph";
 
 import styles from "./page.module.css";
@@ -70,6 +70,9 @@ export default function GraphPage() {
     return configured.filter((name) => available.has(name));
   }, [era]);
 
+  /** 阵营快捷入口只在三国分期出现；点击复用统一的换中心入口。 */
+  const factionShortcuts = era.id === "sanguo" ? SAN_GUO_FACTION_SHORTCUTS : [];
+
   const activeSearchResult = searchMatches[Math.min(activeSearchIndex, searchMatches.length - 1)];
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -113,12 +116,12 @@ export default function GraphPage() {
           <Link className={styles.back} href="/">
             ← 返回首页
           </Link>
-          <p className={styles.eyebrow}>史脉 HistoLink · V0.5.2</p>
+          <p className={styles.eyebrow}>史脉 HistoLink · V0.6.2</p>
         </div>
 
         <h1 className={styles.title}>人物关系图</h1>
         <p className={styles.lead}>
-          左栏可按人名搜索或从名人堂直达；中栏展示当前中心人物的一度关系网，边的粗细表示两人共同参与历史事件的数量。单击相邻人物查看共同事件，长按切换中心，拖拽可调整位置。
+          左栏可按人名搜索或从名人堂直达；中栏展示当前中心人物的一度关系网，边的粗细表示两人共同参与历史事件的数量。单击相邻人物可查看两人关系与共同事件，长按切换中心，拖拽可调整位置。三国分期左栏顶部另提供魏、蜀、吴三方阵营快捷入口。
         </p>
 
         <div className={styles.tabs} role="tablist" aria-label="分期选择">
@@ -143,6 +146,30 @@ export default function GraphPage() {
 
         <div className={styles.workspace}>
           <aside className={styles.sidebar} aria-label="人物快捷导航">
+            {factionShortcuts.length > 0 ? (
+              <div className={`${styles.sideBlock} ${styles.factionBlock}`}>
+                <h2 className={styles.sideTitle}>阵营快捷</h2>
+                <div className={styles.factions}>
+                  {factionShortcuts.map((faction) => (
+                    <button
+                      key={faction.id}
+                      type="button"
+                      className={`${styles.factionButton}${
+                        centerPersonId === faction.centerPersonId
+                          ? ` ${styles.factionButtonActive}`
+                          : ""
+                      }`}
+                      data-camp={faction.id}
+                      aria-pressed={centerPersonId === faction.centerPersonId}
+                      onClick={() => applyCenterPerson(faction.centerPersonId)}
+                    >
+                      {faction.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             <div className={styles.sideBlock}>
               <h2 className={styles.sideTitle}>搜索人物</h2>
               <div className={styles.search} onBlur={handleSearchBlur}>

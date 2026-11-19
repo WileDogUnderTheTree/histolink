@@ -143,6 +143,41 @@
   list-style: none;
 }
 
+/* 两人关系：定性徽章 + 来龙去脉（仅收录关系数据的人物对显示）。 */
+.relationBox {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent);
+  border-radius: 2px;
+  background: #f7f1e7;
+}
+
+.relationBadge {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 2px;
+  background: var(--accent);
+  color: #fffdf8;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.relationNote {
+  margin: 9px 0 0;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  line-height: 1.75;
+}
+
+/* 每条共同事件下方的简述：优先人工简述，缺省回退事件正文摘要。 */
+.eventSummary {
+  margin: 2px 0 0;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  line-height: 1.75;
+}
+
 .eventList li {
   display: grid;
   gap: 3px;

@@ -46,6 +46,7 @@ const DYNASTIES: readonly Dynasty[] = Array.from(
 /** 选择器标签之外的补充口径：新莽（9—23）事件归入西汉 Tab，这里显式说明。 */
 const DYNASTY_NOTES: Partial<Record<Dynasty, string>> = {
   西汉: "（含新莽）",
+  东晋十六国: "（十六国附见）",
 };
 
 /** 错层幅度：level 0 → 0，1 → -step，2 → +step，3 → -2step，4 → +2step…… */
@@ -273,7 +274,8 @@ export default function TimelinePage() {
             史记知识库 shiji-kb
           </a>
           （CC BY-NC-SA 4.0，仅限非商业使用）；《汉书》《后汉书》原文（公有领域）；
-          朝代纪年与年号参考{" "}
+          三国两晋南北朝部分据《三国志》《晋书》《宋书》《魏书》《梁书》《北齐书》《周书》
+          《隋书》等正史原文（公有领域）撰写；朝代纪年与年号参考{" "}
           <a href="https://github.com/anthonyhann/chinese-history" target="_blank" rel="noreferrer">
             chinese-history
           </a>
