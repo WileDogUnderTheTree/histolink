@@ -1,16 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8000";
 
 type HealthState = "checking" | "connected" | "disconnected";
-
-const ENTRIES = [
-  { key: "ask", label: "聊天问答", hint: "聊天问答模块占位，尚未实现" },
-  { key: "timeline", label: "时间轴", hint: "时间轴模块占位，尚未实现" },
-  { key: "people", label: "人物查找", hint: "人物查找模块占位，尚未实现" },
-] as const;
 
 export default function HomePage() {
   const [health, setHealth] = useState<HealthState>("checking");
@@ -50,21 +45,28 @@ export default function HomePage() {
       <header className="hero">
         <p className="eyebrow">中国历史探索</p>
         <h1>从一个入口开始</h1>
-        <p className="subtitle">当前仅交付导航骨架，四个业务模块均未实现。</p>
+        <p className="subtitle">时间轴覆盖夏—汉（含新莽）；人物关系图已扩展至春秋、战国与秦汉。</p>
       </header>
 
       <nav className="entries" aria-label="模块入口">
-        {ENTRIES.map((entry) => (
-          <button
-            key={entry.key}
-            type="button"
-            className="entry"
-            onClick={() => showToast(entry.hint)}
-          >
-            <span className="entry-label">{entry.label}</span>
-            <span className="entry-hint">占位 · 点击查看提示</span>
-          </button>
-        ))}
+        <button
+          type="button"
+          className="entry"
+          onClick={() => showToast("聊天问答模块占位，尚未实现")}
+        >
+          <span className="entry-label">聊天问答</span>
+          <span className="entry-hint">占位 · 点击查看提示</span>
+        </button>
+
+        <Link href="/timeline" className="entry">
+          <span className="entry-label">时间轴</span>
+          <span className="entry-hint">进入全朝代时间轴（数据扩展中）</span>
+        </Link>
+
+        <Link href="/graph" className="entry">
+          <span className="entry-label">人物关系图</span>
+          <span className="entry-hint">春秋战国 · 秦汉人物 · 2D 力导向网络</span>
+        </Link>
       </nav>
 
       <div className={`status status-${health}`} role="status" aria-live="polite">
