@@ -16,6 +16,15 @@ import { EVENT_PARTICIPANTS } from "./timeline-participants";
  *   《北齐书》《周书》《隋书》等正史原文（公有领域）撰写，逐条保留出处括注。
  * - 第 5 批（V0.6.2 汉末群雄前置事件）：据《三国志》《后汉书》及裴注引书撰写，
  *   逐条保留出处括注。
+ * - 第 6 批（V0.7–V0.10 隋唐宋元明清）：据 docs/ 第二、三、四批人物关系表中的
+ *   「共同参与事件」列整理，事件描述据《隋书》《旧唐书》《新唐书》《旧五代史》
+ *   《新五代史》《辽史》《宋史》《金史》《元史》《明史》《清史稿》等正史撰写。
+ * - 第 7 批（V0.7.1 隋唐五代精修）：脱离 docs 关系表，按正史脉络补充隋唐至
+ *   五代十国初期的 34 条核心事件，据《隋书》《旧唐书》《新唐书》《资治通鉴》
+ *   《旧五代史》《新五代史》《宋史》等撰写。
+ * - 第 8 批（V0.8.2 全朝代厚度对齐）：据《宋史》《辽史》《金史》《元史》《明史》
+ *   《清史稿》等正史补厚宋辽夏金元明清，并合并 docs/01—06 六份终极数据文件
+ *   （同题复用既有 id，缺失者补录），逐条保留出处括注。
  *
  * 批次：
  * - 第 1 批（夏—战国）136 条。
@@ -28,6 +37,13 @@ import { EVENT_PARTICIPANTS } from "./timeline-participants";
  *   改隶三国。全书 312 条。
  * - 第 5 批（V0.6.2 三国图谱前置事件）新增 19 条：东汉末年群雄割据（191—219），
  *   为人物关系图补足孙吴、曹魏、蜀汉与群雄的渊源事件；全书 331 条。
+ * - 第 6 批（V0.7.0 全量朝代灌入）新增 131 条：隋 9、唐 27、五代十国 12、辽 3、
+ *   北宋 15、西夏 2、金 3、南宋 8、元 10、明 20、清 22；全书 462 条。
+ * - 第 7 批（V0.7.1 隋唐五代精修）新增 34 条：隋 7、唐 18、五代十国 9；全书 496 条。
+ *   第 6 批事件由三批关系表的「共同参与事件」归并而来：同一史事的不同表述合并为一条，
+ *   同年同史事只保留一条，同年不同史事仍分列。
+ * - 第 8 批（V0.8.2 全朝代厚度对齐）新增 174 条：元 28、清 23、明 21、北宋 19、
+ *   南宋 18、辽 16、金 16、西夏 10、五代十国 7、隋 6、唐 5、南北朝 3、西汉 2；全书 670 条。
  * 后续批次继续追加；id 与既有条目的 year 只增不改。
  *
  * 朝代口径：
@@ -37,6 +53,12 @@ import { EVENT_PARTICIPANTS } from "./timeline-participants";
  * - 三国：220—280，含魏、蜀、吴；280 年晋灭吴归西晋 Tab（西晋视角的统一）。
  * - 西晋：265—316；东晋十六国：317—420（东晋与十六国并行，合为一个 Tab）；
  *   南北朝：420—589（南朝宋齐梁陈与北朝魏齐周并行）。
+ * - 隋：581—618；唐：618—907（含武周，690—705 归唐 Tab）。
+ * - 五代十国：907—979（后梁、后唐、后晋、后汉、后周与十国合并为一个 Tab）。
+ * - 辽：916—1125；北宋：960—1127；西夏：1038—1227；金：1115—1234；
+ *   南宋：1127—1279（辽、西夏、金与两宋并立，各自独立 Tab，按起始年排序）。
+ * - 元：1271—1368（含大蒙古国前史，如 1219 西征、1234 灭金）；明：1368—1644；
+ *   清：1644—1912（含后金前史 1616—1636）。
  * - 公元 0 年不存在，`year` 为 0 属非法数据。
  */
 
@@ -53,7 +75,18 @@ export type Dynasty =
   | "三国"
   | "西晋"
   | "东晋十六国"
-  | "南北朝";
+  | "南北朝"
+  | "隋"
+  | "唐"
+  | "五代十国"
+  | "辽"
+  | "北宋"
+  | "西夏"
+  | "金"
+  | "南宋"
+  | "元"
+  | "明"
+  | "清";
 
 export interface TimelineEvent {
   id: string;
@@ -61,10 +94,22 @@ export interface TimelineEvent {
   dynasty: Dynasty;
   /** 史书纪年：公元前存负数（前221 → -221），公元存正数（184 → 184），0 非法。 */
   year: number;
+  /** 精确日期；未提供时由 year 格式化展示。 */
+  date?: string;
   description: string;
+  /**
+   * 重要度：3 = 顶级（简阅模式唯一展示的层级）／2 = 重要／1 = 一般，缺省视为 2。
+   * V0.6.3 起启用：只给断代大势级事件打标（V0.7.1 后共 111 条），未打标事件不参与简阅。
+   */
+  importance?: 1 | 2 | 3;
+  /** 隐藏彩蛋节点：使用特殊视觉与独立点击行为。 */
+  isSpecial?: boolean;
   /** 明确可识别的历史人物；未整理的朝代暂为空数组。 */
   participants: readonly string[];
 }
+
+/** 读取事件重要度，缺省为 2（重要）。简阅模式只渲染 `importance === 3`。 */
+export const importanceOf = (event: TimelineEvent): 1 | 2 | 3 => event.importance ?? 2;
 
 type TimelineEventInput = Omit<TimelineEvent, "participants">;
 
@@ -82,7 +127,81 @@ export const DYNASTY_START_YEARS: Readonly<Record<Dynasty, number>> = {
   西晋: 265,
   东晋十六国: 317,
   南北朝: 420,
+  隋: 581,
+  唐: 618,
+  五代十国: 907,
+  辽: 916,
+  北宋: 960,
+  西夏: 1038,
+  金: 1115,
+  南宋: 1127,
+  元: 1271,
+  明: 1368,
+  清: 1644,
 };
+
+/**
+ * 简阅模式的大断代（聚合朝代）。
+ *
+ * `Dynasty` 仍是事件的唯一归属字段；本类型只做「展示聚合」，不参与数据过滤口径。
+ * 后续新增朝代时，并入既有分组或在此新增一组即可，时间轴与图谱页面自动跟随。
+ */
+export type DynastyGroupId =
+  | "xianqin"
+  | "qinhan"
+  | "sanguo"
+  | "weijin"
+  | "suitang"
+  | "wudaisong"
+  | "yuanmingqing";
+
+export interface DynastyGroup {
+  id: DynastyGroupId;
+  /** 简阅 Tab 上展示的名称。 */
+  label: string;
+  /** 组成员（有序）：简阅模式下这些朝代的事件合并展示，组内顺序用于恢复上次朝代。 */
+  dynasties: readonly Dynasty[];
+  /** 排序用起始年（取组内最早朝代的起始年）。 */
+  startYear: number;
+}
+
+export const DYNASTY_GROUPS: readonly DynastyGroup[] = [
+  {
+    id: "xianqin",
+    label: "先秦",
+    dynasties: ["夏", "商", "西周", "春秋", "战国"],
+    startYear: -2070,
+  },
+  { id: "qinhan", label: "秦汉", dynasties: ["秦", "西汉", "东汉"], startYear: -221 },
+  { id: "sanguo", label: "三国", dynasties: ["三国"], startYear: 220 },
+  {
+    id: "weijin",
+    label: "魏晋南北朝",
+    dynasties: ["西晋", "东晋十六国", "南北朝"],
+    startYear: 265,
+  },
+  { id: "suitang", label: "隋唐", dynasties: ["隋", "唐"], startYear: 581 },
+  {
+    id: "wudaisong",
+    label: "五代辽宋夏金",
+    dynasties: ["五代十国", "辽", "北宋", "西夏", "金", "南宋"],
+    startYear: 907,
+  },
+  { id: "yuanmingqing", label: "元明清", dynasties: ["元", "明", "清"], startYear: 1271 },
+];
+
+const DYNASTY_GROUP_INDEX: ReadonlyMap<Dynasty, DynastyGroup> = new Map(
+  DYNASTY_GROUPS.flatMap((group) =>
+    group.dynasties.map((dynasty) => [dynasty, group] as const),
+  ),
+);
+
+/** 查某朝代所属的大断代；未配置时抛错，防止新增朝代漏配分组。 */
+export function groupOfDynasty(dynasty: Dynasty): DynastyGroup {
+  const group = DYNASTY_GROUP_INDEX.get(dynasty);
+  if (!group) throw new Error(`朝代「${dynasty}」未配置大断代分组（DYNASTY_GROUPS）。`);
+  return group;
+}
 
 const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
   {
@@ -90,48 +209,54 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "秦始皇统一六国",
     dynasty: "秦",
     year: -221,
+    importance: 3,
     description:
-      "秦王政先后灭韩、赵、魏、楚、燕、齐，结束战国分裂局面，建立中国第一个中央集权王朝，自称始皇帝。",
+      "秦王政先后灭韩、赵、魏、楚、燕、齐，结束战国分裂局面，建立中国第一个中央集权王朝，自称始皇帝。（据《史记·秦始皇本纪》）",
   },
   {
     id: "qin-book-burning",
     title: "焚书坑儒",
     dynasty: "秦",
     year: -213,
+    importance: 3,
     description:
-      "秦始皇采纳李斯建议，下令焚毁民间所藏《诗》《书》与诸子著作，次年又坑杀方士儒生，史称“焚书坑儒”。",
+      "秦始皇采纳李斯建议，下令焚毁民间所藏《诗》《书》与诸子著作，次年又坑杀方士儒生，史称“焚书坑儒”。（据《史记·秦始皇本纪》）",
   },
   {
     id: "qin-daze-uprising",
     title: "陈胜吴广起义",
     dynasty: "秦",
     year: -209,
+    importance: 3,
     description:
-      "戍卒陈胜、吴广在大泽乡起兵反秦，喊出“王侯将相宁有种乎”，秦末农民战争由此爆发。",
+      "戍卒陈胜、吴广在大泽乡起兵反秦，喊出“王侯将相宁有种乎”，秦末农民战争由此爆发。（据《史记·陈涉世家》）",
   },
   {
     id: "han-founded",
     title: "刘邦建立汉朝",
     dynasty: "西汉",
     year: -202,
+    importance: 3,
     description:
-      "楚汉战争结束，刘邦称帝，定都长安，史称西汉。汉初推行休养生息，恢复因战乱凋敝的社会经济。",
+      "楚汉战争结束，刘邦称帝，定都长安，史称西汉。汉初推行休养生息，恢复因战乱凋敝的社会经济。（据《史记·高祖本纪》）",
   },
   {
     id: "han-seven-states",
     title: "七国之乱",
     dynasty: "西汉",
     year: -154,
+    importance: 3,
     description:
-      "汉景帝推行削藩，吴、楚等七国以“请诛晁错”为名起兵，三个月内被周亚夫平定，中央集权得以加强。",
+      "汉景帝推行削藩，吴、楚等七国以“请诛晁错”为名起兵，三个月内被周亚夫平定，中央集权得以加强。（据《史记·吴王濞列传》）",
   },
   {
     id: "han-zhang-qian",
     title: "张骞出使西域",
     dynasty: "西汉",
     year: -138,
+    importance: 3,
     description:
-      "汉武帝派张骞出使西域，联络大月氏夹击匈奴。联盟虽未达成，却打通了中原与西域的联系，为丝绸之路奠基。",
+      "汉武帝派张骞出使西域，联络大月氏夹击匈奴。联盟虽未达成，却打通了中原与西域的联系，为丝绸之路奠基。（据《史记·大宛列传》）",
   },
   {
     id: "han-xiyu-protectorate",
@@ -139,15 +264,16 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     dynasty: "西汉",
     year: -60,
     description:
-      "西汉在西域设置都护府，正式确立对西域的军政管理，西域诸国自此纳入汉朝管辖体系。",
+      "西汉在西域设置都护府，正式确立对西域的军政管理，西域诸国自此纳入汉朝管辖体系。（据《汉书·郑吉传》）",
   },
   {
     id: "han-wang-mang",
     title: "王莽篡汉",
     dynasty: "西汉",
     year: 8,
+    importance: 3,
     description:
-      "王莽接受孺子婴禅让，代汉称帝，改国号为“新”，西汉灭亡。其托古改制失败，十余年后天下大乱。",
+      "王莽接受孺子婴禅让，代汉称帝，改国号为“新”，西汉灭亡。其托古改制失败，十余年后天下大乱。（据《汉书·王莽传》）",
   },
   {
     id: "han-cai-lun",
@@ -155,15 +281,16 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     dynasty: "东汉",
     year: 105,
     description:
-      "东汉蔡伦总结前人经验，用树皮、麻头、破布等原料造纸，成本大幅降低，后世称“蔡侯纸”，纸张逐渐取代简帛。",
+      "东汉蔡伦总结前人经验，用树皮、麻头、破布等原料造纸，成本大幅降低，后世称“蔡侯纸”，纸张逐渐取代简帛。（据《后汉书·宦者列传》）",
   },
   {
     id: "han-yellow-turban",
     title: "黄巾起义",
     dynasty: "东汉",
     year: 184,
+    importance: 3,
     description:
-      "张角以“苍天已死，黄天当立”为号，率太平道信众起义，史称黄巾起义。起义虽被镇压，东汉统治已名存实亡。",
+      "张角以“苍天已死，黄天当立”为号，率太平道信众起义，史称黄巾起义。起义虽被镇压，东汉统治已名存实亡。（据《后汉书·皇甫嵩传》）",
   },
   {
     id: "xia-01",
@@ -178,6 +305,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "大禹治水",
     dynasty: "夏",
     year: -2083,
+    importance: 3,
     description:
       "约公元前2083年，禹与益、后稷奉帝命治水，劳身焦思，居外十三年，过家门不敢入。薄衣食而致孝于鬼神，终于平定水土。（据《史记·夏本纪》；年代依夏商周断代工程推定）",
   },
@@ -194,6 +322,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "禹即天子位，夏朝建立",
     dynasty: "夏",
     year: -2070,
+    importance: 3,
     description:
       "约公元前2070年，禹即天子位，南面朝天下，国号夏后，姓姒氏。中国第一个世袭王朝由此建立。（据《史记·夏本纪》；年代依夏商周断代工程推定）",
   },
@@ -266,6 +395,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "鸣条之战，夏亡",
     dynasty: "夏",
     year: -1600,
+    importance: 3,
     description:
       "约公元前1600年，桀败走鸣条，被放逐而死。临死叹曰：悔不当初杀汤于夏台，以至于此。（据《史记·夏本纪》；年代依夏商周断代工程推定）",
   },
@@ -274,6 +404,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "伊尹辅汤",
     dynasty: "商",
     year: -1617,
+    importance: 3,
     description:
       "约公元前1617年，伊尹名阿衡，为有莘氏媵臣，以烹饪之道说汤致于王道。汤举任以国政，伊尹曾去汤适夏，后复归于亳。（据《史记·殷本纪》；年代依夏商周断代工程推定）",
   },
@@ -290,6 +421,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "汤践天子位，商朝建立",
     dynasty: "商",
     year: -1600,
+    importance: 3,
     description:
       "约公元前1600年，汤既胜夏，欲迁其社而不可，作夏社。伊尹报政，诸侯毕服，汤乃践天子位，平定海内。（据《史记·殷本纪》；年代依夏商周断代工程推定）",
   },
@@ -322,6 +454,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "盘庚迁殷",
     dynasty: "商",
     year: -1300,
+    importance: 3,
     description:
       "约公元前1300年，盘庚渡河南迁，复居成汤故都。殷民怨不欲迁，盘庚告谕诸侯大臣当修汤之法。迁后行汤政，百姓安宁，殷道复兴。（据《史记·殷本纪》；年代依夏商周断代工程推定）",
   },
@@ -330,6 +463,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "武丁中兴，得傅说",
     dynasty: "商",
     year: -1250,
+    importance: 3,
     description:
       "约公元前1250年，武丁即位时，鼎耳上有野雉飞来鸣叫，被视为上天示警。武丁修德政，访求贤人，得傅说于傅岩（傅说原为奴隶，服劳役筑墙）。（据《史记·三代世表》；年代依夏商周断代工程推定）",
   },
@@ -346,6 +480,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "羑里之囚",
     dynasty: "商",
     year: -1080,
+    importance: 3,
     description:
       "约公元前1080年，崇侯虎谮西伯于纣，纣囚西伯于羑里。闳夭等求美女、文马、奇物献纣，纣赦西伯，赐弓矢斧钺使专征伐。（据《史记·周本纪》；年代依夏商周断代工程推定）",
   },
@@ -394,6 +529,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "牧野之战",
     dynasty: "西周",
     year: -1046,
+    importance: 3,
     description:
       "武王率戎车三百乘、虎贲三千人、甲士四万五千人东伐纣，二月甲子昧爽誓师于商郊牧野。纣师倒戈，武王遂入商都。（据《史记·周本纪》）",
   },
@@ -418,6 +554,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "周公摄政",
     dynasty: "西周",
     year: -1042,
+    importance: 3,
     description:
       "武王崩，成王年少，周公践阼摄政当国。管叔等流言周公将不利于成王，周公乃告太公望、召公奭，使其子伯禽代就封于鲁。（据《史记·鲁周公世家》）",
   },
@@ -434,6 +571,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "成康之治",
     dynasty: "西周",
     year: -1042,
+    importance: 3,
     description:
       "成、康之际，天下安宁，刑措四十余年不用。康王命策毕公分居里、成周郊。（据《史记·周本纪》）",
   },
@@ -522,6 +660,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "共和行政，中国确切纪年之始",
     dynasty: "西周",
     year: -841,
+    importance: 3,
     description:
       "共和元年（前841年），厉王子居召公宫，是为宣王。王年幼，大臣共同行政。这是中国历史上确切纪年的开端，十二诸侯年表即从此年起记。（据《史记·十二诸侯年表》）",
   },
@@ -562,6 +701,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "犬戎攻镐京，西周灭亡",
     dynasty: "西周",
     year: -771,
+    importance: 3,
     description:
       "幽王废申后、去太子，申侯怒，与缯、西夷犬戎攻幽王。幽王举烽火徵兵，兵莫至，被杀于骊山下，西周亡。（据《史记·周本纪》）",
   },
@@ -642,6 +782,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "葵丘之会，齐桓公称霸",
     dynasty: "春秋",
     year: -651,
+    importance: 3,
     description:
       "会诸侯于葵丘，周襄王使宰孔赐桓公文武胙、彤弓矢、大路，命无拜。管仲曰不可，桓公乃下拜受赐。秋复会，桓公益有骄色，诸侯颇有叛者。（据《史记·齐太公世家》）",
   },
@@ -682,6 +823,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "城濮之战，晋文公败楚",
     dynasty: "春秋",
     year: -632,
+    importance: 3,
     description:
       "四年楚围宋，晋伐曹卫以解宋围。楚将子玉固请战，晋退避三舍践前约。四月戊辰宋齐秦与晋次城濮，己巳与楚合战，楚兵败。子玉归后楚成王责之自杀。（据《史记·晋世家》）",
   },
@@ -770,6 +912,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "孔子诞生于鲁",
     dynasty: "春秋",
     year: -551,
+    importance: 3,
     description:
       "鲁襄公二十二年，孔子生于鲁国陬邑。其先宋人，父叔梁纥为陬邑大夫。孔子幼而好礼，长而博学，后设教杏坛，弟子三千，身通六艺者七十有二人，为儒家学派创始人。（据《史记·孔子世家》）",
   },
@@ -986,6 +1129,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "商鞅变法",
     dynasty: "战国",
     year: -359,
+    importance: 3,
     description:
       "孝公三年，卫鞅说服孝公变法修刑，内务耕稼，外劝战死之赏罚。甘龙、杜挚等人反对，但孝公最终采用鞅法。百姓初苦之，三年后便之。孝公拜鞅为左庶长。（据《史记·秦本纪》）",
   },
@@ -1226,6 +1370,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "长平之战，白起坑赵卒",
     dynasty: "战国",
     year: -260,
+    importance: 3,
     description:
       "赵以赵括代廉颇，秦密以白起为上将军。白起佯败诱敌，奇兵断赵粮道，围赵军四十六日，赵括战死，四十万降卒被坑。（据《史记·白起王翦列传》）",
   },
@@ -1572,6 +1717,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "巨鹿之战：项羽破釜沉舟",
     dynasty: "秦",
     year: -207,
+    importance: 3,
     description:
       "章邯围赵王歇于巨鹿，楚上将军项羽渡河后沉船破釜、烧庐舍，持三日粮以示必死，九战大破秦军，虏王离、杀苏角，诸侯将皆属焉。（据《史记·项羽本纪》）",
   },
@@ -1614,6 +1760,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "鸿门宴",
     dynasty: "西汉",
     year: -206,
+    importance: 3,
     description:
       "刘邦先入关中，遣兵守函谷关，项羽大怒欲击之。刘邦赴鸿门谢罪，范增令项庄舞剑欲刺，项伯、樊哙护之，刘邦借如厕脱身。楚汉相争自此发端。（据《史记·项羽本纪》）",
   },
@@ -1646,6 +1793,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "垓下之围，项羽自刎乌江",
     dynasty: "西汉",
     year: -202,
+    importance: 3,
     description:
       "韩信、彭越、英布会师垓下，汉军以四面楚歌动楚军心。项羽率八百骑突围，至乌江自刎，楚汉战争以汉胜告终，刘邦旋称帝建汉。（据《史记·项羽本纪》）",
   },
@@ -1742,6 +1890,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "罢黜百家，独尊儒术",
     dynasty: "西汉",
     year: -134,
+    importance: 3,
     description:
       "武帝策问贤良，董仲舒对策言“诸不在六艺之科、孔子之术者，皆绝其道，勿使并进”，请兴太学、置五经博士。儒学自此成为官方意识形态，影响两千年。（据《汉书·董仲舒传》）",
   },
@@ -1984,6 +2133,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "刘秀称帝，东汉建立",
     dynasty: "东汉",
     year: 25,
+    importance: 3,
     description:
       "刘秀在鄗城南千秋亭即皇帝位，建元建武，定都洛阳，史称东汉。同年更始政权覆亡，刘秀遣军平定河北、关中，统一战争由此展开。（据《后汉书·光武帝纪》）",
   },
@@ -2248,6 +2398,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "官渡之战",
     dynasty: "东汉",
     year: 200,
+    importance: 3,
     description:
       "袁绍率十万众南下，曹操以两万兵拒于官渡。曹操烧乌巢粮屯，袁军大溃，绍仅以八百骑北走，河北由是归曹。（据《三国志·魏书·武帝纪》）",
   },
@@ -2256,6 +2407,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "赤壁之战",
     dynasty: "东汉",
     year: 208,
+    importance: 3,
     description:
       "曹操南下荆州，孙权、刘备联军迎击于赤壁。周瑜用黄盖诈降火攻，焚曹军战船，曹操北还，三分天下之势自此奠定。（据《三国志·吴书·周瑜传》）",
   },
@@ -2279,6 +2431,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "曹丕篡汉，东汉覆亡",
     dynasty: "三国",
     year: 220,
+    importance: 3,
     description:
       "曹操卒，子曹丕嗣魏王，旋即受汉献帝禅让，称帝建魏，改元黄初。东汉一百九十六年而亡，三国时代正式开启。（据《三国志·魏书·文帝纪》）",
   },
@@ -2287,6 +2440,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "刘备称帝，蜀汉建立",
     dynasty: "三国",
     year: 221,
+    importance: 3,
     description:
       "刘备于成都即皇帝位，国号汉，史称蜀汉，改元章武。以诸葛亮为丞相，张飞为车骑将军，立刘禅为皇太子。（据《三国志·蜀书·先主传》）",
   },
@@ -2295,6 +2449,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "夷陵之战",
     dynasty: "三国",
     year: 222,
+    importance: 3,
     description:
       "刘备亲率大军伐吴，为关羽复仇。陆逊坚守不战，待其疲敝，以火攻破蜀军四十余营，刘备退守白帝城，蜀汉元气大伤。（据《三国志·吴书·陆逊传》）",
   },
@@ -2303,6 +2458,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "白帝城托孤",
     dynasty: "三国",
     year: 223,
+    importance: 3,
     description:
       "刘备病笃，召诸葛亮于白帝城托以后事，谓“若嗣子可辅，辅之；如其不才，君可自取”，诸葛亮泣誓竭股肱之力。又以李严为副，同受遗诏。（据《三国志·蜀书·诸葛亮传》）",
   },
@@ -2319,6 +2475,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "街亭之战",
     dynasty: "三国",
     year: 228,
+    importance: 3,
     description:
       "诸葛亮首次北伐，天水、南安、安定三郡响应。马谡违亮节度，舍水上山，为张郃所破于街亭；赵云、邓芝亦失利箕谷。亮拔西县千余家还汉中，斩谡自贬三等。（据《三国志·蜀书·马良传》）",
   },
@@ -2327,6 +2484,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "孙权称帝",
     dynasty: "三国",
     year: 229,
+    importance: 3,
     description:
       "孙权于武昌即皇帝位，国号吴，改元黄龙，追尊孙坚、孙策。旋迁都建业，以陆逊为上大将军，三国鼎立之局至此定型。（据《三国志·吴书·吴主传》）",
   },
@@ -2335,6 +2493,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "诸葛亮病逝五丈原",
     dynasty: "三国",
     year: 234,
+    importance: 3,
     description:
       "诸葛亮率十万众出斜谷，屯五丈原，与司马懿相持百余日。亮病卒军中，遗命杨仪等退军，蜀人谚曰“死诸葛走生仲达”。（据《三国志·蜀书·诸葛亮传》）",
   },
@@ -2343,6 +2502,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "高平陵之变",
     dynasty: "三国",
     year: 249,
+    importance: 3,
     description:
       "司马懿趁大将军曹爽陪魏帝曹芳谒高平陵，闭洛阳城门，据武库，奏爽罪状。爽犹豫不战，归罪自请，旋被夷三族，魏政尽归司马氏。（据《三国志·魏书·诸夏侯曹传》）",
   },
@@ -2359,6 +2519,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "魏灭蜀",
     dynasty: "三国",
     year: 263,
+    importance: 3,
     description:
       "司马昭分遣钟会、邓艾伐蜀。钟会攻剑阁不能下，邓艾自阴平偷渡，破绵竹、下成都，刘禅出降。姜维降钟会后谋复国，事败被杀，蜀汉亡。（据《三国志·魏书·邓艾传》）",
   },
@@ -2377,6 +2538,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "晋灭吴，三国归晋",
     dynasty: "西晋",
     year: 280,
+    importance: 3,
     description:
       "晋六路伐吴，王濬自益州顺流而下，以筏炬破铁锁横江；杜预等取荆州。孙皓出降，吴亡，自汉末以来近百年分裂重归一统。（据《晋书·王濬传》）",
   },
@@ -2393,6 +2555,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "八王之乱",
     dynasty: "西晋",
     year: 291,
+    importance: 3,
     description:
       "贾后与楚王玮合谋诛杨骏，又以汝南王亮、卫瓘辅政；旋使玮杀亮、瓘，再杀玮以谢天下。此后赵王伦、齐王冏、长沙王乂、成都王颖等迭相攻杀，乱事绵延至光熙元年（306）。（据《晋书·惠帝纪》）",
   },
@@ -2409,6 +2572,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "永嘉之乱",
     dynasty: "西晋",
     year: 311,
+    importance: 3,
     description:
       "刘曜、王弥、石勒合兵攻洛阳，城陷，焚宫室、发帝陵，怀帝被掳北上，后遇害于平阳。中原士民大批南渡，史称永嘉之乱。（据《晋书·怀帝纪》）",
   },
@@ -2417,6 +2581,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "西晋灭亡",
     dynasty: "西晋",
     year: 316,
+    importance: 3,
     description:
       "刘曜围长安，城中食尽，愍帝出降，西晋亡。自武帝代魏至愍帝出降，凡五十二年；北方进入十六国时期。（据《晋书·愍帝纪》）",
   },
@@ -2427,6 +2592,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "司马睿南渡建东晋",
     dynasty: "东晋十六国",
     year: 317,
+    importance: 3,
     description:
       "晋宗室司马睿于建康称晋王，次年即帝位，是为元帝，东晋建立。王导、王敦分掌内外，时称“王与马，共天下”。（据《晋书·元帝纪》）",
   },
@@ -2475,6 +2641,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "淝水之战",
     dynasty: "东晋十六国",
     year: 383,
+    importance: 3,
     description:
       "苻坚征兵百万南下，谢玄率北府兵八万拒于淝水。秦军后移阵，降将朱序大呼“秦兵败矣”，阵脚大乱，晋军乘之，苻融战死，苻坚败还，“风声鹤唳”“草木皆兵”皆出于此。（据《晋书·谢玄传》）",
   },
@@ -2483,6 +2650,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "北魏建立",
     dynasty: "东晋十六国",
     year: 386,
+    importance: 3,
     description:
       "拓跋珪于牛川即代王位，旋改称魏王，定都盛乐，国号魏，史称北魏。此后进据中原，为北朝之始。（据《魏书·太祖纪》）",
   },
@@ -2509,6 +2677,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "刘裕代晋，刘宋建立",
     dynasty: "南北朝",
     year: 420,
+    importance: 3,
     description:
       "刘裕受晋恭帝禅让，即皇帝位，国号宋，改元永初，东晋亡。南朝宋、齐、梁、陈相继，北朝魏、齐、周并立，南北对峙格局正式成立。（据《宋书·武帝纪》）",
   },
@@ -2525,6 +2694,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "孝文帝太和改制",
     dynasty: "南北朝",
     year: 485,
+    importance: 3,
     description:
       "文明太后与孝文帝先后行班禄制（484）、均田令（485）、三长制（486）：计口授田，五家立邻长、五邻立里长、五里立党长，北魏由部落旧制转为编户国家。（据《魏书·食货志》）",
   },
@@ -2533,6 +2703,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "迁都洛阳与汉化",
     dynasty: "南北朝",
     year: 494,
+    importance: 3,
     description:
       "孝文帝以南伐为名率众南下，遂定都洛阳；禁胡服、断北语，诏迁洛者死葬河南、著籍洛阳，又为宗室聘汉族士族之女。太和二十年（496）诏改姓氏，皇族拓跋氏改姓元。（据《魏书·高祖纪》）",
   },
@@ -2557,6 +2728,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "北魏分裂",
     dynasty: "南北朝",
     year: 534,
+    importance: 3,
     description:
       "孝武帝西奔长安，高欢另立元善见为帝，迁都邺，是为东魏；宇文泰于次年拥立元宝炬，是为西魏。东西对峙，北魏名存实亡。（据《北齐书·神武纪》）",
   },
@@ -2565,6 +2737,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "侯景之乱",
     dynasty: "南北朝",
     year: 548,
+    importance: 3,
     description:
       "东魏叛将侯景以清君侧、诛朱异为名起兵，渡江围建康，次年陷台城。梁武帝萧衍饿死，江南郡县残破，南朝由盛转衰。（据《梁书·侯景传》）",
   },
@@ -2597,6 +2770,7 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     title: "隋灭陈，南北统一",
     dynasty: "南北朝",
     year: 589,
+    importance: 3,
     description:
       "隋以晋王杨广统军，韩擒虎、贺若弼分道渡江，克建康，俘陈后主陈叔宝，陈亡。自永嘉以来二百七十余年分裂，至此复归一统。（据《隋书·韩擒虎传》）",
   },
@@ -2755,6 +2929,2856 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
     year: 219,
     description:
       "刘备取汉中后，群臣劝进，遂称汉中王。以魏延为镇远将军、领汉中太守，一军皆惊；马超、诸葛亮等皆上表劝进。（据《三国志·蜀书·魏延传》）",
+  },
+
+  // ===== 第 6 批（V0.7–V0.10 隋唐宋元明清），据 docs/史脉_第二/三/四批数据表整理 =====
+  // 事件名取自三批关系表的「共同参与事件」列；同一史事的多种表述合并为一条，
+  // 同年同史事只保留一条（合并同年），同年不同史事仍分列。
+  // ----- 隋 -----
+  {
+    id: "sui-01",
+    title: "开皇之治",
+    dynasty: "隋",
+    year: 581,
+    importance: 3,
+    description:
+      "隋文帝杨坚代周建隋后废北周六官、行三省六部，轻徭薄赋、整顿吏治，二十余年间户口蕃息，史称「开皇之治」。（据《隋书》）",
+  },
+  {
+    id: "sui-02",
+    title: "平陈之役",
+    dynasty: "隋",
+    year: 588,
+    importance: 3,
+    description:
+      "隋以晋王杨广为行军元帅、高颎为谋主、杨素统水军，八路伐陈；次年克建康，俘陈后主，南北重归一统。（据《隋书》）",
+  },
+  {
+    id: "sui-03",
+    title: "废太子杨勇，杨广夺嫡",
+    dynasty: "隋",
+    year: 600,
+    description:
+      "杨坚废长子杨勇改立杨广为太子，埋下隋朝速亡祸根。（据《隋书》）",
+  },
+  {
+    id: "sui-04",
+    title: "仁寿宫之变",
+    dynasty: "隋",
+    year: 604,
+    importance: 3,
+    description:
+      "文帝病笃于仁寿宫，杨广与杨素密谋，宫中外传文帝暴崩，杨广即位，是为炀帝，弑父之说遂起。（据《隋书》）",
+  },
+  {
+    id: "sui-05",
+    title: "高颎被诛",
+    dynasty: "隋",
+    year: 607,
+    description:
+      "高颎反对杨广奢靡与征高句丽，以诽谤朝政罪被诛杀。（据《隋书》）",
+  },
+  {
+    id: "sui-07",
+    title: "瓦岗军内讧",
+    dynasty: "隋",
+    year: 617,
+    description:
+      "李密加入瓦岗军后势力渐大，杀首领翟让夺权，瓦岗由盛转衰。（据《隋书》）",
+  },
+  {
+    id: "sui-09",
+    title: "晋阳起兵",
+    dynasty: "隋",
+    year: 617,
+    importance: 3,
+    description:
+      "李渊为太原留守，李世民与刘文静等劝其起兵，杀王威、高君雅，传檄尊隋，为建唐奠基。（据《隋书》）",
+  },
+  {
+    id: "sui-06",
+    title: "江都之变",
+    dynasty: "隋",
+    year: 618,
+    importance: 3,
+    description:
+      "宇文化及于江都发动兵变，缢杀隋炀帝，立秦王杨浩为帝，隋室名存实亡，天下群雄并起。（据《隋书》）",
+  },
+  {
+    id: "sui-08",
+    title: "童山之战",
+    dynasty: "隋",
+    year: 618,
+    description:
+      "宇文化及北归遭李密截击大败，最终被窦建德擒杀。（据《隋书》）",
+  },
+  // ----- 唐 -----
+  {
+    id: "tang-01",
+    title: "建立唐朝",
+    dynasty: "唐",
+    year: 618,
+    importance: 3,
+    description:
+      "李渊受隋恭帝禅让即皇帝位，国号唐，改元武德；李世民南征北战，先后平定薛举、刘武周、王世充、窦建德等群雄。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-02",
+    title: "秦王府十八学士",
+    dynasty: "唐",
+    year: 621,
+    description:
+      "房玄龄自晋阳起兵即追随李世民，为秦王府核心谋臣。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-03",
+    title: "平定萧铣",
+    dynasty: "唐",
+    year: 621,
+    description:
+      "李渊曾欲杀李靖，李世民力保，后李靖平定萧铣统一江南。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-04",
+    title: "玄武门之变",
+    dynasty: "唐",
+    year: 626,
+    importance: 3,
+    description:
+      "李世民伏兵玄武门，杀太子李建成、齐王李元吉，逼高祖立己为太子，旋受禅即位，开贞观之治局。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-05",
+    title: "贞观之治",
+    dynasty: "唐",
+    year: 627,
+    importance: 3,
+    description:
+      "唐太宗纳谏任贤、轻徭薄赋、完善三省六部与科举，魏徵、房玄龄、杜如晦等佐之，史称「贞观之治」。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-06",
+    title: "灭东突厥",
+    dynasty: "唐",
+    year: 630,
+    description:
+      "李靖率三千骑夜袭阴山，灭东突厥，擒颉利可汗。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-07",
+    title: "武则天入宫为才人",
+    dynasty: "唐",
+    year: 637,
+    description:
+      "武则天十四岁入宫为太宗才人，太宗崩后入感业寺为尼。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-08",
+    title: "永徽之治",
+    dynasty: "唐",
+    year: 650,
+    description:
+      "长孙无忌辅佐外甥李治即位，主持编纂《唐律疏议》。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-09",
+    title: "武则天改唐为周",
+    dynasty: "唐",
+    year: 690,
+    description:
+      "武则天由高宗昭仪至皇后，后称帝建周，成为中国唯一女皇。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-10",
+    title: "狄仁杰荐贤",
+    dynasty: "唐",
+    year: 692,
+    description:
+      "狄仁杰直言敢谏，武则天尊为\"国老\"，荐张柬之等数十人。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-11",
+    title: "神龙政变",
+    dynasty: "唐",
+    year: 705,
+    description:
+      "狄仁杰荐张柬之为相，张柬之后发动神龙政变恢复李唐。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-12",
+    title: "先天政变",
+    dynasty: "唐",
+    year: 713,
+    description:
+      "李隆基联合太平公主诛韦后，后发动先天政变铲除太平公主势力。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-13",
+    title: "开元盛世",
+    dynasty: "唐",
+    year: 713,
+    importance: 3,
+    description:
+      "玄宗即位后先后用姚崇、宋璟为相，整饬吏治、检括田户、改革兵制，开元间海内富庶，史称「开元盛世」。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-14",
+    title: "李林甫专权",
+    dynasty: "唐",
+    year: 740,
+    description:
+      "李林甫为相十九年，口蜜腹剑，排斥异己，致朝政日渐败坏。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-15",
+    title: "蕃将专兵",
+    dynasty: "唐",
+    year: 742,
+    description:
+      "李林甫建议用蕃将为边帅，安禄山由此坐大，终成大患。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-16",
+    title: "杨氏专权",
+    dynasty: "唐",
+    year: 745,
+    description:
+      "杨国忠借从妹杨贵妃之宠得势为相，专权误国。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-17",
+    title: "安史之乱",
+    dynasty: "唐",
+    year: 755,
+    importance: 3,
+    description:
+      "平卢、范阳、河东三镇节度使安禄山以诛杨国忠为名起兵，与史思明连陷两京，玄宗奔蜀；八年后方平，盛唐由盛转衰。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-18",
+    title: "常山之战",
+    dynasty: "唐",
+    year: 756,
+    description:
+      "颜真卿与堂兄颜杲卿起兵抗击安禄山，河北十七郡响应。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-19",
+    title: "睢阳之战",
+    dynasty: "唐",
+    year: 757,
+    description:
+      "张巡与许远率数千人死守睢阳十月，牵制叛军南下，城破殉国。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-20",
+    title: "收复两京",
+    dynasty: "唐",
+    year: 757,
+    description:
+      "郭子仪率军平叛，收复长安、洛阳，为平定安史之乱首功。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-21",
+    title: "平叛方略",
+    dynasty: "唐",
+    year: 757,
+    description:
+      "李泌为肃宗谋臣，提出\"挫其锐、解其纷\"战略，谋划平叛全局。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-22",
+    title: "河阳之战",
+    dynasty: "唐",
+    year: 759,
+    description:
+      "李光弼在河阳以少胜多大败史思明，遏制叛军攻势。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-23",
+    title: "平定安史之乱",
+    dynasty: "唐",
+    year: 763,
+    description:
+      "郭子仪与李光弼并称名将，共同平定安史之乱。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-24",
+    title: "奉天之难",
+    dynasty: "唐",
+    year: 783,
+    description:
+      "朱泚叛乱称帝据长安，李晟孤军深入收复长安，击溃朱泚。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-25",
+    title: "收复长安",
+    dynasty: "唐",
+    year: 784,
+    description:
+      "朱泚叛乱据长安，李晟率军收复长安，挽救唐朝危局。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-26",
+    title: "贞元拜相",
+    dynasty: "唐",
+    year: 787,
+    description:
+      "李泌历仕四朝，在德宗朝拜相，辅佐朝政至终。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-27",
+    title: "讨灭董昌",
+    dynasty: "唐",
+    year: 896,
+    description:
+      "董昌在越州称帝，钱镠奉诏讨灭之，据有两浙建吴越国。（据《旧唐书》《新唐书》）",
+  },
+  // ----- 五代十国 -----
+  {
+    id: "wudai-01",
+    title: "朱温篡唐建梁",
+    dynasty: "五代十国",
+    year: 907,
+    importance: 3,
+    description:
+      "梁王朱温遣蒋玄晖等弑唐昭宗，立哀帝，旋废帝自立，国号梁，唐亡，五代十国乱世由此始。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-02",
+    title: "钱镠受封吴越王",
+    dynasty: "五代十国",
+    year: 907,
+    description:
+      "钱镠臣服后梁受封吴越王，以\"保境安民\"为国策，治理两浙。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-03",
+    title: "梁晋争霸",
+    dynasty: "五代十国",
+    year: 910,
+    description:
+      "朱温与河东李克用父子长期争霸，后梁终被李存勖所灭。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-04",
+    title: "灭后梁",
+    dynasty: "五代十国",
+    year: 923,
+    importance: 3,
+    description:
+      "李存勖自郓州奇袭汴梁，后梁末帝自尽，梁亡；存勖称帝建后唐，定都洛阳。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-05",
+    title: "灭梁灭蜀",
+    dynasty: "五代十国",
+    year: 925,
+    description:
+      "郭崇韬为李存勖首席谋臣，助其灭梁灭蜀，后遭冤杀军心尽失。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-06",
+    title: "兴教门之变",
+    dynasty: "五代十国",
+    year: 926,
+    description:
+      "李存勖因兵变被杀，义兄李嗣源被推举继位为后唐明宗。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-07",
+    title: "石敬瑭建后晋",
+    dynasty: "五代十国",
+    year: 936,
+    description:
+      "石敬瑭为李嗣源女婿，借契丹之力灭后唐建后晋，自称\"儿皇帝\"。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-08",
+    title: "割燕云十六州",
+    dynasty: "五代十国",
+    year: 938,
+    importance: 3,
+    description:
+      "后晋高祖石敬瑭为报契丹援立之恩，割幽云十六州予契丹，岁输绢三十万匹，自称「儿皇帝」，中原屏障尽失。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-09",
+    title: "郭威建后周",
+    dynasty: "五代十国",
+    year: 951,
+    description:
+      "郭威受后汉隐帝猜忌，举兵反叛灭后汉，建后周。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-10",
+    title: "郭威传位柴荣",
+    dynasty: "五代十国",
+    year: 954,
+    description:
+      "郭威无子，养内侄柴荣为嗣，临终传位，开启后周盛世。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-11",
+    title: "李煜继位南唐",
+    dynasty: "五代十国",
+    year: 961,
+    description:
+      "李煜继父李璟之位，国势日衰，终为北宋所灭。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-12",
+    title: "灭南唐",
+    dynasty: "五代十国",
+    year: 975,
+    importance: 3,
+    description:
+      "宋遣曹彬、潘美率军渡江围金陵，南唐后主李煜奉表出降，南唐亡，宋基本统一南方。（据《旧五代史》《新五代史》）",
+  },
+  // ----- 辽 -----
+  {
+    id: "liao-01",
+    title: "耶律阿保机建立辽朝",
+    dynasty: "辽",
+    year: 916,
+    importance: 3,
+    description:
+      "耶律阿保机统一契丹诸部，即皇帝位，国号契丹（后改辽），建元神册，创契丹文字，为北疆强权之始。（据《辽史》）",
+  },
+  {
+    id: "liao-02",
+    title: "述律太后称制",
+    dynasty: "辽",
+    year: 926,
+    importance: 3,
+    description:
+      "辽太祖阿保机崩，皇后述律平称制摄政，以铁腕诛锄异己，扶立次子耶律德光，辽室遂安。（据《辽史》）",
+  },
+  {
+    id: "liao-03",
+    title: "灭后晋",
+    dynasty: "辽",
+    year: 947,
+    importance: 3,
+    description:
+      "辽太宗耶律德光南下，后晋出帝被俘，晋亡；德光入汴京，改国号大辽，旋北归崩于栾城。（据《辽史》）",
+  },
+  // ----- 北宋 -----
+  {
+    id: "beisong-01",
+    title: "陈桥兵变",
+    dynasty: "北宋",
+    year: 960,
+    importance: 3,
+    description:
+      "殿前都点检赵匡胤率军北征，至陈桥驿为诸将黄袍加身，回师开封，受周恭帝禅让，建宋，改元建隆。（据《宋史》）",
+  },
+  {
+    id: "beisong-02",
+    title: "杯酒释兵权",
+    dynasty: "北宋",
+    year: 961,
+    importance: 3,
+    description:
+      "宋太祖纳赵普之策，宴请石守信等禁军将领，许以田宅富贵，劝其交出兵权，自此重文抑武。（据《宋史》）",
+  },
+  {
+    id: "beisong-03",
+    title: "烛影斧声",
+    dynasty: "北宋",
+    year: 976,
+    description:
+      "赵光义继兄之位有\"烛影斧声\"之疑，后灭北汉结束五代十国。（据《宋史》）",
+  },
+  {
+    id: "beisong-04",
+    title: "寇准入朝",
+    dynasty: "北宋",
+    year: 989,
+    description:
+      "赵光义器重寇准，称\"朕得寇准，如唐太宗之得魏徵\"。（据《宋史》）",
+  },
+  {
+    id: "beisong-05",
+    title: "半部论语治天下",
+    dynasty: "北宋",
+    year: 992,
+    description:
+      "赵普再相辅佐赵光义，自谓\"半部《论语》治天下\"。（据《宋史》）",
+  },
+  {
+    id: "beisong-06",
+    title: "澶渊之盟",
+    dynasty: "北宋",
+    year: 1005,
+    importance: 3,
+    description:
+      "辽萧太后与圣宗南下，寇准力促真宗亲征澶州，宋军射杀辽将萧挞凛；双方议和，宋岁输银绢，辽宋约为兄弟之国。（据《宋史》）",
+  },
+  {
+    id: "beisong-08",
+    title: "西北御夏",
+    dynasty: "北宋",
+    year: 1040,
+    description:
+      "范仲淹与韩琦共防西夏于陕西，整顿边防，并称\"韩范\"。（据《宋史》）",
+  },
+  {
+    id: "beisong-07",
+    title: "庆历新政",
+    dynasty: "北宋",
+    year: 1043,
+    importance: 3,
+    description:
+      "参知政事范仲淹上《答手诏条陈十事》，推行明黜陟、抑侥幸等十项新政，因守旧派反对，一年余而罢。（据《宋史》）",
+  },
+  {
+    id: "beisong-14",
+    title: "武将拜枢密",
+    dynasty: "北宋",
+    year: 1052,
+    description:
+      "狄青以军功升至枢密使，为北宋武将任枢密使的唯一例外。（据《宋史》）",
+  },
+  {
+    id: "beisong-09",
+    title: "古文运动",
+    dynasty: "北宋",
+    year: 1057,
+    description:
+      "欧阳修为北宋文坛领袖，倡导古文运动，主修《新唐书》《新五代史》。（据《宋史》）",
+  },
+  {
+    id: "beisong-10",
+    title: "熙宁变法",
+    dynasty: "北宋",
+    year: 1069,
+    importance: 3,
+    description:
+      "宋神宗以王安石为参知政事，行青苗、免役、均输、市易、保甲诸法，力求富国强兵，新旧党争由是激烈。（据《宋史》）",
+  },
+  {
+    id: "beisong-11",
+    title: "新旧党争",
+    dynasty: "北宋",
+    year: 1070,
+    description:
+      "司马光坚决反对新法，王安石罢相后司马光执政尽废新法。（据《宋史》）",
+  },
+  {
+    id: "beisong-13",
+    title: "乌台诗案",
+    dynasty: "北宋",
+    year: 1079,
+    description:
+      "苏轼反对新法，因诗文被控谤讪新法，入狱百余日贬黄州。（据《宋史》）",
+  },
+  {
+    id: "beisong-12",
+    title: "资治通鉴成书",
+    dynasty: "北宋",
+    year: 1084,
+    description:
+      "司马光主编《资治通鉴》，宋神宗赐名作序，为编年体通史巨著。（据《宋史》）",
+  },
+  {
+    id: "beisong-15",
+    title: "海上之盟",
+    dynasty: "北宋",
+    year: 1120,
+    description:
+      "宋金结\"海上之盟\"约共灭辽，灭辽后金转而攻宋，致靖康之变。（据《宋史》）",
+  },
+  // ----- 西夏 -----
+  {
+    id: "xixia-01",
+    title: "李元昊建西夏",
+    dynasty: "西夏",
+    year: 1038,
+    importance: 3,
+    description:
+      "党项首领李元昊于兴庆府称帝，国号大夏，史称西夏；三败宋军，形成宋、辽、夏三足鼎立之势。（据《宋史·夏国传》）",
+  },
+  {
+    id: "xixia-02",
+    title: "宋夏战争",
+    dynasty: "西夏",
+    year: 1041,
+    importance: 3,
+    description:
+      "李元昊率西夏军屡犯宋境，范仲淹在陕西防御应对，互有胜负。（据《宋史·夏国传》）",
+  },
+  // ----- 金 -----
+  {
+    id: "jin-01",
+    title: "金灭辽之战",
+    dynasty: "金",
+    year: 1125,
+    importance: 3,
+    description:
+      "完颜阿骨打起兵反辽，屡以少胜多；天祚帝西走夹山，金将完颜娄室追擒之，辽亡，金旋南下攻宋。（据《金史》）",
+  },
+  {
+    id: "jin-02",
+    title: "完颜亮弑熙宗夺位",
+    dynasty: "金",
+    year: 1150,
+    importance: 3,
+    description:
+      "完颜亮弑金熙宗完颜亶夺位，即位后迁都燕京、推行汉化，后大举南侵，终为部将所杀。（据《金史》）",
+  },
+  {
+    id: "jin-03",
+    title: "采石之战",
+    dynasty: "金",
+    year: 1161,
+    importance: 3,
+    description:
+      "金主完颜亮大举南侵，虞允文以文臣督师采石，激励溃军死战，大破金军水师；完颜亮旋为部将所杀。（据《金史》）",
+  },
+  // ----- 南宋 -----
+  {
+    id: "nansong-01",
+    title: "宗泽守汴与三呼过河",
+    dynasty: "南宋",
+    year: 1128,
+    description:
+      "宗泽任东京留守，招抚义军、重用岳飞，连上二十余疏请高宗还都北伐；不被采纳，忧愤成疾，临终三呼「过河」。（据《宋史》）",
+  },
+  {
+    id: "nansong-02",
+    title: "黄天荡之战",
+    dynasty: "南宋",
+    year: 1130,
+    description:
+      "韩世忠在黄天荡阻击金军，赵构得以脱险，后拜枢密使。（据《宋史》）",
+  },
+  {
+    id: "nansong-03",
+    title: "韩世忠反对议和",
+    dynasty: "南宋",
+    year: 1140,
+    description:
+      "韩世忠反对秦桧议和遭构陷，赵构念旧功免其死，世忠自此杜门谢客。（据《宋史》）",
+  },
+  {
+    id: "nansong-04",
+    title: "绍兴和议",
+    dynasty: "南宋",
+    year: 1141,
+    importance: 3,
+    description:
+      "宋金议和：宋向金称臣，岁贡银绢二十五万两匹，以淮水—大散关为界；次年岳飞遇害，主战派尽黜。（据《宋史》）",
+  },
+  {
+    id: "nansong-05",
+    title: "风波亭之冤",
+    dynasty: "南宋",
+    year: 1142,
+    importance: 3,
+    description:
+      "秦桧诬岳飞谋反，以「莫须有」罪下狱，高宗默许，岳飞与子岳云、部将张宪遇害于临安风波亭。（据《宋史》）",
+  },
+  {
+    id: "nansong-06",
+    title: "辛弃疾起义南归",
+    dynasty: "南宋",
+    year: 1162,
+    description:
+      "辛弃疾年少参加耿京抗金义军，耿京被害后率五十骑闯金营擒叛徒南归。（据《宋史》）",
+  },
+  {
+    id: "nansong-07",
+    title: "开禧北伐",
+    dynasty: "南宋",
+    year: 1206,
+    importance: 3,
+    description:
+      "权臣韩侂胄力主北伐，宋军三路攻金，初胜后溃；金军反攻，宋杀韩侂胄函首求和，史称「开禧北伐」。（据《宋史》）",
+  },
+  {
+    id: "nansong-08",
+    title: "崖山之战",
+    dynasty: "南宋",
+    year: 1279,
+    importance: 3,
+    description:
+      "元将张弘范攻崖山，宋军大败，陆秀夫负幼帝赵昺投海，文天祥被俘后从容就义，南宋亡。（据《宋史》）",
+  },
+  // ----- 元 -----
+  {
+    id: "yuan-01",
+    title: "成吉思汗征召耶律楚材西征",
+    dynasty: "元",
+    year: 1219,
+    description:
+      "成吉思汗征召耶律楚材随军西征，器重其占星才能与治国见识。（据《元史》）",
+  },
+  {
+    id: "yuan-02",
+    title: "成吉思汗指定继承人",
+    dynasty: "元",
+    year: 1229,
+    description:
+      "成吉思汗统一蒙古各部建大蒙古国，指定三子窝阔台为继承人继续扩张。（据《元史》）",
+  },
+  {
+    id: "yuan-03",
+    title: "耶律楚材治理中原",
+    dynasty: "元",
+    year: 1230,
+    description:
+      "耶律楚材劝窝阔台行汉法、设十路课税所、止屠城，保护中原典章。（据《元史》）",
+  },
+  {
+    id: "yuan-04",
+    title: "蒙古灭金伐宋",
+    dynasty: "元",
+    year: 1234,
+    importance: 3,
+    description:
+      "窝阔台联宋灭金于蔡州，金哀宗自尽；此后蒙古连年南下攻宋，南北对峙转入元宋战争。（据《元史》）",
+  },
+  {
+    id: "yuan-05",
+    title: "创八思巴文",
+    dynasty: "元",
+    year: 1269,
+    description:
+      "忽必烈封藏传佛教高僧八思巴为帝师，命创八思巴文统一蒙元文字。（据《元史》）",
+  },
+  {
+    id: "yuan-06",
+    title: "忽必烈建立元朝",
+    dynasty: "元",
+    year: 1271,
+    importance: 3,
+    description:
+      "忽必烈取《易经》「大哉乾元」之义，定国号大元，都大都；旋灭南宋，完成自唐末以来首次大一统。（据《元史》）",
+  },
+  {
+    id: "yuan-07",
+    title: "元灭南宋",
+    dynasty: "元",
+    year: 1276,
+    importance: 3,
+    description:
+      "元以伯颜为统帅，分道南下，破鄂州、下建康，兵临临安，宋恭帝出降；南宋残余退守闽广。（据《元史》）",
+  },
+  {
+    id: "yuan-08",
+    title: "皋亭山交锋",
+    dynasty: "元",
+    year: 1276,
+    description:
+      "伯颜兵临临安，文天祥出使元营谈判被扣留，后脱险南归继续抗元。（据《元史》）",
+  },
+  {
+    id: "yuan-09",
+    title: "修三史与至正新政",
+    dynasty: "元",
+    year: 1344,
+    importance: 3,
+    description:
+      "脱脱任中书右丞相，主修《辽史》《金史》《宋史》；又行至正新政，印钞、治河，然积弊难返。（据《元史》）",
+  },
+  {
+    id: "yuan-10",
+    title: "贾鲁治河",
+    dynasty: "元",
+    year: 1351,
+    importance: 3,
+    description:
+      "脱脱用贾鲁之议，征民夫十七万塞黄河决口，功成而民困，韩山童、刘福通等因之举事，红巾军起。（据《元史》）",
+  },
+  // ----- 明 -----
+  {
+    id: "ming-01",
+    title: "鄱阳湖之战",
+    dynasty: "明",
+    year: 1363,
+    description:
+      "朱元璋在鄱阳湖以少胜多大败陈友谅，奠定统一南方建立明朝之基。（据《明史》）",
+  },
+  {
+    id: "ming-02",
+    title: "朱元璋建立明朝",
+    dynasty: "明",
+    year: 1368,
+    importance: 3,
+    description:
+      "朱元璋于应天称帝，国号大明，改元洪武；旋北伐克大都，元顺帝北走，元亡。（据《明史》）",
+  },
+  {
+    id: "ming-03",
+    title: "传位建文",
+    dynasty: "明",
+    year: 1398,
+    description:
+      "朱元璋传位于皇太孙朱允炆，四子朱棣后发动靖难之变夺位。（据《明史》）",
+  },
+  {
+    id: "ming-04",
+    title: "靖难之役",
+    dynasty: "明",
+    year: 1399,
+    importance: 3,
+    description:
+      "燕王朱棣以「清君侧」为名起兵，历时四年，破南京，建文帝失踪，朱棣即位，是为永乐帝。（据《明史》）",
+  },
+  {
+    id: "ming-05",
+    title: "郑和下西洋",
+    dynasty: "明",
+    year: 1405,
+    importance: 3,
+    description:
+      "永乐帝遣郑和率舟师下西洋，历三十余国，最远抵东非；一说兼寻建文帝踪迹，前后七次，历时二十八年。（据《明史》）",
+  },
+  {
+    id: "ming-06",
+    title: "平定宁王叛乱",
+    dynasty: "明",
+    year: 1519,
+    description:
+      "王阳明以文臣身份仅用三十五日平定宁王朱宸濠叛乱，以心学著称。（据《明史》）",
+  },
+  {
+    id: "ming-07",
+    title: "阳明心学",
+    dynasty: "明",
+    year: 1527,
+    description:
+      "王阳明反对朱熹\"格物致知\"外求说，提出\"心即理\"\"知行合一\"。（据《明史》）",
+  },
+  {
+    id: "ming-08",
+    title: "严嵩专权二十年",
+    dynasty: "明",
+    year: 1550,
+    description:
+      "严嵩谄事嘉靖帝，为首辅二十年，排斥异己，朝政败坏误国误民。（据《明史》）",
+  },
+  {
+    id: "ming-10",
+    title: "抗倭战争",
+    dynasty: "明",
+    year: 1555,
+    description:
+      "戚继光与俞大猷并称抗倭名将，在东南沿海平定倭患。（据《明史》）",
+  },
+  {
+    id: "ming-09",
+    title: "徐阶倒严",
+    dynasty: "明",
+    year: 1562,
+    description:
+      "徐阶隐忍多年收集严嵩父子罪证，终使严嵩罢官抄家。（据《明史》）",
+  },
+  {
+    id: "ming-11",
+    title: "海瑞上疏",
+    dynasty: "明",
+    year: 1566,
+    description:
+      "海瑞上《治安疏》直斥嘉靖帝，言\"天下人不直陛下久矣\"，被下狱。（据《明史》）",
+  },
+  {
+    id: "ming-13",
+    title: "蓟镇练兵",
+    dynasty: "明",
+    year: 1568,
+    description:
+      "张居正重用戚继光镇守蓟镇，修长城练戚家军，北疆十余年无战事。（据《明史》）",
+  },
+  {
+    id: "ming-12",
+    title: "海瑞清田",
+    dynasty: "明",
+    year: 1569,
+    description:
+      "徐阶曾救海瑞出狱，后海瑞任应天巡抚清查徐阶家族占田，不徇私情。（据《明史》）",
+  },
+  {
+    id: "ming-14",
+    title: "万历新政",
+    dynasty: "明",
+    year: 1573,
+    importance: 3,
+    description:
+      "张居正任首辅，行考成法核吏治、清丈田亩、行一条鞭法，国库充盈，史称「万历新政」，然身后遭清算。（据《明史》）",
+  },
+  {
+    id: "ming-15",
+    title: "宁远之战",
+    dynasty: "明",
+    year: 1626,
+    description:
+      "袁崇焕坚守宁远，以红夷大炮击退努尔哈赤大军，取得宁远大捷。（据《明史》）",
+  },
+  {
+    id: "ming-16",
+    title: "凌迟袁崇焕",
+    dynasty: "明",
+    year: 1630,
+    description:
+      "袁崇焕力抗后金，遭崇祯帝中反间计，以通敌罪凌迟处死，自毁长城。（据《明史》）",
+  },
+  {
+    id: "ming-17",
+    title: "明朝灭亡",
+    dynasty: "明",
+    year: 1644,
+    importance: 3,
+    description:
+      "李自成大顺军破居庸关、陷北京，崇祯帝自缢煤山，明亡；吴三桂旋引清军入关，天下鼎革。（据《明史》）",
+  },
+  {
+    id: "ming-18",
+    title: "山海关之战",
+    dynasty: "明",
+    year: 1644,
+    description:
+      "李自成招降吴三桂未果，吴三桂引清军入关，李自成于山海关大败。（据《明史》）",
+  },
+  {
+    id: "ming-19",
+    title: "郑成功抗清决裂",
+    dynasty: "明",
+    year: 1646,
+    description:
+      "郑芝龙降清被执北上，郑成功率父旧部继续抗清，父子殊途。（据《明史》）",
+  },
+  {
+    id: "ming-20",
+    title: "郑成功抗清复明",
+    dynasty: "明",
+    year: 1655,
+    description:
+      "郑成功奉南明永历帝正朔，以金厦为基地抗清，后东征收复台湾。（据《明史》）",
+  },
+  // ----- 清 -----
+  {
+    id: "qing-01",
+    title: "努尔哈赤建立后金",
+    dynasty: "清",
+    year: 1616,
+    description:
+      "努尔哈赤统一女真建后金，子皇太极继位后改国号为大清。（据《清史稿》）",
+  },
+  {
+    id: "qing-02",
+    title: "皇太极改国号为清",
+    dynasty: "清",
+    year: 1636,
+    description:
+      "皇太极继承父业，改女真为满洲、改国号为大清，五次入塞伐明。（据《清史稿》）",
+  },
+  {
+    id: "qing-03",
+    title: "松锦之战",
+    dynasty: "清",
+    year: 1641,
+    description:
+      "皇太极重用多尔衮，在松锦之战中大败明军，奠定清军入关基础。（据《清史稿》）",
+  },
+  {
+    id: "qing-04",
+    title: "清军入关定鼎",
+    dynasty: "清",
+    year: 1644,
+    importance: 3,
+    description:
+      "多尔衮率清军入山海关，败李自成于一片石，定鼎北京，迎顺治帝迁都，清遂有天下。（据《清史稿》）",
+  },
+  {
+    id: "qing-05",
+    title: "多尔衮摄政专权",
+    dynasty: "清",
+    year: 1645,
+    description:
+      "多尔衮为顺治帝摄政王独揽大权，死后遭顺治帝清算毁墓鞭尸。（据《清史稿》）",
+  },
+  {
+    id: "qing-06",
+    title: "康熙智擒鳌拜",
+    dynasty: "清",
+    year: 1669,
+    description:
+      "康熙帝年少即位，设计擒获专权大臣鳌拜，亲掌朝政。（据《清史稿》）",
+  },
+  {
+    id: "qing-07",
+    title: "平定三藩",
+    dynasty: "清",
+    year: 1673,
+    description:
+      "吴三桂等三藩叛乱，康熙帝历时八年平定，巩固国家统一。（据《清史稿》）",
+  },
+  {
+    id: "qing-08",
+    title: "康乾盛世",
+    dynasty: "清",
+    year: 1700,
+    importance: 3,
+    description:
+      "康熙平三藩、收台湾、御沙俄，雍正摊丁入亩、改土归流，乾隆时版图极盛、国力鼎盛，史称「康乾盛世」。（据《清史稿》）",
+  },
+  {
+    id: "qing-09",
+    title: "雍正继位改革",
+    dynasty: "清",
+    year: 1722,
+    description:
+      "雍正帝继康熙之位，推行摊丁入亩、火耗归公等改革，充实国库。（据《清史稿》）",
+  },
+  {
+    id: "qing-10",
+    title: "秘密立储",
+    dynasty: "清",
+    year: 1723,
+    description:
+      "雍正帝创立秘密立储制，传位皇四子弘历，为乾隆盛世奠定物质基础。（据《清史稿》）",
+  },
+  {
+    id: "qing-11",
+    title: "和珅专权",
+    dynasty: "清",
+    year: 1780,
+    description:
+      "乾隆帝宠信和珅二十余年，和珅贪腐敛财无数，加速清朝由盛转衰。（据《清史稿》）",
+  },
+  {
+    id: "qing-12",
+    title: "虎门销烟",
+    dynasty: "清",
+    year: 1839,
+    importance: 3,
+    description:
+      "林则徐奉道光帝命赴粤禁烟，于虎门海滩销毁鸦片二百三十余万斤；英人借端启衅，鸦片战争遂起。（据《清史稿》）",
+  },
+  {
+    id: "qing-13",
+    title: "鸦片战争",
+    dynasty: "清",
+    year: 1840,
+    importance: 3,
+    description:
+      "英舰犯粤、陷定海、逼天津，清廷震恐，革林则徐、用琦善议和；《南京条约》割香港、开五口，近代史由此开端。（据《清史稿》）",
+  },
+  {
+    id: "qing-14",
+    title: "太平天国",
+    dynasty: "清",
+    year: 1851,
+    description:
+      "洪秀全建太平天国席卷半壁江山，曾国藩组建湘军历时十四年平定。（据《清史稿》）",
+  },
+  {
+    id: "qing-15",
+    title: "天京事变",
+    dynasty: "清",
+    year: 1856,
+    description:
+      "杨秀清以\"天父下凡\"凌驾洪秀全之上，天京事变中被杀，太平天国由盛转衰。（据《清史稿》）",
+  },
+  {
+    id: "qing-21",
+    title: "辛酉政变",
+    dynasty: "清",
+    year: 1861,
+    description:
+      "慈禧为咸丰帝妃，咸丰死后发动辛酉政变垂帘听政，掌权四十七年。（据《清史稿》）",
+  },
+  {
+    id: "qing-16",
+    title: "平定太平天国",
+    dynasty: "清",
+    year: 1864,
+    description:
+      "曾国藩组建湘军攻克天京，历时十四年平定太平天国，封一等毅勇侯。（据《清史稿》）",
+  },
+  {
+    id: "qing-17",
+    title: "洋务运动",
+    dynasty: "清",
+    year: 1865,
+    description:
+      "曾国藩举荐李鸿章办团练，李鸿章继之以淮军和洋务，推动近代化。（据《清史稿》）",
+  },
+  {
+    id: "qing-18",
+    title: "海防与塞防之争",
+    dynasty: "清",
+    year: 1874,
+    description:
+      "李鸿章主海防重北洋水师，左宗棠主塞防收复新疆，政见相左。（据《清史稿》）",
+  },
+  {
+    id: "qing-19",
+    title: "左宗棠收复新疆",
+    dynasty: "清",
+    year: 1876,
+    description:
+      "左宗棠力主塞防，抬棺西征收复新疆，与李鸿章海防之争为晚清大政争。（据《清史稿》）",
+  },
+  {
+    id: "qing-20",
+    title: "晚清外交",
+    dynasty: "清",
+    year: 1895,
+    description:
+      "李鸿章长期受慈禧太后倚重，代签《马关条约》《辛丑条约》等不平等条约。（据《清史稿》）",
+  },
+  {
+    id: "qing-22",
+    title: "戊戌政变",
+    dynasty: "清",
+    year: 1898,
+    importance: 3,
+    description:
+      "光绪帝行戊戌变法，慈禧太后发动政变，幽光绪于瀛台，捕杀谭嗣同等六君子，新政尽废。（据《清史稿》）",
+  },
+
+
+  // ===== 第 7 批（V0.7.1 隋唐五代精修），34 条 =====
+  // 脱离 docs 关系表，按正史脉络补充隋唐至五代十国初期的核心事件；
+  // 断代级（importance: 3）10 条：科举制创立、开凿大运河、三征高句丽、文成公主入藏、
+  // 唐灭高句丽、两税法推行、黄巢起义、高平之战、后周世宗改革、北汉灭亡。
+  {
+    id: "sui-10",
+    title: "隋朝建立（杨坚代周）",
+    dynasty: "隋",
+    year: 581,
+    description:
+      "北周宣帝崩，外戚杨坚受遗辅政，平定尉迟迥之乱，旋受周静帝禅让，即皇帝位，国号隋，改元开皇。（据《隋书》）",
+  },
+  {
+    id: "sui-11",
+    title: "营建大兴城",
+    dynasty: "隋",
+    year: 582,
+    description:
+      "隋文帝命宇文恺营建新都大兴城，于龙首原南规划宫城、皇城与外郭，仅九月而成，为唐长安城奠定格局。（据《隋书》）",
+  },
+  {
+    id: "sui-12",
+    title: "科举制创立（始设进士科）",
+    dynasty: "隋",
+    year: 605,
+    importance: 3,
+    description:
+      "隋炀帝始建进士科，以试策取士，打破魏晋以来九品中正制的门第垄断，科举取士之制由此确立。（据《隋书》）",
+  },
+  {
+    id: "sui-13",
+    title: "开凿大运河",
+    dynasty: "隋",
+    year: 605,
+    importance: 3,
+    description:
+      "隋炀帝征发民夫开凿通济渠、邗沟、永济渠与江南河，贯通涿郡、洛阳、余杭，形成南北水运大动脉。（据《隋书》）",
+  },
+  {
+    id: "sui-14",
+    title: "三征高句丽",
+    dynasty: "隋",
+    year: 612,
+    importance: 3,
+    description:
+      "隋炀帝三度大举征讨高句丽，动辄发兵百万、民夫倍之，辽东城久攻不下，隋军伤亡惨重，天下骚动。（据《隋书》）",
+  },
+  {
+    id: "sui-15",
+    title: "隋末农民起义",
+    dynasty: "隋",
+    year: 611,
+    description:
+      "王薄于长白山起兵，作《无向辽东浪死歌》，山东、河北群起响应，隋末农民战争由此爆发。（据《隋书》）",
+  },
+  {
+    id: "sui-16",
+    title: "李密投瓦岗",
+    dynasty: "隋",
+    year: 616,
+    description:
+      "李密投奔瓦岗军，说翟让攻取荥阳、开仓赈民，瓦岗军势大振，成为隋末最强义军之一。（据《隋书》）",
+  },
+  {
+    id: "tang-28",
+    title: "玄奘西行",
+    dynasty: "唐",
+    year: 629,
+    description:
+      "玄奘自长安西行求法，历西域、中亚至天竺那烂陀寺，前后十七年，携经六百余部归国，译经一千三百余卷。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-29",
+    title: "文成公主入藏",
+    dynasty: "唐",
+    year: 641,
+    importance: 3,
+    description:
+      "唐太宗以宗室女文成公主和亲吐蕃，松赞干布亲迎于河源；唐蕃自此通好，中原典籍、工艺传入吐蕃。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-30",
+    title: "唐灭高句丽",
+    dynasty: "唐",
+    year: 668,
+    importance: 3,
+    description:
+      "唐高宗遣李勣为辽东道行军大总管，会薛仁贵等攻破平壤，高句丽王出降，国亡；唐设安东都护府。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-31",
+    title: "唐复安西四镇",
+    dynasty: "唐",
+    year: 692,
+    description:
+      "武则天遣王孝杰大破吐蕃，收复安西四镇，移安西都护府于龟兹，唐重掌西域通道。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-32",
+    title: "唐隆政变",
+    dynasty: "唐",
+    year: 710,
+    description:
+      "李隆基联合太平公主起兵诛韦后、安乐公主，拥立相王李旦为帝，武韦之乱告终，李唐皇室复振。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-33",
+    title: "唐玄宗封禅泰山",
+    dynasty: "唐",
+    year: 725,
+    description:
+      "玄宗开元十三年东封泰山，张说为封禅使，百官扈从，刻石纪功，为开元盛世之标志性盛典。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-34",
+    title: "怛罗斯之战",
+    dynasty: "唐",
+    year: 751,
+    description:
+      "安西节度使高仙芝与石国、大食战于怛罗斯，葛逻禄部临阵倒戈，唐军大败；此后唐势力渐退葱岭以西。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-35",
+    title: "鉴真东渡",
+    dynasty: "唐",
+    year: 753,
+    description:
+      "扬州大明寺僧鉴真六次东渡，历十二年方抵日本，传戒律、建唐招提寺，为中日文化交流之典范。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-36",
+    title: "两税法推行",
+    dynasty: "唐",
+    year: 780,
+    importance: 3,
+    description:
+      "宰相杨炎奏行两税法，废租庸调，以户税、地税为主，分夏秋两次征收，中国赋税制度由人丁转向资产。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-37",
+    title: "永贞革新",
+    dynasty: "唐",
+    year: 805,
+    description:
+      "唐顺宗即位，王叔文、王伾等推行罢宫市、抑宦官、削藩镇诸新政，未及百日即为宦官所废，史称「永贞革新」。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-38",
+    title: "元和中兴",
+    dynasty: "唐",
+    year: 806,
+    description:
+      "唐宪宗李纯锐意削藩，用裴度、李愬等平淮西、收淄青，藩镇相继归命，朝廷威望复振，史称「元和中兴」。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-39",
+    title: "李愬雪夜入蔡州",
+    dynasty: "唐",
+    year: 817,
+    description:
+      "唐将李愬趁雪夜奇袭蔡州，擒淮西节度使吴元济，淮西之乱平，为元和中兴的关键一役。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-40",
+    title: "长庆会盟",
+    dynasty: "唐",
+    year: 821,
+    description:
+      "唐与吐蕃会盟于长安西郊，相约「患难相恤，暴掠不作」，立《长庆会盟碑》于拉萨大昭寺前，至今犹存。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-41",
+    title: "甘露之变",
+    dynasty: "唐",
+    year: 835,
+    description:
+      "唐文宗与李训、郑注谋诛宦官，诈称甘露降于金吾杖院，事泄，宦官仇士良等大杀朝臣，文宗自此受制。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-42",
+    title: "会昌灭佛",
+    dynasty: "唐",
+    year: 845,
+    description:
+      "唐武宗采道士赵归真之说，诏毁天下佛寺四千六百余所，勒僧尼还俗二十六万余人，史称「会昌灭佛」。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-43",
+    title: "大中之治",
+    dynasty: "唐",
+    year: 847,
+    description:
+      "唐宣宗李忱即位后察察为明、抑制宦官、收复河湟，政事修举，史称「大中之治」，唐人比之「小太宗」。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-44",
+    title: "黄巢起义",
+    dynasty: "唐",
+    year: 875,
+    importance: 3,
+    description:
+      "黄巢响应王仙芝起兵，转战南北，克洛阳、破潼关，广明元年入长安称帝，国号大齐，唐廷播迁。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-45",
+    title: "黄巢入长安，僖宗奔蜀",
+    dynasty: "唐",
+    year: 881,
+    description:
+      "黄巢据长安，唐僖宗仓皇奔蜀；各镇勤王之师云集，黄巢部将朱温旋降唐，赐名全忠，唐祚日危。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "wudai-13",
+    title: "前蜀建立",
+    dynasty: "五代十国",
+    year: 907,
+    description:
+      "王建据两川称帝，国号蜀，都成都，史称前蜀，为十国中建国最早者之一。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-14",
+    title: "后蜀建立",
+    dynasty: "五代十国",
+    year: 934,
+    description:
+      "后唐西川节度使孟知祥据蜀称帝，国号蜀，史称后蜀，都成都，巴蜀再成一方割据。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-15",
+    title: "南唐建立",
+    dynasty: "五代十国",
+    year: 937,
+    description:
+      "徐知诰受吴禅称帝，国号齐，旋复姓李、改名昪，改国号唐，史称南唐，都金陵，为十国中最强者。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-16",
+    title: "后汉建立",
+    dynasty: "五代十国",
+    year: 947,
+    description:
+      "刘知远于太原称帝，国号汉，旋入汴京，史称后汉；在位不足一年而崩，为五代最短命王朝。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-17",
+    title: "高平之战",
+    dynasty: "五代十国",
+    year: 954,
+    importance: 3,
+    description:
+      "北汉刘崇联辽南下，后周世宗柴荣亲征，于高平大破北汉军，赵匡胤等力战有功，后周军威大振。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-18",
+    title: "后周世宗改革",
+    dynasty: "五代十国",
+    year: 955,
+    importance: 3,
+    description:
+      "周世宗柴荣整军练卒、均田赋、修水利、限佛寺，废寺三万余所，又南征北伐，为北宋统一奠定基业。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-19",
+    title: "后周取淮南",
+    dynasty: "五代十国",
+    year: 956,
+    description:
+      "周世宗三征南唐，赵匡胤等破滁州、扬州，南唐主李璟去帝号、称国主，割江北十四州求和。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-20",
+    title: "吴越纳土归宋",
+    dynasty: "五代十国",
+    year: 978,
+    description:
+      "吴越王钱俶入朝宋廷，纳十三州八十六县于宋，吴越不战而亡，两浙免于兵燹。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-21",
+    title: "北汉灭亡",
+    dynasty: "五代十国",
+    year: 979,
+    importance: 3,
+    description:
+      "宋太宗赵光义亲征北汉，围太原，北汉主刘继元出降，北汉亡；五代十国割据之局至此终结。（据《旧五代史》《新五代史》）",
+  },
+
+
+  // ===== V0.8.2 厚度对齐：西汉（+2 条）=====
+  {
+    id: "xihan-wenjing",
+    title: "文景之治",
+    dynasty: "西汉",
+    year: -180,
+    importance: 3,
+    description:
+      "文帝、景帝轻徭薄赋、与民休息，废肉刑、和匈奴，仓廪充盈，史称文景之治。（据《史记》《汉书》）",
+  },
+  {
+    id: "xihan-tuien",
+    title: "推恩令",
+    dynasty: "西汉",
+    year: -127,
+    description:
+      "武帝采主父偃议，令诸侯王推恩分封子弟，王国自析，诸侯势弱，中央集权益固。（据《史记》《汉书》）",
+  },
+
+  // ===== V0.8.2 厚度对齐：南北朝（+3 条）=====
+  {
+    id: "nanbeichao-13",
+    title: "萧道成代宋建齐",
+    dynasty: "南北朝",
+    year: 479,
+    importance: 3,
+    description:
+      "萧道成平定刘宋宗室内乱，进位相国、封齐王，旋受禅称帝，国号齐，刘宋亡。（据《南齐书》《宋书》）",
+  },
+  {
+    id: "nanbeichao-14",
+    title: "萧衍代齐建梁",
+    dynasty: "南北朝",
+    year: 502,
+    importance: 3,
+    description:
+      "萧衍起兵襄阳，克建康，废齐东昏侯，受禅建梁，改元天监，南齐亡。（据《梁书》《南齐书》）",
+  },
+  {
+    id: "nanbeichao-15",
+    title: "陈霸先代梁建陈",
+    dynasty: "南北朝",
+    year: 557,
+    importance: 3,
+    description:
+      "陈霸先讨平侯景，又败北齐军，进位相国、封陈王，受禅建陈，梁亡。（据《陈书》《梁书》）",
+  },
+
+  // ===== V0.8.2 厚度对齐：隋（+6 条）=====
+  {
+    id: "sui-17",
+    title: "隋定三省六部",
+    dynasty: "隋",
+    year: 583,
+    description:
+      "隋文帝废北周六官，立三省六部，地方罢郡为州，佐官由吏部除授，中央集权之制大备。（据《隋书》）",
+  },
+  {
+    id: "sui-18",
+    title: "废郡置州",
+    dynasty: "隋",
+    year: 583,
+    description:
+      "杨尚希上表请省并郡县，隋废五百余郡，改州郡县为州县二级，冗官大减，行政效率提高。（据《隋书》）",
+  },
+  {
+    id: "sui-19",
+    title: "均田租庸调",
+    dynasty: "隋",
+    year: 584,
+    description:
+      "隋定均田、租庸调之法，丁男受田，轻税薄赋，户口日增，府库充盈，开皇之治由此。（据《隋书》）",
+  },
+  {
+    id: "sui-20",
+    title: "隋征高句丽",
+    dynasty: "隋",
+    year: 598,
+    description:
+      "高句丽婴阳王寇辽西，隋文帝遣汉王杨谅、高颎率三十万军东征，遇疫水之灾，死者什八九。（据《隋书》）",
+  },
+  {
+    id: "sui-21",
+    title: "仁寿宫成",
+    dynasty: "隋",
+    year: 595,
+    description:
+      "杨素督造仁寿宫，役夫死者众，文帝初怒后悦，晚年居此，仁寿四年崩于大宝殿。（据《隋书》）",
+  },
+  {
+    id: "sui-22",
+    title: "裴矩经营西域",
+    dynasty: "隋",
+    year: 609,
+    description:
+      "裴矩撰《西域图记》，引西域诸国入朝，隋于张掖互市，丝绸之路再通，然劳费亦巨。（据《隋书》）",
+  },
+
+  // ===== V0.8.2 厚度对齐：唐（+5 条）=====
+  {
+    id: "tang-46",
+    title: "灭高昌",
+    dynasty: "唐",
+    year: 640,
+    description:
+      "高昌王麴文泰阻西域贡道，太宗遣侯君集伐之，文泰惧而死，子麴智盛降，唐置西州、安西都护府。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-47",
+    title: "灭西突厥",
+    dynasty: "唐",
+    year: 657,
+    description:
+      "苏定方率军西征，于曳咥河大破西突厥，擒沙钵罗可汗阿史那贺鲁，唐疆西至咸海。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-48",
+    title: "白江口之战",
+    dynasty: "唐",
+    year: 663,
+    description:
+      "唐将刘仁轨率水军于白江口大破倭国援军，焚船四百，百济复国无望，倭国自此退出半岛。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-49",
+    title: "遣唐使来朝",
+    dynasty: "唐",
+    year: 717,
+    description:
+      "日本遣唐使屡至长安，吉备真备、阿倍仲麻吕留学习唐制，鉴真东渡传法，东亚文化圈渐成。（据《旧唐书》《新唐书》）",
+  },
+  {
+    id: "tang-50",
+    title: "马嵬驿之变",
+    dynasty: "唐",
+    year: 756,
+    description:
+      "安禄山反，玄宗奔蜀，至马嵬驿禁军哗变，杀杨国忠，迫玄宗缢杨贵妃，太子李亨北走灵武。（据《旧唐书》《资治通鉴》）",
+  },
+
+  // ===== V0.8.2 厚度对齐：五代十国（+7 条）=====
+  {
+    id: "wudai-22",
+    title: "潞州之战",
+    dynasty: "五代十国",
+    year: 908,
+    description:
+      "李克用卒，李存勖继晋王位，亲援潞州，夹寨大破梁军，朱温叹生子当如李亚子。（据《旧五代史》《新五代史》）",
+  },
+  {
+    id: "wudai-23",
+    title: "柏乡之战",
+    dynasty: "五代十国",
+    year: 917,
+    description:
+      "晋军救赵，于柏乡大破后梁精锐，梁军龙骧、神捷尽没，河北诸镇多归晋。（据《旧五代史》）",
+  },
+  {
+    id: "wudai-24",
+    title: "朱友珪弑父",
+    dynasty: "五代十国",
+    year: 912,
+    description:
+      "后梁太祖朱温为子朱友珪所弑，友珪自立；次年朱友贞讨诛友珪，梁室自相残杀，国势日衰。（据《旧五代史》）",
+  },
+  {
+    id: "wudai-25",
+    title: "后唐明宗之治",
+    dynasty: "五代十国",
+    year: 932,
+    description:
+      "明宗李嗣源革除庄宗弊政，罢宦官、减赋税，冯道刊刻九经，人称小康，然藩镇骄横未改。（据《旧五代史》）",
+  },
+  {
+    id: "wudai-26",
+    title: "南唐灭闽",
+    dynasty: "五代十国",
+    year: 945,
+    description:
+      "南唐乘闽室内乱发兵，破建州，闽主王延政降，南唐尽有建、汀、漳、泉，然兵疲民困。（据《新五代史》）",
+  },
+  {
+    id: "wudai-27",
+    title: "后汉内乱",
+    dynasty: "五代十国",
+    year: 950,
+    description:
+      "后汉隐帝诛杨邠、史弘肇，又遣使杀郭威，郭威起兵南下，隐帝死于乱军，后汉遂亡。（据《旧五代史》）",
+  },
+  {
+    id: "wudai-28",
+    title: "南唐灭楚",
+    dynasty: "五代十国",
+    year: 951,
+    description:
+      "南唐乘楚国内乱出兵，马希崇降，南唐取湖南，然将骄卒惰，旋失其地。（据《新五代史》）",
+  },
+
+  // ===== V0.8.2 厚度对齐：北宋（+19 条）=====
+  {
+    id: "beisong-16",
+    title: "高梁河之战",
+    dynasty: "北宋",
+    year: 979,
+    description:
+      "宋太宗灭北汉后乘胜围幽州，辽将耶律休哥、耶律斜轸率军夹击，宋军大溃于高梁河，太宗乘驴车南遁。（据《宋史》《辽史》）",
+  },
+  {
+    id: "beisong-17",
+    title: "雍熙北伐",
+    dynasty: "北宋",
+    year: 986,
+    description:
+      "宋太宗三路北伐，曹彬东路军粮道被断先溃，杨业孤军接应被俘，绝食殉国，宋对辽转取守势。（据《宋史》《辽史》）",
+  },
+  {
+    id: "beisong-18",
+    title: "王小波李顺起义",
+    dynasty: "北宋",
+    year: 993,
+    description:
+      "青城茶农王小波起事，以「吾疾贫富不均」号召，攻占成都建大蜀，旋为宋军所平。（据《宋史》）",
+  },
+  {
+    id: "beisong-19",
+    title: "澶州之战",
+    dynasty: "北宋",
+    year: 1004,
+    description:
+      "辽军深入至澶州，真宗从寇准议亲征，宋军以床子弩射杀萧挞凛，辽势顿挫，遂有澶渊之盟。（据《宋史》《辽史》）",
+  },
+  {
+    id: "beisong-20",
+    title: "仁宗即位·刘太后垂帘",
+    dynasty: "北宋",
+    year: 1022,
+    description:
+      "真宗崩，幼主赵祯即位，刘太后临朝称制十一年，任用丁谓、吕夷简，朝局平稳而外戚宦官渐起。（据《宋史》）",
+  },
+  {
+    id: "beisong-21",
+    title: "范仲淹上《百官图》遭贬",
+    dynasty: "北宋",
+    year: 1036,
+    description:
+      "范仲淹献《百官图》讥吕夷简用人不公，被指朋党贬知饶州，余靖、尹洙、欧阳修等论救亦遭贬。（据《宋史》）",
+  },
+  {
+    id: "beisong-22",
+    title: "包拯权知开封府",
+    dynasty: "北宋",
+    year: 1052,
+    description:
+      "包拯知开封府，执法严明、不避权贵，京师谚曰「关节不到，有阎罗包老」，旋迁御史中丞。（据《宋史》）",
+  },
+  {
+    id: "beisong-23",
+    title: "濮议之争",
+    dynasty: "北宋",
+    year: 1063,
+    description:
+      "英宗即位后议生父濮王尊礼，欧阳修、韩琦主称皇考，司马光、吕诲等力主称皇伯，朝议汹汹逾年乃定。（据《宋史》）",
+  },
+  {
+    id: "beisong-24",
+    title: "王安石二次罢相",
+    dynasty: "北宋",
+    year: 1076,
+    description:
+      "熙宁变法屡遭反对，王安石因天旱与郑侠《流民图》去职，复相后再罢，退居江宁，新法仍行。（据《宋史》）",
+  },
+  {
+    id: "beisong-25",
+    title: "五路伐夏",
+    dynasty: "北宋",
+    year: 1081,
+    description:
+      "神宗采种谔等议五路伐夏，高遵裕、李宪诸军乏粮溃退，灵州城下宋军大败，死者甚众。（据《宋史》《宋史·夏国传》）",
+  },
+  {
+    id: "beisong-26",
+    title: "永乐城之战",
+    dynasty: "北宋",
+    year: 1082,
+    description:
+      "徐禧筑永乐城逼夏，西夏梁太后倾国之兵来攻，城破，徐禧战死，宋军丧师数万，神宗为之不食。（据《宋史》）",
+  },
+  {
+    id: "beisong-27",
+    title: "绍圣绍述",
+    dynasty: "北宋",
+    year: 1094,
+    description:
+      "哲宗亲政，改元绍圣，起用章惇、曾布，尽复熙丰新法，追贬司马光等元祐党人，新旧党争再炽。（据《宋史》）",
+  },
+  {
+    id: "beisong-28",
+    title: "徽宗即位·蔡京入相",
+    dynasty: "北宋",
+    year: 1100,
+    description:
+      "哲宗崩，向太后立赵佶为帝，蔡京以书画交结内廷，屡罢屡起，终专政二十年，靖康之祸实伏于此。（据《宋史》）",
+  },
+  {
+    id: "beisong-29",
+    title: "崇宁党禁·元祐党籍碑",
+    dynasty: "北宋",
+    year: 1102,
+    description:
+      "蔡京擅政，立元祐党人碑，籍司马光、苏轼等百二十人，禁其子弟入仕，士林摧折。（据《宋史》）",
+  },
+  {
+    id: "beisong-30",
+    title: "宋江起义",
+    dynasty: "北宋",
+    year: 1119,
+    description:
+      "宋江以三十六人起于京东，转掠十郡，官军莫能制，海州张叔夜设伏招降之，事平。（据《宋史》）",
+  },
+  {
+    id: "beisong-31",
+    title: "方腊起义",
+    dynasty: "北宋",
+    year: 1120,
+    description:
+      "睦州方腊以摩尼教聚众起事，连陷六州五十二县，童贯率军南下，历半年始平，东南元气大伤。（据《宋史》）",
+  },
+  {
+    id: "beisong-32",
+    title: "金军南下",
+    dynasty: "北宋",
+    year: 1125,
+    description:
+      "金灭辽后借口宋纳张觉，分道南侵，燕山府守将郭药师降金，宋河北屏障尽失。（据《宋史》《金史》）",
+  },
+  {
+    id: "beisong-33",
+    title: "开封保卫战",
+    dynasty: "北宋",
+    year: 1126,
+    description:
+      "金军围汴京，李纲主持城防，屡挫金兵，种师道率西军入援，钦宗却急于议和，罢李纲，城守遂弛。（据《宋史》）",
+  },
+  {
+    id: "beisong-34",
+    title: "靖康之变",
+    dynasty: "北宋",
+    year: 1127,
+    importance: 3,
+    description:
+      "金军再围汴京，城破，徽钦二帝及宗室后妃三千余人被掳北去，北宋灭亡。（据《宋史》《金史》）",
+  },
+
+  // ===== V0.8.2 厚度对齐：南宋（+18 条）=====
+  {
+    id: "nansong-09",
+    title: "南宋建立",
+    dynasty: "南宋",
+    year: 1127,
+    importance: 3,
+    description:
+      "赵构于南京应天府即位，改元建炎，是为高宗；旋南渡扬州、临安，宋室偏安江南之局始成。（据《宋史》）",
+  },
+  {
+    id: "nansong-10",
+    title: "苗刘兵变",
+    dynasty: "南宋",
+    year: 1129,
+    description:
+      "统制苗傅、刘正彦以宦官王渊骤贵激变，逼高宗禅位幼子赵旉，韩世忠、张浚起兵勤王，事旋平。（据《宋史》）",
+  },
+  {
+    id: "nansong-11",
+    title: "富平之战",
+    dynasty: "南宋",
+    year: 1130,
+    description:
+      "川陕宣抚使张浚集五路兵与金军会战富平，诸军不协而败，陕西大部陷金，吴玠退守和尚原。（据《宋史》《金史》）",
+  },
+  {
+    id: "nansong-12",
+    title: "和尚原之战",
+    dynasty: "南宋",
+    year: 1131,
+    description:
+      "吴玠、吴璘扼守和尚原，以劲弩迭射大破金军，兀术身中流矢仅以身免，金人自此不敢窥蜀。（据《宋史》《金史》）",
+  },
+  {
+    id: "nansong-13",
+    title: "岳飞收复襄阳六郡",
+    dynasty: "南宋",
+    year: 1134,
+    description:
+      "岳飞率军渡江，连复襄阳、郢、随、唐、邓、信阳六郡，屯兵鄂州，南宋长江中游防线始固。（据《宋史》）",
+  },
+  {
+    id: "nansong-14",
+    title: "郾城大捷",
+    dynasty: "南宋",
+    year: 1140,
+    importance: 3,
+    description:
+      "岳飞北伐，于郾城以背嵬军破金拐子马，进军朱仙镇；高宗、秦桧急召班师，中原恢复之机遂失。（据《宋史》《金史》）",
+  },
+  {
+    id: "nansong-15",
+    title: "隆兴北伐",
+    dynasty: "南宋",
+    year: 1163,
+    description:
+      "孝宗即位锐意恢复，张浚督李显忠、邵宏渊出师，符离一战诸将不协大溃，北伐遂止。（据《宋史》）",
+  },
+  {
+    id: "nansong-16",
+    title: "隆兴和议",
+    dynasty: "南宋",
+    year: 1164,
+    description:
+      "宋金再和，改君臣为叔侄之国，岁贡改称岁币，减银绢各五万，宋孝宗虽不甘而终受之。（据《宋史》《金史》）",
+  },
+  {
+    id: "nansong-17",
+    title: "鹅湖之会",
+    dynasty: "南宋",
+    year: 1175,
+    description:
+      "吕祖谦邀朱熹、陆九渊会于信州鹅湖寺，论为学之方，朱主道问学、陆主尊德性，理学心学分途。（据《宋史》《陆九渊集》）",
+  },
+  {
+    id: "nansong-18",
+    title: "庆元党禁",
+    dynasty: "南宋",
+    year: 1195,
+    description:
+      "韩侂胄以外戚执政，斥朱熹道学为伪学，籍赵汝愚、朱熹等五十九人，禁其党与，理学遭禁者六年。（据《宋史》）",
+  },
+  {
+    id: "nansong-19",
+    title: "嘉定和议",
+    dynasty: "南宋",
+    year: 1207,
+    description:
+      "开禧北伐失利，史弥远诛韩侂胄函首送金，宋金改伯侄之国，增岁币、输犒军银，再定和局。（据《宋史》《金史》）",
+  },
+  {
+    id: "nansong-20",
+    title: "金宣宗南侵",
+    dynasty: "南宋",
+    year: 1217,
+    description:
+      "金失河北，宣宗欲取偿于宋，遣军分道南侵，宋将赵方、孟宗政力战拒之，宋金相攻数年俱困。（据《宋史》《金史》）",
+  },
+  {
+    id: "nansong-21",
+    title: "联蒙灭金",
+    dynasty: "南宋",
+    year: 1234,
+    importance: 3,
+    description:
+      "宋将孟珙率军与蒙古合围蔡州，金哀宗传位完颜承麟后自缢，金亡；宋蒙遂接壤对峙。（据《宋史》《金史》）",
+  },
+  {
+    id: "nansong-22",
+    title: "钓鱼城之战",
+    dynasty: "南宋",
+    year: 1259,
+    importance: 3,
+    description:
+      "蒙哥亲率大军攻合州钓鱼城，王坚守城力战，蒙哥中炮石死于城下，蒙古诸军北撤，南宋得以苟延。（据《宋史》《元史》）",
+  },
+  {
+    id: "nansong-23",
+    title: "襄樊之战",
+    dynasty: "南宋",
+    year: 1273,
+    importance: 3,
+    description:
+      "元军围襄阳、樊城五年，以回回砲破樊城，守将吕文焕降元，南宋长江上游门户洞开。（据《宋史》《元史》）",
+  },
+  {
+    id: "nansong-24",
+    title: "丁家洲之战",
+    dynasty: "南宋",
+    year: 1275,
+    description:
+      "贾似道督十三万军拒元于丁家洲，孙虎臣先遁，军遂大溃，贾似道被贬杀，临安震动。（据《宋史》《元史》）",
+  },
+  {
+    id: "nansong-25",
+    title: "临安降元",
+    dynasty: "南宋",
+    year: 1276,
+    importance: 3,
+    description:
+      "元军抵临安，谢太后携恭帝赵㬎出降，南宋朝廷覆亡；文天祥、陆秀夫等南走，续图为恢复。（据《宋史》《元史》）",
+  },
+  {
+    id: "nansong-26",
+    title: "文天祥兵败被俘",
+    dynasty: "南宋",
+    year: 1278,
+    importance: 3,
+    description:
+      "文天祥转战江西、广东，于海丰五坡岭兵败被执，囚燕京三年不屈，作《正气歌》，至元十九年就义。（据《宋史》）",
+  },
+
+  // ===== V0.8.2 厚度对齐：辽（+16 条）=====
+  {
+    id: "liao-04",
+    title: "耶律阿保机即可汗位",
+    dynasty: "辽",
+    year: 907,
+    description:
+      "遥辇氏末代可汗死后，耶律阿保机以迭剌部夷离堇继为契丹可汗，连年用兵，诸部渐服。（据《辽史》）",
+  },
+  {
+    id: "liao-05",
+    title: "诸弟之乱",
+    dynasty: "辽",
+    year: 913,
+    description:
+      "阿保机诸弟剌葛、迭剌等屡谋夺位，阿保机三次平乱，焚其辎重，契丹世选之制遂废。（据《辽史》）",
+  },
+  {
+    id: "liao-06",
+    title: "创制契丹文字",
+    dynasty: "辽",
+    year: 920,
+    description:
+      "阿保机命耶律突吕不、耶律鲁不古依汉字增损，制成契丹大字，契丹始有本族文字。（据《辽史》）",
+  },
+  {
+    id: "liao-07",
+    title: "灭渤海国",
+    dynasty: "辽",
+    year: 926,
+    description:
+      "阿保机亲征渤海，破忽汗城，渤海王大諲譔出降，改渤海为东丹国，以长子耶律倍主之。（据《辽史》）",
+  },
+  {
+    id: "liao-08",
+    title: "助石敬瑭灭后唐",
+    dynasty: "辽",
+    year: 936,
+    description:
+      "石敬瑭以割燕云十六州、称儿皇帝为条件求援，耶律德光率军南下，败后唐军，立石敬瑭为晋帝。（据《辽史》）",
+  },
+  {
+    id: "liao-09",
+    title: "述律平之乱",
+    dynasty: "辽",
+    year: 953,
+    description:
+      "辽世宗遇弑，述律平欲立幼子耶律李胡，与耶律璟争位，兵败被幽，辽室宗亲之乱乃定。（据《辽史》）",
+  },
+  {
+    id: "liao-10",
+    title: "辽穆宗暴政",
+    dynasty: "辽",
+    year: 969,
+    description:
+      "辽穆宗耶律璟嗜酒游猎、滥杀近侍，号「睡王」，终为近侍所弑，辽政日衰。（据《辽史》）",
+  },
+  {
+    id: "liao-11",
+    title: "辽景宗崩·圣宗即位",
+    dynasty: "辽",
+    year: 982,
+    description:
+      "景宗崩，圣宗年幼即位，母萧绰（承天后）摄政，委韩德让以事，辽国势复振。（据《辽史》）",
+  },
+  {
+    id: "liao-12",
+    title: "辽圣宗改制",
+    dynasty: "辽",
+    year: 1009,
+    description:
+      "圣宗与萧太后行汉制，改部族为部，定赋税、兴科举，辽境内汉、渤海、契丹之民渐安。（据《辽史》）",
+  },
+  {
+    id: "liao-13",
+    title: "辽兴宗即位·萧耨斤之乱",
+    dynasty: "辽",
+    year: 1031,
+    description:
+      "圣宗崩，兴宗即位，生母萧耨斤诬害齐天后，专权树党，兴宗寻废其太后之位，幽于庆州。（据《辽史》）",
+  },
+  {
+    id: "liao-14",
+    title: "辽夏战争",
+    dynasty: "辽",
+    year: 1044,
+    description:
+      "西夏屡败宋军，辽兴宗亲征西夏，于河曲之战先胜后败，辽夏议和，西夏称臣纳贡如旧。（据《辽史》《宋史》）",
+  },
+  {
+    id: "liao-15",
+    title: "滦河之变",
+    dynasty: "辽",
+    year: 1063,
+    description:
+      "辽道宗猎于滦河，皇太叔耶律重元父子举兵夺位，南院枢密使耶律乙辛等讨平之，辽室再乱。（据《辽史》）",
+  },
+  {
+    id: "liao-16",
+    title: "辽宋划界",
+    dynasty: "辽",
+    year: 1075,
+    description:
+      "辽以宋人侵耕界河为辞遣使争地，宋遣沈括往议，据旧图力争，终以黄嵬山为界，宋失地数百里。（据《宋史》《辽史》）",
+  },
+  {
+    id: "liao-17",
+    title: "宁江州之战",
+    dynasty: "辽",
+    year: 1114,
+    description:
+      "完颜阿骨打率女真诸部反辽，先攻宁江州，辽将萧嗣先率军败于出河店，辽之防线遂溃。（据《辽史》《金史》）",
+  },
+  {
+    id: "liao-18",
+    title: "天祚帝西逃",
+    dynasty: "辽",
+    year: 1120,
+    description:
+      "金军陷上京、中京，辽天祚帝弃燕京西走夹山，耶律大石、萧德妃等拥立耶律淳守燕，辽室分崩。（据《辽史》《金史》）",
+  },
+  {
+    id: "liao-19",
+    title: "耶律大石西迁",
+    dynasty: "辽",
+    year: 1124,
+    description:
+      "大石随天祚帝败亡后率部西走，于可敦城会诸部，后建西辽于中亚，辽祚复延八十余年。（据《辽史》）",
+  },
+
+  // ===== V0.8.2 厚度对齐：西夏（+10 条）=====
+  {
+    id: "xixia-03",
+    title: "李继迁攻取灵州",
+    dynasty: "西夏",
+    year: 1002,
+    description:
+      "党项首领李继迁屡扰宋边，攻陷灵州，改称西平府，奠定党项割据河套之基。（据《宋史·夏国传》《辽史》）",
+  },
+  {
+    id: "xixia-04",
+    title: "李元昊继位",
+    dynasty: "西夏",
+    year: 1032,
+    description:
+      "李德明卒，子元昊继位，废唐宋赐姓，改姓嵬名，蓄发易服，立官制、创文字，图建大夏。（据《宋史·夏国传》）",
+  },
+  {
+    id: "xixia-05",
+    title: "创制西夏文",
+    dynasty: "西夏",
+    year: 1036,
+    description:
+      "元昊命野利仁荣仿汉字创制西夏文，凡六千余字，颁行境内，用以译经、立学校。（据《宋史·夏国传》）",
+  },
+  {
+    id: "xixia-06",
+    title: "三川口之战",
+    dynasty: "西夏",
+    year: 1040,
+    description:
+      "元昊伏兵三川口，大败宋将刘平、石元孙，宋西北防线震动，遂有庆历增币之议。（据《宋史·夏国传》）",
+  },
+  {
+    id: "xixia-07",
+    title: "好水川之战",
+    dynasty: "西夏",
+    year: 1041,
+    description:
+      "元昊诱宋军入好水川，任福中伏战死，宋军大败，范仲淹、韩琦主守，宋夏战局渐成相持。（据《宋史·夏国传》）",
+  },
+  {
+    id: "xixia-08",
+    title: "庆历和议",
+    dynasty: "西夏",
+    year: 1044,
+    description:
+      "宋夏议和，元昊去帝号、称夏国主，宋岁赐银绢茶彩，重开榷场，西北得二十年之安。（据《宋史·夏国传》《续资治通鉴长编》）",
+  },
+  {
+    id: "xixia-09",
+    title: "灵州之战",
+    dynasty: "西夏",
+    year: 1081,
+    description:
+      "宋五路伐夏，西夏梁太后坚壁清野，宋军围灵州十八日不克，粮尽溃败，死者十余万。（据《宋史·夏国传》）",
+  },
+  {
+    id: "xixia-10",
+    title: "西夏联辽抗金",
+    dynasty: "西夏",
+    year: 1114,
+    description:
+      "金兴辽亡之际，夏崇宗援辽抗金，兵败后向金称臣，以联姻换得保全，夏祚得延。（据《宋史·夏国传》《金史》）",
+  },
+  {
+    id: "xixia-11",
+    title: "蒙古围中兴府",
+    dynasty: "西夏",
+    year: 1209,
+    description:
+      "成吉思汗两度攻夏，引黄河水灌中兴府，堤决反淹蒙军，夏襄宗纳女请和，西夏元气大伤。（据《元史》《宋史·夏国传》）",
+  },
+  {
+    id: "xixia-12",
+    title: "西夏灭亡",
+    dynasty: "西夏",
+    year: 1227,
+    description:
+      "蒙古灭夏之战，末帝李睍出降被杀，中兴府屠戮殆尽，立国近二百年之西夏亡。（据《元史》《宋史·夏国传》）",
+  },
+
+  // ===== V0.8.2 厚度对齐：金（+16 条）=====
+  {
+    id: "jin-04",
+    title: "完颜阿骨打建金",
+    dynasty: "金",
+    year: 1115,
+    importance: 3,
+    description:
+      "阿骨打于会宁称帝，国号大金，建元收国，创猛安谋克制，女真由部落联盟转为王朝。（据《金史》）",
+  },
+  {
+    id: "jin-05",
+    title: "海陵王迁都燕京",
+    dynasty: "金",
+    year: 1153,
+    description:
+      "完颜亮弑熙宗夺位后，迁都燕京，改称中都，行汉制、定官仪，金政治中心由东北南移。（据《金史》）",
+  },
+  {
+    id: "jin-06",
+    title: "金军第一次南下",
+    dynasty: "金",
+    year: 1126,
+    description:
+      "金以宋背盟为辞，分东西两路南下，完颜宗望围汴京，宋割三镇、纳质请和，金军暂退。（据《金史》《宋史》）",
+  },
+  {
+    id: "jin-07",
+    title: "金立张邦昌",
+    dynasty: "金",
+    year: 1127,
+    description:
+      "金灭北宋后，立张邦昌为楚帝以统中原，邦昌旋还政康王，伪楚仅三十三日而废。（据《金史》《宋史》）",
+  },
+  {
+    id: "jin-08",
+    title: "金立刘豫",
+    dynasty: "金",
+    year: 1130,
+    description:
+      "金册刘豫为齐帝，都大名，辖河南陕西，与宋对峙八年，后因屡败被废。（据《金史》《宋史》）",
+  },
+  {
+    id: "jin-09",
+    title: "世宗即位·大定之治",
+    dynasty: "金",
+    year: 1161,
+    description:
+      "完颜雍于辽阳称帝，改元大定，定都中都，与宋议和，轻徭薄赋，金国号称「小尧舜」之治。（据《金史》）",
+  },
+  {
+    id: "jin-10",
+    title: "金章宗崩·卫绍王立",
+    dynasty: "金",
+    year: 1208,
+    description:
+      "章宗无子而崩，卫绍王完颜永济即位，蒙古崛起南下，金军屡败，中都戒严。（据《金史》）",
+  },
+  {
+    id: "jin-11",
+    title: "野狐岭之战",
+    dynasty: "金",
+    year: 1211,
+    description:
+      "成吉思汗率蒙古军攻金，于野狐岭大破完颜承裕四十万军，金精锐尽丧，河北震动。（据《金史》《元史》）",
+  },
+  {
+    id: "jin-12",
+    title: "金宣宗南迁",
+    dynasty: "金",
+    year: 1214,
+    description:
+      "蒙古围中都，金宣宗纳币请和，迁都汴京，河北豪强蜂起，金对北方失控。（据《金史》《元史》）",
+  },
+  {
+    id: "jin-13",
+    title: "中都陷落",
+    dynasty: "金",
+    year: 1215,
+    description:
+      "蒙古军破中都，金室宗庙焚毁，宣宗在汴京苟安，金亡之局已定。（据《金史》《元史》）",
+  },
+  {
+    id: "jin-14",
+    title: "金哀宗即位",
+    dynasty: "金",
+    year: 1224,
+    description:
+      "金哀宗完颜守绪即位，罢冗官、释俘虏，力图振作，然三面受敌，国势难回。（据《金史》）",
+  },
+  {
+    id: "jin-15",
+    title: "三峰山之战",
+    dynasty: "金",
+    year: 1232,
+    description:
+      "蒙古拖雷假道宋境迂回，于三峰山大破金军主力，完颜合达、移剌蒲阿战死，金仅余汴、蔡。（据《金史》《元史》）",
+  },
+  {
+    id: "jin-16",
+    title: "汴京被围·崔立之变",
+    dynasty: "金",
+    year: 1232,
+    description:
+      "蒙古围汴京，金哀宗东走蔡州，西面元帅崔立以城降蒙，金室后妃宗属尽没。（据《金史》）",
+  },
+  {
+    id: "jin-17",
+    title: "胡沙虎政变",
+    dynasty: "金",
+    year: 1213,
+    description:
+      "西京留守纥石烈胡沙虎举兵入中都，弑卫绍王，拥立完颜珣为帝，金室自相残杀，国势愈危。（据《金史》）",
+  },
+  {
+    id: "jin-18",
+    title: "金军搜山检海",
+    dynasty: "金",
+    year: 1129,
+    description:
+      "完颜宗弼率金军渡江追击高宗，入建康、临安，高宗航海避之，金军搜山检海而还。（据《金史》《宋史》）",
+  },
+  {
+    id: "jin-19",
+    title: "顺昌之战",
+    dynasty: "金",
+    year: 1140,
+    description:
+      "金兀术毁约南侵，宋将刘锜守顺昌，以逸待劳大破金军精锐，兀术退保汴京，宋军士气大振。（据《金史》《宋史》）",
+  },
+
+  // ===== V0.8.2 厚度对齐：元（+28 条）=====
+  {
+    id: "yuan-11",
+    title: "拔都西征",
+    dynasty: "元",
+    year: 1235,
+    description:
+      "蒙古窝阔台遣拔都、速不台西征，破钦察、斡罗思诸国，兵锋及东欧，建钦察汗国，欧洲震动。（据《元史》）",
+  },
+  {
+    id: "yuan-12",
+    title: "窝阔台崩·乃马真称制",
+    dynasty: "元",
+    year: 1241,
+    description:
+      "窝阔台崩，乃马真后称制，宠信奥都剌合蛮，政事多乖；贵由继位后旋崩，蒙古汗位之争起。（据《元史》）",
+  },
+  {
+    id: "yuan-13",
+    title: "凉州会盟",
+    dynasty: "元",
+    year: 1247,
+    description:
+      "蒙古阔端与吐蕃萨迦班智达会于凉州，议定归附，吐蕃尽入蒙古版图，八思巴随行入朝。（据《元史》）",
+  },
+  {
+    id: "yuan-14",
+    title: "蒙哥即位",
+    dynasty: "元",
+    year: 1251,
+    description:
+      "贵由崩后，拔都推蒙哥即位，窝阔台系失势，蒙古汗位由窝阔台系转入拖雷系。（据《元史》）",
+  },
+  {
+    id: "yuan-15",
+    title: "忽必烈平大理",
+    dynasty: "元",
+    year: 1253,
+    description:
+      "忽必烈率军远征大理，渡金沙江，破大理城，段兴智降，云南入蒙古版图，包抄南宋之局成。（据《元史》）",
+  },
+  {
+    id: "yuan-16",
+    title: "旭烈兀西征",
+    dynasty: "元",
+    year: 1258,
+    description:
+      "旭烈兀率西征军破巴格达，灭阿拔斯王朝，又陷叙利亚，建伊儿汗国，伊斯兰世界震动。（据《元史》）",
+  },
+  {
+    id: "yuan-17",
+    title: "忽必烈即位·阿里不哥争位",
+    dynasty: "元",
+    year: 1260,
+    description:
+      "蒙哥死于钓鱼城，忽必烈北返争位，与幼弟阿里不哥对峙，郝经上《班师议》，汗位之争遂起。（据《元史》）",
+  },
+  {
+    id: "yuan-18",
+    title: "李璮之乱",
+    dynasty: "元",
+    year: 1262,
+    description:
+      "山东世侯李璮举兵反，忽必烈遣史天泽讨之，璮败死，世侯兵权尽削，地方之制归一。（据《元史》）",
+  },
+  {
+    id: "yuan-19",
+    title: "阿里不哥败降",
+    dynasty: "元",
+    year: 1264,
+    description:
+      "阿里不哥粮尽势穷，向忽必烈请降，蒙古汗位之争终结，忽必烈建元之基始固。（据《元史》）",
+  },
+  {
+    id: "yuan-20",
+    title: "元军征日",
+    dynasty: "元",
+    year: 1274,
+    description:
+      "忽必烈遣忻都、刘复亨征日本，遭台风，战船覆没，无功而还，日本史称文永之役。（据《元史》）",
+  },
+  {
+    id: "yuan-21",
+    title: "郭守敬修《授时历》",
+    dynasty: "元",
+    year: 1280,
+    description:
+      "郭守敬、王恂等奉诏改历，创简仪、高表，测定回归年，编制《授时历》，精度冠于当时。（据《元史》）",
+  },
+  {
+    id: "yuan-22",
+    title: "弘安之役",
+    dynasty: "元",
+    year: 1281,
+    description:
+      "元再征日本，范文虎、忻都率十四万军，遇台风覆没，生还者无几，日本史称弘安之役。（据《元史》）",
+  },
+  {
+    id: "yuan-23",
+    title: "元征占城",
+    dynasty: "元",
+    year: 1283,
+    description:
+      "元遣唆都征占城，遭占城王抵抗，久战不克，元军损失惨重，南洋用兵受挫。（据《元史》）",
+  },
+  {
+    id: "yuan-24",
+    title: "元征安南",
+    dynasty: "元",
+    year: 1285,
+    description:
+      "元以陈兴道拒命，遣镇南王脱欢征安南，三易主帅，屡遭伏击，终无功而还。（据《元史》）",
+  },
+  {
+    id: "yuan-25",
+    title: "桑哥理财",
+    dynasty: "元",
+    year: 1287,
+    description:
+      "忽必烈用桑哥理财，行至元钞法、钩考钱谷，国用虽足而民怨沸腾，桑哥终以罪诛。（据《元史》）",
+  },
+  {
+    id: "yuan-26",
+    title: "杨琏真迦盗宋陵",
+    dynasty: "元",
+    year: 1285,
+    description:
+      "杨琏真迦以江南释教都总统之权，盗掘南宋诸陵，掠其珍宝，宋帝后遗骨弃于草莽，人神共愤。（据《元史》）",
+  },
+  {
+    id: "yuan-27",
+    title: "忽必烈崩·铁穆耳即位",
+    dynasty: "元",
+    year: 1294,
+    description:
+      "忽必烈崩于大都，铁穆耳即位，是为成宗，守成之政，罢征安南日本，国用以纾。（据《元史》）",
+  },
+  {
+    id: "yuan-28",
+    title: "武仁授受",
+    dynasty: "元",
+    year: 1307,
+    description:
+      "成宗崩，海山与爱育黎拔力八达兄弟定策，海山即位为武宗，立弟为皇太子，约兄终弟及。（据《元史》）",
+  },
+  {
+    id: "yuan-29",
+    title: "延祐复科",
+    dynasty: "元",
+    year: 1313,
+    description:
+      "仁宗用李孟议，恢复科举，定经义取士之制，蒙古、色目与汉人分榜，延祐首科得张养浩等。（据《元史》）",
+  },
+  {
+    id: "yuan-30",
+    title: "南坡之变",
+    dynasty: "元",
+    year: 1323,
+    description:
+      "英宗与丞相拜住行新政，触怒权贵，铁失等弑英宗于南坡，泰定帝即位，新政尽废。（据《元史》）",
+  },
+  {
+    id: "yuan-31",
+    title: "天历之变",
+    dynasty: "元",
+    year: 1328,
+    description:
+      "泰定帝崩，燕铁木儿拥立文宗，与上都诸王两都之战，文宗让位明宗，明宗旋暴崩，文宗复位。（据《元史》）",
+  },
+  {
+    id: "yuan-32",
+    title: "奎章阁·修经世大典",
+    dynasty: "元",
+    year: 1329,
+    description:
+      "文宗立奎章阁学士院，命虞集等修《经世大典》，元之一代典章始有总汇。（据《元史》）",
+  },
+  {
+    id: "yuan-33",
+    title: "伯颜专权",
+    dynasty: "元",
+    year: 1333,
+    description:
+      "顺帝即位，伯颜以右丞相专权，罢科举、禁汉人习武，其势熏天，终为脱脱所逐。（据《元史》）",
+  },
+  {
+    id: "yuan-34",
+    title: "脱脱更化",
+    dynasty: "元",
+    year: 1340,
+    description:
+      "脱脱逐伯颜后更化，复科举、修三史、开言路，时称「脱脱更化」，然元政积弊难返。（据《元史》）",
+  },
+  {
+    id: "yuan-35",
+    title: "红巾军起义",
+    dynasty: "元",
+    year: 1351,
+    importance: 3,
+    description:
+      "韩山童、刘福通以「石人一只眼」倡言，红巾军起于颍州，江淮响应，元末大乱由此始。（据《元史》《明史》）",
+  },
+  {
+    id: "yuan-36",
+    title: "朱元璋投郭子兴",
+    dynasty: "元",
+    year: 1352,
+    description:
+      "朱元璋入郭子兴军，骁勇得众，娶马氏，渐领其部，汤和等从之，濠泗群雄始归朱氏。（据《明史》）",
+  },
+  {
+    id: "yuan-37",
+    title: "脱脱征高邮",
+    dynasty: "元",
+    year: 1354,
+    description:
+      "元遣脱脱征高邮张士诚，大军围城，功垂成而朝中倾轧，诏夺脱脱兵权，元军大溃，元亡遂不可挽。（据《元史》）",
+  },
+  {
+    id: "yuan-38",
+    title: "刘福通迎韩林儿",
+    dynasty: "元",
+    year: 1355,
+    description:
+      "刘福通迎韩林儿至亳州，称小明王，国号宋，红巾军奉其正朔，北方义军势盛。（据《明史》《元史》）",
+  },
+
+  // ===== V0.8.2 厚度对齐：明（+21 条）=====
+  {
+    id: "ming-21",
+    title: "徐达北伐·元亡",
+    dynasty: "明",
+    year: 1368,
+    importance: 3,
+    description:
+      "朱元璋命徐达、常遇春北伐，克大都，元顺帝北走上都，元朝灭亡，明承正统。（据《明史》《元史》）",
+  },
+  {
+    id: "ming-22",
+    title: "胡惟庸案",
+    dynasty: "明",
+    year: 1380,
+    description:
+      "丞相胡惟庸以谋反罪被诛，株连三万余人，朱元璋遂废中书省与丞相，六部直隶皇帝。（据《明史》）",
+  },
+  {
+    id: "ming-23",
+    title: "平定云南",
+    dynasty: "明",
+    year: 1382,
+    description:
+      "傅友德、蓝玉、沐英率军平云南，元梁王把匝剌瓦尔密自尽，明设布政使司，沐氏世镇云南。（据《明史》）",
+  },
+  {
+    id: "ming-24",
+    title: "蓝玉案",
+    dynasty: "明",
+    year: 1393,
+    description:
+      "凉国公蓝玉以谋反罪被诛，牵连一万五千人，开国功臣殆尽，史称「蓝玉案」。（据《明史》）",
+  },
+  {
+    id: "ming-25",
+    title: "壬午殉难",
+    dynasty: "明",
+    year: 1402,
+    description:
+      "靖难后朱棣即位，方孝孺拒草诏，被诛十族，齐泰、黄子澄等建文旧臣多殉难，史称壬午殉难。（据《明史》）",
+  },
+  {
+    id: "ming-26",
+    title: "朱棣首次北征",
+    dynasty: "明",
+    year: 1410,
+    description:
+      "朱棣亲征漠北，败鞑靼可汗本雅失里于斡难河，又破阿鲁台，设奴儿干都司，北疆暂安。（据《明史》）",
+  },
+  {
+    id: "ming-27",
+    title: "迁都北京",
+    dynasty: "明",
+    year: 1421,
+    description:
+      "永乐帝下诏迁都北京，营建紫禁城，设内阁、置东厂，南北两京之制成。（据《明史》）",
+  },
+  {
+    id: "ming-28",
+    title: "土木堡之变",
+    dynasty: "明",
+    year: 1449,
+    importance: 3,
+    description:
+      "英宗听信王振亲征瓦剌，于土木堡被也先围困，二十万军溃，英宗被俘，王振死于乱军。（据《明史》）",
+  },
+  {
+    id: "ming-29",
+    title: "北京保卫战",
+    dynasty: "明",
+    year: 1449,
+    importance: 3,
+    description:
+      "英宗被俘，京师震动，于谦拥立郕王为景帝，督军守北京，列阵九门，击退瓦剌，社稷转危为安。（据《明史》）",
+  },
+  {
+    id: "ming-30",
+    title: "夺门之变",
+    dynasty: "明",
+    year: 1457,
+    description:
+      "景帝病重，石亨、徐有贞、曹吉祥拥英宗复辟，废景帝，杀于谦、王文，史称夺门之变。（据《明史》）",
+  },
+  {
+    id: "ming-31",
+    title: "刘瑾专权",
+    dynasty: "明",
+    year: 1506,
+    description:
+      "武宗即位，宦官刘瑾掌司礼监，设内行厂，专权乱政，正德五年以谋反罪凌迟处死。（据《明史》）",
+  },
+  {
+    id: "ming-32",
+    title: "大礼议",
+    dynasty: "明",
+    year: 1521,
+    description:
+      "世宗以藩王入继大统，欲尊生父兴献王为皇考，杨廷和等力争，廷杖群臣，终定大礼，皇权益张。（据《明史》）",
+  },
+  {
+    id: "ming-33",
+    title: "庚戌之变",
+    dynasty: "明",
+    year: 1550,
+    description:
+      "俺答汗率蒙古军破古北口，逼北京，焚掠八日而去，明廷震恐，此后议开马市。（据《明史》）",
+  },
+  {
+    id: "ming-34",
+    title: "台州大捷",
+    dynasty: "明",
+    year: 1561,
+    description:
+      "戚继光募义乌兵，创鸳鸯阵，于台州九战九捷，浙东倭患渐平，戚家军名震天下。（据《明史》）",
+  },
+  {
+    id: "ming-35",
+    title: "俺答封贡",
+    dynasty: "明",
+    year: 1571,
+    description:
+      "明封俺答为顺义王，开大同、宣府马市，蒙古贡市相安，北边数十年无大战。（据《明史》）",
+  },
+  {
+    id: "ming-36",
+    title: "万历三大征",
+    dynasty: "明",
+    year: 1592,
+    importance: 3,
+    description:
+      "日本丰臣秀吉侵朝鲜，明遣李如松、邓子龙援朝，经平壤、碧蹄馆、露梁海战，历七年始平。（据《明史》）",
+  },
+  {
+    id: "ming-37",
+    title: "播州之役",
+    dynasty: "明",
+    year: 1600,
+    description:
+      "播州杨应龙叛，李化龙督八路大军进剿，历百余日平之，改土归流，设遵义、平越二府。（据《明史》）",
+  },
+  {
+    id: "ming-38",
+    title: "萨尔浒之战",
+    dynasty: "明",
+    year: 1619,
+    importance: 3,
+    description:
+      "努尔哈赤以「七大恨」誓师，于萨尔浒大破杨镐四路明军，杜松、刘綎战死，辽东攻守易势。（据《明史》《清史稿》）",
+  },
+  {
+    id: "ming-39",
+    title: "广宁之战",
+    dynasty: "明",
+    year: 1622,
+    description:
+      "努尔哈赤攻广宁，明巡抚王化贞、经略熊廷弼不和，大军溃退，王化贞弃城走，辽东尽失。（据《明史》）",
+  },
+  {
+    id: "ming-40",
+    title: "己巳之变",
+    dynasty: "明",
+    year: 1629,
+    description:
+      "皇太极绕道蒙古入塞，兵临北京，袁崇焕千里回援，崇祯中反间计下狱，次年磔死。（据《明史》《清史稿》）",
+  },
+  {
+    id: "ming-41",
+    title: "利玛窦入京",
+    dynasty: "明",
+    year: 1601,
+    description:
+      "利玛窦入京献自鸣钟、坤舆万国全图，与徐光启合译《几何原本》，西学东渐由此大开。（据《明史》）",
+  },
+
+  // ===== V0.8.2 厚度对齐：清（+23 条）=====
+  {
+    id: "qing-23",
+    title: "李定国抗清",
+    dynasty: "清",
+    year: 1652,
+    description:
+      "李定国率大西军余部联南明抗清，桂林之战逼死孔有德，衡州之战阵斩尼堪，两蹶名王，天下震动。（据《清史稿》）",
+  },
+  {
+    id: "qing-24",
+    title: "郑成功北伐南京",
+    dynasty: "清",
+    year: 1659,
+    description:
+      "郑成功、张煌言率水师入长江，克镇江、围南京，因轻敌中缓兵之计而败，退回厦门。（据《清史稿》）",
+  },
+  {
+    id: "qing-25",
+    title: "郑成功收复台湾",
+    dynasty: "清",
+    year: 1661,
+    description:
+      "郑成功渡海攻台湾，围热兰遮城九月，荷兰总督揆一降，台湾复归中国，郑氏据台抗清。（据《清史稿》）",
+  },
+  {
+    id: "qing-26",
+    title: "顺治崩·康熙即位",
+    dynasty: "清",
+    year: 1661,
+    description:
+      "顺治帝崩，玄烨八岁即位，索尼、苏克萨哈、遏必隆、鳌拜四大臣辅政，鳌拜渐专权。（据《清史稿》）",
+  },
+  {
+    id: "qing-27",
+    title: "收复台湾",
+    dynasty: "清",
+    year: 1683,
+    importance: 3,
+    description:
+      "施琅率水师攻澎湖，大败刘国轩，郑克塽奉表归降，台湾设府置县，隶福建省。（据《清史稿》）",
+  },
+  {
+    id: "qing-28",
+    title: "雅克萨之战",
+    dynasty: "清",
+    year: 1685,
+    description:
+      "俄军据雅克萨，康熙帝遣萨布素等围攻，俄将托尔布津战死，清军毁城而还，边界之议始起。（据《清史稿》）",
+  },
+  {
+    id: "qing-29",
+    title: "尼布楚条约",
+    dynasty: "清",
+    year: 1689,
+    description:
+      "中俄索额图、戈洛文会于尼布楚，订《尼布楚条约》，以外兴安岭为界，中国首次与外国订平等界约。（据《清史稿》）",
+  },
+  {
+    id: "qing-30",
+    title: "乌兰布通之战",
+    dynasty: "清",
+    year: 1690,
+    description:
+      "噶尔丹率准噶尔军东侵，康熙帝亲征，于乌兰布通之战破其驼城，噶尔丹败走漠北。（据《清史稿》）",
+  },
+  {
+    id: "qing-31",
+    title: "昭莫多之战",
+    dynasty: "清",
+    year: 1696,
+    description:
+      "康熙帝再征噶尔丹，费扬古于昭莫多设伏大破之，噶尔丹众叛亲离，次年自尽，漠北归附。（据《清史稿》）",
+  },
+  {
+    id: "qing-32",
+    title: "驱准保藏",
+    dynasty: "清",
+    year: 1720,
+    description:
+      "准噶尔策妄阿拉布坦据拉萨，康熙帝遣允禵、岳钟琪等入藏，逐准军，册立达赖喇嘛，西藏内属。（据《清史稿》）",
+  },
+  {
+    id: "qing-33",
+    title: "改土归流",
+    dynasty: "清",
+    year: 1726,
+    description:
+      "雍正帝用鄂尔泰议，于西南废土司、设流官，改土归流，苗疆渐定，中央号令直达边陲。（据《清史稿》）",
+  },
+  {
+    id: "qing-34",
+    title: "平定罗卜藏丹津",
+    dynasty: "清",
+    year: 1724,
+    description:
+      "青海罗卜藏丹津叛，年羹尧、岳钟琪率军进剿，年羹尧奇袭其帐，罗卜藏丹津遁走准噶尔。（据《清史稿》）",
+  },
+  {
+    id: "qing-35",
+    title: "平定准噶尔",
+    dynasty: "清",
+    year: 1755,
+    description:
+      "乾隆帝乘准噶尔内乱遣军西征，俘达瓦齐，阿睦尔撒纳旋叛，清军再定伊犁，准部遂平。（据《清史稿》）",
+  },
+  {
+    id: "qing-36",
+    title: "平定大小和卓",
+    dynasty: "清",
+    year: 1759,
+    description:
+      "大小和卓据回疆叛，兆惠、富德率军征讨，历两年平之，设伊犁将军，新疆尽入版图。（据《清史稿》）",
+  },
+  {
+    id: "qing-37",
+    title: "马戛尔尼使华",
+    dynasty: "清",
+    year: 1793,
+    description:
+      "英使马戛尔尼来华贺寿，请增开口岸、设使馆，乾隆帝以天朝体制峻拒，中西交恶之端已见。（据《清史稿》）",
+  },
+  {
+    id: "qing-38",
+    title: "白莲教起义",
+    dynasty: "清",
+    year: 1796,
+    description:
+      "白莲教以「官逼民反」起于荆襄，波及川陕楚，嘉庆帝调兵十年始平，耗银二亿，清廷由盛转衰。（据《清史稿》）",
+  },
+  {
+    id: "qing-39",
+    title: "南京条约",
+    dynasty: "清",
+    year: 1842,
+    importance: 3,
+    description:
+      "清廷与英订《南京条约》，割香港、赔款二千一百万银元、开五口通商、协定关税，国门洞开。（据《清史稿》）",
+  },
+  {
+    id: "qing-40",
+    title: "太平军定都天京",
+    dynasty: "清",
+    year: 1853,
+    description:
+      "太平军破南京，定都天京，旋北伐西征，曾国藩办团练练湘军，与太平军鏖战长江流域。（据《清史稿》）",
+  },
+  {
+    id: "qing-41",
+    title: "英法联军入京",
+    dynasty: "清",
+    year: 1860,
+    description:
+      "英法联军破大沽、入北京，焚圆明园，咸丰帝走热河，清廷订《北京条约》，割地赔款。（据《清史稿》）",
+  },
+  {
+    id: "qing-42",
+    title: "甲午战争",
+    dynasty: "清",
+    year: 1894,
+    importance: 3,
+    description:
+      "中日因朝鲜事开战，黄海海战北洋水师失利，威海卫之役全军覆没，丁汝昌自尽，清廷震动。（据《清史稿》）",
+  },
+  {
+    id: "qing-43",
+    title: "马关条约",
+    dynasty: "清",
+    year: 1895,
+    importance: 3,
+    description:
+      "李鸿章赴日议和，订《马关条约》，割台湾、澎湖，赔款二亿两，近代民族危机空前深重。（据《清史稿》）",
+  },
+  {
+    id: "qing-44",
+    title: "辛亥革命",
+    dynasty: "清",
+    year: 1911,
+    importance: 3,
+    description:
+      "武昌起义爆发，各省响应，孙中山就任临时大总统，袁世凯逼清帝退位，两千年帝制终结。（据《清史稿》）",
+  },
+  {
+    id: "qing-45",
+    title: "清帝退位",
+    dynasty: "清",
+    year: 1912,
+    importance: 3,
+    description:
+      "隆裕太后以宣统帝名义颁退位诏，袁世凯任临时大总统，清亡，中华民国肇建。（据《清史稿》）",
+  },
+  {
+    id: "special-star-1893",
+    title: "教员诞辰",
+    dynasty: "清",
+    year: 1893,
+    isSpecial: true,
+    date: "1893年12月26日",
+    description: "孩儿立志出乡关，学不成名誓不还。埋骨何须桑梓地，人生无处不青山。",
   },
 ];
 

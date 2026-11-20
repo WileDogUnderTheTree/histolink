@@ -1,13 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 
-import { DYNASTY_START_YEARS, TIMELINE_EVENTS } from "@/data/timeline-events";
-import type { Dynasty, TimelineEvent } from "@/data/timeline-events";
+import { ScrollableTabs } from "@/components/ScrollableTabs";
+import { ViewModeSwitch } from "@/components/ViewModeSwitch";
+import type { ViewMode } from "@/components/ViewModeSwitch";
+import {
+  DYNASTY_GROUPS,
+  DYNASTY_START_YEARS,
+  TIMELINE_EVENTS,
+  groupOfDynasty,
+  importanceOf,
+} from "@/data/timeline-events";
+import type { Dynasty, DynastyGroupId, TimelineEvent } from "@/data/timeline-events";
 import { formatYear, toAstronomical } from "@/lib/year";
 
+import EasterEgg from "./EasterEgg";
 import styles from "./timeline.module.css";
 
 /** 轨道两端留白百分比，圆点不贴边。 */
@@ -38,15 +48,37 @@ const TRACK_VERTICAL_PADDING_PX = 58;
 const DENSE_EVENT_COUNT = 40;
 const DENSE_MAX_LEVEL = 4;
 
-/** 朝代选择器：从数据中提取出现过的朝代，再按朝代起始年排序（不硬编码 Tab 列表）。 */
+/** 细览模式：从数据中提取出现过的朝代，再按朝代起始年排序（不硬编码 Tab 列表）。 */
 const DYNASTIES: readonly Dynasty[] = Array.from(
   new Set(TIMELINE_EVENTS.map((event) => event.dynasty)),
 ).sort((a, b) => DYNASTY_START_YEARS[a] - DYNASTY_START_YEARS[b]);
 
-/** 选择器标签之外的补充口径：新莽（9—23）事件归入西汉 Tab，这里显式说明。 */
+/** 简阅模式：只保留数据中确实有事件的断代，顺序按 DYNASTY_GROUPS 定义。 */
+const GROUP_TABS = DYNASTY_GROUPS.filter((group) =>
+  group.dynasties.some((dynasty) => DYNASTIES.includes(dynasty)),
+);
+
+/** 细览模式的口径补充：新莽（9—23）事件归入西汉 Tab。 */
 const DYNASTY_NOTES: Partial<Record<Dynasty, string>> = {
   西汉: "（含新莽）",
   东晋十六国: "（十六国附见）",
+  五代十国: "（十国附见）",
+  辽: "（与北宋并立）",
+  西夏: "（与宋、辽、金并立）",
+  金: "（与南宋并立）",
+  南宋: "（与金、西夏并立）",
+  元: "（含大蒙古国前史）",
+  清: "（含后金前史）",
+};
+
+/** 简阅模式的口径补充：解释跨朝代合并与归属边界。 */
+const BRIEF_NOTES: Partial<Record<DynastyGroupId, string>> = {
+  qinhan: "（含新莽、汉末群雄）",
+  sanguo: "（220—263，汉末事件归秦汉）",
+  weijin: "（含十六国）",
+  suitang: "（含武周）",
+  wudaisong: "（含十国，辽、西夏、金与两宋并立）",
+  yuanmingqing: "（含后金前史）",
 };
 
 /** 错层幅度：level 0 → 0，1 → -step，2 → +step，3 → -2step，4 → +2step…… */
@@ -95,6 +127,8 @@ interface TimelineLayout {
  *    与轨道实际像素宽度无关，所以无需测量 DOM。
  * 2. 由最大层号反推错层步长，保证轨道高度不超过 TRACK_MAX_HEIGHT；
  *    再据此算出每个点的垂直偏移和轨道总高度。
+ *
+ * 简阅模式传入的是「聚合断代 + 顶级事件」子集，布局算法本身与细览完全一致。
  */
 function buildLayout(events: readonly TimelineEvent[]): TimelineLayout {
   if (events.length === 0) {
@@ -150,14 +184,38 @@ function buildLayout(events: readonly TimelineEvent[]): TimelineLayout {
   };
 }
 
-export default function TimelinePage() {
-  const [dynasty, setDynasty] = useState<Dynasty>(DYNASTIES[0]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+/** 某断代下的全部事件（用于简阅文案里的「该断代共 N 条」）。 */
+const eventsOfGroup = (groupId: DynastyGroupId): readonly TimelineEvent[] => {
+  const group = DYNASTY_GROUPS.find((option) => option.id === groupId);
+  if (!group) return [];
+  return TIMELINE_EVENTS.filter((event) => group.dynasties.includes(event.dynasty));
+};
 
-  const layout = useMemo(
-    () => buildLayout(TIMELINE_EVENTS.filter((event) => event.dynasty === dynasty)),
-    [dynasty],
+export default function TimelinePage() {
+  const [mode, setMode] = useState<ViewMode>("detail");
+  const [dynasty, setDynasty] = useState<Dynasty>(DYNASTIES[0]);
+  const [groupId, setGroupId] = useState<DynastyGroupId>(() => groupOfDynasty(DYNASTIES[0]).id);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showEgg, setShowEgg] = useState(false);
+
+  /** 记住每个大断代上次停留的细分朝代；简阅 ↔ 细览切换时据此恢复，而不是重置。 */
+  const lastDynastyByGroup = useRef<Partial<Record<DynastyGroupId, Dynasty>>>({});
+
+  const group = useMemo(
+    () => DYNASTY_GROUPS.find((option) => option.id === groupId) ?? DYNASTY_GROUPS[0],
+    [groupId],
   );
+
+  const events = useMemo(() => {
+    if (mode === "brief") {
+      return TIMELINE_EVENTS.filter(
+        (event) => group.dynasties.includes(event.dynasty) && importanceOf(event) === 3,
+      );
+    }
+    return TIMELINE_EVENTS.filter((event) => event.dynasty === dynasty);
+  }, [mode, group, dynasty]);
+
+  const layout = useMemo(() => buildLayout(events), [events]);
   const positioned = layout.events;
 
   // 事件多或错层深时缩小圆点，缓解密集年份的视觉拥挤（点击热区不变）。
@@ -173,11 +231,53 @@ export default function TimelinePage() {
   const yearRange = `${formatYear(first.year, { full: mixedEra })} — ${formatYear(last.year, {
     full: mixedEra,
   })}`;
-  const dynastyNote = DYNASTY_NOTES[dynasty] ?? "";
+  const dynastyNote = mode === "brief" ? (BRIEF_NOTES[group.id] ?? "") : (DYNASTY_NOTES[dynasty] ?? "");
+  const groupTotal = eventsOfGroup(group.id).length;
 
+  /** 细览：切换细分朝代，并记住它属于哪个断代。 */
   const selectDynasty = (next: Dynasty) => {
     setDynasty(next);
+    lastDynastyByGroup.current[groupOfDynasty(next).id] = next;
     setSelectedId(null);
+  };
+
+  /** 简阅：切换聚合断代。 */
+  const selectGroup = (next: DynastyGroupId) => {
+    setGroupId(next);
+    setSelectedId(null);
+  };
+
+  /**
+   * 切换模式：
+   * - 细 → 简：定位到当前朝代所属断代；选中事件若不在简阅集合里则只清选中，不重置断代。
+   * - 简 → 细：恢复该断代上次停留的细分朝代（没有记录时取组内第一个有事件的朝代）。
+   */
+  const switchMode = (next: ViewMode) => {
+    if (next === mode) return;
+    if (next === "brief") {
+      const nextGroup = groupOfDynasty(dynasty);
+      setGroupId(nextGroup.id);
+      setSelectedId((prev) =>
+        prev && eventsOfGroup(nextGroup.id).some(
+          (event) => event.id === prev && importanceOf(event) === 3,
+        )
+          ? prev
+          : null,
+      );
+    } else {
+      const remembered = lastDynastyByGroup.current[group.id];
+      const nextDynasty =
+        remembered && group.dynasties.includes(remembered)
+          ? remembered
+          : (group.dynasties.find((candidate) => DYNASTIES.includes(candidate)) ?? DYNASTIES[0]);
+      setDynasty(nextDynasty);
+      setSelectedId((prev) =>
+        prev && TIMELINE_EVENTS.some((event) => event.id === prev && event.dynasty === nextDynasty)
+          ? prev
+          : null,
+      );
+    }
+    setMode(next);
   };
 
   const handleTrackClick = (event: MouseEvent<HTMLDivElement>) => {
@@ -186,8 +286,19 @@ export default function TimelinePage() {
     }
   };
 
+  const closeEgg = useCallback(() => setShowEgg(false), []);
+
+  const heading = mode === "brief" ? `${group.label} · 编年大势` : `${dynasty} · 大事记`;
+
+  // Tab 数据由页面状态派生：细览取 12 个朝代，简阅取 4 个断代（顺序与 DYNASTY_GROUPS 一致）。
+  const tabOptions =
+    mode === "brief"
+      ? GROUP_TABS.map((option) => ({ id: option.id as string, label: option.label }))
+      : DYNASTIES.map((option) => ({ id: option as string, label: option }));
+
   return (
     <main className={styles.page}>
+      <EasterEgg isOpen={showEgg} onClose={closeEgg} />
       <div className={styles.shell}>
         <div className={styles.topbar}>
           <Link className={styles.back} href="/">
@@ -196,25 +307,39 @@ export default function TimelinePage() {
           <p className={styles.eyebrow}>中国历史探索 · 时间轴</p>
         </div>
 
-        <h1 className={styles.title}>{dynasty} · 大事记</h1>
+        <h1 className={styles.title}>{heading}</h1>
         <p className={styles.lead}>
-          本朝精选 {positioned.length} 条{dynastyNote} · {yearRange}
-          。切换朝代只看该朝事件，点击圆点查看事件详情；圆点按年份自动上下错层，不再堆叠。
+          {mode === "brief" ? (
+            <>
+              简阅模式只看断代大势：{group.label}精选 {positioned.length} 条顶级事件{dynastyNote}
+              （该断代共 {groupTotal} 条） · {yearRange}。点击圆点查看详情，切回细览可查看全部事件。
+            </>
+          ) : (
+            <>
+              本朝精选 {positioned.length} 条{dynastyNote} · {yearRange}
+              。切换朝代只看该朝事件，点击圆点查看事件详情；圆点按年份自动上下错层，不再堆叠。
+            </>
+          )}
         </p>
 
-        <div className={styles.tabs} role="tablist" aria-label="朝代选择">
-          {DYNASTIES.map((option) => (
-            <button
-              key={option}
-              type="button"
-              role="tab"
-              aria-selected={dynasty === option}
-              className={`${styles.tab}${dynasty === option ? ` ${styles.tabActive}` : ""}`}
-              onClick={() => selectDynasty(option)}
-            >
-              {option}
-            </button>
-          ))}
+        <div className={styles.tabsRow}>
+          <ScrollableTabs
+            ariaLabel="朝代选择"
+            options={tabOptions}
+            activeId={mode === "brief" ? groupId : dynasty}
+            scrollLeftLabel="查看更早的朝代"
+            scrollRightLabel="查看更晚的朝代"
+            onSelect={(id) => {
+              if (mode === "brief") {
+                selectGroup(id as DynastyGroupId);
+              } else {
+                selectDynasty(id as Dynasty);
+              }
+            }}
+          />
+          <div className={styles.viewSwitchSlot}>
+            <ViewModeSwitch value={mode} onChange={switchMode} ariaLabel="时间轴视图模式" />
+          </div>
         </div>
 
         <div className={styles.trackViewport}>
@@ -231,20 +356,38 @@ export default function TimelinePage() {
             />
 
             {positioned.map((event) => (
-              <button
-                key={event.id}
-                type="button"
-                className={`${styles.point}${selectedId === event.id ? ` ${styles.pointSelected}` : ""}`}
-                style={{ left: `${event.left}%`, top: stackTop(event.offset) }}
-                aria-pressed={selectedId === event.id}
-                aria-label={`${formatYear(event.year, { full: mixedEra })}，${event.title}`}
-                onClick={() => setSelectedId(selectedId === event.id ? null : event.id)}
-              >
-                <span className={styles.pointLabel}>
-                  {formatYear(event.year, { full: mixedEra })}
-                </span>
-                <span className={styles.dot} />
-              </button>
+              (() => {
+                const isSpecial = event.isSpecial === true;
+                return (
+                  <button
+                    key={event.id}
+                    type="button"
+                    className={`${styles.point}${isSpecial ? ` ${styles.specialPoint}` : ""}${selectedId === event.id ? ` ${styles.pointSelected}` : ""}`}
+                    style={{ left: `${event.left}%`, top: stackTop(event.offset) }}
+                    aria-pressed={!isSpecial && selectedId === event.id}
+                    aria-label={`${formatYear(event.year, { full: mixedEra })}，${event.title}${isSpecial ? "，打开隐藏彩蛋" : ""}`}
+                    onClick={() => {
+                      if (isSpecial) {
+                        setSelectedId(event.id);
+                        setShowEgg(true);
+                        return;
+                      }
+                      setSelectedId(selectedId === event.id ? null : event.id);
+                    }}
+                  >
+                    <span className={styles.pointLabel}>
+                      {formatYear(event.year, { full: mixedEra })}
+                    </span>
+                    {isSpecial ? (
+                      <span className={styles.specialStar} aria-hidden="true">
+                        ★
+                      </span>
+                    ) : (
+                      <span className={styles.dot} />
+                    )}
+                  </button>
+                );
+              })()
             ))}
 
             <span className={styles.axisEnd} style={{ left: `${PAD}%` }}>
@@ -259,7 +402,8 @@ export default function TimelinePage() {
         {selected ? (
           <section className={styles.card} aria-live="polite">
             <p className={styles.cardMeta}>
-              {selected.dynasty} · {formatYear(selected.year, { full: mixedEra })}
+              {selected.date ?? `${selected.dynasty} · ${formatYear(selected.year, { full: mixedEra })}`}
+              {selected.importance === 3 ? " · 断代大势" : ""}
             </p>
             <h2 className={styles.cardTitle}>{selected.title}</h2>
             <p className={styles.cardBody}>{selected.description}</p>
@@ -275,13 +419,16 @@ export default function TimelinePage() {
           </a>
           （CC BY-NC-SA 4.0，仅限非商业使用）；《汉书》《后汉书》原文（公有领域）；
           三国两晋南北朝部分据《三国志》《晋书》《宋书》《魏书》《梁书》《北齐书》《周书》
-          《隋书》等正史原文（公有领域）撰写；朝代纪年与年号参考{" "}
+          《隋书》等正史原文（公有领域）撰写；隋唐宋元明清部分据《隋书》《旧唐书》《新唐书》
+          《旧五代史》《新五代史》《辽史》《宋史》《金史》《元史》《明史》《清史稿》等正史原文
+          （公有领域）撰写；朝代纪年与年号参考{" "}
           <a href="https://github.com/anthonyhann/chinese-history" target="_blank" rel="noreferrer">
             chinese-history
           </a>
           （事实数据 CC0）。当前共收录 {TIMELINE_EVENTS.length} 条事件。
         </footer>
       </div>
+
     </main>
   );
 }

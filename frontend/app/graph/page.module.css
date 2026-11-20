@@ -47,6 +47,7 @@
 }
 
 .lead {
+  position: relative;
   max-width: 760px;
   margin: 10px 0 0;
   color: var(--ink-soft);
@@ -54,45 +55,82 @@
   line-height: 1.8;
 }
 
-/* 分期选择器：与时间轴朝代 Tab 同一视觉语言，复用现有配色变量。 */
-.tabs {
+/* 「?」帮助气泡：复杂说明折进悬浮提示，正文只保留一行操作指引。 */
+.help {
+  position: relative;
   display: inline-flex;
-  gap: 4px;
-  margin-top: 26px;
-  padding: 4px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: #fffdf8;
+  align-items: center;
+  margin-left: 6px;
+  vertical-align: -1px;
 }
 
-.tab {
-  border: 0;
-  border-radius: 999px;
-  padding: 8px 26px;
-  background: transparent;
+.helpButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
   color: var(--ink-soft);
   font: inherit;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background 160ms ease, color 160ms ease;
+  font-size: 11px;
+  line-height: 1;
+  cursor: help;
 }
 
-.tab:hover {
-  color: var(--ink);
+.helpButton:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
-.tab:focus-visible {
+.helpButton:focus-visible {
+  border-color: var(--accent);
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-.tabActive {
-  background: var(--ink);
-  color: #fdfbf6;
+.helpTip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  width: max-content;
+  max-width: min(360px, calc(100vw - 48px));
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fffdf8;
+  box-shadow: 0 10px 24px rgb(73 42 35 / 14%);
+  color: var(--ink-soft);
+  font-size: 12px;
+  line-height: 1.7;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 140ms ease, visibility 140ms ease;
 }
 
-.tabActive:hover {
-  color: #fdfbf6;
+.help:hover .helpTip,
+.help:focus-within .helpTip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Tab 行：分期 Tab（横向可滑动，见 ScrollableTabs）与「简阅 / 细览」开关同一行，窄屏自动换行。 */
+.tabsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: 26px;
+}
+
+.viewSwitchSlot {
+  margin-left: auto;
 }
 
 .eraMeta {
@@ -351,15 +389,27 @@
     margin-top: 24px;
   }
 
+  /* 窄屏：气泡改为相对副标题整宽铺开，避免贴着右缘溢出视口。 */
+  .help {
+    position: static;
+  }
+
+  .helpTip {
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: none;
+  }
+
   .sidebar {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tab,
   .hallButton,
-  .factionButton {
+  .factionButton,
+  .helpTip {
     transition: none;
   }
 }

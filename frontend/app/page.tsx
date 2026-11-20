@@ -46,7 +46,7 @@ export default function HomePage() {
         <p className="eyebrow">中国历史探索</p>
         <h1>从一个入口开始</h1>
         <p className="subtitle">
-          时间轴覆盖夏—南北朝（含新莽、三国两晋十六国）；人物关系图已扩展至春秋、战国、秦汉与三国。
+          时间轴覆盖夏—清（约前 2070—1912，含新莽、三国两晋十六国、五代辽宋夏金）；人物关系图已覆盖先秦、秦汉、三国、魏晋南北朝、隋唐、宋辽金夏与元明清。
         </p>
       </header>
 
@@ -62,12 +62,12 @@ export default function HomePage() {
 
         <Link href="/timeline" className="entry">
           <span className="entry-label">时间轴</span>
-          <span className="entry-hint">夏—南北朝 · 逐朝浏览大事记</span>
+          <span className="entry-hint">夏—清 · 逐朝浏览大事记</span>
         </Link>
 
         <Link href="/graph" className="entry">
           <span className="entry-label">人物关系图</span>
-          <span className="entry-hint">春秋战国 · 秦汉 · 三国 · 2D 力导向网络</span>
+          <span className="entry-hint">春秋至清 · 18 期 · 2D 力导向网络</span>
         </Link>
       </nav>
 

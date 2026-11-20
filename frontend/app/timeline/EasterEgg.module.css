@@ -1,0 +1,100 @@
+.banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  display: flex;
+  width: 100%;
+  min-height: 116px;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 72px;
+  border-top: 1px solid #b8860b;
+  border-bottom: 1px solid #b8860b;
+  background: #fdfcf0;
+  color: #8b0000;
+  box-shadow: 0 5px 18px rgb(74 10 10 / 12%);
+  font-family: "Songti SC", "SimSun", serif;
+  transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out;
+}
+
+.bannerVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.bannerHidden {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.words {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.words span {
+  padding-left: 8px;
+  white-space: nowrap;
+}
+
+.close {
+  position: absolute;
+  top: 50%;
+  right: 24px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #8b0000;
+  cursor: pointer;
+  font: 28px/1 "Songti SC", "SimSun", serif;
+  transform: translateY(-50%);
+  transition: opacity 180ms ease-in-out;
+}
+
+.close:hover,
+.close:focus-visible {
+  opacity: 0.65;
+}
+
+.close:focus-visible {
+  outline: 2px solid #b8860b;
+  outline-offset: 3px;
+}
+
+@media (max-width: 560px) {
+  .banner {
+    min-height: 108px;
+    padding: 16px 52px 16px 20px;
+  }
+
+  .words {
+    font-size: 24px;
+    letter-spacing: 4px;
+  }
+
+  .words span {
+    padding-left: 4px;
+  }
+
+  .close {
+    right: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner,
+  .close {
+    transition: none;
+  }
+}
