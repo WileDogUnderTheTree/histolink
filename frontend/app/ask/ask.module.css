@@ -1,0 +1,140 @@
+.page {
+  min-height: 100vh;
+  padding: 64px 24px 96px;
+  background: radial-gradient(circle at top, #211a12, #0e0b08 60%);
+  color: #f0e5d2;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.badge {
+  margin: 0;
+  align-self: flex-start;
+  border: 1px solid #6b4f2a;
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: #e0b86a;
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: 0.06em;
+}
+
+.lead {
+  margin: 0;
+  color: #b7a488;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.card {
+  border: 1px solid #33271a;
+  border-radius: 12px;
+  background: #17120c;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  color: #b48a4a;
+}
+
+.question {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #fff4dd;
+}
+
+.empty {
+  margin: 0;
+  font-size: 13px;
+  color: #9c8a6d;
+}
+
+.placeholderButton {
+  align-self: flex-start;
+  border: 1px solid #6b4f2a;
+  border-radius: 8px;
+  background: #2a2014;
+  color: #e7d6b8;
+  padding: 9px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.placeholderButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.transcript {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.userTurn,
+.agentTurn {
+  border: 1px solid #33271a;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #1d1710;
+}
+
+.userTurn {
+  background: #241b11;
+  border-color: #4a3720;
+}
+
+.role {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #b48a4a;
+  margin-bottom: 4px;
+}
+
+.turnText {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #e8dbc2;
+  white-space: pre-wrap;
+}
+
+.footer {
+  display: flex;
+  gap: 18px;
+  font-size: 13px;
+}
+
+.link {
+  color: #e0b86a;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}

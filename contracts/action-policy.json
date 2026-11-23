@@ -1,7 +1,7 @@
 {
   "schema_version": "actions-policy.v1",
   "decisions": {
-    "same_page": "前端判定 target.surface === 当前路由 → 同页；同页且 auto=true 才自动执行",
+    "same_page": "前端判定 target.surface === 当前路由 → 同页自动执行（服务端 auto 不作为依据）",
     "cross_page": "跨页一律渲染为确认按钮，用户点击后才跳转；绝不自动导航",
     "server_auto": "后端 auto 仅为建议值，前端必须按路由强制覆盖",
     "unknown_action": "未知动作类型静默忽略 + 上报 unsupported_action",
