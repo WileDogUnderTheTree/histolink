@@ -16,7 +16,7 @@
 | `actions-v1.schema.json` | 生成 | 同上 | 动作信封 `UIAction` JSON Schema + `x-action-types` / `x-surfaces` / `x-availability` / `x-action-surface` 元数据 |
 | `tools-v1.schema.json` | 生成 | 同上 | 8 个只读工具的入参/出参 JSON Schema |
 | `action-policy.json` | **人工** | 手改 | 动作类型 → surface / 可用性 / 自动策略；`validate-contract.mjs` 校验覆盖 |
-| `samples/*.json` | **人工** | 手改 | 契约样例：请求 / grounded 回答 / 错误 / 澄清 / 动作信封；`validate-contract.mjs` 逐个校验 |
+| `samples/*.json` | **人工** | 手改 | 契约样例：请求 / grounded 回答 / 错误 / 澄清 / 动作信封 / ping_llm；`validate-contract.mjs` 逐个校验 |
 | `README.md` | **人工** | 手改 | 本文件：冻结规则、升级规则、字段清单 |
 
 ## 2. 生成与校验
@@ -99,7 +99,9 @@ cd backend
 
 `GET /api/health`、`GET /api/meta`、`GET /api/entities/person/{person_id}`、
 `GET /api/entities/event/{event_id}`、`GET /api/entities/persons?name=&era_id=&limit=`、
-`GET /api/search/events?q=&limit=`、`POST /api/agent/ask`。
+`GET /api/search/events?q=&limit=`、`POST /api/agent/ask`、
+`GET /api/agent/ping_llm?message=`（TC-10 连通性探测，返回 `PingLLMResponse`；模型未配置 503
+`LLM_NOT_CONFIGURED`，上游错误 502 `LLM_UPSTREAM_ERROR`，超时 504 `LLM_TIMEOUT`）。
 所有响应带 `ok`、`request_id`（ask）或 `schema_version` 与 `snapshot`（数据接口）。
 
 ### 4.7 工具契约

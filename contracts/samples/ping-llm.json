@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "message": "请回复 OK",
+  "reply": "OK",
+  "model": "Qwen/Qwen3-8B",
+  "latency_ms": 842,
+  "usage": {
+    "prompt_tokens": 12,
+    "completion_tokens": 2,
+    "total_tokens": 14
+  }
+}

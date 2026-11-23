@@ -2,5 +2,7 @@
 
 # Test / contract tooling (TC-04, TC-06)
 pytest>=8.3,<9
-httpx>=0.27,<1
 jsonschema>=4.23,<5
+
+# Lint（TC-10 顺手清理未使用导入；不参与 verify.ps1 门禁）
+ruff>=0.7,<1

@@ -48,6 +48,7 @@ const EXPECTED_PATHS = [
   "/api/entities/persons",
   "/api/search/events",
   "/api/agent/ask",
+  "/api/agent/ping_llm",
 ];
 const EXPECTED_MODELS = [
   "AskRequest",
@@ -56,6 +57,7 @@ const EXPECTED_MODELS = [
   "UIAction",
   "Clarification",
   "MetaResponse",
+  "PingLLMResponse",
 ];
 const EXPECTED_TOOLS = [
   "resolve_entity",
@@ -228,6 +230,7 @@ const samples = [
   { file: "error.json", validator: (sample) => validateAgainstOpenApi("ErrorEnvelope", sample, "error.json") },
   { file: "clarification.json", validator: (sample) => validateAgainstOpenApi("AnswerEnvelope", sample, "clarification.json") },
   { file: "ui-action.json", validator: (sample) => validateAgainstActions(sample, "ui-action.json") },
+  { file: "ping-llm.json", validator: (sample) => validateAgainstOpenApi("PingLLMResponse", sample, "ping-llm.json") },
 ];
 const sampleResults = [];
 for (const { file, validator } of samples) {

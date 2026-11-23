@@ -21,6 +21,7 @@ from contracts.models import (
     MetaResponse,
     PersonCandidatesResponse,
     PersonResponse,
+    PingLLMResponse,
 )
 
 app = FastAPI(
@@ -93,6 +94,23 @@ def search_events(
     q: str = Query(min_length=1, max_length=200),
     limit: int = Query(default=20, ge=1, le=50),
 ) -> EventSearchResponse:
+    _not_implemented()
+    raise AssertionError("unreachable")
+
+
+@app.get(
+    "/api/agent/ping_llm",
+    response_model=PingLLMResponse,
+    responses={
+        502: {"model": ErrorEnvelope},
+        503: {"model": ErrorEnvelope},
+        504: {"model": ErrorEnvelope},
+    },
+    tags=["agent"],
+)
+def ping_llm(
+    message: str = Query(default="请回复 OK", min_length=1, max_length=200),
+) -> PingLLMResponse:
     _not_implemented()
     raise AssertionError("unreachable")
 

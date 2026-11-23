@@ -918,7 +918,9 @@
           "INVALID_REQUEST",
           "METHOD_NOT_ALLOWED",
           "ROUTE_NOT_FOUND",
-          "SNAPSHOT_NOT_LOADED"
+          "SNAPSHOT_NOT_LOADED",
+          "LLM_NOT_CONFIGURED",
+          "LLM_UPSTREAM_ERROR"
         ],
         "title": "ErrorCode",
         "type": "string"
@@ -1390,6 +1392,68 @@
         "title": "PersonResponse",
         "type": "object"
       },
+      "PingLLMResponse": {
+        "additionalProperties": false,
+        "description": "LLM 连通性探测结果（TC-10）：只用于验证网关/模型可用性，不进入问答链路。",
+        "properties": {
+          "latency_ms": {
+            "description": "端到端耗时（毫秒）",
+            "minimum": 0.0,
+            "title": "Latency Ms",
+            "type": "integer"
+          },
+          "message": {
+            "description": "发给模型的测试语句",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Message",
+            "type": "string"
+          },
+          "model": {
+            "description": "实际使用的模型名",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          },
+          "ok": {
+            "const": true,
+            "default": true,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "reply": {
+            "description": "模型真实回复",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reply",
+            "type": "string"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "integer"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "上游返回的 token 用量（若有）",
+            "title": "Usage"
+          }
+        },
+        "required": [
+          "message",
+          "reply",
+          "model",
+          "latency_ms"
+        ],
+        "title": "PingLLMResponse",
+        "type": "object"
+      },
       "SnapshotMeta": {
         "additionalProperties": false,
         "description": "回答里携带的快照版本；前端据此判断是否降级为纯文字。",
@@ -1804,6 +1868,81 @@
           }
         },
         "summary": "Ask",
+        "tags": [
+          "agent"
+        ]
+      }
+    },
+    "/api/agent/ping_llm": {
+      "get": {
+        "operationId": "ping_llm_api_agent_ping_llm_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "message",
+            "required": false,
+            "schema": {
+              "default": "请回复 OK",
+              "maxLength": 200,
+              "minLength": 1,
+              "title": "Message",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PingLLMResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Gateway Timeout"
+          }
+        },
+        "summary": "Ping Llm",
         "tags": [
           "agent"
         ]

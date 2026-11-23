@@ -2,9 +2,14 @@
 
 V1.0.1 职责：
 - 启动时一次性加载 `backend/data/snapshot.v1.json`（schema/counts/hash 校验失败即拒绝启动）；
-- 提供只读接口：`/api/health`、`/api/meta`、`/api/entities/*`；
+- 提供只读接口：`/api/health`、`/api/meta`、`/api/entities/*`、`/api/agent/ping_llm`；
 - **无任何写接口**：错误统一走 `{ok:false, request_id, error:{code,message,retryable}}` envelope；
 - 保留 `main:app` 入口，`scripts/launch.ps1` 无需改动。
+
+LLM 连通性（TC-10）：
+- `/api/agent/ping_llm` 读取 `backend/.env`（或环境变量）调用 ModelScope / OpenAI 兼容服务，
+  发送「请回复 OK」并把模型真实回复返回给调用方；密钥只经环境变量传入，不写日志、不入库。
+- 未配置密钥时返回 503 `LLM_NOT_CONFIGURED`，不会阻塞服务启动（快照仍是启动硬依赖）。
 
 CORS 说明（内测分享的关键）：
 - 默认放行本机前端 3000 端口，以及任意局域网 / 私有网段的任意端口：
@@ -26,11 +31,13 @@ CORS 说明（内测分享的关键）：
 from __future__ import annotations
 
 import os
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import Response
 
 from errors import install_error_handlers, read_only_violation_response
 from routers import register_routes
@@ -74,7 +81,7 @@ def _snapshot_paths() -> tuple[Path, Path]:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """启动时加载快照；失败即拒绝启动（fail-fast），避免“看似健康但数据为空”。"""
 
     snapshot_path, meta_path = _snapshot_paths()
@@ -121,7 +128,10 @@ def create_app() -> FastAPI:
     read_only_methods = {"POST", "PUT", "PATCH", "DELETE"}
 
     @application.middleware("http")
-    async def enforce_read_only(request, call_next):  # type: ignore[no-untyped-def]
+    async def enforce_read_only(
+        request: Request,
+        call_next: Callable[[Request], Awaitable[Response]],
+    ) -> Response:
         if request.method in read_only_methods and request.url.path.startswith("/api"):
             return read_only_violation_response()
         return await call_next(request)

@@ -240,10 +240,20 @@ def test_openapi_has_required_paths_and_models(contracts_dir: Path) -> None:
         "/api/entities/persons",
         "/api/search/events",
         "/api/agent/ask",
+        "/api/agent/ping_llm",
     ]:
         assert api_path in spec["paths"], api_path
-    for model in ["AskRequest", "AnswerEnvelope", "ErrorEnvelope", "UIAction", "Clarification"]:
+    for model in ["AskRequest", "AnswerEnvelope", "ErrorEnvelope", "UIAction", "Clarification", "PingLLMResponse"]:
         assert model in spec["components"]["schemas"], model
+
+
+def test_ping_llm_sample_validates(load_sample: Callable[[str], Any]) -> None:
+    from contracts.models import PingLLMResponse
+
+    payload = PingLLMResponse.model_validate(load_sample("ping-llm.json"))
+    assert payload.reply == "OK"
+    assert payload.model == "Qwen/Qwen3-8B"
+    assert payload.usage is not None and payload.usage["total_tokens"] == 14
 
 
 def test_tools_schema_is_valid_jsonschema(contracts_dir: Path) -> None:

@@ -23,6 +23,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agent/ping_llm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ping Llm */
+        get: operations["ping_llm_api_agent_ping_llm_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/entities/event/{event_id}": {
         parameters: {
             query?: never;
@@ -413,7 +430,7 @@ export interface components {
          * @description 冻结错误码（审核报告 §5.7 + TC-06 只读 API 层补充）。
          * @enum {string}
          */
-        ErrorCode: "ENTITY_NOT_FOUND" | "AMBIGUOUS_ENTITY" | "INSUFFICIENT_EVIDENCE" | "OUT_OF_SCOPE" | "LLM_TIMEOUT" | "SNAPSHOT_MISMATCH" | "INTERNAL" | "INVALID_REQUEST" | "METHOD_NOT_ALLOWED" | "ROUTE_NOT_FOUND" | "SNAPSHOT_NOT_LOADED";
+        ErrorCode: "ENTITY_NOT_FOUND" | "AMBIGUOUS_ENTITY" | "INSUFFICIENT_EVIDENCE" | "OUT_OF_SCOPE" | "LLM_TIMEOUT" | "SNAPSHOT_MISMATCH" | "INTERNAL" | "INVALID_REQUEST" | "METHOD_NOT_ALLOWED" | "ROUTE_NOT_FOUND" | "SNAPSHOT_NOT_LOADED" | "LLM_NOT_CONFIGURED" | "LLM_UPSTREAM_ERROR";
         /** ErrorEnvelope */
         ErrorEnvelope: {
             error: components["schemas"]["ErrorInfo"];
@@ -616,6 +633,45 @@ export interface components {
             snapshot: components["schemas"]["SnapshotMeta"];
         };
         /**
+         * PingLLMResponse
+         * @description LLM 连通性探测结果（TC-10）：只用于验证网关/模型可用性，不进入问答链路。
+         */
+        PingLLMResponse: {
+            /**
+             * Latency Ms
+             * @description 端到端耗时（毫秒）
+             */
+            latency_ms: number;
+            /**
+             * Message
+             * @description 发给模型的测试语句
+             */
+            message: string;
+            /**
+             * Model
+             * @description 实际使用的模型名
+             */
+            model: string;
+            /**
+             * Ok
+             * @default true
+             * @constant
+             */
+            ok: true;
+            /**
+             * Reply
+             * @description 模型真实回复
+             */
+            reply: string;
+            /**
+             * Usage
+             * @description 上游返回的 token 用量（若有）
+             */
+            usage?: {
+                [key: string]: number;
+            } | null;
+        };
+        /**
          * SnapshotMeta
          * @description 回答里携带的快照版本；前端据此判断是否降级为纯文字。
          */
@@ -779,6 +835,64 @@ export interface operations {
             };
             /** @description Service Unavailable */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    ping_llm_api_agent_ping_llm_get: {
+        parameters: {
+            query?: {
+                message?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PingLLMResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Bad Gateway */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Gateway Timeout */
+            504: {
                 headers: {
                     [name: string]: unknown;
                 };

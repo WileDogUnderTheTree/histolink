@@ -229,21 +229,52 @@ V1.0.1 起后端是**只读数据服务**（无任何写接口），全部接口
 | GET | `/api/entities/person/{person_id}` | 人物主数据 + 别名 + 分期/断代 + 事件摘要（上限 50） |
 | GET | `/api/entities/event/{event_id}` | 事件 + `person_ids` + 结构化 `source_refs` + `surface` |
 | GET | `/api/entities/persons?name=&era_id=&limit=` | 姓名候选（同名时返回多条，带消歧副标题） |
+| GET | `/api/agent/ping_llm?message=请回复 OK` | **TC-10 连通性探测**：向模型发一句测试话，返回真实回复 / 模型名 / 耗时（需要配置 `backend/.env`） |
 
 ```powershell
 curl http://127.0.0.1:8000/api/meta
 curl http://127.0.0.1:8000/api/entities/person/p-liangtaihou-xixia-0d0f
 curl "http://127.0.0.1:8000/api/entities/persons?name=梁太后"          # 2 个候选
 curl "http://127.0.0.1:8000/api/entities/persons?name=梁太后&era_id=xixia"  # 1 个候选
+curl http://127.0.0.1:8000/api/agent/ping_llm                         # 模型连通性（需 .env）
 ```
 
 错误统一为 `{"ok": false, "request_id": "...", "error": {"code", "message", "retryable", "details?"}}`：
 未知 id → 404 `ENTITY_NOT_FOUND`；写方法 → 405 `METHOD_NOT_ALLOWED`；非法参数 → 400 `INVALID_REQUEST`；
-快照未加载 → 503 `SNAPSHOT_NOT_LOADED`。后端启动时校验快照 hash/counts，失败即拒绝启动。
+快照未加载 → 503 `SNAPSHOT_NOT_LOADED`；模型未配置 → 503 `LLM_NOT_CONFIGURED`；
+上游报错 → 502 `LLM_UPSTREAM_ERROR`；模型超时 → 504 `LLM_TIMEOUT`。
+后端启动时校验快照 hash/counts，失败即拒绝启动。
 
 前端默认经 Next 同源代理访问后端（`/api/*` → `API_PROXY_TARGET`，默认 `http://127.0.0.1:8000`），浏览器侧不产生跨域。
 
 后端直连时的 CORS 默认放行 `http://localhost:3000`、`http://127.0.0.1:3000`，以及任意局域网私有网段（`10.x` / `192.168.x` / `172.16–31.x`，任意端口）；可用 `ALLOW_ORIGINS` / `ALLOW_ORIGIN_REGEX` 覆盖。朋友 IP 不同**无需改代码**。
+
+### 4.6.1 配置模型（V1.0.1 / TC-10 连通性）
+
+模型凭据只经 `backend/.env`（或同名环境变量）注入，**不入库、不写日志**：
+
+```powershell
+# 1) 复制模板并填入真实 key
+Copy-Item backend\.env.example backend\.env
+# 编辑 backend\.env：
+#   MODELSCOPE_API_KEY=你的 key
+#   MODELSCOPE_BASE_URL=https://api-inference.modelscope.cn/v1
+#   MODELSCOPE_MODEL=Qwen/Qwen3-8B
+
+# 2) 不启动服务，先跑独立探针（推荐，最快验证 key / URL / 模型名）
+cd backend
+.\.venv\Scripts\python scripts\spike_llm.py
+
+# 3) 起服务后用接口 / Postman 验证（GET，无请求体）
+cd backend
+.\.venv\Scripts\python -m uvicorn main:app --reload --port 8000
+curl http://127.0.0.1:8000/api/agent/ping_llm
+# 也可自定义测试语句：curl "http://127.0.0.1:8000/api/agent/ping_llm?message=请回复OK"
+```
+
+响应示例：`{"ok":true,"message":"请回复 OK","reply":"OK","model":"Qwen/Qwen3-8B","latency_ms":842,"usage":{...}}`。
+可用 `ENABLE_LLM_PROBE=0` 关闭该探测端点（公网分享前端时建议关闭，避免他人消耗模型额度）。
+更多探针清单见 [docs/spikes/README.md](docs/spikes/README.md)。
 
 ### 4.7 分享给局域网 / 公网测试（V0.9.0 内测）
 
@@ -534,6 +565,8 @@ interface PersonGraphEdge {
 | [docs/V1.0.1-任务卡拆解.md](docs/V1.0.1-任务卡拆解.md) | V1.0.1 基建阶段 11 张任务卡（TC-01~TC-11）与验收标准 |
 | [docs/V1.0.1-验收记录-纵切片.md](docs/V1.0.1-验收记录-纵切片.md) | TC-01~TC-07 纵切片的逐卡验收记录、命令与偏差说明 |
 | [contracts/README.md](contracts/README.md) | 三份契约的冻结规则、版本升级规则与字段清单 |
+| [docs/spikes/README.md](docs/spikes/README.md) | TC-10 模型连通性复现说明（env、命令、失败码） |
+| [docs/spikes/modelscope-qwen3-8b-capability.md](docs/spikes/modelscope-qwen3-8b-capability.md) | Qwen3-8B 能力 probe 报告（连通性 + 9 项待测） |
 | [docs/person-same-name-report.md](docs/person-same-name-report.md) | 人物同名组、异名合并与裁决结论 |
 | [docs/source-review.md](docs/source-review.md) | 事件引用结构化口径、例外与抽查记录 |
 | [backend/data/README.md](backend/data/README.md) | 数据快照字段、生成方式与禁止手改说明 |

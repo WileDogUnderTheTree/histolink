@@ -24,6 +24,23 @@
 > 版本主题：**Agent 前置基建纵切片**（《V1.0.1-任务卡拆解》TC-01~TC-07 完成；TC-08/09/10/11 未做，因此**未打 `v1.0.1` tag**，前端版本号仍为 0.9.0）。
 > 依据：[docs/V1.0-项目现状与开发前置审核报告.md](docs/V1.0-项目现状与开发前置审核报告.md) Q1–Q6 决策。
 
+### 追加（TC-10 LLM 连通性，2026-11-23）
+
+- **新增 LLM Client**（`backend/llm_client.py`）：从 `backend/.env` / 环境变量读取
+  `MODELSCOPE_API_KEY` / `MODELSCOPE_BASE_URL` / `MODELSCOPE_MODEL`（兼容 `LLM_*` / `OPENAI_*` 别名），
+  调用 OpenAI 兼容 `/chat/completions`；超时、401/429/5xx、非法 JSON、缺 content 均映射为明确异常，
+  错误信息对 key 做脱敏；密钥不写日志、不回显。
+- **新增连通性端点** `GET /api/agent/ping_llm?message=请回复 OK`：返回模型真实回复 / 模型名 / 耗时 / token 用量；
+  未配置 → 503 `LLM_NOT_CONFIGURED`，上游错误 → 502 `LLM_UPSTREAM_ERROR`，超时 → 504 `LLM_TIMEOUT`；
+  支持 `ENABLE_LLM_PROBE=0` 关闭（公网分享时防额度消耗）。
+- **新增独立探针** `backend/scripts/spike_llm.py`（不启动服务即可验证 key/URL/模型名）与
+  `backend/.env.example` 模板；新增 `docs/spikes/`（复现说明 + Qwen3-8B 能力报告骨架）。
+- **契约同步**：`PingLLMResponse` 进入 OpenAPI（8 条路径）、新增 ping 样例；前端类型重新生成；
+  后端测试 59 → **87 passed**（新增 LLM Client 与端点离线测试，不访问网络）。
+- **清理**：`main.py` 补全 `lifespan` / `enforce_read_only` 类型标注并移除 `# type: ignore`；
+  `ruff --select F,E9` 无未使用导入。
+- **状态**：`backend/.env` 当前仍为 0 字节（未读到 key），真实 ping 待凭据填入后执行；TC-10 其余 9 项探针未开始。
+
 ### 新增
 
 - **TC-01 基线冻结与门禁**：提交 `chore(release): freeze v0.9.0 baseline` 并打轻量 tag `v0.9.0`；新增 `scripts/verify.ps1`（10 步本地权威门禁）与 `.github/workflows/ci.yml`（前端 tsc/build/validate-data + 后端 compile/pytest）。

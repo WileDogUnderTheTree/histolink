@@ -307,6 +307,10 @@ class ErrorCode(str, Enum):
     ROUTE_NOT_FOUND = "ROUTE_NOT_FOUND"
     SNAPSHOT_NOT_LOADED = "SNAPSHOT_NOT_LOADED"
 
+    # ---- V1.0.1 LLM 连通性探测（TC-10） ----
+    LLM_NOT_CONFIGURED = "LLM_NOT_CONFIGURED"
+    LLM_UPSTREAM_ERROR = "LLM_UPSTREAM_ERROR"
+
 
 class ErrorInfo(StrictModel):
     code: ErrorCode
@@ -336,6 +340,17 @@ AgentResponse = Annotated[
 class HealthResponse(StrictModel):
     ok: Literal[True] = True
     version: str = API_VERSION
+
+
+class PingLLMResponse(StrictModel):
+    """LLM 连通性探测结果（TC-10）：只用于验证网关/模型可用性，不进入问答链路。"""
+
+    ok: Literal[True] = True
+    message: str = Field(min_length=1, max_length=200, description="发给模型的测试语句")
+    reply: str = Field(min_length=1, max_length=2000, description="模型真实回复")
+    model: str = Field(min_length=1, max_length=200, description="实际使用的模型名")
+    latency_ms: int = Field(ge=0, description="端到端耗时（毫秒）")
+    usage: dict[str, int] | None = Field(default=None, description="上游返回的 token 用量（若有）")
 
 
 class MetaCounts(StrictModel):
