@@ -4,6 +4,7 @@
 
 - `V0.x`：时间轴深度扩充主版本（每版聚焦一个历史时期）；
 - `V0.x.1`：该时期的人物关系网次版本 / 数据修复补丁；
+- `V0.9.0`：内测版封装（功能冻结，面向朋友分享测试）；
 - `V1.0`：Agent 与语义 RAG 接入；`V1.1`：终极 UI 重构。
 
 变更分类：**新增** / **变更** / **修复** / **数据** / **文档** / **验证**。日期为版本归档日期；`0.1.0` 取首个提交日期，`0.2.0 – 0.4.1` 为早期迭代的验收归档日期（早期未逐版本提交）。
@@ -15,6 +16,47 @@
 ### 规划中（未发布）
 
 - V1.0 接入 Agent 与 RAG，V1.1 完成终极 UI
+
+---
+
+## [0.9.0] - 2026-11-21
+
+> 版本主题：**内测版封装与部署准备**——功能冻结，只做 UI 封印与运行环境加固，为通过 UUMit / 局域网分享给朋友测试做准备。
+
+### 新增
+
+- **首页「聊天问答」入口封印**（`frontend/app/page.tsx` + `globals.css`）：
+  - 入口置灰 + 虚线边框 +「开发中」小标签，副文案改为「Agent 智能问答 · 敬请期待」；
+  - 点击**不跳转任何路由**，只弹出 Toast「Agent 智能问答模块正在闭关开发中，敬请期待！」；
+  - 设置 `aria-disabled` / `title` / `aria-describedby`，键盘与读屏可感知「暂不可用」；
+  - 「时间轴」「人物关系图」两个入口与右下角后端连通角标逻辑保持不变。
+- **`/api` 同源代理**（`frontend/next.config.ts`）：`/api/*` → `API_PROXY_TARGET`（默认 `http://127.0.0.1:8000`）。浏览器只访问前端端口，分享时无需暴露 8000，同时避免 CORS 与 HTTPS 页面下的 Mixed Content 问题。
+- **局域网脚本**：`frontend/package.json` 新增 `dev:lan` / `start:lan`（`next dev|start -H 0.0.0.0 -p 3000`）。
+- **dev 模式跨域放行**：`next.config.ts` 自动收集本机全部非回环 IPv4，并默认放行 UUMit 隧道域名（`**.uua2a.com` / `**.uumit.com`）写入 `allowedDevOrigins`，局域网与 UUMit dev 分享零配置即可正常水合；其他隧道域名可通过 `ALLOWED_DEV_ORIGINS`（逗号分隔 hostname）追加。修复了 Next 16 在 dev 模式下拦截非 localhost 主机 `/_next` 请求、导致朋友访问时页面不水合的问题。
+- **README §4.7「分享给局域网 / 公网测试」**：局域网取 IP 与防火墙放行、UUMit 应用网关步骤（`npx @uumit-ai/uumit share 3000` / `uumit-connector share 3000`、限时分享链接、防止电脑睡眠）、CORS / 代理变量速查。
+
+### 变更
+
+- **全局版本号 V0.9.0（内测版）**：`frontend/package.json`、首页版本徽标、`/graph` 版本标识、`layout.tsx` 标题与描述、`backend/main.py` 的 `APP_VERSION`。
+- **健康检查改为同源相对路径** `/api/health`（`NEXT_PUBLIC_API_BASE` 仍可覆盖为直连后端）；`/api/health` 响应增加 `version` 字段，返回 `{"ok": true, "version": "0.9.0"}`。
+- **后端 CORS 环境变量化**：`ALLOW_ORIGINS`（逗号分隔，默认本机 3000）与 `ALLOW_ORIGIN_REGEX`（默认放行 `localhost` / `127.0.0.1` / `10.x` / `192.168.x` / `172.16–31.x` 任意端口，置空可关闭）；朋友 IP 不同无需改代码。
+
+### 修复
+
+- **分享场景下健康角标误报**：原实现硬编码 `http://localhost:8000`，朋友通过局域网 IP / UUMit 域名访问时，`localhost` 会解析成朋友自己的电脑，角标恒为「后端未连接」。改为同源代理后恢复正常。
+
+### 文档
+
+- `README.md`：版本号、已实现功能表、目录结构、快速开始（4.3 / 4.6 / 新增 4.7）、路线图（V0.8.2.1 / V0.8.2.2 归档、V0.9.0 当前版本）、已知限制（内测无鉴权、后端仅健康检查）、近期更新日志。
+- `SPEC.md`：新增 §7.16「内测版封装（V0.9.0）」。
+- `CHANGELOG.md`：新增本版记录。
+
+### 验证
+
+- **类型检查**：`tsc --noEmit` **0 error**。
+- **构建**：`next build` 通过，`/`、`/timeline`、`/graph` 全部预渲染。
+- **浏览器实测（Edge + CDP）**：分别用生产模式（`next start`）与 dev 模式、经 `127.0.0.1` 与局域网 IP 访问，首页「聊天问答」点击后 URL 不变、Toast 文案正确、`aria-disabled="true"`；「时间轴」「人物关系图」跳转正常；`/api/health` 经同源代理返回 `{"ok": true, "version": "0.9.0"}`，角标显示「后端已连接」；控制台 0 error。dev 模式未放行局域网 IP 时曾复现「页面不水合」，加入自动放行后恢复。
+- **CORS 实测**：带 `Origin: http://192.168.1.50:3000` 请求返回 `access-control-allow-origin`；非白名单公网 Origin 不回显。
 
 ---
 

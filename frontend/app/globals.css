@@ -65,6 +65,18 @@ body {
   color: var(--ink-soft);
 }
 
+.version {
+  display: inline-block;
+  margin: 22px 0 0;
+  padding: 5px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fffdf8;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--ink-soft);
+}
+
 .entries {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -100,7 +112,40 @@ body {
   outline-offset: 3px;
 }
 
+/* V0.9.0：聊天问答入口「封印」——视觉置灰、虚线边框 + 开发中标签，
+   仍可点击（仅弹出 Toast，不跳转路由）。 */
+.entry-muted {
+  background: #f2eee5;
+  border-style: dashed;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.entry-muted:hover,
+.entry-muted:active {
+  transform: none;
+  border-color: var(--line);
+  box-shadow: none;
+}
+
+.entry-muted .entry-label {
+  color: var(--ink-soft);
+}
+
+.entry-tag {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #e6ded0;
+  color: #8a8275;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
 .entry-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-size: 19px;
   font-weight: 600;
 }

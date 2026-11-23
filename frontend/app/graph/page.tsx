@@ -215,7 +215,7 @@ export default function GraphPage() {
           <Link className={styles.back} href="/">
             ← 返回首页
           </Link>
-          <p className={styles.eyebrow}>史脉 HistoLink · V0.8.2.2</p>
+          <p className={styles.eyebrow}>史脉 HistoLink · V0.9.0 内测版</p>
         </div>
 
         <h1 className={styles.title}>人物关系图</h1>

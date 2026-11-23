@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "中国历史探索",
-  description: "中国历史探索 · 最小全栈骨架",
+  title: "中国历史探索 · V0.9.0 内测版",
+  description: "中国历史探索 · V0.9.0 内测版：时间轴与 2D 人物关系图",
 };
 
 export default function RootLayout({

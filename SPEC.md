@@ -617,6 +617,15 @@ Y(a) = a <= 0 ? a - 1 : a     // 天文纪年 → 史书纪年（用于展示）
   5. 以上任一项失败即校验失败（非 0 退出码），不得静默通过。
 - **验收**：秦汉默认中心刘邦（邻居韩信、项羽、陈平、萧何等楚汉人物），三国默认中心曹操（邻居刘备、孙权、袁绍、吕布、关羽等）；`tsc --noEmit` 0 error，`node scripts/validate-data.mjs` ALL CHECKS PASSED。
 
+### 7.16 内测版封装（V0.9.0）
+
+- **目标**：V0.9.0 为首次向朋友开放的**内测封装版**，功能冻结；不新增历史数据、不接 Agent，只做 UI 封印与部署可用性加固。
+- **首页入口封印**：`/` 的「聊天问答」入口必须视觉置灰 / 虚线边框 / 显示「开发中」标签；点击**不进行任何路由跳转**，仅弹出 Toast「Agent 智能问答模块正在闭关开发中，敬请期待！」；需提供 `aria-disabled` 与可读提示。时间轴、人物关系图入口保持可点击；右下角后端连通角标逻辑不变。
+- **同源 API 代理**：前端对后端的请求统一走 `/api/*`，由 `next.config.ts` 的 rewrites 代理到 `API_PROXY_TARGET`（默认 `http://127.0.0.1:8000`）；浏览器不直接访问 8000，分享时只需暴露前端 3000 端口。dev 模式经局域网 / 隧道访问时，`next.config.ts` 必须自动把本机全部非回环 IPv4 与 UUMit 隧道域名（`**.uua2a.com` / `**.uumit.com`）写入 `allowedDevOrigins`（否则 Next 16 会拦截 `/_next` dev 资源、页面无法水合）；其他隧道域名可通过 `ALLOWED_DEV_ORIGINS` 追加。生产模式无此限制，分享优先用生产模式。
+- **CORS 配置**：后端默认放行本机 3000 与 `localhost` / `127.0.0.1` / `10.x` / `192.168.x` / `172.16–31.x` 任意端口（`ALLOW_ORIGIN_REGEX`）；可通过 `ALLOW_ORIGINS` 增补公网隧道域名，通过置空 `ALLOW_ORIGIN_REGEX` 收紧。朋友 IP 变化不得要求改代码。
+- **版本标识**：`frontend/package.json` = `0.9.0`；首页 / 图谱页显示「V0.9.0 内测版」；`/api/health` 返回 `{"ok": true, "version": "0.9.0"}`。
+- **验收**：`tsc --noEmit` 0 error、`next build` 通过；浏览器实测聊天入口点击后 URL 不变并出现 Toast，时间轴 / 图谱可进入，`/api/health` 经同源代理成功、角标显示「后端已连接」。
+
 ---
 
 ## 8. 模块四：RAG 问答
