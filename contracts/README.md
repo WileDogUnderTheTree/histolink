@@ -48,7 +48,10 @@ cd backend
 4. 动作枚举的 `available` / `planned` 边界只能移动一次：V1.0.4 起 `planned` 转 `available`
    必须同步 `action-policy.json` 与前端策略单测；
 5. 错误码冻结：`ENTITY_NOT_FOUND` / `AMBIGUOUS_ENTITY` / `INSUFFICIENT_EVIDENCE` /
-   `OUT_OF_SCOPE` / `LLM_TIMEOUT` / `SNAPSHOT_MISMATCH` / `INTERNAL`。
+   `OUT_OF_SCOPE` / `LLM_TIMEOUT` / `SNAPSHOT_MISMATCH` / `INTERNAL`；
+   V1.0.1 只读 API 层（TC-06）追加 4 个统一 envelope 码：
+   `INVALID_REQUEST`（400）/ `METHOD_NOT_ALLOWED`（405）/ `ROUTE_NOT_FOUND`（404）/
+   `SNAPSHOT_NOT_LOADED`（503），均属新增枚举值，不改变既有语义。
 
 ## 4. 字段清单（V1.0 全量）
 

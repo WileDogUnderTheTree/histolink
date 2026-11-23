@@ -906,7 +906,7 @@
         "type": "object"
       },
       "ErrorCode": {
-        "description": "冻结错误码（审核报告 §5.7）。",
+        "description": "冻结错误码（审核报告 §5.7 + TC-06 只读 API 层补充）。",
         "enum": [
           "ENTITY_NOT_FOUND",
           "AMBIGUOUS_ENTITY",
@@ -914,7 +914,11 @@
           "OUT_OF_SCOPE",
           "LLM_TIMEOUT",
           "SNAPSHOT_MISMATCH",
-          "INTERNAL"
+          "INTERNAL",
+          "INVALID_REQUEST",
+          "METHOD_NOT_ALLOWED",
+          "ROUTE_NOT_FOUND",
+          "SNAPSHOT_NOT_LOADED"
         ],
         "title": "ErrorCode",
         "type": "string"

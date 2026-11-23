@@ -410,10 +410,10 @@ export interface components {
         };
         /**
          * ErrorCode
-         * @description 冻结错误码（审核报告 §5.7）。
+         * @description 冻结错误码（审核报告 §5.7 + TC-06 只读 API 层补充）。
          * @enum {string}
          */
-        ErrorCode: "ENTITY_NOT_FOUND" | "AMBIGUOUS_ENTITY" | "INSUFFICIENT_EVIDENCE" | "OUT_OF_SCOPE" | "LLM_TIMEOUT" | "SNAPSHOT_MISMATCH" | "INTERNAL";
+        ErrorCode: "ENTITY_NOT_FOUND" | "AMBIGUOUS_ENTITY" | "INSUFFICIENT_EVIDENCE" | "OUT_OF_SCOPE" | "LLM_TIMEOUT" | "SNAPSHOT_MISMATCH" | "INTERNAL" | "INVALID_REQUEST" | "METHOD_NOT_ALLOWED" | "ROUTE_NOT_FOUND" | "SNAPSHOT_NOT_LOADED";
         /** ErrorEnvelope */
         ErrorEnvelope: {
             error: components["schemas"]["ErrorInfo"];

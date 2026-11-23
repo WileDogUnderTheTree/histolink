@@ -291,7 +291,7 @@ class AnswerEnvelope(StrictModel):
 
 
 class ErrorCode(str, Enum):
-    """冻结错误码（审核报告 §5.7）。"""
+    """冻结错误码（审核报告 §5.7 + TC-06 只读 API 层补充）。"""
 
     ENTITY_NOT_FOUND = "ENTITY_NOT_FOUND"
     AMBIGUOUS_ENTITY = "AMBIGUOUS_ENTITY"
@@ -300,6 +300,12 @@ class ErrorCode(str, Enum):
     LLM_TIMEOUT = "LLM_TIMEOUT"
     SNAPSHOT_MISMATCH = "SNAPSHOT_MISMATCH"
     INTERNAL = "INTERNAL"
+
+    # ---- V1.0.1 只读 API 层（TC-06）：统一 envelope 需要显式区分 ----
+    INVALID_REQUEST = "INVALID_REQUEST"
+    METHOD_NOT_ALLOWED = "METHOD_NOT_ALLOWED"
+    ROUTE_NOT_FOUND = "ROUTE_NOT_FOUND"
+    SNAPSHOT_NOT_LOADED = "SNAPSHOT_NOT_LOADED"
 
 
 class ErrorInfo(StrictModel):

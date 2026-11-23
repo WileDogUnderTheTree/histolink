@@ -191,7 +191,28 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -Only 1,3
 | 首页 | <http://localhost:3000> | 模块入口与后端连通状态 |
 | 时间轴 | <http://localhost:3000/timeline> | 全朝代事件时间轴 |
 | 人物关系图 | <http://localhost:3000/graph> | 三栏布局，分期可切换 |
-| 健康检查 | `GET http://127.0.0.1:8000/api/health` | 响应 `{"ok": true, "version": "0.9.0"}`；也可经前端同源访问 `GET http://localhost:3000/api/health` |
+| 健康检查 | `GET http://127.0.0.1:8000/api/health` | 响应 `{"ok": true, "version": "1.0.1"}`；也可经前端同源访问 `GET http://localhost:3000/api/health` |
+
+V1.0.1 起后端是**只读数据服务**（无任何写接口），全部接口如下（响应均带 `schema_version` 与 `snapshot.version/hash`）：
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/api/health` | 版本与存活检查 |
+| GET | `/api/meta` | 快照版本 / counts / 能力清单（5 个可用动作 + clarification） |
+| GET | `/api/entities/person/{person_id}` | 人物主数据 + 别名 + 分期/断代 + 事件摘要（上限 50） |
+| GET | `/api/entities/event/{event_id}` | 事件 + `person_ids` + 结构化 `source_refs` + `surface` |
+| GET | `/api/entities/persons?name=&era_id=&limit=` | 姓名候选（同名时返回多条，带消歧副标题） |
+
+```powershell
+curl http://127.0.0.1:8000/api/meta
+curl http://127.0.0.1:8000/api/entities/person/p-liangtaihou-xixia-0d0f
+curl "http://127.0.0.1:8000/api/entities/persons?name=梁太后"          # 2 个候选
+curl "http://127.0.0.1:8000/api/entities/persons?name=梁太后&era_id=xixia"  # 1 个候选
+```
+
+错误统一为 `{"ok": false, "request_id": "...", "error": {"code", "message", "retryable", "details?"}}`：
+未知 id → 404 `ENTITY_NOT_FOUND`；写方法 → 405 `METHOD_NOT_ALLOWED`；非法参数 → 400 `INVALID_REQUEST`；
+快照未加载 → 503 `SNAPSHOT_NOT_LOADED`。后端启动时校验快照 hash/counts，失败即拒绝启动。
 
 前端默认经 Next 同源代理访问后端（`/api/*` → `API_PROXY_TARGET`，默认 `http://127.0.0.1:8000`），浏览器侧不产生跨域。
 

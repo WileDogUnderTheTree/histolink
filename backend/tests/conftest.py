@@ -49,3 +49,22 @@ def load_sample(load_json: Callable[[str], Any]) -> Callable[[str], Any]:
         return load_json(f"samples/{name}")
 
     return _load
+
+
+@pytest.fixture(scope="session")
+def client():
+    """启动真实 lifespan（加载真实快照）的 TestClient。"""
+
+    from fastapi.testclient import TestClient
+
+    from main import app
+
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.fixture(scope="session")
+def openapi_spec(contracts_dir: Path) -> dict[str, Any]:
+    """OpenAPI 契约（用于校验 API 响应符合冻结 schema）。"""
+
+    return json.loads((contracts_dir / "api-v1.openapi.json").read_text(encoding="utf-8"))
