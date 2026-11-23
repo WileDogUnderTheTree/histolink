@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { AgentDrawer } from "@/components/agent/AgentDrawer";
-import { AgentProvider } from "@/components/agent/AgentProvider";
+import { AgentProvider } from "@/contexts/AgentContext";
 
 export const metadata: Metadata = {
   title: "中国历史探索 · V1.0.1",

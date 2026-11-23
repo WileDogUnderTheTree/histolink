@@ -20,6 +20,12 @@ describe("timelineHref", () => {
   it("空值 / undefined 参数被忽略", () => {
     expect(timelineHref({ dynasty: "", event: undefined })).toBe("/timeline");
   });
+
+  it("V1.0.4：支持简阅断代 group 参数（跨页 focus_dynasty 使用）", () => {
+    expect(timelineHref({ group: "qinhan", mode: "brief" })).toBe(
+      "/timeline?group=qinhan&mode=brief",
+    );
+  });
 });
 
 describe("graphHref", () => {

@@ -1,11 +1,12 @@
 /**
- * ActionBus 单测（V1.0.1 / TC-07 骨架）。
+ * ActionBus 单测（V1.0.1 骨架 → V1.0.4 跨页导航）。
  *
- * 覆盖：同页自动执行、跨页进入待确认、幂等键、确认/取消、未知类型忽略、无 handler、handler 异常。
+ * 覆盖：同页自动执行、跨页进入待确认、确认后导航、确认/取消、幂等键、
+ * 未知类型忽略、无 handler、handler 异常、批量分发、生产工厂。
  */
 import { describe, expect, it, vi } from "vitest";
 
-import { ActionBus } from "@/lib/action-bus";
+import { ActionBus, createAgentActionBus } from "@/lib/action-bus";
 import type { ActionBusEvent } from "@/lib/action-bus";
 import type { UIAction } from "@/lib/action-policy";
 
@@ -13,7 +14,8 @@ function makeAction(overrides: Partial<UIAction> = {}): UIAction {
   return {
     id: "act-1",
     type: "timeline.focus_event",
-    target: { surface: "timeline" },
+    payload: { event_id: "handong-chibi" },
+    target: { surface: "timeline", params: { event_id: "handong-chibi" } },
     auto: false,
     label: "在时间轴中查看",
     ...overrides,
@@ -95,7 +97,7 @@ describe("ActionBus", () => {
     expect(events.map((event) => event.type)).toEqual(["ignored"]);
   });
 
-  it("没有注册 handler 时忽略（V1.0.4 前不真实执行）", async () => {
+  it("没有注册 handler 时忽略（同页但组件未接入）", async () => {
     const bus = new ActionBus(() => "timeline");
     await expect(bus.dispatch(makeAction())).resolves.toEqual({ status: "ignored", reason: "no_handler" });
     expect(bus.isExecuted("act-1")).toBe(false);
@@ -147,5 +149,114 @@ describe("ActionBus", () => {
       status: "ignored",
       reason: "no_handler",
     });
+  });
+
+  // ------------------------------------------------------------------
+  // V1.0.4：跨页确认 → 深链接导航
+  // ------------------------------------------------------------------
+
+  it("跨页动作确认后导航到目标深链接（无 handler 时）", async () => {
+    const navigate = vi.fn();
+    const events: ActionBusEvent[] = [];
+    const bus = new ActionBus(() => "graph", { navigate });
+    bus.on((event) => events.push(event));
+    const action = makeAction({ id: "act-cross" });
+
+    await bus.dispatch(action);
+    await expect(bus.confirm("act-cross")).resolves.toEqual({ status: "navigated" });
+
+    expect(navigate).toHaveBeenCalledWith("/timeline?event=handong-chibi");
+    expect(events.map((event) => event.type)).toEqual([
+      "confirmation-required",
+      "navigated",
+    ]);
+    expect(bus.isExecuted("act-cross")).toBe(true);
+    // 已导航动作再次确认 → 不在队列。
+    await expect(bus.confirm("act-cross")).resolves.toEqual({
+      status: "ignored",
+      reason: "not_pending",
+    });
+  });
+
+  it("跨页确认支持自定义 resolveHref", async () => {
+    const navigate = vi.fn();
+    const bus = new ActionBus(() => "graph", {
+      navigate,
+      resolveHref: () => "/custom-target",
+    });
+    await bus.dispatch(makeAction({ id: "act-custom", type: "timeline.focus_dynasty" }));
+    await expect(bus.confirm("act-custom")).resolves.toEqual({ status: "navigated" });
+    expect(navigate).toHaveBeenCalledWith("/custom-target");
+  });
+
+  it("导航抛错时上报 failed，不标记已执行", async () => {
+    const navigate = vi.fn(() => {
+      throw new Error("router failed");
+    });
+    const bus = new ActionBus(() => "graph", { navigate });
+    const events = collect(bus);
+    await bus.dispatch(makeAction({ id: "act-nav-fail" }));
+    await expect(bus.confirm("act-nav-fail")).resolves.toEqual({
+      status: "ignored",
+      reason: "navigate_failed",
+    });
+    expect(events.map((event) => event.type)).toEqual(["confirmation-required", "failed"]);
+    expect(bus.isExecuted("act-nav-fail")).toBe(false);
+  });
+
+  it("跨页确认时若目标页已注册 handler，优先执行 handler 而不是导航", async () => {
+    const navigate = vi.fn();
+    const handler = vi.fn();
+    const bus = new ActionBus(() => "graph", { navigate });
+    // 模拟「用户已经在目标页，且该页注册了 handler」的边界。
+    bus.register("timeline.focus_event", handler);
+    await bus.dispatch(makeAction({ id: "act-handler-pending" }));
+    await expect(bus.confirm("act-handler-pending")).resolves.toEqual({ status: "executed" });
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it("dispatchAll 批量分发并返回每个动作的去向", async () => {
+    const bus = new ActionBus(() => "timeline");
+    const handler = vi.fn();
+    bus.register("timeline.focus_event", handler);
+
+    const results = await bus.dispatchAll([
+      makeAction({ id: "act-a" }),
+      makeAction({ id: "act-b", type: "graph.focus_person", target: { surface: "graph" } }),
+      makeAction({ id: "act-a" }),
+    ]);
+
+    expect(results).toEqual([
+      { status: "executed" },
+      { status: "pending" },
+      { status: "duplicate" },
+    ]);
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it("createAgentActionBus 工厂：同页执行 + 跨页导航全链路", async () => {
+    let surface: "timeline" | "graph" | null = "graph";
+    const navigate = vi.fn();
+    const bus = createAgentActionBus({
+      getCurrentSurface: () => surface,
+      navigate,
+    });
+
+    // 当前在 graph 且未注册 timeline handler：timeline 动作跨页 → 确认后导航。
+    await expect(bus.dispatch(makeAction({ id: "act-cross" }))).resolves.toEqual({
+      status: "pending",
+    });
+    await expect(bus.confirm("act-cross")).resolves.toEqual({ status: "navigated" });
+    expect(navigate).toHaveBeenCalledWith("/timeline?event=handong-chibi");
+
+    // 到达 timeline 后页面注册 handler：同页动作自动执行。
+    surface = "timeline";
+    const timelineHandler = vi.fn();
+    bus.register("timeline.focus_event", timelineHandler);
+    await expect(bus.dispatch(makeAction({ id: "act-same" }))).resolves.toEqual({
+      status: "executed",
+    });
+    expect(timelineHandler).toHaveBeenCalledTimes(1);
   });
 });

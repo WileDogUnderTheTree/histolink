@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ScrollableTabs } from "@/components/ScrollableTabs";
 import { ViewModeSwitch } from "@/components/ViewModeSwitch";
 import type { ViewMode } from "@/components/ViewModeSwitch";
-import { useAgentSession } from "@/components/agent/AgentProvider";
+import { useAgentSession } from "@/contexts/AgentContext";
 import {
   DYNASTY_GROUPS,
   DYNASTY_START_YEARS,

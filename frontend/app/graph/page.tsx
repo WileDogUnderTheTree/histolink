@@ -9,7 +9,7 @@ import { PersonGraph2D } from "@/components/PersonGraph2D";
 import { ScrollableTabs } from "@/components/ScrollableTabs";
 import { ViewModeSwitch } from "@/components/ViewModeSwitch";
 import type { ViewMode } from "@/components/ViewModeSwitch";
-import { useAgentSession } from "@/components/agent/AgentProvider";
+import { useAgentSession } from "@/contexts/AgentContext";
 import {
   ERA_TO_SCOPE,
   KEY_FIGURES,

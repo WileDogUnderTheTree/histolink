@@ -11,6 +11,29 @@
 
 ---
 
+## [Unreleased]
+
+### V1.0.4 前端 Agent 数据层（开发中）
+
+- **新增 `frontend/contexts/AgentContext.tsx`**：全局 Agent 状态（单一会话事实源）。`ask(question)`
+  组装页面上下文 + 最近 10 轮 history → `POST /api/agent/ask`（Next 同源代理）→ 写入 transcript；
+  错误信封 / 网络异常统一转为 assistant 错误 turn；对外提供 `isAsking` / `lastAnswer` /
+  `pendingActions` / `confirmAction` / `cancelAction`。
+- **ActionBus 升级（`frontend/lib/action-bus.ts`）**：保留 V1.0.1 的注册 / 幂等 / 同页自动 / 跨页确认，
+  新增 `dispatchAll` 与确认后跨页导航（`navigate` + `resolveHref`）；新增 `createAgentActionBus` 工厂。
+- **新增 `frontend/lib/agent-client.ts` / `action-navigation.ts`**：请求组装、信封归一化、
+  fetch 错误映射、动作 → 深链接（focus_event / focus_dynasty / focus_person / focus_relation / ask.suggest）。
+- **Timeline / Graph 联动**：AgentContext 把 `ui_actions` 交给 ActionBus；同页 `timeline.focus_event`
+  自动切朝代 / 选中事件并回写深链接，`graph.focus_person` / `focus_relation` 自动换中心 / 打开关系面板；
+  跨页动作在抽屉显示「前往 / 取消」，确认后跳转目标深链接。
+- **动作 id 跨轮隔离**：服务端动作 id 每轮可能复用（如 `act-1`），前端统一加 `request_id:` 前缀再分发。
+- **测试**：前端 66 → **99 passed**（新增 `agent-client` 19 条、`action-navigation` 7 条、
+  ActionBus 导航 / 批量 7 条、timeline group 深链接 1 条）；`pnpm exec tsc --noEmit` 与 `pnpm build` 通过。
+- **文档**：新增 `docs/V1.0.4-Agent-UI数据层设计.md`（调用链 + 手工验收步骤）；
+  `docs/V1.0.7-TODO.md` 记录 ruff 格式 / lint 存量告警与 `httpx2` 弃用警告。
+
+---
+
 ## [1.0.3] - 2026-11-23
 
 ### 新增与安全加固

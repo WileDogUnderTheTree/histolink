@@ -1,22 +1,35 @@
 "use client";
 
 /**
- * 全局悬浮抽屉（V1.0.1 / TC-07 骨架，Q1 决策）。
+ * 全局悬浮抽屉（V1.0.1 骨架 → V1.0.4 数据层接入）。
  *
- * - 占位内容：只显示「V1.0 开发中」与会话 transcript，不发网络请求；
+ * - 真实调用 `/api/agent/ask`（经 `AgentContext.ask`），展示服务端返回的 markdown；
+ * - 同页 UI 动作由 ActionBus 自动执行；跨页动作在这里显示确认按钮；
  * - ESC 关闭、点击遮罩关闭、按钮带 aria-label / aria-expanded；
- * - 与 `/ask` 共享同一个 `AgentProvider` 会话（不是本地 state）。
+ * - 与 `/ask` 共享同一个 AgentContext 会话（不是本地 state）。
+ *
+ * 视觉细节由 V1.0.4 UI 卡（AgentDrawer 视觉）继续打磨；本文件只保证数据与交互可用。
  */
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-import { useAgentSession } from "@/components/agent/AgentProvider";
+import { useAgentSession } from "@/contexts/AgentContext";
 import { askHref } from "@/lib/routes";
 
 import styles from "./AgentDrawer.module.css";
 
 export function AgentDrawer() {
-  const { isOpen, openDrawer, closeDrawer, transcript, pendingActions, ask } = useAgentSession();
+  const {
+    isOpen,
+    openDrawer,
+    closeDrawer,
+    transcript,
+    isAsking,
+    pendingActions,
+    ask,
+    confirmAction,
+    cancelAction,
+  } = useAgentSession();
   const [draft, setDraft] = useState("");
 
   useEffect(() => {
@@ -36,7 +49,8 @@ export function AgentDrawer() {
 
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    ask(draft);
+    if (isAsking) return;
+    void ask(draft);
     setDraft("");
   };
 
@@ -69,7 +83,7 @@ export function AgentDrawer() {
                   史脉问答
                 </h2>
                 <p id="shimai-agent-note" className={styles.note}>
-                  V1.0 开发中：当前为壳层骨架，不调用后端、不发送网络请求。
+                  V1.0.4：已接入真实问答（历史数据 + 可核验引用）；跨页动作会先向你确认。
                 </p>
               </div>
               <button type="button" className={styles.close} onClick={closeDrawer} aria-label="关闭抽屉">
@@ -79,7 +93,11 @@ export function AgentDrawer() {
 
             <ol className={styles.transcript} aria-live="polite">
               {transcript.map((turn) => (
-                <li key={turn.id} className={turn.role === "user" ? styles.userTurn : styles.agentTurn}>
+                <li
+                  key={turn.id}
+                  className={turn.role === "user" ? styles.userTurn : styles.agentTurn}
+                  data-error={turn.isError === true ? "true" : undefined}
+                >
                   <span className={styles.role}>{turn.role === "user" ? "你" : "史脉"}</span>
                   <p className={styles.content}>{turn.content}</p>
                 </li>
@@ -88,7 +106,20 @@ export function AgentDrawer() {
 
             {pendingActions.length > 0 ? (
               <div className={styles.pending} role="status">
-                有 {pendingActions.length} 个跨页动作等待确认（V1.0.4 接入确认按钮）。
+                <p>以下动作需要跨页跳转，确认后执行：</p>
+                <ul>
+                  {pendingActions.map((action) => (
+                    <li key={action.id}>
+                      <span>{action.label}</span>
+                      <button type="button" onClick={() => void confirmAction(action.id)}>
+                        前往
+                      </button>
+                      <button type="button" onClick={() => cancelAction(action.id)}>
+                        取消
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ) : null}
 
@@ -101,11 +132,12 @@ export function AgentDrawer() {
                 className={styles.input}
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
-                placeholder="V1.0 开发中，可先输入占位"
+                placeholder="例如：赤壁之战发生在哪一年？"
                 autoComplete="off"
+                disabled={isAsking}
               />
-              <button type="submit" className={styles.send}>
-                占位提问
+              <button type="submit" className={styles.send} disabled={isAsking}>
+                {isAsking ? "思考中…" : "提问"}
               </button>
             </form>
 
@@ -121,3 +153,4 @@ export function AgentDrawer() {
     </>
   );
 }
+

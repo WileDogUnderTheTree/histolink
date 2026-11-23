@@ -31,11 +31,12 @@
 | 2D 人物关系图 | `/graph` | 「简阅 / 细览」双视图：细览 **18 期**（春秋 / 战国 / 秦汉 / 三国 / 西晋 / 东晋十六国 / 南北朝 / 隋 / 唐 / 五代十国 / 北宋 / 南宋 / 辽 / 西夏 / 金 / 元 / 明 / 清），简阅 **7 组**（先秦 / 秦汉 / 三国 / 魏晋南北朝 / 隋唐 / 宋辽金夏 / 元明清）；D3 力导向 + SVG；单击相邻人物查看两人关系、共同事件与事件简述，长按约 500ms 切换中心，拖拽调整位置；切期 / 切模式时中心人物能保留则保留 |
 | 图谱三栏导航 | `/graph` | 左栏 240px（人物搜索 + 名人堂 + 三国阵营快捷）｜中栏画布自适应｜右栏 280px 关系详情；搜索、名人堂与阵营按钮均可直达任意人物为中心；支持本名 / 庙号别名搜索（如「拓跋宏」→ 孝文帝、「清圣祖」→ 康熙帝）；图区上方仅保留一行操作副标题 + `?` 气泡，复杂说明不占正文 |
 | 后端服务 | `GET /api/health` | FastAPI 健康检查；CORS 默认放行本机与局域网私有网段，可用 `ALLOW_ORIGINS` / `ALLOW_ORIGIN_REGEX` 覆盖；前端默认经 Next 同源 `/api` 代理访问 |
-| 问答壳层（V1.0.1 骨架） | `/ask` + 全局抽屉 | `AgentProvider` 单一会话：页面右下角「问史脉」悬浮抽屉与 `/ask` 独立页共享同一份 transcript（ESC / 遮罩关闭、基础 a11y）；**不发任何网络请求**，真实问答 V1.0.3 接入 |
+| 问答壳层（V1.0.1 骨架 → V1.0.4 数据层） | `/ask` + 全局抽屉 | `AgentContext` 单一会话：页面右下角「问史脉」悬浮抽屉与 `/ask` 共享同一份 transcript；V1.0.4 已接入真实 `POST /api/agent/ask`（页面上下文 + history），同页动作自动执行、跨页动作弹确认后跳转 |
 | 组件受控与深链接（V1.0.1） | `/timeline` · `/graph` | `PersonGraph2D` 新增可选 `highlightedPersonIds` / `selectedPersonId` / `onPersonSelect`（不传时行为与 V0.9.0 完全一致）；ActionBus 在时间轴 / 图谱页注册同页动作并回写 URL；支持 `/timeline?event=…`、`/graph?person=…&era=…&selected=…` 直接恢复视图（含受控关系面板） |
 | 评测骨架（V1.0.1） | `evals/` + `scripts/run-evals.mjs` | 30 条 golden 用例覆盖 12 类（公元前年份 / 同名歧义 / 资料不足 / 跨朝代 / 关系 / 对比 / 超范围 / 彩蛋排除 / 仅图谱事件 / 多轮 / 事件人物联动 / UI 动作策略）；contract 模式离线校验 schema、快照绑定、0 悬空 ID、工具入参与动作策略，含负向自测 |
 | 模型连通性（V1.0.1 / TC-10） | `/api/agent/ping_llm` | 实测 `Qwen/Qwen3.5-35B-A3B`：连通性 / JSON 模式 / tool calling / SSE / 中文回答均通过；默认思考模式延迟高，已给出 V1.0.3 参数与降级路线 |
 | Agent 问答（V1.0.3） | `POST /api/agent/ask` | 规划器 + 工具循环（最多 4 轮）+ 证据校验；Qwen `enable_thinking=false` + JSON 模式；evidence / citation 对不上工具真实结果时强制降级 `insufficient`；返回冻结 `AnswerEnvelope`（含 citations / entities / trace） |
+| Agent UI 数据层（V1.0.4） | `frontend/contexts/AgentContext.tsx` | 全局 Agent 状态：提问 → 组装页面上下文 / history → 调用 `/api/agent/ask` → transcript；ActionBus 按 `target.surface` 判定同页自动执行 / 跨页确认；确认后按动作生成深链接导航（Timeline / Graph 已注册 `timeline.focus_event`、`graph.focus_person` 等 handler） |
 | 人物主数据（V1.0.1） | `frontend/data/persons.ts` | 1,058 条 person 记录 = 1,059 个姓名 − 3 条异名同一人合并 + 2 条同名拆分（梁太后 / 刘崇）；稳定 `person_id` + ID 锁文件 + 66 条全局别名 + 同名报告 + `--check` 门禁 |
 | 数据快照与只读 API（V1.0.1） | `backend/data/` · `/api/meta` · `/api/entities/*` | 前后端同源快照（705 事件 / 1,058 人物 / 639 关系 / 18 期 / 7 断代，约 2.7MB，内容寻址 hash）；FastAPI 启动校验快照，提供 meta / person / event / 姓名候选只读接口与统一错误 envelope |
 | 只读工具层（V1.0.2） | `backend/agent/tools/` | 8 个只读工具（实体消歧 / 事件检索 / 事件 / 人物 / 人物事件 / 关系 / 时期图谱 / 时间区间）直接读内存快照；统一信封 `ok/items/citations/truncated/snapshot_version/data/error/meta` 已写入 `tools-v1.schema.json` 的 `output`；62 条单测覆盖正常 / 空结果 / 歧义 / 非法参数 |
@@ -45,7 +46,7 @@
 | 模块 | 计划版本 | 说明 |
 |---|---|---|
 | 人物首字母索引（`/people`） | V1.0 前后 | SPEC 规划模块 |
-| Agent 与语义 RAG 问答 | V1.0.4–V1.0.6 | `/ask` 与悬浮抽屉壳层已在 V1.0.1 落地；V1.0.3 规划器、回答生成与证据校验已完成，后续接入动作联动、检索与多轮能力 |
+| Agent 与语义 RAG 问答 | V1.0.4–V1.0.6 | V1.0.1 壳层、V1.0.3 规划器 / 证据校验、V1.0.4 前端 Context + ActionBus 数据层已完成；后续动作 UI 细化、检索与多轮能力 |
 | 3D 人物关系视图、时间轴滑块交互 | V1.1 | 终极 UI 重构 |
 | 时间轴尽头彩蛋节点（1893-12-26） | V1.1.1 | 全部 UI 完成后制作 |
 
@@ -63,7 +64,7 @@
 | 包管理与构建 | pnpm + Next.js Turbopack | 锁文件 `frontend/pnpm-lock.yaml` |
 | 后端 | [FastAPI](https://fastapi.tiangolo.com/) + Uvicorn + Pydantic v2 | `fastapi>=0.115`、`uvicorn[standard]>=0.34`、`pydantic>=2.9,<3`（Python 3.11 虚拟环境） |
 | 契约与门禁 | Pydantic → OpenAPI 3.1 → `openapi-typescript` | 后端 `backend/contracts` 为唯一事实源；三份契约 + 动作策略 + 32 条后端契约测试 |
-| 测试 | pytest / vitest / evals | 后端 269 条（契约 + 只读 API + 工具层 + Agent Core + 安全加固 + LLM 客户端 + fail-fast）；前端 66 条（动作策略 / ActionBus / 深链接 / 受控选中 / 能力映射）；评测 30 条 golden（contract 模式） |
+| 测试 | pytest / vitest / evals | 后端 269 条（契约 + 只读 API + 工具层 + Agent Core + 安全加固 + LLM 客户端 + fail-fast）；前端 99 条（动作策略 / ActionBus / 深链接 / 受控选中 / 能力映射 / Agent 数据层 / 动作导航）；评测 30 条 golden（contract 模式） |
 | 运行形态 | 前后端分离 | 前端渲染与交互；后端为只读数据服务（快照 + `/api/entities/*`），不接数据库、无写接口 |
 
 浏览器支持：桌面 Chrome / Edge 最近两个大版本，Safari 16+ 可浏览；桌面优先，移动端保证可浏览与降级。

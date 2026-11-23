@@ -40,6 +40,8 @@ export function surfaceFromPathname(pathname: string | null | undefined): UISurf
 export interface TimelineHrefParams {
   event?: string;
   dynasty?: string;
+  /** 简阅断代 id（跨页 `timeline.focus_dynasty` 使用 group_id 时携带）。 */
+  group?: string;
   mode?: string;
 }
 
@@ -55,6 +57,7 @@ export function timelineHref(params: TimelineHrefParams = {}): string {
   return buildHref("/timeline", {
     event: params.event,
     dynasty: params.dynasty,
+    group: params.group,
     mode: params.mode,
   });
 }
