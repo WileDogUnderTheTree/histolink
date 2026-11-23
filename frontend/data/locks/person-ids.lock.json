@@ -1,0 +1,6354 @@
+{
+  "schema_version": "person-ids.v1",
+  "person_count": 1058,
+  "persons": [
+    {
+      "id": "p-abeizhongmalv-6cc0",
+      "displayName": "阿倍仲麻吕",
+      "firstYear": 717,
+      "identityHash": "6778e43a"
+    },
+    {
+      "id": "p-abumusilin-c315",
+      "displayName": "阿布·穆斯林",
+      "firstYear": 751,
+      "identityHash": "5f83c63a"
+    },
+    {
+      "id": "p-aiyulibalibada-6d62",
+      "displayName": "爱育黎拔力八达",
+      "firstYear": 1307,
+      "identityHash": "53fc9fa2"
+    },
+    {
+      "id": "p-alibuge-ed53",
+      "displayName": "阿里不哥",
+      "firstYear": 1260,
+      "identityHash": "65cd4a15"
+    },
+    {
+      "id": "p-alutai-9b24",
+      "displayName": "阿鲁台",
+      "firstYear": 1410,
+      "identityHash": "7772ba03"
+    },
+    {
+      "id": "p-amuersana-cf6b",
+      "displayName": "阿睦尔撒纳",
+      "firstYear": 1755,
+      "identityHash": "8045c78e"
+    },
+    {
+      "id": "p-andahan-ad52",
+      "displayName": "俺答汗",
+      "firstYear": 1550,
+      "identityHash": "e27b7ed4"
+    },
+    {
+      "id": "p-anlushan-ac25",
+      "displayName": "安禄山",
+      "firstYear": 742,
+      "identityHash": "8b9fe64e"
+    },
+    {
+      "id": "p-anqingxu-93b7",
+      "displayName": "安庆绪",
+      "firstYear": 757,
+      "identityHash": "b5abcdf1"
+    },
+    {
+      "id": "p-anzhonghui-b196",
+      "displayName": "安重诲",
+      "firstYear": 932,
+      "identityHash": "58754063"
+    },
+    {
+      "id": "p-aobai-ce78",
+      "displayName": "鳌拜",
+      "firstYear": 1661,
+      "identityHash": "b2a7562f"
+    },
+    {
+      "id": "p-ashinahelu-81a4",
+      "displayName": "阿史那贺鲁",
+      "firstYear": 657,
+      "identityHash": "cca4d0f3"
+    },
+    {
+      "id": "p-ashu-e309",
+      "displayName": "阿术",
+      "firstYear": 1273,
+      "identityHash": "da587b6d"
+    },
+    {
+      "id": "p-badou-7ebb",
+      "displayName": "拔都",
+      "firstYear": 1235,
+      "identityHash": "60350bf2"
+    },
+    {
+      "id": "p-baiqi-f74d",
+      "displayName": "白起",
+      "firstYear": -293,
+      "identityHash": "bf7318d5"
+    },
+    {
+      "id": "p-baizhu-bc3c",
+      "displayName": "拜住",
+      "firstYear": 1323,
+      "identityHash": "e2849b67"
+    },
+    {
+      "id": "p-banbiao-fe4c",
+      "displayName": "班彪",
+      "firstYear": 82,
+      "identityHash": "b1bd3932"
+    },
+    {
+      "id": "p-banchao-b823",
+      "displayName": "班超",
+      "firstYear": 73,
+      "identityHash": "10ee0bb4"
+    },
+    {
+      "id": "p-bangu-d051",
+      "displayName": "班固",
+      "firstYear": 79,
+      "identityHash": "ce291f25"
+    },
+    {
+      "id": "p-banzhao-c261",
+      "displayName": "班昭",
+      "firstYear": 102,
+      "identityHash": "4db17382"
+    },
+    {
+      "id": "p-baoshuya-8fcd",
+      "displayName": "鲍叔牙",
+      "firstYear": -685,
+      "identityHash": "411f70dd"
+    },
+    {
+      "id": "p-baosi-5bd1",
+      "displayName": "褒姒",
+      "firstYear": -779,
+      "identityHash": "f0199793"
+    },
+    {
+      "id": "p-baozheng-bb98",
+      "displayName": "包拯",
+      "firstYear": 1052,
+      "identityHash": "df19a4fe"
+    },
+    {
+      "id": "p-basiba-3fc4",
+      "displayName": "八思巴",
+      "firstYear": 1247,
+      "identityHash": "f9c0ade2"
+    },
+    {
+      "id": "p-bazalawaermi-caee",
+      "displayName": "把匝剌瓦尔密",
+      "firstYear": 1382,
+      "identityHash": "cfcd22ab"
+    },
+    {
+      "id": "p-benyashili-c4e3",
+      "displayName": "本雅失里",
+      "firstYear": 1410,
+      "identityHash": "18869912"
+    },
+    {
+      "id": "p-bigan-69cb",
+      "displayName": "比干",
+      "firstYear": -1050,
+      "identityHash": "3eef36cb"
+    },
+    {
+      "id": "p-boluonidou-ebaa",
+      "displayName": "波罗尼都",
+      "firstYear": 1759,
+      "identityHash": "a56f99be"
+    },
+    {
+      "id": "p-boyan-e633",
+      "displayName": "伯颜",
+      "firstYear": 1273,
+      "identityHash": "fc1381cc"
+    },
+    {
+      "id": "p-buzixia-be01",
+      "displayName": "卜子夏",
+      "firstYear": -406,
+      "identityHash": "3af80c1f"
+    },
+    {
+      "id": "p-caijing-eb4a",
+      "displayName": "蔡京",
+      "firstYear": 1100,
+      "identityHash": "11a59f0b"
+    },
+    {
+      "id": "p-cailun-4902",
+      "displayName": "蔡伦",
+      "firstYear": 105,
+      "identityHash": "065d7aa7"
+    },
+    {
+      "id": "p-caishu-c233",
+      "displayName": "蔡叔",
+      "firstYear": -1042,
+      "identityHash": "5d23a242"
+    },
+    {
+      "id": "p-caiwenji-c945",
+      "displayName": "蔡文姬",
+      "firstYear": 207,
+      "identityHash": "b9bb1e9c"
+    },
+    {
+      "id": "p-caiyin-60fc",
+      "displayName": "蔡愔",
+      "firstYear": 67,
+      "identityHash": "c5dc44fd"
+    },
+    {
+      "id": "p-caiyong-243f",
+      "displayName": "蔡邕",
+      "firstYear": 175,
+      "identityHash": "76ab4a13"
+    },
+    {
+      "id": "p-caobin-9210",
+      "displayName": "曹彬",
+      "firstYear": 975,
+      "identityHash": "c4da0e5e"
+    },
+    {
+      "id": "p-caocan-049c",
+      "displayName": "曹参",
+      "firstYear": -193,
+      "identityHash": "93641af9"
+    },
+    {
+      "id": "p-caocao-b012",
+      "displayName": "曹操",
+      "firstYear": 190,
+      "identityHash": "760f1d89"
+    },
+    {
+      "id": "p-caofang-20fc",
+      "displayName": "曹芳",
+      "firstYear": 249,
+      "identityHash": "fef95448"
+    },
+    {
+      "id": "p-caohuan-0365",
+      "displayName": "曹奂",
+      "firstYear": 260,
+      "identityHash": "a0d455e6"
+    },
+    {
+      "id": "p-caopi-f173",
+      "displayName": "曹丕",
+      "firstYear": 220,
+      "identityHash": "49d9bffe"
+    },
+    {
+      "id": "p-caoren-7b04",
+      "displayName": "曹仁",
+      "firstYear": 219,
+      "identityHash": "33003cbe"
+    },
+    {
+      "id": "p-caoshuang-865d",
+      "displayName": "曹爽",
+      "firstYear": 249,
+      "identityHash": "50c185f0"
+    },
+    {
+      "id": "p-cengguofan-1d19",
+      "displayName": "曾国藩",
+      "firstYear": 1851,
+      "identityHash": "72fe8ac3"
+    },
+    {
+      "id": "p-cengzi-f3b8",
+      "displayName": "曾子",
+      "firstYear": -484,
+      "identityHash": "2a85ba83"
+    },
+    {
+      "id": "p-cewangalabutan-4dd8",
+      "displayName": "策妄阿拉布坦",
+      "firstYear": 1720,
+      "identityHash": "afd052ba"
+    },
+    {
+      "id": "p-chairong-93b5",
+      "displayName": "柴荣",
+      "firstYear": 954,
+      "identityHash": "9cd96b98"
+    },
+    {
+      "id": "p-changyuchun-54a6",
+      "displayName": "常遇春",
+      "firstYear": 1368,
+      "identityHash": "821b9911"
+    },
+    {
+      "id": "p-chaocuo-dfad",
+      "displayName": "晁错",
+      "firstYear": -180,
+      "identityHash": "0f0ea3a4"
+    },
+    {
+      "id": "p-chenbaxian-48c7",
+      "displayName": "陈霸先",
+      "firstYear": 557,
+      "identityHash": "804b838e"
+    },
+    {
+      "id": "p-chenfan-3c7c",
+      "displayName": "陈蕃",
+      "firstYear": 166,
+      "identityHash": "c739e5e0"
+    },
+    {
+      "id": "p-chengjisihan-7567",
+      "displayName": "成吉思汗",
+      "firstYear": 1208,
+      "identityHash": "026bf5f3"
+    },
+    {
+      "id": "p-chengui-0a6c",
+      "displayName": "陈规",
+      "firstYear": 1140,
+      "identityHash": "bbd7a819"
+    },
+    {
+      "id": "p-chennong-8ed7",
+      "displayName": "陈农",
+      "firstYear": -26,
+      "identityHash": "91571e96"
+    },
+    {
+      "id": "p-chenping-b722",
+      "displayName": "陈平",
+      "firstYear": -201,
+      "identityHash": "e9495f89"
+    },
+    {
+      "id": "p-chenqingzhi-7547",
+      "displayName": "陈庆之",
+      "firstYear": 529,
+      "identityHash": "1718babb"
+    },
+    {
+      "id": "p-chensheng-451b",
+      "displayName": "陈胜",
+      "firstYear": -209,
+      "identityHash": "e6e3bb7f"
+    },
+    {
+      "id": "p-chenshubao-6e88",
+      "displayName": "陈叔宝",
+      "firstYear": 588,
+      "identityHash": "1272a01a"
+    },
+    {
+      "id": "p-chentang-ae71",
+      "displayName": "陈汤",
+      "firstYear": -36,
+      "identityHash": "07039cb9"
+    },
+    {
+      "id": "p-chenxi-9e97",
+      "displayName": "陈豨",
+      "firstYear": -196,
+      "identityHash": "2f79d045"
+    },
+    {
+      "id": "p-chenxingdao-88a7",
+      "displayName": "陈兴道",
+      "firstYear": 1285,
+      "identityHash": "864228c1"
+    },
+    {
+      "id": "p-chenxuanli-b956",
+      "displayName": "陈玄礼",
+      "firstYear": 756,
+      "identityHash": "adc0c6fe"
+    },
+    {
+      "id": "p-chenyouliang-0a80",
+      "displayName": "陈友谅",
+      "firstYear": 1363,
+      "identityHash": "ee940a71"
+    },
+    {
+      "id": "p-chenzhen-19d6",
+      "displayName": "陈轸",
+      "firstYear": -313,
+      "identityHash": "5bf0d170"
+    },
+    {
+      "id": "p-chizudezan-654a",
+      "displayName": "赤祖德赞",
+      "firstYear": 821,
+      "identityHash": "91096d15"
+    },
+    {
+      "id": "p-chongzhendi-d5f7",
+      "displayName": "崇祯帝",
+      "firstYear": 1629,
+      "identityHash": "61b399e1"
+    },
+    {
+      "id": "p-chouluan-826a",
+      "displayName": "仇鸾",
+      "firstYear": 1550,
+      "identityHash": "ac561ff1"
+    },
+    {
+      "id": "p-choushiliang-b2bf",
+      "displayName": "仇士良",
+      "firstYear": 835,
+      "identityHash": "cdcb4821"
+    },
+    {
+      "id": "p-chuchengwang-ba85",
+      "displayName": "楚成王",
+      "firstYear": -638,
+      "identityHash": "a000123f"
+    },
+    {
+      "id": "p-chudaowang-181f",
+      "displayName": "楚悼王",
+      "firstYear": -386,
+      "identityHash": "1bb7b41c"
+    },
+    {
+      "id": "p-chugongwang-43e4",
+      "displayName": "楚共王",
+      "firstYear": -575,
+      "identityHash": "8065451e"
+    },
+    {
+      "id": "p-chuhuaiwang-9207",
+      "displayName": "楚怀王",
+      "firstYear": -318,
+      "identityHash": "45cc47da"
+    },
+    {
+      "id": "p-chuhuiwang-dbbd",
+      "displayName": "楚惠王",
+      "firstYear": -440,
+      "identityHash": "8906a4b6"
+    },
+    {
+      "id": "p-chulingwang-6778",
+      "displayName": "楚灵王",
+      "firstYear": -531,
+      "identityHash": "9dca2268"
+    },
+    {
+      "id": "p-chunyukun-a98f",
+      "displayName": "淳于髡",
+      "firstYear": -310,
+      "identityHash": "5898bd8a"
+    },
+    {
+      "id": "p-chunyuyi-d581",
+      "displayName": "淳于意",
+      "firstYear": -167,
+      "identityHash": "0fdb5bf4"
+    },
+    {
+      "id": "p-chupingwang-e8fe",
+      "displayName": "楚平王",
+      "firstYear": -506,
+      "identityHash": "3ec5c059"
+    },
+    {
+      "id": "p-chuqingxiangwang-6009",
+      "displayName": "楚顷襄王",
+      "firstYear": -278,
+      "identityHash": "b119dfeb"
+    },
+    {
+      "id": "p-chuwangfuchu-517c",
+      "displayName": "楚王负刍",
+      "firstYear": -223,
+      "identityHash": "93d86654"
+    },
+    {
+      "id": "p-chuweiwang-3e46",
+      "displayName": "楚威王",
+      "firstYear": -334,
+      "identityHash": "032361c1"
+    },
+    {
+      "id": "p-chuwuwang-10ab",
+      "displayName": "楚武王",
+      "firstYear": -704,
+      "identityHash": "93299ae0"
+    },
+    {
+      "id": "p-chuyuan-98a7",
+      "displayName": "褚渊",
+      "firstYear": 479,
+      "identityHash": "1fc75dad"
+    },
+    {
+      "id": "p-chuzhaowang-e47a",
+      "displayName": "楚昭王",
+      "firstYear": -506,
+      "identityHash": "e618d1c9"
+    },
+    {
+      "id": "p-chuzhuangwang-d3cb",
+      "displayName": "楚庄王",
+      "firstYear": -611,
+      "identityHash": "e1644342"
+    },
+    {
+      "id": "p-cixitaihou-8d57",
+      "displayName": "慈禧太后",
+      "firstYear": 1861,
+      "identityHash": "10a0247d"
+    },
+    {
+      "id": "p-cuili-a82d",
+      "displayName": "崔立",
+      "firstYear": 1232,
+      "identityHash": "a1630627"
+    },
+    {
+      "id": "p-cuizhu-894d",
+      "displayName": "崔杼",
+      "firstYear": -548,
+      "identityHash": "f7dc5e8a"
+    },
+    {
+      "id": "p-daji-92b3",
+      "displayName": "妲己",
+      "firstYear": -1075,
+      "identityHash": "3255f943"
+    },
+    {
+      "id": "p-danchao-5ddc",
+      "displayName": "单超",
+      "firstYear": 159,
+      "identityHash": "99832bba"
+    },
+    {
+      "id": "p-daoguangdi-a6db",
+      "displayName": "道光帝",
+      "firstYear": 1839,
+      "identityHash": "3edb7dc1"
+    },
+    {
+      "id": "p-dawaqi-0e49",
+      "displayName": "达瓦齐",
+      "firstYear": 1755,
+      "identityHash": "94d1c95d"
+    },
+    {
+      "id": "p-dayinzhuan-60c4",
+      "displayName": "大諲譔",
+      "firstYear": 926,
+      "identityHash": "25849bee"
+    },
+    {
+      "id": "p-dengai-ce64",
+      "displayName": "邓艾",
+      "firstYear": 263,
+      "identityHash": "69cb6bcf"
+    },
+    {
+      "id": "p-dengping-3df9",
+      "displayName": "邓平",
+      "firstYear": -104,
+      "identityHash": "19cf0768"
+    },
+    {
+      "id": "p-dengzilong-5cd0",
+      "displayName": "邓子龙",
+      "firstYear": 1592,
+      "identityHash": "4c2582cf"
+    },
+    {
+      "id": "p-dianwei-8b57",
+      "displayName": "典韦",
+      "firstYear": 197,
+      "identityHash": "21929090"
+    },
+    {
+      "id": "p-dingruchang-4ff9",
+      "displayName": "丁汝昌",
+      "firstYear": 1894,
+      "identityHash": "bf94d6f2"
+    },
+    {
+      "id": "p-dingwei-99c4",
+      "displayName": "丁谓",
+      "firstYear": 1022,
+      "identityHash": "cf73ec1e"
+    },
+    {
+      "id": "p-diqing-71c9",
+      "displayName": "狄青",
+      "firstYear": 1040,
+      "identityHash": "d65388af"
+    },
+    {
+      "id": "p-direnjie-1428",
+      "displayName": "狄仁杰",
+      "firstYear": 692,
+      "identityHash": "6e969fa4"
+    },
+    {
+      "id": "p-dongchang-3c9f",
+      "displayName": "董昌",
+      "firstYear": 896,
+      "identityHash": "2c03d63b"
+    },
+    {
+      "id": "p-dongzhongshu-fce5",
+      "displayName": "董仲舒",
+      "firstYear": -134,
+      "identityHash": "c5f4ae4f"
+    },
+    {
+      "id": "p-dongzhuo-732a",
+      "displayName": "董卓",
+      "firstYear": 189,
+      "identityHash": "1e94345c"
+    },
+    {
+      "id": "p-doubobi-51c4",
+      "displayName": "斗伯比",
+      "firstYear": -704,
+      "identityHash": "2b458777"
+    },
+    {
+      "id": "p-dougu-88ee",
+      "displayName": "窦固",
+      "firstYear": 73,
+      "identityHash": "de8d6162"
+    },
+    {
+      "id": "p-doujiande-224c",
+      "displayName": "窦建德",
+      "firstYear": 611,
+      "identityHash": "36b444f6"
+    },
+    {
+      "id": "p-doutaihou-a661",
+      "displayName": "窦太后",
+      "firstYear": 168,
+      "identityHash": "f2f9ddb0"
+    },
+    {
+      "id": "p-douwu-3f49",
+      "displayName": "窦武",
+      "firstYear": 168,
+      "identityHash": "299109d6"
+    },
+    {
+      "id": "p-douxian-672b",
+      "displayName": "窦宪",
+      "firstYear": 89,
+      "identityHash": "f15b79ba"
+    },
+    {
+      "id": "p-duanganmu-9758",
+      "displayName": "段干木",
+      "firstYear": -406,
+      "identityHash": "c90d4c3e"
+    },
+    {
+      "id": "p-duanxingzhi-376f",
+      "displayName": "段兴智",
+      "firstYear": 1253,
+      "identityHash": "41fecc58"
+    },
+    {
+      "id": "p-duchong-6c0c",
+      "displayName": "杜充",
+      "firstYear": 1129,
+      "identityHash": "5fe662b6"
+    },
+    {
+      "id": "p-dugujialuo-7bd7",
+      "displayName": "独孤伽罗",
+      "firstYear": 581,
+      "identityHash": "efb3bcd3"
+    },
+    {
+      "id": "p-duoergun-d674",
+      "displayName": "多尔衮",
+      "firstYear": 1641,
+      "identityHash": "fbf41b8a"
+    },
+    {
+      "id": "p-duruhui-655f",
+      "displayName": "杜如晦",
+      "firstYear": 626,
+      "identityHash": "d80f757f"
+    },
+    {
+      "id": "p-dusong-e688",
+      "displayName": "杜松",
+      "firstYear": 1619,
+      "identityHash": "b4edc403"
+    },
+    {
+      "id": "p-duyu-6a6f",
+      "displayName": "杜预",
+      "firstYear": 280,
+      "identityHash": "345e879b"
+    },
+    {
+      "id": "p-duzhi-f46c",
+      "displayName": "杜挚",
+      "firstYear": -359,
+      "identityHash": "1c9bd7c7"
+    },
+    {
+      "id": "p-eerjin-14ac",
+      "displayName": "额尔金",
+      "firstYear": 1860,
+      "identityHash": "a54f75c1"
+    },
+    {
+      "id": "p-eertai-ff2d",
+      "displayName": "鄂尔泰",
+      "firstYear": 1726,
+      "identityHash": "f639f602"
+    },
+    {
+      "id": "p-eledengbao-d4c5",
+      "displayName": "额勒登保",
+      "firstYear": 1796,
+      "identityHash": "b2bef528"
+    },
+    {
+      "id": "p-erzhurong-18c2",
+      "displayName": "尔朱荣",
+      "firstYear": 528,
+      "identityHash": "09ea95fd"
+    },
+    {
+      "id": "p-fanchong-4878",
+      "displayName": "樊崇",
+      "firstYear": 17,
+      "identityHash": "c863713c"
+    },
+    {
+      "id": "p-fangla-3457",
+      "displayName": "方腊",
+      "firstYear": 1120,
+      "identityHash": "656f8ec6"
+    },
+    {
+      "id": "p-fangxiaoru-0917",
+      "displayName": "方孝孺",
+      "firstYear": 1402,
+      "identityHash": "1557af68"
+    },
+    {
+      "id": "p-fangxuanling-c38f",
+      "displayName": "房玄龄",
+      "firstYear": 621,
+      "identityHash": "407d475b"
+    },
+    {
+      "id": "p-fanju-07f4",
+      "displayName": "范雎",
+      "firstYear": -270,
+      "identityHash": "8df3b596"
+    },
+    {
+      "id": "p-fankuai-9646",
+      "displayName": "樊哙",
+      "firstYear": -206,
+      "identityHash": "d602bee7"
+    },
+    {
+      "id": "p-fanli-5479",
+      "displayName": "范蠡",
+      "firstYear": -494,
+      "identityHash": "b1797f2a"
+    },
+    {
+      "id": "p-fanpang-3cc3",
+      "displayName": "范滂",
+      "firstYear": 169,
+      "identityHash": "71d35c49"
+    },
+    {
+      "id": "p-fanwencheng-784b",
+      "displayName": "范文程",
+      "firstYear": 1636,
+      "identityHash": "261d783d"
+    },
+    {
+      "id": "p-fanwenhu-7327",
+      "displayName": "范文虎",
+      "firstYear": 1281,
+      "identityHash": "ad9b0777"
+    },
+    {
+      "id": "p-fanwuqi-055b",
+      "displayName": "樊於期",
+      "firstYear": -227,
+      "identityHash": "6599244f"
+    },
+    {
+      "id": "p-fanzeng-c0f2",
+      "displayName": "范增",
+      "firstYear": -206,
+      "identityHash": "2c0fa5b0"
+    },
+    {
+      "id": "p-fanzhongyan-060a",
+      "displayName": "范仲淹",
+      "firstYear": 1036,
+      "identityHash": "6373a004"
+    },
+    {
+      "id": "p-fazheng-3495",
+      "displayName": "法正",
+      "firstYear": 211,
+      "identityHash": "cfc238a4"
+    },
+    {
+      "id": "p-feiyanggu-3c69",
+      "displayName": "费扬古",
+      "firstYear": 1696,
+      "identityHash": "f5ec81c5"
+    },
+    {
+      "id": "p-feiyi-be48",
+      "displayName": "肥义",
+      "firstYear": -307,
+      "identityHash": "491f1f16"
+    },
+    {
+      "id": "p-fengchenxiuji-56e3",
+      "displayName": "丰臣秀吉",
+      "firstYear": 1592,
+      "identityHash": "5ec24b14"
+    },
+    {
+      "id": "p-fengdao-5149",
+      "displayName": "冯道",
+      "firstYear": 932,
+      "identityHash": "fe627dbe"
+    },
+    {
+      "id": "p-fengjie-a197",
+      "displayName": "冯劫",
+      "firstYear": -208,
+      "identityHash": "2ff6e242"
+    },
+    {
+      "id": "p-fengquji-67ae",
+      "displayName": "冯去疾",
+      "firstYear": -208,
+      "identityHash": "7792a226"
+    },
+    {
+      "id": "p-fengtaihou-2c1a",
+      "displayName": "冯太后",
+      "firstYear": 476,
+      "identityHash": "ab789e2f"
+    },
+    {
+      "id": "p-fengyi-dc70",
+      "displayName": "冯异",
+      "firstYear": 27,
+      "identityHash": "4d9c9bf4"
+    },
+    {
+      "id": "p-fubi-37be",
+      "displayName": "富弼",
+      "firstYear": 1044,
+      "identityHash": "210de3de"
+    },
+    {
+      "id": "p-fude-9f65",
+      "displayName": "富德",
+      "firstYear": 1759,
+      "identityHash": "bebfccb5"
+    },
+    {
+      "id": "p-fujian-ee34",
+      "displayName": "苻坚",
+      "firstYear": 360,
+      "identityHash": "275cf97e"
+    },
+    {
+      "id": "p-fujiezi-ecc6",
+      "displayName": "傅介子",
+      "firstYear": -77,
+      "identityHash": "b45aade7"
+    },
+    {
+      "id": "p-fuquan-52b6",
+      "displayName": "福全",
+      "firstYear": 1690,
+      "identityHash": "79ffdb82"
+    },
+    {
+      "id": "p-furong-fb22",
+      "displayName": "苻融",
+      "firstYear": 383,
+      "identityHash": "da3f2946"
+    },
+    {
+      "id": "p-fushuo-0a77",
+      "displayName": "傅说",
+      "firstYear": -1250,
+      "identityHash": "ea7c487e"
+    },
+    {
+      "id": "p-fusu-3e2c",
+      "displayName": "扶苏",
+      "firstYear": -212,
+      "identityHash": "d3447c3a"
+    },
+    {
+      "id": "p-fuyoude-f4a6",
+      "displayName": "傅友德",
+      "firstYear": 1382,
+      "identityHash": "bd7ed049"
+    },
+    {
+      "id": "p-fuyufeng-aa5d",
+      "displayName": "扶余丰",
+      "firstYear": 663,
+      "identityHash": "a5df0cd8"
+    },
+    {
+      "id": "p-gaerdan-78b6",
+      "displayName": "噶尔丹",
+      "firstYear": 1690,
+      "identityHash": "fcd9dc4a"
+    },
+    {
+      "id": "p-ganlong-0e05",
+      "displayName": "甘龙",
+      "firstYear": -359,
+      "identityHash": "5e0382dd"
+    },
+    {
+      "id": "p-ganning-9f3d",
+      "displayName": "甘宁",
+      "firstYear": 208,
+      "identityHash": "9035deec"
+    },
+    {
+      "id": "p-ganyanshou-9621",
+      "displayName": "甘延寿",
+      "firstYear": -36,
+      "identityHash": "b2976490"
+    },
+    {
+      "id": "p-ganying-b4fe",
+      "displayName": "甘英",
+      "firstYear": 97,
+      "identityHash": "ea34061f"
+    },
+    {
+      "id": "p-gaocheng-1700",
+      "displayName": "高澄",
+      "firstYear": 546,
+      "identityHash": "97420851"
+    },
+    {
+      "id": "p-gaogong-238f",
+      "displayName": "高拱",
+      "firstYear": 1571,
+      "identityHash": "ee8d1cc9"
+    },
+    {
+      "id": "p-gaohuan-dbca",
+      "displayName": "高欢",
+      "firstYear": 534,
+      "identityHash": "bd79a155"
+    },
+    {
+      "id": "p-gaojiong-893d",
+      "displayName": "高颎",
+      "firstYear": 583,
+      "identityHash": "43683822"
+    },
+    {
+      "id": "p-gaowei-d98f",
+      "displayName": "高纬",
+      "firstYear": 577,
+      "identityHash": "805aec04"
+    },
+    {
+      "id": "p-gaoxi-cd35",
+      "displayName": "高傒",
+      "firstYear": -685,
+      "identityHash": "0de41280"
+    },
+    {
+      "id": "p-gaoxianzhi-1f6e",
+      "displayName": "高仙芝",
+      "firstYear": 751,
+      "identityHash": "df7d9602"
+    },
+    {
+      "id": "p-gaoyang-7616",
+      "displayName": "高洋",
+      "firstYear": 550,
+      "identityHash": "ddcff594"
+    },
+    {
+      "id": "p-gaozunyu-82de",
+      "displayName": "高遵裕",
+      "firstYear": 1081,
+      "identityHash": "371038e8"
+    },
+    {
+      "id": "p-geluowen-f47a",
+      "displayName": "戈洛文",
+      "firstYear": 1689,
+      "identityHash": "ff3bc54f"
+    },
+    {
+      "id": "p-gengbing-c365",
+      "displayName": "耿秉",
+      "firstYear": 89,
+      "identityHash": "21d48c8c"
+    },
+    {
+      "id": "p-gengjing-8cb5",
+      "displayName": "耿京",
+      "firstYear": 1162,
+      "identityHash": "7248dee0"
+    },
+    {
+      "id": "p-gongbohe-807c",
+      "displayName": "共伯和",
+      "firstYear": -841,
+      "identityHash": "02519ea8"
+    },
+    {
+      "id": "p-gongshitai-1e98",
+      "displayName": "贡师泰",
+      "firstYear": 1340,
+      "identityHash": "45fe3c5a"
+    },
+    {
+      "id": "p-gongshuban-e8e0",
+      "displayName": "公输般",
+      "firstYear": -440,
+      "identityHash": "e3031fe7"
+    },
+    {
+      "id": "p-gongshuduan-518d",
+      "displayName": "共叔段",
+      "firstYear": -722,
+      "identityHash": "70f0d788"
+    },
+    {
+      "id": "p-gongsunao-a8e5",
+      "displayName": "公孙敖",
+      "firstYear": -129,
+      "identityHash": "64d15704"
+    },
+    {
+      "id": "p-gongsunhe-9fd9",
+      "displayName": "公孙贺",
+      "firstYear": -129,
+      "identityHash": "fda3776b"
+    },
+    {
+      "id": "p-gongsunshu-1073",
+      "displayName": "公孙述",
+      "firstYear": 36,
+      "identityHash": "a4a26415"
+    },
+    {
+      "id": "p-gongsunxi-eecf",
+      "displayName": "公孙喜",
+      "firstYear": -293,
+      "identityHash": "7f278623"
+    },
+    {
+      "id": "p-gongsunzan-f155",
+      "displayName": "公孙瓒",
+      "firstYear": 191,
+      "identityHash": "a4b223bb"
+    },
+    {
+      "id": "p-gongzhiqi-b8a6",
+      "displayName": "宫之奇",
+      "firstYear": -655,
+      "identityHash": "358fcbc8"
+    },
+    {
+      "id": "p-gongzicheng-3545",
+      "displayName": "公子成",
+      "firstYear": -307,
+      "identityHash": "e553d541"
+    },
+    {
+      "id": "p-guangxudi-7a1d",
+      "displayName": "光绪帝",
+      "firstYear": 1894,
+      "identityHash": "33a292b2"
+    },
+    {
+      "id": "p-guanshu-d6a4",
+      "displayName": "管叔",
+      "firstYear": -1042,
+      "identityHash": "1dcbe03c"
+    },
+    {
+      "id": "p-guanyu-9007",
+      "displayName": "关羽",
+      "firstYear": 200,
+      "identityHash": "717a028b"
+    },
+    {
+      "id": "p-guanzhong-12db",
+      "displayName": "管仲",
+      "firstYear": -685,
+      "identityHash": "8fc0c251"
+    },
+    {
+      "id": "p-guiyou-efd0",
+      "displayName": "贵由",
+      "firstYear": 1241,
+      "identityHash": "293c642f"
+    },
+    {
+      "id": "p-gun-ec16",
+      "displayName": "鲧",
+      "firstYear": -2100,
+      "identityHash": "a92b81d8"
+    },
+    {
+      "id": "p-guochongtao-1e38",
+      "displayName": "郭崇韬",
+      "firstYear": 925,
+      "identityHash": "21aaa1b3"
+    },
+    {
+      "id": "p-guojia-49c7",
+      "displayName": "郭嘉",
+      "firstYear": 200,
+      "identityHash": "95e43c16"
+    },
+    {
+      "id": "p-guoshoujing-aa30",
+      "displayName": "郭守敬",
+      "firstYear": 1280,
+      "identityHash": "2b83db97"
+    },
+    {
+      "id": "p-guosi-0f23",
+      "displayName": "郭汜",
+      "firstYear": 192,
+      "identityHash": "a8565da6"
+    },
+    {
+      "id": "p-guowei-33d2",
+      "displayName": "郭隗",
+      "firstYear": -311,
+      "identityHash": "dbb75efa"
+    },
+    {
+      "id": "p-guowei-ec47",
+      "displayName": "郭威",
+      "firstYear": 950,
+      "identityHash": "6f60af0a"
+    },
+    {
+      "id": "p-guoyaoshi-f005",
+      "displayName": "郭药师",
+      "firstYear": 1125,
+      "identityHash": "5b41f85a"
+    },
+    {
+      "id": "p-guozixing-5963",
+      "displayName": "郭子兴",
+      "firstYear": 1352,
+      "identityHash": "0a85abb0"
+    },
+    {
+      "id": "p-guoziyi-3c6e",
+      "displayName": "郭子仪",
+      "firstYear": 757,
+      "identityHash": "fdfdd684"
+    },
+    {
+      "id": "p-hairui-be59",
+      "displayName": "海瑞",
+      "firstYear": 1566,
+      "identityHash": "ee228b98"
+    },
+    {
+      "id": "p-haishan-1919",
+      "displayName": "海山",
+      "firstYear": 1307,
+      "identityHash": "81bf5bc0"
+    },
+    {
+      "id": "p-hanandi-bfd7",
+      "displayName": "汉安帝",
+      "firstYear": 107,
+      "identityHash": "87fbd7e3"
+    },
+    {
+      "id": "p-hananguo-c202",
+      "displayName": "韩安国",
+      "firstYear": -133,
+      "identityHash": "ea77c28f"
+    },
+    {
+      "id": "p-hanchengdi-f9b0",
+      "displayName": "汉成帝",
+      "firstYear": -26,
+      "identityHash": "4dee0d22"
+    },
+    {
+      "id": "p-handerang-f3b2",
+      "displayName": "韩德让",
+      "firstYear": 982,
+      "identityHash": "3d9bb25b"
+    },
+    {
+      "id": "p-hanfei-2645",
+      "displayName": "韩非",
+      "firstYear": -238,
+      "identityHash": "c2a4eb7b"
+    },
+    {
+      "id": "p-hanhedi-e003",
+      "displayName": "汉和帝",
+      "firstYear": 105,
+      "identityHash": "e3c8e341"
+    },
+    {
+      "id": "p-hanhuandi-b36c",
+      "displayName": "汉桓帝",
+      "firstYear": 159,
+      "identityHash": "1b8c5bb4"
+    },
+    {
+      "id": "p-hanjingdi-b175",
+      "displayName": "汉景帝",
+      "firstYear": -180,
+      "identityHash": "c728a90f"
+    },
+    {
+      "id": "p-hanjinghou-7712",
+      "displayName": "韩景侯",
+      "firstYear": -403,
+      "identityHash": "793990c8"
+    },
+    {
+      "id": "p-hankangzi-c5bf",
+      "displayName": "韩康子",
+      "firstYear": -453,
+      "identityHash": "5bc29cbf"
+    },
+    {
+      "id": "p-hanliner-57b6",
+      "displayName": "韩林儿",
+      "firstYear": 1355,
+      "identityHash": "0b12ebdf"
+    },
+    {
+      "id": "p-hanlingdi-d507",
+      "displayName": "汉灵帝",
+      "firstYear": 175,
+      "identityHash": "6f009ac7"
+    },
+    {
+      "id": "p-hanmingdi-a568",
+      "displayName": "汉明帝",
+      "firstYear": 67,
+      "identityHash": "23c36e7b"
+    },
+    {
+      "id": "p-hanqi-fd58",
+      "displayName": "韩琦",
+      "firstYear": 1040,
+      "identityHash": "cd45ae08"
+    },
+    {
+      "id": "p-hanqinhu-a6c7",
+      "displayName": "韩擒虎",
+      "firstYear": 588,
+      "identityHash": "59341760"
+    },
+    {
+      "id": "p-hanshantong-cc0e",
+      "displayName": "韩山童",
+      "firstYear": 1351,
+      "identityHash": "248ce306"
+    },
+    {
+      "id": "p-hanshizhong-041b",
+      "displayName": "韩世忠",
+      "firstYear": 1129,
+      "identityHash": "9db19510"
+    },
+    {
+      "id": "p-hanshundi-3b4c",
+      "displayName": "汉顺帝",
+      "firstYear": 132,
+      "identityHash": "44c660cf"
+    },
+    {
+      "id": "p-hantuozhou-3058",
+      "displayName": "韩侂胄",
+      "firstYear": 1195,
+      "identityHash": "930b995f"
+    },
+    {
+      "id": "p-hanwangan-8778",
+      "displayName": "韩王安",
+      "firstYear": -230,
+      "identityHash": "8a801046"
+    },
+    {
+      "id": "p-hanwangxin-5c70",
+      "displayName": "韩王信",
+      "firstYear": -200,
+      "identityHash": "5ddfc978"
+    },
+    {
+      "id": "p-hanwendi-21f7",
+      "displayName": "汉文帝",
+      "firstYear": -180,
+      "identityHash": "b2c7d70d"
+    },
+    {
+      "id": "p-hanwudi-be67",
+      "displayName": "汉武帝",
+      "firstYear": -141,
+      "identityHash": "3c492613"
+    },
+    {
+      "id": "p-hanxin-55b2",
+      "displayName": "韩信",
+      "firstYear": -204,
+      "identityHash": "2c0c660a"
+    },
+    {
+      "id": "p-hanxuandi-3409",
+      "displayName": "汉宣帝",
+      "firstYear": -61,
+      "identityHash": "205884fc"
+    },
+    {
+      "id": "p-hanxuanhuiwang-d33a",
+      "displayName": "韩宣惠王",
+      "firstYear": -323,
+      "identityHash": "b84c36b3"
+    },
+    {
+      "id": "p-hanyuandi-3e26",
+      "displayName": "汉元帝",
+      "firstYear": -33,
+      "identityHash": "41c9643a"
+    },
+    {
+      "id": "p-hanzhangdi-79c3",
+      "displayName": "汉章帝",
+      "firstYear": 75,
+      "identityHash": "fea8a8a3"
+    },
+    {
+      "id": "p-hanzhaodi-37c3",
+      "displayName": "汉昭帝",
+      "firstYear": -81,
+      "identityHash": "8d0ae6bf"
+    },
+    {
+      "id": "p-hanzhaohou-aab7",
+      "displayName": "韩昭侯",
+      "firstYear": -355,
+      "identityHash": "d4f62960"
+    },
+    {
+      "id": "p-hanzhuo-6de2",
+      "displayName": "寒浞",
+      "firstYear": -1850,
+      "identityHash": "5fad8cdb"
+    },
+    {
+      "id": "p-haojing-f3f0",
+      "displayName": "郝经",
+      "firstYear": 1260,
+      "identityHash": "47a3fb25"
+    },
+    {
+      "id": "p-hejin-6cdc",
+      "displayName": "何进",
+      "firstYear": 189,
+      "identityHash": "183fc009"
+    },
+    {
+      "id": "p-heruobi-aa49",
+      "displayName": "贺若弼",
+      "firstYear": 589,
+      "identityHash": "cb858b09"
+    },
+    {
+      "id": "p-heshen-3ab7",
+      "displayName": "和珅",
+      "firstYear": 1780,
+      "identityHash": "01f4d565"
+    },
+    {
+      "id": "p-heshiliehushahu-78e4",
+      "displayName": "纥石烈胡沙虎",
+      "firstYear": 1213,
+      "identityHash": "ebaebc98"
+    },
+    {
+      "id": "p-heshiliezhining-1d57",
+      "displayName": "纥石烈志宁",
+      "firstYear": 1161,
+      "identityHash": "7ea9847f"
+    },
+    {
+      "id": "p-hongxiuquan-9b52",
+      "displayName": "洪秀全",
+      "firstYear": 1851,
+      "identityHash": "44a556f7"
+    },
+    {
+      "id": "p-houjinchudi-4185",
+      "displayName": "后晋出帝",
+      "firstYear": 947,
+      "identityHash": "aba3692f"
+    },
+    {
+      "id": "p-houjing-8bef",
+      "displayName": "侯景",
+      "firstYear": 547,
+      "identityHash": "5d40a1cd"
+    },
+    {
+      "id": "p-houjunji-57ab",
+      "displayName": "侯君集",
+      "firstYear": 640,
+      "identityHash": "2d3ba03e"
+    },
+    {
+      "id": "p-houlan-f8aa",
+      "displayName": "侯览",
+      "firstYear": 169,
+      "identityHash": "f56da517"
+    },
+    {
+      "id": "p-houliangmodi-627e",
+      "displayName": "后梁末帝",
+      "firstYear": 923,
+      "identityHash": "b52086ac"
+    },
+    {
+      "id": "p-housheng-bf2e",
+      "displayName": "侯生",
+      "firstYear": -212,
+      "identityHash": "69885000"
+    },
+    {
+      "id": "p-houyi-4d1b",
+      "displayName": "后羿",
+      "firstYear": -1990,
+      "identityHash": "38fc235d"
+    },
+    {
+      "id": "p-huangchao-a92e",
+      "displayName": "黄巢",
+      "firstYear": 875,
+      "identityHash": "bc369492"
+    },
+    {
+      "id": "p-huanggai-19ba",
+      "displayName": "黄盖",
+      "firstYear": 208,
+      "identityHash": "b07422d3"
+    },
+    {
+      "id": "p-huangtaiji-e3a2",
+      "displayName": "皇太极",
+      "firstYear": 1616,
+      "identityHash": "23a5a4a4"
+    },
+    {
+      "id": "p-huangxing-2302",
+      "displayName": "黄兴",
+      "firstYear": 1911,
+      "identityHash": "cc1b500e"
+    },
+    {
+      "id": "p-huangzhong-1ad0",
+      "displayName": "黄忠",
+      "firstYear": 219,
+      "identityHash": "46c114c3"
+    },
+    {
+      "id": "p-huangzicheng-e956",
+      "displayName": "黄子澄",
+      "firstYear": 1402,
+      "identityHash": "b9c08914"
+    },
+    {
+      "id": "p-huanwen-f1db",
+      "displayName": "桓温",
+      "firstYear": 354,
+      "identityHash": "58f3506a"
+    },
+    {
+      "id": "p-huanxuan-6199",
+      "displayName": "桓玄",
+      "firstYear": 403,
+      "identityHash": "49b6ffab"
+    },
+    {
+      "id": "p-huatuo-a91f",
+      "displayName": "华佗",
+      "firstYear": 208,
+      "identityHash": "dcadd2df"
+    },
+    {
+      "id": "p-hubilie-cf00",
+      "displayName": "忽必烈",
+      "firstYear": 1251,
+      "identityHash": "52da11b0"
+    },
+    {
+      "id": "p-huhai-4475",
+      "displayName": "胡亥",
+      "firstYear": -210,
+      "identityHash": "888b34ae"
+    },
+    {
+      "id": "p-huhanxiechanyu-83fa",
+      "displayName": "呼韩邪单于",
+      "firstYear": -51,
+      "identityHash": "0fceb53d"
+    },
+    {
+      "id": "p-hunxiewang-ff11",
+      "displayName": "浑邪王",
+      "firstYear": -121,
+      "identityHash": "7448b456"
+    },
+    {
+      "id": "p-huoguang-bbec",
+      "displayName": "霍光",
+      "firstYear": -87,
+      "identityHash": "8f8223e9"
+    },
+    {
+      "id": "p-huoqubing-1535",
+      "displayName": "霍去病",
+      "firstYear": -121,
+      "identityHash": "5e67e93e"
+    },
+    {
+      "id": "p-huweiyong-4baf",
+      "displayName": "胡惟庸",
+      "firstYear": 1380,
+      "identityHash": "a34e62e8"
+    },
+    {
+      "id": "p-jiajingdi-9dd2",
+      "displayName": "嘉靖帝",
+      "firstYear": 1521,
+      "identityHash": "6c0ee26a"
+    },
+    {
+      "id": "p-jiakui-4451",
+      "displayName": "贾逵",
+      "firstYear": 100,
+      "identityHash": "373ee7ac"
+    },
+    {
+      "id": "p-jialu-670d",
+      "displayName": "贾鲁",
+      "firstYear": 1351,
+      "identityHash": "c19ea17b"
+    },
+    {
+      "id": "p-jiananfeng-1708",
+      "displayName": "贾南风",
+      "firstYear": 272,
+      "identityHash": "eca3c8b9"
+    },
+    {
+      "id": "p-jiangchong-f830",
+      "displayName": "江充",
+      "firstYear": -91,
+      "identityHash": "f2b12e0a"
+    },
+    {
+      "id": "p-jiangwei-f108",
+      "displayName": "姜维",
+      "firstYear": 234,
+      "identityHash": "bc508bdb"
+    },
+    {
+      "id": "p-jiangziya-11a8",
+      "displayName": "姜子牙",
+      "firstYear": -1050,
+      "identityHash": "953847f0"
+    },
+    {
+      "id": "p-jianwendi-6d48",
+      "displayName": "建文帝",
+      "firstYear": 1399,
+      "identityHash": "46bdf2cb"
+    },
+    {
+      "id": "p-jianzhen-1294",
+      "displayName": "鉴真",
+      "firstYear": 717,
+      "identityHash": "ae5db092"
+    },
+    {
+      "id": "p-jiaqingdi-7932",
+      "displayName": "嘉庆帝",
+      "firstYear": 1796,
+      "identityHash": "2ef080ed"
+    },
+    {
+      "id": "p-jiasidao-e032",
+      "displayName": "贾似道",
+      "firstYear": 1259,
+      "identityHash": "e8811748"
+    },
+    {
+      "id": "p-jiayemoteng-f80e",
+      "displayName": "迦叶摩腾",
+      "firstYear": 67,
+      "identityHash": "ea33440a"
+    },
+    {
+      "id": "p-jiayi-a4ed",
+      "displayName": "贾谊",
+      "firstYear": -180,
+      "identityHash": "fb36801e"
+    },
+    {
+      "id": "p-jibeizhenbei-49b8",
+      "displayName": "吉备真备",
+      "firstYear": 717,
+      "identityHash": "da06c0f9"
+    },
+    {
+      "id": "p-jiejin-5e27",
+      "displayName": "解缙",
+      "firstYear": 1421,
+      "identityHash": "977e5906"
+    },
+    {
+      "id": "p-jielikehan-2778",
+      "displayName": "颉利可汗",
+      "firstYear": 630,
+      "identityHash": "8922c662"
+    },
+    {
+      "id": "p-jikang-d47c",
+      "displayName": "嵇康",
+      "firstYear": 247,
+      "identityHash": "c3d0d707"
+    },
+    {
+      "id": "p-jinaizong-d983",
+      "displayName": "金哀宗",
+      "firstYear": 1224,
+      "identityHash": "0827a6ff"
+    },
+    {
+      "id": "p-jinbi-1827",
+      "displayName": "晋鄙",
+      "firstYear": -258,
+      "identityHash": "94720d87"
+    },
+    {
+      "id": "p-jindinggong-d61c",
+      "displayName": "晋定公",
+      "firstYear": -482,
+      "identityHash": "7905dfa5"
+    },
+    {
+      "id": "p-jingke-214f",
+      "displayName": "荆轲",
+      "firstYear": -227,
+      "identityHash": "bc53543f"
+    },
+    {
+      "id": "p-jingtaidi-9956",
+      "displayName": "景泰帝",
+      "firstYear": 1449,
+      "identityHash": "368b6893"
+    },
+    {
+      "id": "p-jinhoumin-7df5",
+      "displayName": "晋侯湣",
+      "firstYear": -679,
+      "identityHash": "395ada4b"
+    },
+    {
+      "id": "p-jinhuaigong-53e7",
+      "displayName": "晋怀公",
+      "firstYear": -637,
+      "identityHash": "eab53e7c"
+    },
+    {
+      "id": "p-jinhuigong-f235",
+      "displayName": "晋惠公",
+      "firstYear": -645,
+      "identityHash": "d6fc317f"
+    },
+    {
+      "id": "p-jinridi-f688",
+      "displayName": "金日磾",
+      "firstYear": -87,
+      "identityHash": "7cc3cf16"
+    },
+    {
+      "id": "p-jinwengong-416c",
+      "displayName": "晋文公",
+      "firstYear": -637,
+      "identityHash": "33bb30dc"
+    },
+    {
+      "id": "p-jinwenhou-3957",
+      "displayName": "晋文侯",
+      "firstYear": -770,
+      "identityHash": "bc5b6bd5"
+    },
+    {
+      "id": "p-jinxianggong-0198",
+      "displayName": "晋襄公",
+      "firstYear": -627,
+      "identityHash": "2fddde3d"
+    },
+    {
+      "id": "p-jinxiangong-901e",
+      "displayName": "晋献公",
+      "firstYear": -655,
+      "identityHash": "54a2ac55"
+    },
+    {
+      "id": "p-jiu-1572",
+      "displayName": "摎",
+      "firstYear": -256,
+      "identityHash": "ba929efe"
+    },
+    {
+      "id": "p-jizha-e1f4",
+      "displayName": "季札",
+      "firstYear": -554,
+      "identityHash": "15ce753e"
+    },
+    {
+      "id": "p-jizi-1de8",
+      "displayName": "箕子",
+      "firstYear": -1046,
+      "identityHash": "a25a77da"
+    },
+    {
+      "id": "p-juqumujian-aeed",
+      "displayName": "沮渠牧犍",
+      "firstYear": 439,
+      "identityHash": "8c9fe0f4"
+    },
+    {
+      "id": "p-juyuan-9882",
+      "displayName": "具瑗",
+      "firstYear": 159,
+      "identityHash": "d9d9d519"
+    },
+    {
+      "id": "p-kangxidi-aaa3",
+      "displayName": "康熙帝",
+      "firstYear": 1661,
+      "identityHash": "4b9e648b"
+    },
+    {
+      "id": "p-kongyoude-393b",
+      "displayName": "孔有德",
+      "firstYear": 1652,
+      "identityHash": "cd1d43f8"
+    },
+    {
+      "id": "p-kongzi-e89c",
+      "displayName": "孔子",
+      "firstYear": -551,
+      "identityHash": "c643e053"
+    },
+    {
+      "id": "p-kouzhun-deae",
+      "displayName": "寇准",
+      "firstYear": 989,
+      "identityHash": "25b3df4a"
+    },
+    {
+      "id": "p-kuiyi-71ad",
+      "displayName": "揆一",
+      "firstYear": 1661,
+      "identityHash": "54118848"
+    },
+    {
+      "id": "p-kuoduan-3bf5",
+      "displayName": "阔端",
+      "firstYear": 1247,
+      "identityHash": "f7c8d5c2"
+    },
+    {
+      "id": "p-lanyu-62f0",
+      "displayName": "蓝玉",
+      "firstYear": 1382,
+      "identityHash": "26bb8279"
+    },
+    {
+      "id": "p-laoai-f3ad",
+      "displayName": "嫪毐",
+      "firstYear": -238,
+      "identityHash": "ea9fcb84"
+    },
+    {
+      "id": "p-laozi-9215",
+      "displayName": "老子",
+      "firstYear": -518,
+      "identityHash": "18a67789"
+    },
+    {
+      "id": "p-leyi-ada8",
+      "displayName": "乐毅",
+      "firstYear": -311,
+      "identityHash": "e976ab46"
+    },
+    {
+      "id": "p-liang-d721",
+      "displayName": "李昂",
+      "firstYear": 835,
+      "identityHash": "27f5b9d2"
+    },
+    {
+      "id": "p-lianghuiwang-62b9",
+      "displayName": "梁惠王",
+      "firstYear": -320,
+      "identityHash": "bb14d06a"
+    },
+    {
+      "id": "p-liangji-2182",
+      "displayName": "梁冀",
+      "firstYear": 146,
+      "identityHash": "b85f3db5"
+    },
+    {
+      "id": "p-liangtaihou-handong-90be",
+      "displayName": "梁太后",
+      "firstYear": 146,
+      "identityHash": "c2febe5f"
+    },
+    {
+      "id": "p-liangtaihou-xixia-0d0f",
+      "displayName": "梁太后",
+      "firstYear": 1081,
+      "identityHash": "67545e49"
+    },
+    {
+      "id": "p-lianpo-8900",
+      "displayName": "廉颇",
+      "firstYear": -279,
+      "identityHash": "997f367c"
+    },
+    {
+      "id": "p-lianquan-0b45",
+      "displayName": "李安全",
+      "firstYear": 1209,
+      "identityHash": "f2d7991b"
+    },
+    {
+      "id": "p-liaoshengzong-8eaf",
+      "displayName": "辽圣宗",
+      "firstYear": 982,
+      "identityHash": "21aff2e5"
+    },
+    {
+      "id": "p-liaotianzuodi-7a52",
+      "displayName": "辽天祚帝",
+      "firstYear": 1114,
+      "identityHash": "056801a5"
+    },
+    {
+      "id": "p-libian-a821",
+      "displayName": "李昪",
+      "firstYear": 937,
+      "identityHash": "a043959c"
+    },
+    {
+      "id": "p-libing-1db6",
+      "displayName": "李冰",
+      "firstYear": -251,
+      "identityHash": "a390a603"
+    },
+    {
+      "id": "p-lichen-620e",
+      "displayName": "李忱",
+      "firstYear": 847,
+      "identityHash": "5c3c2e7a"
+    },
+    {
+      "id": "p-licheng-0854",
+      "displayName": "李成",
+      "firstYear": 1134,
+      "identityHash": "ee99b2e0"
+    },
+    {
+      "id": "p-lichong-9884",
+      "displayName": "李崇",
+      "firstYear": 523,
+      "identityHash": "9efeddfc"
+    },
+    {
+      "id": "p-lichong-d4ab",
+      "displayName": "李冲",
+      "firstYear": 494,
+      "identityHash": "83eae7da"
+    },
+    {
+      "id": "p-lichun-911e",
+      "displayName": "李纯",
+      "firstYear": 806,
+      "identityHash": "f1ddac67"
+    },
+    {
+      "id": "p-licunxu-d6b6",
+      "displayName": "李存勖",
+      "firstYear": 908,
+      "identityHash": "5961506d"
+    },
+    {
+      "id": "p-lideming-b5d9",
+      "displayName": "李德明",
+      "firstYear": 1002,
+      "identityHash": "459f8ba5"
+    },
+    {
+      "id": "p-lideyu-554d",
+      "displayName": "李德裕",
+      "firstYear": 845,
+      "identityHash": "0813e47b"
+    },
+    {
+      "id": "p-lidingguo-ec99",
+      "displayName": "李定国",
+      "firstYear": 1652,
+      "identityHash": "19adc445"
+    },
+    {
+      "id": "p-ligang-dc0e",
+      "displayName": "李纲",
+      "firstYear": 1126,
+      "identityHash": "ec0a7f04"
+    },
+    {
+      "id": "p-liguang-0467",
+      "displayName": "李广",
+      "firstYear": -129,
+      "identityHash": "04ecbbf4"
+    },
+    {
+      "id": "p-liguangbi-eb0a",
+      "displayName": "李光弼",
+      "firstYear": 759,
+      "identityHash": "e21d2b41"
+    },
+    {
+      "id": "p-liguangli-c3b4",
+      "displayName": "李广利",
+      "firstYear": -101,
+      "identityHash": "7c025813"
+    },
+    {
+      "id": "p-liheng-36c6",
+      "displayName": "李亨",
+      "firstYear": 755,
+      "identityHash": "0a6a4bc8"
+    },
+    {
+      "id": "p-liheng-968d",
+      "displayName": "李恒",
+      "firstYear": 821,
+      "identityHash": "0c4a6886"
+    },
+    {
+      "id": "p-lihongzhang-eea7",
+      "displayName": "李鸿章",
+      "firstYear": 1865,
+      "identityHash": "1b804f87"
+    },
+    {
+      "id": "p-lihualong-5aeb",
+      "displayName": "李化龙",
+      "firstYear": 1600,
+      "identityHash": "e831ca48"
+    },
+    {
+      "id": "p-liji-9ba2",
+      "displayName": "李勣",
+      "firstYear": 668,
+      "identityHash": "01e31ce3"
+    },
+    {
+      "id": "p-lijiancheng-0274",
+      "displayName": "李建成",
+      "firstYear": 626,
+      "identityHash": "f4365219"
+    },
+    {
+      "id": "p-lijing-86c5",
+      "displayName": "李璟",
+      "firstYear": 945,
+      "identityHash": "c65de9af"
+    },
+    {
+      "id": "p-lijing-cc24",
+      "displayName": "李靖",
+      "firstYear": 621,
+      "identityHash": "80bb6bd3"
+    },
+    {
+      "id": "p-lijiqian-2988",
+      "displayName": "李继迁",
+      "firstYear": 1002,
+      "identityHash": "91a1ffa8"
+    },
+    {
+      "id": "p-likui-508a",
+      "displayName": "李悝",
+      "firstYear": -406,
+      "identityHash": "bcbf8d5d"
+    },
+    {
+      "id": "p-lilinfu-9b91",
+      "displayName": "李林甫",
+      "firstYear": 740,
+      "identityHash": "d649c136"
+    },
+    {
+      "id": "p-lilongji-7182",
+      "displayName": "李隆基",
+      "firstYear": 710,
+      "identityHash": "91575095"
+    },
+    {
+      "id": "p-limadou-eefe",
+      "displayName": "利玛窦",
+      "firstYear": 1601,
+      "identityHash": "e921abae"
+    },
+    {
+      "id": "p-limeng-c7a6",
+      "displayName": "李孟",
+      "firstYear": 1313,
+      "identityHash": "b35a3907"
+    },
+    {
+      "id": "p-limi-455d",
+      "displayName": "李泌",
+      "firstYear": 757,
+      "identityHash": "e35aea95"
+    },
+    {
+      "id": "p-limi-5844",
+      "displayName": "李密",
+      "firstYear": 611,
+      "identityHash": "90a0b3d8"
+    },
+    {
+      "id": "p-linxiangru-3146",
+      "displayName": "蔺相如",
+      "firstYear": -283,
+      "identityHash": "02269ee5"
+    },
+    {
+      "id": "p-linzexu-8fb1",
+      "displayName": "林则徐",
+      "firstYear": 1839,
+      "identityHash": "ff6e4de3"
+    },
+    {
+      "id": "p-liqianshun-3659",
+      "displayName": "李乾顺",
+      "firstYear": 1114,
+      "identityHash": "eef12f3d"
+    },
+    {
+      "id": "p-lique-11aa",
+      "displayName": "李傕",
+      "firstYear": 192,
+      "identityHash": "7f5df2b9"
+    },
+    {
+      "id": "p-lirusong-2d48",
+      "displayName": "李如松",
+      "firstYear": 1592,
+      "identityHash": "305f60df"
+    },
+    {
+      "id": "p-lisheng-b875",
+      "displayName": "李晟",
+      "firstYear": 783,
+      "identityHash": "c07a5d5e"
+    },
+    {
+      "id": "p-lishi-b7f7",
+      "displayName": "李适",
+      "firstYear": 780,
+      "identityHash": "53ff06f4"
+    },
+    {
+      "id": "p-lishimin-7efd",
+      "displayName": "李世民",
+      "firstYear": 617,
+      "identityHash": "a54b8f03"
+    },
+    {
+      "id": "p-lishun-7226",
+      "displayName": "李顺",
+      "firstYear": 993,
+      "identityHash": "a79202fb"
+    },
+    {
+      "id": "p-lishunchen-bda2",
+      "displayName": "李舜臣",
+      "firstYear": 1592,
+      "identityHash": "453d0dda"
+    },
+    {
+      "id": "p-lishuo-0f2e",
+      "displayName": "李愬",
+      "firstYear": 817,
+      "identityHash": "739b322d"
+    },
+    {
+      "id": "p-lisi-79db",
+      "displayName": "李斯",
+      "firstYear": -238,
+      "identityHash": "f0a508cc"
+    },
+    {
+      "id": "p-lisiyuan-5db1",
+      "displayName": "李嗣源",
+      "firstYear": 926,
+      "identityHash": "b50d99cd"
+    },
+    {
+      "id": "p-lisong-5a65",
+      "displayName": "李诵",
+      "firstYear": 805,
+      "identityHash": "94260658"
+    },
+    {
+      "id": "p-litan-f772",
+      "displayName": "李璮",
+      "firstYear": 1262,
+      "identityHash": "066d89c1"
+    },
+    {
+      "id": "p-liubang-f5be",
+      "displayName": "刘邦",
+      "firstYear": -209,
+      "identityHash": "a3e5b8bf"
+    },
+    {
+      "id": "p-liubao-908a",
+      "displayName": "刘保",
+      "firstYear": 125,
+      "identityHash": "d203e252"
+    },
+    {
+      "id": "p-liubei-0c86",
+      "displayName": "刘备",
+      "firstYear": 191,
+      "identityHash": "d99ce311"
+    },
+    {
+      "id": "p-liubi-e5ae",
+      "displayName": "刘濞",
+      "firstYear": -154,
+      "identityHash": "fbf96d7c"
+    },
+    {
+      "id": "p-liubiao-d9a8",
+      "displayName": "刘表",
+      "firstYear": 188,
+      "identityHash": "eff10516"
+    },
+    {
+      "id": "p-liubingzhong-a9a6",
+      "displayName": "刘秉忠",
+      "firstYear": 1271,
+      "identityHash": "9d1dfafd"
+    },
+    {
+      "id": "p-liuchan-9421",
+      "displayName": "刘禅",
+      "firstYear": 221,
+      "identityHash": "e4b00d20"
+    },
+    {
+      "id": "p-liuchangzuo-bb63",
+      "displayName": "刘昌祚",
+      "firstYear": 1081,
+      "identityHash": "d7cc06de"
+    },
+    {
+      "id": "p-liuchengyou-330d",
+      "displayName": "刘承祐",
+      "firstYear": 950,
+      "identityHash": "20345f84"
+    },
+    {
+      "id": "p-liuchong-wudai-f904",
+      "displayName": "刘崇",
+      "firstYear": 954,
+      "identityHash": "36c7aca3"
+    },
+    {
+      "id": "p-liuchong-xihan-800c",
+      "displayName": "刘崇",
+      "firstYear": 6,
+      "identityHash": "9545460d"
+    },
+    {
+      "id": "p-liucong-4e22",
+      "displayName": "刘聪",
+      "firstYear": 311,
+      "identityHash": "c08a761c"
+    },
+    {
+      "id": "p-liucongxiao-e019",
+      "displayName": "留从效",
+      "firstYear": 945,
+      "identityHash": "b7e3fcb9"
+    },
+    {
+      "id": "p-liue-b846",
+      "displayName": "刘娥",
+      "firstYear": 1022,
+      "identityHash": "367ed82d"
+    },
+    {
+      "id": "p-liufuheng-7683",
+      "displayName": "刘复亨",
+      "firstYear": 1274,
+      "identityHash": "2fda8e19"
+    },
+    {
+      "id": "p-liufuling-8d3f",
+      "displayName": "刘弗陵",
+      "firstYear": -87,
+      "identityHash": "4bc0f7d8"
+    },
+    {
+      "id": "p-liufutong-7e51",
+      "displayName": "刘福通",
+      "firstYear": 1351,
+      "identityHash": "2a10afe7"
+    },
+    {
+      "id": "p-liuguoxuan-4d34",
+      "displayName": "刘国轩",
+      "firstYear": 1683,
+      "identityHash": "923413df"
+    },
+    {
+      "id": "p-liuhe-1839",
+      "displayName": "刘贺",
+      "firstYear": -74,
+      "identityHash": "08339818"
+    },
+    {
+      "id": "p-liuheng-8eba",
+      "displayName": "刘恒",
+      "firstYear": -180,
+      "identityHash": "0ca55421"
+    },
+    {
+      "id": "p-liuhong-bef3",
+      "displayName": "刘宏",
+      "firstYear": 168,
+      "identityHash": "62e790be"
+    },
+    {
+      "id": "p-liuji-2f13",
+      "displayName": "刘基",
+      "firstYear": 1368,
+      "identityHash": "650094f2"
+    },
+    {
+      "id": "p-liujin-55ac",
+      "displayName": "刘瑾",
+      "firstYear": 1506,
+      "identityHash": "774bea31"
+    },
+    {
+      "id": "p-liujing-6a0d",
+      "displayName": "刘敬",
+      "firstYear": -200,
+      "identityHash": "350b91ed"
+    },
+    {
+      "id": "p-liujiyuan-9c5c",
+      "displayName": "刘继元",
+      "firstYear": 979,
+      "identityHash": "98653d01"
+    },
+    {
+      "id": "p-liuju-7da1",
+      "displayName": "刘据",
+      "firstYear": -91,
+      "identityHash": "77a5b157"
+    },
+    {
+      "id": "p-liukan-f138",
+      "displayName": "刘衎",
+      "firstYear": -1,
+      "identityHash": "1e85e692"
+    },
+    {
+      "id": "p-liukun-435e",
+      "displayName": "刘琨",
+      "firstYear": 289,
+      "identityHash": "4b5c8646"
+    },
+    {
+      "id": "p-liulaozhi-24a6",
+      "displayName": "刘牢之",
+      "firstYear": 384,
+      "identityHash": "da88a1f2"
+    },
+    {
+      "id": "p-liupenzi-e217",
+      "displayName": "刘盆子",
+      "firstYear": 27,
+      "identityHash": "41214737"
+    },
+    {
+      "id": "p-liuping-5129",
+      "displayName": "刘平",
+      "firstYear": 1040,
+      "identityHash": "29d2bb5b"
+    },
+    {
+      "id": "p-liuqi-7ba3",
+      "displayName": "刘锜",
+      "firstYear": 1140,
+      "identityHash": "446b870f"
+    },
+    {
+      "id": "p-liurengui-dd36",
+      "displayName": "刘仁轨",
+      "firstYear": 663,
+      "identityHash": "b30cb309"
+    },
+    {
+      "id": "p-liurenshan-230d",
+      "displayName": "刘仁赡",
+      "firstYear": 951,
+      "identityHash": "fb8da9be"
+    },
+    {
+      "id": "p-liuruyi-d46b",
+      "displayName": "刘如意",
+      "firstYear": -195,
+      "identityHash": "d558eca8"
+    },
+    {
+      "id": "p-liuting-7c1e",
+      "displayName": "刘綎",
+      "firstYear": 1619,
+      "identityHash": "72b0a01a"
+    },
+    {
+      "id": "p-liuxiang-44b6",
+      "displayName": "刘襄",
+      "firstYear": -180,
+      "identityHash": "b0fdeb5d"
+    },
+    {
+      "id": "p-liuxiang-749e",
+      "displayName": "刘向",
+      "firstYear": -26,
+      "identityHash": "13b59754"
+    },
+    {
+      "id": "p-liuxie-13e0",
+      "displayName": "刘协",
+      "firstYear": 189,
+      "identityHash": "79def57f"
+    },
+    {
+      "id": "p-liuxiu-cd62",
+      "displayName": "刘秀",
+      "firstYear": 23,
+      "identityHash": "1285e1c0"
+    },
+    {
+      "id": "p-liuxuan-efcf",
+      "displayName": "刘玄",
+      "firstYear": 17,
+      "identityHash": "dc41ffcb"
+    },
+    {
+      "id": "p-liuxun-d6a9",
+      "displayName": "刘询",
+      "firstYear": -74,
+      "identityHash": "edf67fcd"
+    },
+    {
+      "id": "p-liuyan-533d",
+      "displayName": "刘焉",
+      "firstYear": 188,
+      "identityHash": "b7480159"
+    },
+    {
+      "id": "p-liuyao-bd2f",
+      "displayName": "刘曜",
+      "firstYear": 304,
+      "identityHash": "d59d4b73"
+    },
+    {
+      "id": "p-liuyi-3a2b",
+      "displayName": "刘懿",
+      "firstYear": 125,
+      "identityHash": "0dd7f986"
+    },
+    {
+      "id": "p-liuyilong-858b",
+      "displayName": "刘义隆",
+      "firstYear": 424,
+      "identityHash": "18bf5924"
+    },
+    {
+      "id": "p-liuying-b738",
+      "displayName": "刘盈",
+      "firstYear": -195,
+      "identityHash": "9b238986"
+    },
+    {
+      "id": "p-liuyu-eb5e",
+      "displayName": "刘裕",
+      "firstYear": 403,
+      "identityHash": "e2a32833"
+    },
+    {
+      "id": "p-liuyu-fbe9",
+      "displayName": "刘豫",
+      "firstYear": 1130,
+      "identityHash": "41500cb8"
+    },
+    {
+      "id": "p-liuyuan-3382",
+      "displayName": "刘渊",
+      "firstYear": 304,
+      "identityHash": "bc6d397a"
+    },
+    {
+      "id": "p-liuzhang-7fba",
+      "displayName": "刘璋",
+      "firstYear": 211,
+      "identityHash": "d26111e0"
+    },
+    {
+      "id": "p-liuzhengyan-d7cf",
+      "displayName": "刘正彦",
+      "firstYear": 1129,
+      "identityHash": "1f12d31b"
+    },
+    {
+      "id": "p-liuzhiyuan-02c8",
+      "displayName": "刘知远",
+      "firstYear": 947,
+      "identityHash": "0d1a460c"
+    },
+    {
+      "id": "p-liuzhuang-3d40",
+      "displayName": "刘庄",
+      "firstYear": 57,
+      "identityHash": "628c3f44"
+    },
+    {
+      "id": "p-liuzhun-b580",
+      "displayName": "刘准",
+      "firstYear": 479,
+      "identityHash": "c3944d3b"
+    },
+    {
+      "id": "p-liuzuan-f8a5",
+      "displayName": "刘缵",
+      "firstYear": 146,
+      "identityHash": "a58584c3"
+    },
+    {
+      "id": "p-lixian-24f9",
+      "displayName": "李宪",
+      "firstYear": 1081,
+      "identityHash": "09fdf012"
+    },
+    {
+      "id": "p-lixian-5d5b",
+      "displayName": "李睍",
+      "firstYear": 1227,
+      "identityHash": "24c87470"
+    },
+    {
+      "id": "p-lixianzhong-1be6",
+      "displayName": "李显忠",
+      "firstYear": 1163,
+      "identityHash": "13537a92"
+    },
+    {
+      "id": "p-lixuan-7333",
+      "displayName": "李儇",
+      "firstYear": 881,
+      "identityHash": "89643690"
+    },
+    {
+      "id": "p-liyan-73b3",
+      "displayName": "李严",
+      "firstYear": 223,
+      "identityHash": "1178c7a7"
+    },
+    {
+      "id": "p-liyan-8f57",
+      "displayName": "李炎",
+      "firstYear": 845,
+      "identityHash": "2b097c81"
+    },
+    {
+      "id": "p-liyiji-ac3b",
+      "displayName": "郦食其",
+      "firstYear": -204,
+      "identityHash": "b1231b4b"
+    },
+    {
+      "id": "p-liying-58b0",
+      "displayName": "李膺",
+      "firstYear": 166,
+      "identityHash": "431e5051"
+    },
+    {
+      "id": "p-liyu-9201",
+      "displayName": "李煜",
+      "firstYear": 961,
+      "identityHash": "1e4ed0ad"
+    },
+    {
+      "id": "p-liyuan-1546",
+      "displayName": "李渊",
+      "firstYear": 617,
+      "identityHash": "161b1efe"
+    },
+    {
+      "id": "p-liyuanhao-f692",
+      "displayName": "李元昊",
+      "firstYear": 1032,
+      "identityHash": "942a225c"
+    },
+    {
+      "id": "p-liyuanhong-9f7f",
+      "displayName": "黎元洪",
+      "firstYear": 1911,
+      "identityHash": "eee4f71f"
+    },
+    {
+      "id": "p-liyuanji-5169",
+      "displayName": "李元吉",
+      "firstYear": 626,
+      "identityHash": "5b019efe"
+    },
+    {
+      "id": "p-lizhi-d96c",
+      "displayName": "李治",
+      "firstYear": 650,
+      "identityHash": "0f148474"
+    },
+    {
+      "id": "p-lizicheng-dbb4",
+      "displayName": "李自成",
+      "firstYear": 1644,
+      "identityHash": "8f081479"
+    },
+    {
+      "id": "p-longqie-385d",
+      "displayName": "龙且",
+      "firstYear": -204,
+      "identityHash": "de58c0e3"
+    },
+    {
+      "id": "p-longqingdi-ebf2",
+      "displayName": "隆庆帝",
+      "firstYear": 1571,
+      "identityHash": "2b47076f"
+    },
+    {
+      "id": "p-longyutaihou-8a94",
+      "displayName": "隆裕太后",
+      "firstYear": 1912,
+      "identityHash": "79fb7e21"
+    },
+    {
+      "id": "p-loulanwang-dbf8",
+      "displayName": "楼兰王",
+      "firstYear": -77,
+      "identityHash": "43cb7569"
+    },
+    {
+      "id": "p-lubian-b8d9",
+      "displayName": "卢辩",
+      "firstYear": 556,
+      "identityHash": "7c326e41"
+    },
+    {
+      "id": "p-luji-5c30",
+      "displayName": "陆机",
+      "firstYear": 289,
+      "identityHash": "b7618c11"
+    },
+    {
+      "id": "p-lujiuyuan-fbaa",
+      "displayName": "陆九渊",
+      "firstYear": 1175,
+      "identityHash": "40c42591"
+    },
+    {
+      "id": "p-lukang-f52b",
+      "displayName": "陆抗",
+      "firstYear": 272,
+      "identityHash": "86919d8a"
+    },
+    {
+      "id": "p-luobucangdanjin-a512",
+      "displayName": "罗卜藏丹津",
+      "firstYear": 1724,
+      "identityHash": "cd1e66d3"
+    },
+    {
+      "id": "p-luoxiahong-a2e0",
+      "displayName": "落下闳",
+      "firstYear": -104,
+      "identityHash": "c78dd21d"
+    },
+    {
+      "id": "p-lusheng-17b7",
+      "displayName": "卢生",
+      "firstYear": -215,
+      "identityHash": "3657e411"
+    },
+    {
+      "id": "p-lushirong-a2ea",
+      "displayName": "卢世荣",
+      "firstYear": 1287,
+      "identityHash": "ee9e47ac"
+    },
+    {
+      "id": "p-luxiufu-094e",
+      "displayName": "陆秀夫",
+      "firstYear": 1279,
+      "identityHash": "0c7b5cf7"
+    },
+    {
+      "id": "p-luxun-a882",
+      "displayName": "陆逊",
+      "firstYear": 219,
+      "identityHash": "a7d9480e"
+    },
+    {
+      "id": "p-luyun-a45e",
+      "displayName": "陆云",
+      "firstYear": 289,
+      "identityHash": "6ce095fd"
+    },
+    {
+      "id": "p-lvbu-6e8a",
+      "displayName": "吕布",
+      "firstYear": 192,
+      "identityHash": "f0e12072"
+    },
+    {
+      "id": "p-lvbuwei-adf9",
+      "displayName": "吕不韦",
+      "firstYear": -239,
+      "identityHash": "5c31713d"
+    },
+    {
+      "id": "p-lvchan-8572",
+      "displayName": "吕产",
+      "firstYear": -188,
+      "identityHash": "11f26b79"
+    },
+    {
+      "id": "p-lvhou-bdad",
+      "displayName": "吕后",
+      "firstYear": -196,
+      "identityHash": "c52ec11d"
+    },
+    {
+      "id": "p-lvhuiqing-5bf5",
+      "displayName": "吕惠卿",
+      "firstYear": 1076,
+      "identityHash": "a5b06251"
+    },
+    {
+      "id": "p-lvjia-2386",
+      "displayName": "吕嘉",
+      "firstYear": -111,
+      "identityHash": "5cffd7f1"
+    },
+    {
+      "id": "p-lvli-2de7",
+      "displayName": "吕礼",
+      "firstYear": -288,
+      "identityHash": "40f99e22"
+    },
+    {
+      "id": "p-lvlu-4ad5",
+      "displayName": "吕禄",
+      "firstYear": -188,
+      "identityHash": "74619f96"
+    },
+    {
+      "id": "p-lvmeng-d154",
+      "displayName": "吕蒙",
+      "firstYear": 219,
+      "identityHash": "bfe0823c"
+    },
+    {
+      "id": "p-lvtai-ea24",
+      "displayName": "吕台",
+      "firstYear": -188,
+      "identityHash": "d0409e7b"
+    },
+    {
+      "id": "p-lvwenhuan-07ad",
+      "displayName": "吕文焕",
+      "firstYear": 1273,
+      "identityHash": "5797b018"
+    },
+    {
+      "id": "p-lvyijian-e140",
+      "displayName": "吕夷简",
+      "firstYear": 1036,
+      "identityHash": "3df91428"
+    },
+    {
+      "id": "p-lvzuqian-174c",
+      "displayName": "吕祖谦",
+      "firstYear": 1175,
+      "identityHash": "66c45d6f"
+    },
+    {
+      "id": "p-machao-bf59",
+      "displayName": "马超",
+      "firstYear": 211,
+      "identityHash": "616d1806"
+    },
+    {
+      "id": "p-majiaerni-b40e",
+      "displayName": "马戛尔尼",
+      "firstYear": 1793,
+      "identityHash": "6bcc5ac9"
+    },
+    {
+      "id": "p-maodunchanyu-0223",
+      "displayName": "冒顿单于",
+      "firstYear": -200,
+      "identityHash": "cedab94e"
+    },
+    {
+      "id": "p-maojie-8124",
+      "displayName": "毛玠",
+      "firstYear": 196,
+      "identityHash": "4dbdab9b"
+    },
+    {
+      "id": "p-masu-81a2",
+      "displayName": "马谡",
+      "firstYear": 228,
+      "identityHash": "bbbeb112"
+    },
+    {
+      "id": "p-maxichong-5333",
+      "displayName": "马希崇",
+      "firstYear": 951,
+      "identityHash": "a01ecaee"
+    },
+    {
+      "id": "p-mayuan-d153",
+      "displayName": "马援",
+      "firstYear": 40,
+      "identityHash": "32d48b69"
+    },
+    {
+      "id": "p-mengao-52dd",
+      "displayName": "蒙骜",
+      "firstYear": -247,
+      "identityHash": "1eff306d"
+    },
+    {
+      "id": "p-mengge-4eb1",
+      "displayName": "蒙哥",
+      "firstYear": 1251,
+      "identityHash": "aea86392"
+    },
+    {
+      "id": "p-menggong-fbbf",
+      "displayName": "孟珙",
+      "firstYear": 1234,
+      "identityHash": "2523510b"
+    },
+    {
+      "id": "p-menghuo-684a",
+      "displayName": "孟获",
+      "firstYear": 225,
+      "identityHash": "8a4f7674"
+    },
+    {
+      "id": "p-mengtian-60ae",
+      "displayName": "蒙恬",
+      "firstYear": -215,
+      "identityHash": "7ee14ff7"
+    },
+    {
+      "id": "p-mengzhixiang-022b",
+      "displayName": "孟知祥",
+      "firstYear": 934,
+      "identityHash": "a2fe30a9"
+    },
+    {
+      "id": "p-mengzi-65f8",
+      "displayName": "孟子",
+      "firstYear": -320,
+      "identityHash": "32d6ee82"
+    },
+    {
+      "id": "p-mengzongzheng-a12e",
+      "displayName": "孟宗政",
+      "firstYear": 1217,
+      "identityHash": "69033ad9"
+    },
+    {
+      "id": "p-miaofu-31d5",
+      "displayName": "苗傅",
+      "firstYear": 1129,
+      "identityHash": "9dd001c2"
+    },
+    {
+      "id": "p-mingyingzong-9548",
+      "displayName": "明英宗",
+      "firstYear": 1449,
+      "identityHash": "7f744758"
+    },
+    {
+      "id": "p-mozi-1b94",
+      "displayName": "墨子",
+      "firstYear": -440,
+      "identityHash": "515abc46"
+    },
+    {
+      "id": "p-muhuali-64eb",
+      "displayName": "木华黎",
+      "firstYear": 1211,
+      "identityHash": "69c9fa80"
+    },
+    {
+      "id": "p-murongbao-a42a",
+      "displayName": "慕容宝",
+      "firstYear": 395,
+      "identityHash": "2d414770"
+    },
+    {
+      "id": "p-murongchui-e66d",
+      "displayName": "慕容垂",
+      "firstYear": 395,
+      "identityHash": "ab9a417f"
+    },
+    {
+      "id": "p-murongwei-e6f8",
+      "displayName": "慕容暐",
+      "firstYear": 370,
+      "identityHash": "fe28a515"
+    },
+    {
+      "id": "p-muyi-0aa4",
+      "displayName": "目夷",
+      "firstYear": -638,
+      "identityHash": "f44771d5"
+    },
+    {
+      "id": "p-muying-800d",
+      "displayName": "沐英",
+      "firstYear": 1382,
+      "identityHash": "74cc5492"
+    },
+    {
+      "id": "p-naimazhen-a8d6",
+      "displayName": "乃马真",
+      "firstYear": 1241,
+      "identityHash": "1c66f472"
+    },
+    {
+      "id": "p-nanxiongnuchanyubi-b98a",
+      "displayName": "南匈奴单于比",
+      "firstYear": 48,
+      "identityHash": "86bb6aad"
+    },
+    {
+      "id": "p-neishiteng-4484",
+      "displayName": "内史腾",
+      "firstYear": -230,
+      "identityHash": "9c6c99d3"
+    },
+    {
+      "id": "p-niangengyao-19a6",
+      "displayName": "年羹尧",
+      "firstYear": 1724,
+      "identityHash": "3098f0ba"
+    },
+    {
+      "id": "p-nieyi-c3cc",
+      "displayName": "聂壹",
+      "firstYear": -133,
+      "identityHash": "bd7c7322"
+    },
+    {
+      "id": "p-nikan-e1bf",
+      "displayName": "尼堪",
+      "firstYear": 1652,
+      "identityHash": "7c674d84"
+    },
+    {
+      "id": "p-niugao-1edd",
+      "displayName": "牛皋",
+      "firstYear": 1134,
+      "identityHash": "35dcb747"
+    },
+    {
+      "id": "p-nuerhachi-d577",
+      "displayName": "努尔哈赤",
+      "firstYear": 1616,
+      "identityHash": "74aeabe8"
+    },
+    {
+      "id": "p-ouyangxiu-4670",
+      "displayName": "欧阳修",
+      "firstYear": 1036,
+      "identityHash": "bee7e680"
+    },
+    {
+      "id": "p-pangeng-a22c",
+      "displayName": "盘庚",
+      "firstYear": -1300,
+      "identityHash": "838394bb"
+    },
+    {
+      "id": "p-pangjuan-ba05",
+      "displayName": "庞涓",
+      "firstYear": -353,
+      "identityHash": "faca6b5f"
+    },
+    {
+      "id": "p-pangtong-9bb2",
+      "displayName": "庞统",
+      "firstYear": 211,
+      "identityHash": "44a2229e"
+    },
+    {
+      "id": "p-panyue-6204",
+      "displayName": "潘岳",
+      "firstYear": 296,
+      "identityHash": "35999acd"
+    },
+    {
+      "id": "p-peidu-dc4e",
+      "displayName": "裴度",
+      "firstYear": 806,
+      "identityHash": "9f27e85e"
+    },
+    {
+      "id": "p-peiju-fda3",
+      "displayName": "裴矩",
+      "firstYear": 609,
+      "identityHash": "60393520"
+    },
+    {
+      "id": "p-pengyue-58a0",
+      "displayName": "彭越",
+      "firstYear": -202,
+      "identityHash": "79f1d225"
+    },
+    {
+      "id": "p-poliuhanbaling-4bc9",
+      "displayName": "破六韩拔陵",
+      "firstYear": 523,
+      "identityHash": "be065c45"
+    },
+    {
+      "id": "p-pudingcha-6309",
+      "displayName": "璞鼎查",
+      "firstYear": 1842,
+      "identityHash": "f9a45cfd"
+    },
+    {
+      "id": "p-qianchu-8143",
+      "displayName": "钱俶",
+      "firstYear": 978,
+      "identityHash": "415b7976"
+    },
+    {
+      "id": "p-qianliu-0e21",
+      "displayName": "钱镠",
+      "firstYear": 896,
+      "identityHash": "772ddf7d"
+    },
+    {
+      "id": "p-qianlongdi-5757",
+      "displayName": "乾隆帝",
+      "firstYear": 1700,
+      "identityHash": "0386c256"
+    },
+    {
+      "id": "p-qiedebuhua-3efc",
+      "displayName": "怯的不花",
+      "firstYear": 1258,
+      "identityHash": "a8a6939a"
+    },
+    {
+      "id": "p-qifuren-bf22",
+      "displayName": "戚夫人",
+      "firstYear": -195,
+      "identityHash": "fc828250"
+    },
+    {
+      "id": "p-qihuangong-b48b",
+      "displayName": "齐桓公",
+      "firstYear": -685,
+      "identityHash": "7a869e0b"
+    },
+    {
+      "id": "p-qijiangong-d6fc",
+      "displayName": "齐简公",
+      "firstYear": -481,
+      "identityHash": "5e6aa85b"
+    },
+    {
+      "id": "p-qijiguang-aa4e",
+      "displayName": "戚继光",
+      "firstYear": 1555,
+      "identityHash": "5fa5d706"
+    },
+    {
+      "id": "p-qikanggong-5f42",
+      "displayName": "齐康公",
+      "firstYear": -386,
+      "identityHash": "9f35b1be"
+    },
+    {
+      "id": "p-qiminwang-9300",
+      "displayName": "齐湣王",
+      "firstYear": -288,
+      "identityHash": "1dc99d07"
+    },
+    {
+      "id": "p-qingui-377e",
+      "displayName": "秦桧",
+      "firstYear": 1140,
+      "identityHash": "d7a547b6"
+    },
+    {
+      "id": "p-qinhuiwang-564a",
+      "displayName": "秦惠王",
+      "firstYear": -338,
+      "identityHash": "a77e8013"
+    },
+    {
+      "id": "p-qinjing-22cf",
+      "displayName": "秦景",
+      "firstYear": 67,
+      "identityHash": "d877b656"
+    },
+    {
+      "id": "p-qinmugong-7735",
+      "displayName": "秦穆公",
+      "firstYear": -645,
+      "identityHash": "0b65c1bb"
+    },
+    {
+      "id": "p-qinshihuang-f6c7",
+      "displayName": "秦始皇",
+      "firstYear": -246,
+      "identityHash": "349e551f"
+    },
+    {
+      "id": "p-qinxianggong-484e",
+      "displayName": "秦襄公",
+      "firstYear": -770,
+      "identityHash": "76b9646d"
+    },
+    {
+      "id": "p-qinxiaogong-2d14",
+      "displayName": "秦孝公",
+      "firstYear": -359,
+      "identityHash": "132fcff2"
+    },
+    {
+      "id": "p-qinzhaowang-1721",
+      "displayName": "秦昭王",
+      "firstYear": -288,
+      "identityHash": "af2fee9a"
+    },
+    {
+      "id": "p-qiqinggong-b4a7",
+      "displayName": "齐顷公",
+      "firstYear": -589,
+      "identityHash": "f8648e8c"
+    },
+    {
+      "id": "p-qishan-a637",
+      "displayName": "琦善",
+      "firstYear": 1840,
+      "identityHash": "f823ad51"
+    },
+    {
+      "id": "p-qitai-ec9f",
+      "displayName": "齐泰",
+      "firstYear": 1402,
+      "identityHash": "b56e5c53"
+    },
+    {
+      "id": "p-qiufu-d4b9",
+      "displayName": "丘福",
+      "firstYear": 1410,
+      "identityHash": "601a99b8"
+    },
+    {
+      "id": "p-qiweiwang-45eb",
+      "displayName": "齐威王",
+      "firstYear": -357,
+      "identityHash": "7298acdc"
+    },
+    {
+      "id": "p-qixiangwang-1a4a",
+      "displayName": "齐襄王",
+      "firstYear": -279,
+      "identityHash": "744fdd4b"
+    },
+    {
+      "id": "p-qixuanwang-4159",
+      "displayName": "齐宣王",
+      "firstYear": -320,
+      "identityHash": "5824f149"
+    },
+    {
+      "id": "p-qiying-9b58",
+      "displayName": "耆英",
+      "firstYear": 1842,
+      "identityHash": "bd4a2e2a"
+    },
+    {
+      "id": "p-qizhuanggong-9780",
+      "displayName": "齐庄公",
+      "firstYear": -548,
+      "identityHash": "d1df7ed5"
+    },
+    {
+      "id": "p-qugai-cb35",
+      "displayName": "屈匄",
+      "firstYear": -312,
+      "identityHash": "356fe5f4"
+    },
+    {
+      "id": "p-qujian-bbe8",
+      "displayName": "屈建",
+      "firstYear": -546,
+      "identityHash": "02d0233e"
+    },
+    {
+      "id": "p-quwan-218e",
+      "displayName": "屈完",
+      "firstYear": -656,
+      "identityHash": "50d2b995"
+    },
+    {
+      "id": "p-quwentai-6097",
+      "displayName": "麴文泰",
+      "firstYear": 640,
+      "identityHash": "1db24ca3"
+    },
+    {
+      "id": "p-quwowugong-b309",
+      "displayName": "曲沃武公",
+      "firstYear": -679,
+      "identityHash": "9fb30031"
+    },
+    {
+      "id": "p-quyuan-72d6",
+      "displayName": "屈原",
+      "firstYear": -278,
+      "identityHash": "807cc0b4"
+    },
+    {
+      "id": "p-quzhisheng-2bf0",
+      "displayName": "麴智盛",
+      "firstYear": 640,
+      "identityHash": "2c1cd2ec"
+    },
+    {
+      "id": "p-renfu-3211",
+      "displayName": "任福",
+      "firstYear": 1041,
+      "identityHash": "fc08d884"
+    },
+    {
+      "id": "p-rongrui-33ac",
+      "displayName": "荣叡",
+      "firstYear": 753,
+      "identityHash": "f0d08a85"
+    },
+    {
+      "id": "p-ruanji-9407",
+      "displayName": "阮籍",
+      "firstYear": 247,
+      "identityHash": "7bf6b5c6"
+    },
+    {
+      "id": "p-ruziying-2e2c",
+      "displayName": "孺子婴",
+      "firstYear": 6,
+      "identityHash": "cef0d013"
+    },
+    {
+      "id": "p-sabusu-4ad8",
+      "displayName": "萨布素",
+      "firstYear": 1685,
+      "identityHash": "be4e9b99"
+    },
+    {
+      "id": "p-sajiabanzhida-65c0",
+      "displayName": "萨迦班智达",
+      "firstYear": 1247,
+      "identityHash": "ad1d3dbc"
+    },
+    {
+      "id": "p-sangge-be97",
+      "displayName": "桑哥",
+      "firstYear": 1285,
+      "identityHash": "72f2aa64"
+    },
+    {
+      "id": "p-sanghongyang-6f91",
+      "displayName": "桑弘羊",
+      "firstYear": -118,
+      "identityHash": "085ceb31"
+    },
+    {
+      "id": "p-senggelinqin-5d3f",
+      "displayName": "僧格林沁",
+      "firstYear": 1860,
+      "identityHash": "1ab25b83"
+    },
+    {
+      "id": "p-shangguanjie-699a",
+      "displayName": "上官桀",
+      "firstYear": -87,
+      "identityHash": "61836877"
+    },
+    {
+      "id": "p-shangtang-c08b",
+      "displayName": "商汤",
+      "firstYear": -1617,
+      "identityHash": "3f361277"
+    },
+    {
+      "id": "p-shangyang-0dca",
+      "displayName": "商鞅",
+      "firstYear": -359,
+      "identityHash": "322abf91"
+    },
+    {
+      "id": "p-shangzhouwang-65bf",
+      "displayName": "商纣王",
+      "firstYear": -1080,
+      "identityHash": "6175bca0"
+    },
+    {
+      "id": "p-shaohongyuan-da0b",
+      "displayName": "邵宏渊",
+      "firstYear": 1163,
+      "identityHash": "bda7e920"
+    },
+    {
+      "id": "p-shaokang-43f7",
+      "displayName": "少康",
+      "firstYear": -1850,
+      "identityHash": "776a8265"
+    },
+    {
+      "id": "p-shenbuhai-c996",
+      "displayName": "申不害",
+      "firstYear": -355,
+      "identityHash": "9f4eea62"
+    },
+    {
+      "id": "p-shendao-ddfb",
+      "displayName": "慎到",
+      "firstYear": -310,
+      "identityHash": "fffa3ae2"
+    },
+    {
+      "id": "p-shengongwuchen-1ab9",
+      "displayName": "申公巫臣",
+      "firstYear": -584,
+      "identityHash": "b93311c9"
+    },
+    {
+      "id": "p-shenhou-beef",
+      "displayName": "申侯",
+      "firstYear": -771,
+      "identityHash": "c24235ce"
+    },
+    {
+      "id": "p-shenkuo-af80",
+      "displayName": "沈括",
+      "firstYear": 1075,
+      "identityHash": "2615839a"
+    },
+    {
+      "id": "p-shenyue-868d",
+      "displayName": "沈约",
+      "firstYear": 502,
+      "identityHash": "3e3c5244"
+    },
+    {
+      "id": "p-shichong-d25f",
+      "displayName": "石崇",
+      "firstYear": 285,
+      "identityHash": "ba279662"
+    },
+    {
+      "id": "p-shiheng-a414",
+      "displayName": "石亨",
+      "firstYear": 1449,
+      "identityHash": "3f0ddc70"
+    },
+    {
+      "id": "p-shihongzhao-327f",
+      "displayName": "史弘肇",
+      "firstYear": 950,
+      "identityHash": "64421a54"
+    },
+    {
+      "id": "p-shijingtang-c0ae",
+      "displayName": "石敬瑭",
+      "firstYear": 936,
+      "identityHash": "d2b7a223"
+    },
+    {
+      "id": "p-shilang-80af",
+      "displayName": "施琅",
+      "firstYear": 1683,
+      "identityHash": "6bc95312"
+    },
+    {
+      "id": "p-shile-5cdb",
+      "displayName": "石勒",
+      "firstYear": 311,
+      "identityHash": "7ff17fe4"
+    },
+    {
+      "id": "p-shimiyuan-9924",
+      "displayName": "史弥远",
+      "firstYear": 1207,
+      "identityHash": "76dadbb5"
+    },
+    {
+      "id": "p-shimomingan-a374",
+      "displayName": "石抹明安",
+      "firstYear": 1215,
+      "identityHash": "86a6a451"
+    },
+    {
+      "id": "p-shishouxin-ee76",
+      "displayName": "石守信",
+      "firstYear": 960,
+      "identityHash": "db522f3e"
+    },
+    {
+      "id": "p-shisiming-e1a1",
+      "displayName": "史思明",
+      "firstYear": 755,
+      "identityHash": "6720d9b4"
+    },
+    {
+      "id": "p-shitianze-f976",
+      "displayName": "史天泽",
+      "firstYear": 1262,
+      "identityHash": "6c072c87"
+    },
+    {
+      "id": "p-shiyuansun-71fe",
+      "displayName": "石元孙",
+      "firstYear": 1040,
+      "identityHash": "b9731352"
+    },
+    {
+      "id": "p-shizhonggui-22a1",
+      "displayName": "石重贵",
+      "firstYear": 947,
+      "identityHash": "dde69d02"
+    },
+    {
+      "id": "p-shuhugaoqi-d584",
+      "displayName": "术虎高琪",
+      "firstYear": 1214,
+      "identityHash": "875a2882"
+    },
+    {
+      "id": "p-shulianghe-9d15",
+      "displayName": "叔梁纥",
+      "firstYear": -551,
+      "identityHash": "54035b4f"
+    },
+    {
+      "id": "p-shulvping-3731",
+      "displayName": "述律平",
+      "firstYear": 907,
+      "identityHash": "c63f0a2b"
+    },
+    {
+      "id": "p-shun-3851",
+      "displayName": "舜",
+      "firstYear": -2083,
+      "identityHash": "986569cb"
+    },
+    {
+      "id": "p-shunzhidi-6764",
+      "displayName": "顺治帝",
+      "firstYear": 1645,
+      "identityHash": "f970b8ef"
+    },
+    {
+      "id": "p-shuxiang-e401",
+      "displayName": "叔向",
+      "firstYear": -536,
+      "identityHash": "a2e8df84"
+    },
+    {
+      "id": "p-simachi-231f",
+      "displayName": "司马炽",
+      "firstYear": 311,
+      "identityHash": "8080eb6e"
+    },
+    {
+      "id": "p-simacuo-1f53",
+      "displayName": "司马错",
+      "firstYear": -316,
+      "identityHash": "a23d9425"
+    },
+    {
+      "id": "p-simadewen-0a99",
+      "displayName": "司马德文",
+      "firstYear": 420,
+      "identityHash": "8cc0abb0"
+    },
+    {
+      "id": "p-simadezong-9807",
+      "displayName": "司马德宗",
+      "firstYear": 403,
+      "identityHash": "da45e9e8"
+    },
+    {
+      "id": "p-simaguang-5b29",
+      "displayName": "司马光",
+      "firstYear": 1063,
+      "identityHash": "fbf31c12"
+    },
+    {
+      "id": "p-simahui-4d82",
+      "displayName": "司马徽",
+      "firstYear": 207,
+      "identityHash": "0381b0b5"
+    },
+    {
+      "id": "p-simaliang-e1d4",
+      "displayName": "司马亮",
+      "firstYear": 291,
+      "identityHash": "bf51bf42"
+    },
+    {
+      "id": "p-simalun-a3c0",
+      "displayName": "司马伦",
+      "firstYear": 291,
+      "identityHash": "2bbbbb4b"
+    },
+    {
+      "id": "p-simaqian-a362",
+      "displayName": "司马迁",
+      "firstYear": -104,
+      "identityHash": "92074e05"
+    },
+    {
+      "id": "p-simarui-d796",
+      "displayName": "司马睿",
+      "firstYear": 313,
+      "identityHash": "9aa60a95"
+    },
+    {
+      "id": "p-simashi-04c9",
+      "displayName": "司马师",
+      "firstYear": 249,
+      "identityHash": "c1f69e2c"
+    },
+    {
+      "id": "p-simawei-d7bf",
+      "displayName": "司马玮",
+      "firstYear": 291,
+      "identityHash": "83504264"
+    },
+    {
+      "id": "p-simayan-4336",
+      "displayName": "司马炎",
+      "firstYear": 264,
+      "identityHash": "8d723fc4"
+    },
+    {
+      "id": "p-simaye-4042",
+      "displayName": "司马邺",
+      "firstYear": 316,
+      "identityHash": "2d1fec27"
+    },
+    {
+      "id": "p-simayi-f714",
+      "displayName": "司马懿",
+      "firstYear": 234,
+      "identityHash": "7401e6ce"
+    },
+    {
+      "id": "p-simaying-bbbc",
+      "displayName": "司马颖",
+      "firstYear": 291,
+      "identityHash": "ad9eaf56"
+    },
+    {
+      "id": "p-simazhao-85d2",
+      "displayName": "司马昭",
+      "firstYear": 254,
+      "identityHash": "b57a6622"
+    },
+    {
+      "id": "p-simazhong-e1fc",
+      "displayName": "司马衷",
+      "firstYear": 272,
+      "identityHash": "d290e62d"
+    },
+    {
+      "id": "p-songjiang-059c",
+      "displayName": "宋江",
+      "firstYear": 1119,
+      "identityHash": "709f2fe8"
+    },
+    {
+      "id": "p-songjing-9021",
+      "displayName": "宋璟",
+      "firstYear": 713,
+      "identityHash": "a473c886"
+    },
+    {
+      "id": "p-songwangyan-fe09",
+      "displayName": "宋王偃",
+      "firstYear": -286,
+      "identityHash": "5c3d7664"
+    },
+    {
+      "id": "p-songxianggong-7974",
+      "displayName": "宋襄公",
+      "firstYear": -638,
+      "identityHash": "1bc1df67"
+    },
+    {
+      "id": "p-songzanganbu-cb66",
+      "displayName": "松赞干布",
+      "firstYear": 641,
+      "identityHash": "774d58a6"
+    },
+    {
+      "id": "p-subutai-cf44",
+      "displayName": "速不台",
+      "firstYear": 1232,
+      "identityHash": "1479d460"
+    },
+    {
+      "id": "p-suchuo-c558",
+      "displayName": "苏绰",
+      "firstYear": 541,
+      "identityHash": "d9879a20"
+    },
+    {
+      "id": "p-sudingfang-e9d8",
+      "displayName": "苏定方",
+      "firstYear": 657,
+      "identityHash": "2941b880"
+    },
+    {
+      "id": "p-sujiao-a21d",
+      "displayName": "苏角",
+      "firstYear": -207,
+      "identityHash": "8b6f3351"
+    },
+    {
+      "id": "p-sunbin-ae9f",
+      "displayName": "孙膑",
+      "firstYear": -353,
+      "identityHash": "8b9cc0c1"
+    },
+    {
+      "id": "p-sunce-8738",
+      "displayName": "孙策",
+      "firstYear": 191,
+      "identityHash": "72707f0e"
+    },
+    {
+      "id": "p-suncheng-a32c",
+      "displayName": "孙程",
+      "firstYear": 125,
+      "identityHash": "c3fe8a3f"
+    },
+    {
+      "id": "p-sunchuo-ed4f",
+      "displayName": "孙绰",
+      "firstYear": 353,
+      "identityHash": "90ae3266"
+    },
+    {
+      "id": "p-sunhao-d9b2",
+      "displayName": "孙皓",
+      "firstYear": 280,
+      "identityHash": "deb70052"
+    },
+    {
+      "id": "p-sunhuchen-d315",
+      "displayName": "孙虎臣",
+      "firstYear": 1275,
+      "identityHash": "d3455301"
+    },
+    {
+      "id": "p-sunjian-a661",
+      "displayName": "孙坚",
+      "firstYear": 191,
+      "identityHash": "aacea860"
+    },
+    {
+      "id": "p-sunquan-19a7",
+      "displayName": "孙权",
+      "firstYear": 200,
+      "identityHash": "78e0b3ef"
+    },
+    {
+      "id": "p-sunwu-ae97",
+      "displayName": "孙武",
+      "firstYear": -512,
+      "identityHash": "71ace3d3"
+    },
+    {
+      "id": "p-sunzhongshan-c322",
+      "displayName": "孙中山",
+      "firstYear": 1911,
+      "identityHash": "69a7e003"
+    },
+    {
+      "id": "p-suodou-09c8",
+      "displayName": "唆都",
+      "firstYear": 1283,
+      "identityHash": "8944cd06"
+    },
+    {
+      "id": "p-suoetu-a61b",
+      "displayName": "索额图",
+      "firstYear": 1689,
+      "identityHash": "272ed55b"
+    },
+    {
+      "id": "p-suqin-6aca",
+      "displayName": "苏秦",
+      "firstYear": -334,
+      "identityHash": "811e9d9c"
+    },
+    {
+      "id": "p-sushi-623e",
+      "displayName": "苏轼",
+      "firstYear": 1079,
+      "identityHash": "4c08327f"
+    },
+    {
+      "id": "p-suwei-f696",
+      "displayName": "苏威",
+      "firstYear": 583,
+      "identityHash": "05c14246"
+    },
+    {
+      "id": "p-tachaer-9c37",
+      "displayName": "塔察儿",
+      "firstYear": 1234,
+      "identityHash": "6f3a9ccf"
+    },
+    {
+      "id": "p-taijia-8f1f",
+      "displayName": "太甲",
+      "firstYear": -1577,
+      "identityHash": "7933b9aa"
+    },
+    {
+      "id": "p-taikang-ef72",
+      "displayName": "太康",
+      "firstYear": -1990,
+      "identityHash": "f97553e5"
+    },
+    {
+      "id": "p-taipinggongzhu-7d1f",
+      "displayName": "太平公主",
+      "firstYear": 710,
+      "identityHash": "69073092"
+    },
+    {
+      "id": "p-taishici-1afc",
+      "displayName": "太史慈",
+      "firstYear": 195,
+      "identityHash": "d42a092e"
+    },
+    {
+      "id": "p-taizidan-d5d3",
+      "displayName": "太子丹",
+      "firstYear": -222,
+      "identityHash": "d1382947"
+    },
+    {
+      "id": "p-tandaoji-dd2f",
+      "displayName": "檀道济",
+      "firstYear": 405,
+      "identityHash": "d77676e3"
+    },
+    {
+      "id": "p-tangaidi-2fc1",
+      "displayName": "唐哀帝",
+      "firstYear": 907,
+      "identityHash": "116676ec"
+    },
+    {
+      "id": "p-tanghe-a391",
+      "displayName": "汤和",
+      "firstYear": 1352,
+      "identityHash": "d457a944"
+    },
+    {
+      "id": "p-tangsitui-746c",
+      "displayName": "汤思退",
+      "firstYear": 1164,
+      "identityHash": "10dcede9"
+    },
+    {
+      "id": "p-tangzhaozong-7534",
+      "displayName": "唐昭宗",
+      "firstYear": 907,
+      "identityHash": "dc3386fe"
+    },
+    {
+      "id": "p-tanlun-d9bb",
+      "displayName": "谭纶",
+      "firstYear": 1561,
+      "identityHash": "872d4726"
+    },
+    {
+      "id": "p-tansitong-14ed",
+      "displayName": "谭嗣同",
+      "firstYear": 1898,
+      "identityHash": "8ded3337"
+    },
+    {
+      "id": "p-taoyuanming-28b4",
+      "displayName": "陶渊明",
+      "firstYear": 405,
+      "identityHash": "8d041720"
+    },
+    {
+      "id": "p-tianchang-2552",
+      "displayName": "田常",
+      "firstYear": -481,
+      "identityHash": "08dcd61b"
+    },
+    {
+      "id": "p-tiandan-575f",
+      "displayName": "田儋",
+      "firstYear": -209,
+      "identityHash": "e133a83f"
+    },
+    {
+      "id": "p-tiandan-a435",
+      "displayName": "田单",
+      "firstYear": -279,
+      "identityHash": "92fc438d"
+    },
+    {
+      "id": "p-tianguang-de05",
+      "displayName": "田广",
+      "firstYear": -204,
+      "identityHash": "ad1fc765"
+    },
+    {
+      "id": "p-tianhe-e4fb",
+      "displayName": "田和",
+      "firstYear": -386,
+      "identityHash": "6ead3059"
+    },
+    {
+      "id": "p-tianji-01bc",
+      "displayName": "田忌",
+      "firstYear": -353,
+      "identityHash": "71a66bcc"
+    },
+    {
+      "id": "p-tianpian-02ff",
+      "displayName": "田骈",
+      "firstYear": -310,
+      "identityHash": "0123316d"
+    },
+    {
+      "id": "p-tianzhitianhuang-aafb",
+      "displayName": "天智天皇",
+      "firstYear": 663,
+      "identityHash": "a6ab7c1d"
+    },
+    {
+      "id": "p-tianzifang-08f2",
+      "displayName": "田子方",
+      "firstYear": -406,
+      "identityHash": "fad845f1"
+    },
+    {
+      "id": "p-tiemuer-a165",
+      "displayName": "铁穆耳",
+      "firstYear": 1294,
+      "identityHash": "1048a23f"
+    },
+    {
+      "id": "p-tieshi-1206",
+      "displayName": "铁失",
+      "firstYear": 1323,
+      "identityHash": "4c7c8c8b"
+    },
+    {
+      "id": "p-tiying-2c43",
+      "displayName": "缇萦",
+      "firstYear": -167,
+      "identityHash": "1f279218"
+    },
+    {
+      "id": "p-tongguan-8648",
+      "displayName": "童贯",
+      "firstYear": 1120,
+      "identityHash": "69ffe787"
+    },
+    {
+      "id": "p-tuobacheng-dc55",
+      "displayName": "拓跋澄",
+      "firstYear": 494,
+      "identityHash": "57ce570d"
+    },
+    {
+      "id": "p-tuobagui-eb0e",
+      "displayName": "拓跋珪",
+      "firstYear": 386,
+      "identityHash": "2e8e1768"
+    },
+    {
+      "id": "p-tuobasi-6ec8",
+      "displayName": "拓跋嗣",
+      "firstYear": 386,
+      "identityHash": "6f1acbcd"
+    },
+    {
+      "id": "p-tuobatao-63df",
+      "displayName": "拓跋焘",
+      "firstYear": 439,
+      "identityHash": "8b0b02ac"
+    },
+    {
+      "id": "p-tuobaxun-d064",
+      "displayName": "拓跋恂",
+      "firstYear": 494,
+      "identityHash": "2be71e7a"
+    },
+    {
+      "id": "p-tuoerbujin-5817",
+      "displayName": "托尔布津",
+      "firstYear": 1685,
+      "identityHash": "55d213ed"
+    },
+    {
+      "id": "p-tuohuan-5c2b",
+      "displayName": "脱欢",
+      "firstYear": 1285,
+      "identityHash": "169ce135"
+    },
+    {
+      "id": "p-tuolei-25b0",
+      "displayName": "拖雷",
+      "firstYear": 1209,
+      "identityHash": "78f9aded"
+    },
+    {
+      "id": "p-tuotuo-8c67",
+      "displayName": "脱脱",
+      "firstYear": 1333,
+      "identityHash": "c4e14ee7"
+    },
+    {
+      "id": "p-wanganshi-ae3c",
+      "displayName": "王安石",
+      "firstYear": 1069,
+      "identityHash": "6bfd38dc"
+    },
+    {
+      "id": "p-wangbao-c650",
+      "displayName": "王薄",
+      "firstYear": 611,
+      "identityHash": "bc6711e1"
+    },
+    {
+      "id": "p-wangben-fbc9",
+      "displayName": "王贲",
+      "firstYear": -225,
+      "identityHash": "bdda2569"
+    },
+    {
+      "id": "p-wangconger-89f3",
+      "displayName": "王聪儿",
+      "firstYear": 1796,
+      "identityHash": "88b75179"
+    },
+    {
+      "id": "p-wangdao-d7cb",
+      "displayName": "王导",
+      "firstYear": 317,
+      "identityHash": "a25c752b"
+    },
+    {
+      "id": "p-wangdun-0eb6",
+      "displayName": "王敦",
+      "firstYear": 322,
+      "identityHash": "b2d898f0"
+    },
+    {
+      "id": "p-wangguangyang-aea9",
+      "displayName": "汪广洋",
+      "firstYear": 1380,
+      "identityHash": "bab54de5"
+    },
+    {
+      "id": "p-wanghuazhen-5213",
+      "displayName": "王化贞",
+      "firstYear": 1622,
+      "identityHash": "9fea0b2f"
+    },
+    {
+      "id": "p-wanghui-252a",
+      "displayName": "王恢",
+      "firstYear": -133,
+      "identityHash": "baee375a"
+    },
+    {
+      "id": "p-wangjian-4621",
+      "displayName": "王建",
+      "firstYear": 907,
+      "identityHash": "a3261b19"
+    },
+    {
+      "id": "p-wangjian-5b25",
+      "displayName": "王坚",
+      "firstYear": 1259,
+      "identityHash": "ee529e9f"
+    },
+    {
+      "id": "p-wangjian-bb6b",
+      "displayName": "王翦",
+      "firstYear": -228,
+      "identityHash": "1fd567c2"
+    },
+    {
+      "id": "p-wangjing-2d21",
+      "displayName": "王景",
+      "firstYear": 69,
+      "identityHash": "7a7d94b4"
+    },
+    {
+      "id": "p-wangjun-768d",
+      "displayName": "王濬",
+      "firstYear": 280,
+      "identityHash": "0ccaecf4"
+    },
+    {
+      "id": "p-wangkai-65c7",
+      "displayName": "王恺",
+      "firstYear": 285,
+      "identityHash": "9b5fe285"
+    },
+    {
+      "id": "p-wangli-d028",
+      "displayName": "王离",
+      "firstYear": -207,
+      "identityHash": "47a0d34d"
+    },
+    {
+      "id": "p-wangmang-9185",
+      "displayName": "王莽",
+      "firstYear": -1,
+      "identityHash": "55e0dc6d"
+    },
+    {
+      "id": "p-wangmeng-c57c",
+      "displayName": "王猛",
+      "firstYear": 354,
+      "identityHash": "a6c10614"
+    },
+    {
+      "id": "p-wangmi-e701",
+      "displayName": "王弥",
+      "firstYear": 304,
+      "identityHash": "87954d3d"
+    },
+    {
+      "id": "p-wangrong-a053",
+      "displayName": "王镕",
+      "firstYear": 917,
+      "identityHash": "61d460b9"
+    },
+    {
+      "id": "p-wangsengbian-23c2",
+      "displayName": "王僧辩",
+      "firstYear": 557,
+      "identityHash": "37a869de"
+    },
+    {
+      "id": "p-wangshuwen-2bb9",
+      "displayName": "王叔文",
+      "firstYear": 805,
+      "identityHash": "3593d470"
+    },
+    {
+      "id": "p-wangsunman-c17f",
+      "displayName": "王孙满",
+      "firstYear": -606,
+      "identityHash": "681c442a"
+    },
+    {
+      "id": "p-wangwan-85c2",
+      "displayName": "王绾",
+      "firstYear": -221,
+      "identityHash": "109d7134"
+    },
+    {
+      "id": "p-wangwu-2c3e",
+      "displayName": "王吴",
+      "firstYear": 69,
+      "identityHash": "24488a37"
+    },
+    {
+      "id": "p-wangxianzhi-665b",
+      "displayName": "王仙芝",
+      "firstYear": 875,
+      "identityHash": "6ce54c6f"
+    },
+    {
+      "id": "p-wangxianzhi-8bce",
+      "displayName": "王献之",
+      "firstYear": 350,
+      "identityHash": "30de1cab"
+    },
+    {
+      "id": "p-wangxiaobo-1a05",
+      "displayName": "王小波",
+      "firstYear": 993,
+      "identityHash": "f74da133"
+    },
+    {
+      "id": "p-wangxiaojie-706c",
+      "displayName": "王孝杰",
+      "firstYear": 692,
+      "identityHash": "d73bfa45"
+    },
+    {
+      "id": "p-wangxizhi-0cfa",
+      "displayName": "王羲之",
+      "firstYear": 350,
+      "identityHash": "05aef4ae"
+    },
+    {
+      "id": "p-wangxun-2f7a",
+      "displayName": "王恂",
+      "firstYear": 1280,
+      "identityHash": "3fd8e67b"
+    },
+    {
+      "id": "p-wangxun-cb2f",
+      "displayName": "王寻",
+      "firstYear": 23,
+      "identityHash": "7c95fac0"
+    },
+    {
+      "id": "p-wangyangming-7a98",
+      "displayName": "王阳明",
+      "firstYear": 1519,
+      "identityHash": "523f9cae"
+    },
+    {
+      "id": "p-wangyanzheng-8d3e",
+      "displayName": "王延政",
+      "firstYear": 945,
+      "identityHash": "741cd697"
+    },
+    {
+      "id": "p-wangyi-f2fb",
+      "displayName": "王邑",
+      "firstYear": 23,
+      "identityHash": "99370195"
+    },
+    {
+      "id": "p-wangyun-3ac4",
+      "displayName": "王允",
+      "firstYear": 192,
+      "identityHash": "14e68d46"
+    },
+    {
+      "id": "p-wangzhaojun-0984",
+      "displayName": "王昭君",
+      "firstYear": -33,
+      "identityHash": "fdd4c42b"
+    },
+    {
+      "id": "p-wangzhen-5bce",
+      "displayName": "王振",
+      "firstYear": 1449,
+      "identityHash": "483937cc"
+    },
+    {
+      "id": "p-wangzhene-332c",
+      "displayName": "王镇恶",
+      "firstYear": 417,
+      "identityHash": "0e272f09"
+    },
+    {
+      "id": "p-wangzhengjun-d034",
+      "displayName": "王政君",
+      "firstYear": -1,
+      "identityHash": "2f794e86"
+    },
+    {
+      "id": "p-wangzidai-942b",
+      "displayName": "王子带",
+      "firstYear": -635,
+      "identityHash": "39b661cd"
+    },
+    {
+      "id": "p-wangzihu-401e",
+      "displayName": "王子虎",
+      "firstYear": -632,
+      "identityHash": "06a24fc3"
+    },
+    {
+      "id": "p-wanlidi-e6da",
+      "displayName": "万历帝",
+      "firstYear": 1573,
+      "identityHash": "df4c78ed"
+    },
+    {
+      "id": "p-wanyanaguda-6eef",
+      "displayName": "完颜阿骨打",
+      "firstYear": 1114,
+      "identityHash": "87d84e88"
+    },
+    {
+      "id": "p-wanyanchengyu-4ae6",
+      "displayName": "完颜承裕",
+      "firstYear": 1211,
+      "identityHash": "62af9570"
+    },
+    {
+      "id": "p-wanyandan-d68b",
+      "displayName": "完颜亶",
+      "firstYear": 1150,
+      "identityHash": "29653889"
+    },
+    {
+      "id": "p-wanyanheda-a61a",
+      "displayName": "完颜合达",
+      "firstYear": 1232,
+      "identityHash": "a463967f"
+    },
+    {
+      "id": "p-wanyanjing-c1be",
+      "displayName": "完颜璟",
+      "firstYear": 1208,
+      "identityHash": "3da437f3"
+    },
+    {
+      "id": "p-wanyankuang-4b24",
+      "displayName": "完颜匡",
+      "firstYear": 1207,
+      "identityHash": "66b95214"
+    },
+    {
+      "id": "p-wanyanliang-75d9",
+      "displayName": "完颜亮",
+      "firstYear": 1150,
+      "identityHash": "31c63f2a"
+    },
+    {
+      "id": "p-wanyanloushi-cc2e",
+      "displayName": "完颜娄室",
+      "firstYear": 1125,
+      "identityHash": "75e72918"
+    },
+    {
+      "id": "p-wanyanwuqimai-c3c2",
+      "displayName": "完颜吴乞买",
+      "firstYear": 1115,
+      "identityHash": "1638ec95"
+    },
+    {
+      "id": "p-wanyanxiyin-264f",
+      "displayName": "完颜希尹",
+      "firstYear": 1115,
+      "identityHash": "fab6f9d9"
+    },
+    {
+      "id": "p-wanyanxun-9b94",
+      "displayName": "完颜珣",
+      "firstYear": 1213,
+      "identityHash": "c306c790"
+    },
+    {
+      "id": "p-wanyanyong-9026",
+      "displayName": "完颜雍",
+      "firstYear": 1161,
+      "identityHash": "79b62a4b"
+    },
+    {
+      "id": "p-wanyanyongji-73f8",
+      "displayName": "完颜永济",
+      "firstYear": 1208,
+      "identityHash": "5f1fa893"
+    },
+    {
+      "id": "p-wanyanzongbi-4951",
+      "displayName": "完颜宗弼",
+      "firstYear": 1129,
+      "identityHash": "9e9d7f9c"
+    },
+    {
+      "id": "p-wanyanzongfu-6d6c",
+      "displayName": "完颜宗辅",
+      "firstYear": 1130,
+      "identityHash": "75e1c8c3"
+    },
+    {
+      "id": "p-wanyanzonghan-5ffb",
+      "displayName": "完颜宗翰",
+      "firstYear": 1126,
+      "identityHash": "a412c59f"
+    },
+    {
+      "id": "p-wanyanzongwang-907e",
+      "displayName": "完颜宗望",
+      "firstYear": 1125,
+      "identityHash": "b1862ac3"
+    },
+    {
+      "id": "p-weianliwang-0ca9",
+      "displayName": "魏安釐王",
+      "firstYear": -247,
+      "identityHash": "b2bbfa9e"
+    },
+    {
+      "id": "p-weihou-c240",
+      "displayName": "韦后",
+      "firstYear": 710,
+      "identityHash": "9fe0121b"
+    },
+    {
+      "id": "p-weihuanzi-7e00",
+      "displayName": "魏桓子",
+      "firstYear": -453,
+      "identityHash": "9cc594a7"
+    },
+    {
+      "id": "p-weihuiwang-22bd",
+      "displayName": "魏惠王",
+      "firstYear": -334,
+      "identityHash": "18536c0f"
+    },
+    {
+      "id": "p-weijiu-fda5",
+      "displayName": "魏咎",
+      "firstYear": -209,
+      "identityHash": "f11a8ce3"
+    },
+    {
+      "id": "p-weiqing-3507",
+      "displayName": "卫青",
+      "firstYear": -129,
+      "identityHash": "4372865d"
+    },
+    {
+      "id": "p-weiran-2b42",
+      "displayName": "魏冉",
+      "firstYear": -270,
+      "identityHash": "d6e54888"
+    },
+    {
+      "id": "p-weituqi-76c8",
+      "displayName": "尉屠耆",
+      "firstYear": -77,
+      "identityHash": "7a4828b6"
+    },
+    {
+      "id": "p-weiwangjia-11b3",
+      "displayName": "魏王假",
+      "firstYear": -225,
+      "identityHash": "24677bfa"
+    },
+    {
+      "id": "p-weiwenhou-9fac",
+      "displayName": "魏文侯",
+      "firstYear": -406,
+      "identityHash": "0236638d"
+    },
+    {
+      "id": "p-weixiangwang-a48c",
+      "displayName": "魏襄王",
+      "firstYear": -318,
+      "identityHash": "def3c6e4"
+    },
+    {
+      "id": "p-weiyan-6748",
+      "displayName": "魏延",
+      "firstYear": 219,
+      "identityHash": "0a7db2fd"
+    },
+    {
+      "id": "p-weiyouqu-bc57",
+      "displayName": "卫右渠",
+      "firstYear": -108,
+      "identityHash": "dad7f749"
+    },
+    {
+      "id": "p-weizhang-3d46",
+      "displayName": "魏章",
+      "firstYear": -312,
+      "identityHash": "0d9f7e02"
+    },
+    {
+      "id": "p-weizhi-8b5d",
+      "displayName": "魏徵",
+      "firstYear": 626,
+      "identityHash": "275ab243"
+    },
+    {
+      "id": "p-weizi-4805",
+      "displayName": "微子",
+      "firstYear": -1050,
+      "identityHash": "76eb559e"
+    },
+    {
+      "id": "p-weizifu-8f4c",
+      "displayName": "卫子夫",
+      "firstYear": -91,
+      "identityHash": "9f20d357"
+    },
+    {
+      "id": "p-wenchenggongzhu-d850",
+      "displayName": "文成公主",
+      "firstYear": 641,
+      "identityHash": "9c09c130"
+    },
+    {
+      "id": "p-wentianxiang-2436",
+      "displayName": "文天祥",
+      "firstYear": 1276,
+      "identityHash": "0c4acd06"
+    },
+    {
+      "id": "p-wokuotai-18e2",
+      "displayName": "窝阔台",
+      "firstYear": 1229,
+      "identityHash": "5c6b12fa"
+    },
+    {
+      "id": "p-wuchen-c001",
+      "displayName": "武臣",
+      "firstYear": -209,
+      "identityHash": "6c12a704"
+    },
+    {
+      "id": "p-wuding-86ff",
+      "displayName": "武丁",
+      "firstYear": -1250,
+      "identityHash": "260072df"
+    },
+    {
+      "id": "p-wuguang-5958",
+      "displayName": "吴广",
+      "firstYear": -209,
+      "identityHash": "2c13f1e1"
+    },
+    {
+      "id": "p-wuhan-c750",
+      "displayName": "吴汉",
+      "firstYear": 36,
+      "identityHash": "50986571"
+    },
+    {
+      "id": "p-wujiang-6a0b",
+      "displayName": "武姜",
+      "firstYear": -722,
+      "identityHash": "b24a1f66"
+    },
+    {
+      "id": "p-wujie-05af",
+      "displayName": "吴玠",
+      "firstYear": 1130,
+      "identityHash": "458c2a53"
+    },
+    {
+      "id": "p-wuju-40e3",
+      "displayName": "伍举",
+      "firstYear": -611,
+      "identityHash": "05d1173c"
+    },
+    {
+      "id": "p-wulianghetai-d510",
+      "displayName": "兀良合台",
+      "firstYear": 1253,
+      "identityHash": "c7f221e2"
+    },
+    {
+      "id": "p-wulin-1f40",
+      "displayName": "吴璘",
+      "firstYear": 1131,
+      "identityHash": "98371fc1"
+    },
+    {
+      "id": "p-wuqi-b5fa",
+      "displayName": "吴起",
+      "firstYear": -386,
+      "identityHash": "e80175ad"
+    },
+    {
+      "id": "p-wusangui-8dc5",
+      "displayName": "吴三桂",
+      "firstYear": 1644,
+      "identityHash": "32c84f24"
+    },
+    {
+      "id": "p-wusunkunmo-63a8",
+      "displayName": "乌孙昆莫",
+      "firstYear": -119,
+      "identityHash": "f751911b"
+    },
+    {
+      "id": "p-wuwangfucha-1705",
+      "displayName": "吴王夫差",
+      "firstYear": -494,
+      "identityHash": "840d88a5"
+    },
+    {
+      "id": "p-wuwanghelv-48bc",
+      "displayName": "吴王阖闾",
+      "firstYear": -522,
+      "identityHash": "fa04cacd"
+    },
+    {
+      "id": "p-wuwangliao-5191",
+      "displayName": "吴王僚",
+      "firstYear": -522,
+      "identityHash": "91107b33"
+    },
+    {
+      "id": "p-wuyuanji-34a1",
+      "displayName": "吴元济",
+      "firstYear": 817,
+      "identityHash": "d6d0e509"
+    },
+    {
+      "id": "p-wuzetian-2920",
+      "displayName": "武则天",
+      "firstYear": 637,
+      "identityHash": "e4d47cef"
+    },
+    {
+      "id": "p-wuzixu-2d17",
+      "displayName": "伍子胥",
+      "firstYear": -522,
+      "identityHash": "36a9d5ce"
+    },
+    {
+      "id": "p-xiahoudun-521e",
+      "displayName": "夏侯惇",
+      "firstYear": 198,
+      "identityHash": "51c60686"
+    },
+    {
+      "id": "p-xiahouyuan-3005",
+      "displayName": "夏侯渊",
+      "firstYear": 219,
+      "identityHash": "3c9724ac"
+    },
+    {
+      "id": "p-xiajie-f6ba",
+      "displayName": "夏桀",
+      "firstYear": -1610,
+      "identityHash": "43e6286d"
+    },
+    {
+      "id": "p-xianfengdi-0e92",
+      "displayName": "咸丰帝",
+      "firstYear": 1853,
+      "identityHash": "bec9dfbc"
+    },
+    {
+      "id": "p-xiangbo-4b98",
+      "displayName": "项伯",
+      "firstYear": -206,
+      "identityHash": "6e2ef688"
+    },
+    {
+      "id": "p-xiangliang-1b96",
+      "displayName": "项梁",
+      "firstYear": -209,
+      "identityHash": "d268dad4"
+    },
+    {
+      "id": "p-xiangtaihou-522a",
+      "displayName": "向太后",
+      "firstYear": 1100,
+      "identityHash": "cccac6c2"
+    },
+    {
+      "id": "p-xiangxu-d437",
+      "displayName": "向戌",
+      "firstYear": -546,
+      "identityHash": "beef65ba"
+    },
+    {
+      "id": "p-xiangyan-40ec",
+      "displayName": "项燕",
+      "firstYear": -223,
+      "identityHash": "442dcfd9"
+    },
+    {
+      "id": "p-xiangyu-3d47",
+      "displayName": "项羽",
+      "firstYear": -209,
+      "identityHash": "33928119"
+    },
+    {
+      "id": "p-xiangzhuang-cce9",
+      "displayName": "项庄",
+      "firstYear": -206,
+      "identityHash": "2895b8e0"
+    },
+    {
+      "id": "p-xianhu-f413",
+      "displayName": "先縠",
+      "firstYear": -597,
+      "identityHash": "ab0ec565"
+    },
+    {
+      "id": "p-xianwendi-5c4b",
+      "displayName": "献文帝",
+      "firstYear": 476,
+      "identityHash": "df8ab076"
+    },
+    {
+      "id": "p-xiaobaorong-aa73",
+      "displayName": "萧宝融",
+      "firstYear": 502,
+      "identityHash": "9d43c6e3"
+    },
+    {
+      "id": "p-xiaodaocheng-66b9",
+      "displayName": "萧道成",
+      "firstYear": 479,
+      "identityHash": "47f91c75"
+    },
+    {
+      "id": "p-xiaodefei-143e",
+      "displayName": "萧德妃",
+      "firstYear": 1120,
+      "identityHash": "c0986013"
+    },
+    {
+      "id": "p-xiaofangzhi-75ab",
+      "displayName": "萧方智",
+      "firstYear": 557,
+      "identityHash": "d0ef8bba"
+    },
+    {
+      "id": "p-xiaohe-b1f9",
+      "displayName": "萧何",
+      "firstYear": -196,
+      "identityHash": "e7505c83"
+    },
+    {
+      "id": "p-xiaohui-25fc",
+      "displayName": "萧惠",
+      "firstYear": 1044,
+      "identityHash": "807286d4"
+    },
+    {
+      "id": "p-xiaonoujin-0f4f",
+      "displayName": "萧耨斤",
+      "firstYear": 1031,
+      "identityHash": "65396596"
+    },
+    {
+      "id": "p-xiaopusage-ec47",
+      "displayName": "萧菩萨哥",
+      "firstYear": 1031,
+      "identityHash": "b242709d"
+    },
+    {
+      "id": "p-xiaosiwen-ff06",
+      "displayName": "萧思温",
+      "firstYear": 969,
+      "identityHash": "64b58025"
+    },
+    {
+      "id": "p-xiaosixian-12c3",
+      "displayName": "萧嗣先",
+      "firstYear": 1114,
+      "identityHash": "3fcfc6c6"
+    },
+    {
+      "id": "p-xiaotaihou-698e",
+      "displayName": "萧太后",
+      "firstYear": 982,
+      "identityHash": "9706240b"
+    },
+    {
+      "id": "p-xiaotalin-6aec",
+      "displayName": "萧挞凛",
+      "firstYear": 1004,
+      "identityHash": "8c3d237e"
+    },
+    {
+      "id": "p-xiaowendi-dbe8",
+      "displayName": "孝文帝",
+      "firstYear": 485,
+      "identityHash": "6b88b036"
+    },
+    {
+      "id": "p-xiaowolila-290c",
+      "displayName": "萧斡里剌",
+      "firstYear": 1124,
+      "identityHash": "9b9f27f4"
+    },
+    {
+      "id": "p-xiaoxin-091f",
+      "displayName": "小辛",
+      "firstYear": -1300,
+      "identityHash": "a1188ba8"
+    },
+    {
+      "id": "p-xiaoyan-6f1b",
+      "displayName": "萧衍",
+      "firstYear": 502,
+      "identityHash": "e293bd6f"
+    },
+    {
+      "id": "p-xiaozhuangtaihou-505f",
+      "displayName": "孝庄太后",
+      "firstYear": 1661,
+      "identityHash": "937bc2db"
+    },
+    {
+      "id": "p-xiawuqie-cd0f",
+      "displayName": "夏无且",
+      "firstYear": -227,
+      "identityHash": "6801ea6d"
+    },
+    {
+      "id": "p-xiayuanji-5cc8",
+      "displayName": "夏原吉",
+      "firstYear": 1421,
+      "identityHash": "ea8fadf3"
+    },
+    {
+      "id": "p-xiean-c06b",
+      "displayName": "谢安",
+      "firstYear": 353,
+      "identityHash": "7fa9cb68"
+    },
+    {
+      "id": "p-xietaihou-07b8",
+      "displayName": "谢太后",
+      "firstYear": 1275,
+      "identityHash": "83ce93cc"
+    },
+    {
+      "id": "p-xiexuan-e223",
+      "displayName": "谢玄",
+      "firstYear": 377,
+      "identityHash": "b34161a9"
+    },
+    {
+      "id": "p-xike-d4a4",
+      "displayName": "郤克",
+      "firstYear": -589,
+      "identityHash": "46590135"
+    },
+    {
+      "id": "p-xindou-0088",
+      "displayName": "忻都",
+      "firstYear": 1274,
+      "identityHash": "245c00b3"
+    },
+    {
+      "id": "p-xinlingjun-5d8f",
+      "displayName": "信陵君",
+      "firstYear": -258,
+      "identityHash": "cd2f6fbf"
+    },
+    {
+      "id": "p-xinqiji-272f",
+      "displayName": "辛弃疾",
+      "firstYear": 1162,
+      "identityHash": "f7060d4b"
+    },
+    {
+      "id": "p-xiongtingbi-74b5",
+      "displayName": "熊廷弼",
+      "firstYear": 1622,
+      "identityHash": "2cc61aa6"
+    },
+    {
+      "id": "p-xipeng-d8ff",
+      "displayName": "隰朋",
+      "firstYear": -685,
+      "identityHash": "bd980552"
+    },
+    {
+      "id": "p-xiutuwang-849a",
+      "displayName": "休屠王",
+      "firstYear": -121,
+      "identityHash": "656b2447"
+    },
+    {
+      "id": "p-xizhoujun-14dc",
+      "displayName": "西周君",
+      "firstYear": -256,
+      "identityHash": "b4d4940b"
+    },
+    {
+      "id": "p-xuantaihou-abfc",
+      "displayName": "宣太后",
+      "firstYear": -270,
+      "identityHash": "a7392760"
+    },
+    {
+      "id": "p-xuantongdi-33bd",
+      "displayName": "宣统帝",
+      "firstYear": 1912,
+      "identityHash": "2897576e"
+    },
+    {
+      "id": "p-xuanzang-27d1",
+      "displayName": "玄奘",
+      "firstYear": 629,
+      "identityHash": "6b568184"
+    },
+    {
+      "id": "p-xuchu-d759",
+      "displayName": "许褚",
+      "firstYear": 211,
+      "identityHash": "a12b9730"
+    },
+    {
+      "id": "p-xuda-f0c3",
+      "displayName": "徐达",
+      "firstYear": 1368,
+      "identityHash": "2d6b72c0"
+    },
+    {
+      "id": "p-xuerengui-6da0",
+      "displayName": "薛仁贵",
+      "firstYear": 668,
+      "identityHash": "0b17fb4f"
+    },
+    {
+      "id": "p-xuguangqi-da42",
+      "displayName": "徐光启",
+      "firstYear": 1601,
+      "identityHash": "b1cc233d"
+    },
+    {
+      "id": "p-xuhuang-33e3",
+      "displayName": "徐晃",
+      "firstYear": 200,
+      "identityHash": "4aa22222"
+    },
+    {
+      "id": "p-xujie-0eca",
+      "displayName": "徐阶",
+      "firstYear": 1562,
+      "identityHash": "b1d743a5"
+    },
+    {
+      "id": "p-xuliewu-bc84",
+      "displayName": "旭烈兀",
+      "firstYear": 1258,
+      "identityHash": "53498cae"
+    },
+    {
+      "id": "p-xunlinfu-41a3",
+      "displayName": "荀林父",
+      "firstYear": -597,
+      "identityHash": "ac845b02"
+    },
+    {
+      "id": "p-xunxi-170c",
+      "displayName": "荀息",
+      "firstYear": -655,
+      "identityHash": "a473da9f"
+    },
+    {
+      "id": "p-xunyu-b3dc",
+      "displayName": "荀彧",
+      "firstYear": 200,
+      "identityHash": "764f88f7"
+    },
+    {
+      "id": "p-xunzhi-37c2",
+      "displayName": "荀彘",
+      "firstYear": -108,
+      "identityHash": "10fef59b"
+    },
+    {
+      "id": "p-xunzi-c4f6",
+      "displayName": "荀子",
+      "firstYear": -238,
+      "identityHash": "15c74eb3"
+    },
+    {
+      "id": "p-xushen-160c",
+      "displayName": "许慎",
+      "firstYear": 100,
+      "identityHash": "bab4c66e"
+    },
+    {
+      "id": "p-xushi-7df4",
+      "displayName": "徐市",
+      "firstYear": -219,
+      "identityHash": "80c8679b"
+    },
+    {
+      "id": "p-xushouhui-3019",
+      "displayName": "徐寿辉",
+      "firstYear": 1351,
+      "identityHash": "1b3715a0"
+    },
+    {
+      "id": "p-xuwen-9801",
+      "displayName": "徐温",
+      "firstYear": 937,
+      "identityHash": "460677d9"
+    },
+    {
+      "id": "p-xuxi-a33d",
+      "displayName": "徐禧",
+      "firstYear": 1082,
+      "identityHash": "1aef7094"
+    },
+    {
+      "id": "p-xuyouzhen-d839",
+      "displayName": "徐有贞",
+      "firstYear": 1457,
+      "identityHash": "a848eadc"
+    },
+    {
+      "id": "p-xuyuan-6fbd",
+      "displayName": "许远",
+      "firstYear": 757,
+      "identityHash": "9f8639dc"
+    },
+    {
+      "id": "p-yangaoqing-5875",
+      "displayName": "颜杲卿",
+      "firstYear": 756,
+      "identityHash": "4d486be6"
+    },
+    {
+      "id": "p-yangguang-8d16",
+      "displayName": "杨广",
+      "firstYear": 588,
+      "identityHash": "3416609e"
+    },
+    {
+      "id": "p-yangguozhong-db3a",
+      "displayName": "杨国忠",
+      "firstYear": 745,
+      "identityHash": "b3bd9c20"
+    },
+    {
+      "id": "p-yanghao-40ff",
+      "displayName": "杨浩",
+      "firstYear": 618,
+      "identityHash": "187c82b9"
+    },
+    {
+      "id": "p-yanghao-d130",
+      "displayName": "杨镐",
+      "firstYear": 1619,
+      "identityHash": "40734f30"
+    },
+    {
+      "id": "p-yanghu-a0b4",
+      "displayName": "羊祜",
+      "firstYear": 269,
+      "identityHash": "0f4d454e"
+    },
+    {
+      "id": "p-yangjian-fbec",
+      "displayName": "杨坚",
+      "firstYear": 578,
+      "identityHash": "a75f7569"
+    },
+    {
+      "id": "p-yangjun-2217",
+      "displayName": "杨骏",
+      "firstYear": 290,
+      "identityHash": "626670d7"
+    },
+    {
+      "id": "p-yangliang-7e9b",
+      "displayName": "杨谅",
+      "firstYear": 598,
+      "identityHash": "5384bda6"
+    },
+    {
+      "id": "p-yanglianzhenjia-b54e",
+      "displayName": "杨琏真迦",
+      "firstYear": 1285,
+      "identityHash": "a9cb55b1"
+    },
+    {
+      "id": "p-yangpu-048e",
+      "displayName": "杨仆",
+      "firstYear": -108,
+      "identityHash": "6ec2a1a6"
+    },
+    {
+      "id": "p-yangshangxi-3502",
+      "displayName": "杨尚希",
+      "firstYear": 583,
+      "identityHash": "4c7cb675"
+    },
+    {
+      "id": "p-yangsu-888f",
+      "displayName": "杨素",
+      "firstYear": 588,
+      "identityHash": "46dda6b3"
+    },
+    {
+      "id": "p-yangtinghe-3507",
+      "displayName": "杨廷和",
+      "firstYear": 1521,
+      "identityHash": "d10edeca"
+    },
+    {
+      "id": "p-yangxiuqing-61b7",
+      "displayName": "杨秀清",
+      "firstYear": 1853,
+      "identityHash": "d4525a53"
+    },
+    {
+      "id": "p-yangyan-533b",
+      "displayName": "杨炎",
+      "firstYear": 780,
+      "identityHash": "c7937c40"
+    },
+    {
+      "id": "p-yangye-d298",
+      "displayName": "杨业",
+      "firstYear": 986,
+      "identityHash": "79cf037e"
+    },
+    {
+      "id": "p-yangyinglong-c208",
+      "displayName": "杨应龙",
+      "firstYear": 1600,
+      "identityHash": "9c3cb5ff"
+    },
+    {
+      "id": "p-yangyong-2c9d",
+      "displayName": "杨勇",
+      "firstYear": 600,
+      "identityHash": "f25f3878"
+    },
+    {
+      "id": "p-yangyuhuan-a553",
+      "displayName": "杨玉环",
+      "firstYear": 745,
+      "identityHash": "cd21b695"
+    },
+    {
+      "id": "p-yanhui-2790",
+      "displayName": "颜回",
+      "firstYear": -484,
+      "identityHash": "4e01b0c5"
+    },
+    {
+      "id": "p-yanle-7d4f",
+      "displayName": "阎乐",
+      "firstYear": -207,
+      "identityHash": "79d2ddf5"
+    },
+    {
+      "id": "p-yansong-78d2",
+      "displayName": "严嵩",
+      "firstYear": 1550,
+      "identityHash": "521a9009"
+    },
+    {
+      "id": "p-yantaihou-375b",
+      "displayName": "阎太后",
+      "firstYear": 125,
+      "identityHash": "991ad70f"
+    },
+    {
+      "id": "p-yantiemuer-c64f",
+      "displayName": "燕铁木儿",
+      "firstYear": 1328,
+      "identityHash": "b24457c0"
+    },
+    {
+      "id": "p-yanwangkuai-c808",
+      "displayName": "燕王哙",
+      "firstYear": -318,
+      "identityHash": "d06a3ac1"
+    },
+    {
+      "id": "p-yanwangxi-99d8",
+      "displayName": "燕王喜",
+      "firstYear": -222,
+      "identityHash": "68c8a7a9"
+    },
+    {
+      "id": "p-yanwengong-f071",
+      "displayName": "燕文公",
+      "firstYear": -334,
+      "identityHash": "f79f27ac"
+    },
+    {
+      "id": "p-yanxian-a070",
+      "displayName": "阎显",
+      "firstYear": 125,
+      "identityHash": "e32ed02f"
+    },
+    {
+      "id": "p-yanying-23c5",
+      "displayName": "晏婴",
+      "firstYear": -544,
+      "identityHash": "4b7530f7"
+    },
+    {
+      "id": "p-yanyiwang-230a",
+      "displayName": "燕易王",
+      "firstYear": -323,
+      "identityHash": "b15f26cd"
+    },
+    {
+      "id": "p-yanzhaowang-e69d",
+      "displayName": "燕昭王",
+      "firstYear": -311,
+      "identityHash": "c21b0dc0"
+    },
+    {
+      "id": "p-yanzhenqing-81da",
+      "displayName": "颜真卿",
+      "firstYear": 755,
+      "identityHash": "4114b930"
+    },
+    {
+      "id": "p-yanzhuanggong-51e8",
+      "displayName": "燕庄公",
+      "firstYear": -664,
+      "identityHash": "730e1f4b"
+    },
+    {
+      "id": "p-yao-b5dd",
+      "displayName": "尧",
+      "firstYear": -2100,
+      "identityHash": "b4ab742c"
+    },
+    {
+      "id": "p-yaochong-aa0c",
+      "displayName": "姚崇",
+      "firstYear": 713,
+      "identityHash": "c9573ef9"
+    },
+    {
+      "id": "p-yaohong-ee0f",
+      "displayName": "姚泓",
+      "firstYear": 417,
+      "identityHash": "acd20edf"
+    },
+    {
+      "id": "p-yaojia-15b0",
+      "displayName": "姚贾",
+      "firstYear": -233,
+      "identityHash": "429e5a86"
+    },
+    {
+      "id": "p-yelirenrong-3037",
+      "displayName": "野利仁荣",
+      "firstYear": 1032,
+      "identityHash": "6e5d3d7c"
+    },
+    {
+      "id": "p-yelvabaoji-2a4a",
+      "displayName": "耶律阿保机",
+      "firstYear": 907,
+      "identityHash": "07ee1dfa"
+    },
+    {
+      "id": "p-yelvbei-1c43",
+      "displayName": "耶律倍",
+      "firstYear": 926,
+      "identityHash": "105fc473"
+    },
+    {
+      "id": "p-yelvchucai-d615",
+      "displayName": "耶律楚材",
+      "firstYear": 1219,
+      "identityHash": "e4fbb43d"
+    },
+    {
+      "id": "p-yelvchun-8747",
+      "displayName": "耶律淳",
+      "firstYear": 1120,
+      "identityHash": "4924546b"
+    },
+    {
+      "id": "p-yelvdashi-1285",
+      "displayName": "耶律大石",
+      "firstYear": 1120,
+      "identityHash": "e55c9808"
+    },
+    {
+      "id": "p-yelvdeguang-14c8",
+      "displayName": "耶律德光",
+      "firstYear": 916,
+      "identityHash": "d529494d"
+    },
+    {
+      "id": "p-yelvdiela-95db",
+      "displayName": "耶律迭剌",
+      "firstYear": 913,
+      "identityHash": "50a6b413"
+    },
+    {
+      "id": "p-yelvhongji-d0a3",
+      "displayName": "耶律洪基",
+      "firstYear": 1063,
+      "identityHash": "704b970a"
+    },
+    {
+      "id": "p-yelvjing-9b59",
+      "displayName": "耶律璟",
+      "firstYear": 953,
+      "identityHash": "9825ca15"
+    },
+    {
+      "id": "p-yelvlage-154c",
+      "displayName": "耶律剌葛",
+      "firstYear": 913,
+      "identityHash": "8827dd46"
+    },
+    {
+      "id": "p-yelvlihu-5bf0",
+      "displayName": "耶律李胡",
+      "firstYear": 953,
+      "identityHash": "62c6ed13"
+    },
+    {
+      "id": "p-yelvlubugu-39e4",
+      "displayName": "耶律鲁不古",
+      "firstYear": 920,
+      "identityHash": "829fef0d"
+    },
+    {
+      "id": "p-yelvtulvbu-91d4",
+      "displayName": "耶律突吕不",
+      "firstYear": 920,
+      "identityHash": "3c0a4815"
+    },
+    {
+      "id": "p-yelvxian-56a0",
+      "displayName": "耶律贤",
+      "firstYear": 982,
+      "identityHash": "0e6ae828"
+    },
+    {
+      "id": "p-yelvxiezhen-cb02",
+      "displayName": "耶律斜轸",
+      "firstYear": 979,
+      "identityHash": "15d99e7f"
+    },
+    {
+      "id": "p-yelvxiuge-2a2c",
+      "displayName": "耶律休哥",
+      "firstYear": 979,
+      "identityHash": "928d908b"
+    },
+    {
+      "id": "p-yelvyixin-da4e",
+      "displayName": "耶律乙辛",
+      "firstYear": 1063,
+      "identityHash": "ec90a7d0"
+    },
+    {
+      "id": "p-yelvzhongyuan-3345",
+      "displayName": "耶律重元",
+      "firstYear": 1063,
+      "identityHash": "bbce0240"
+    },
+    {
+      "id": "p-yelvzongzhen-e222",
+      "displayName": "耶律宗真",
+      "firstYear": 1031,
+      "identityHash": "33667228"
+    },
+    {
+      "id": "p-yesuntiemuer-a805",
+      "displayName": "也孙铁木儿",
+      "firstYear": 1323,
+      "identityHash": "c748b93e"
+    },
+    {
+      "id": "p-yexian-5a08",
+      "displayName": "也先",
+      "firstYear": 1449,
+      "identityHash": "fc516766"
+    },
+    {
+      "id": "p-yidongyouheng-37bf",
+      "displayName": "伊东祐亨",
+      "firstYear": 1894,
+      "identityHash": "b948e766"
+    },
+    {
+      "id": "p-yilapua-04d8",
+      "displayName": "移剌蒲阿",
+      "firstYear": 1232,
+      "identityHash": "5271525a"
+    },
+    {
+      "id": "p-yingbu-ba66",
+      "displayName": "英布",
+      "firstYear": -202,
+      "identityHash": "92aecd8a"
+    },
+    {
+      "id": "p-yinhao-9d92",
+      "displayName": "殷浩",
+      "firstYear": 354,
+      "identityHash": "55dd449c"
+    },
+    {
+      "id": "p-yinxi-a3a5",
+      "displayName": "尹喜",
+      "firstYear": -485,
+      "identityHash": "044e99f0"
+    },
+    {
+      "id": "p-yitengbowen-1011",
+      "displayName": "伊藤博文",
+      "firstYear": 1895,
+      "identityHash": "86705c37"
+    },
+    {
+      "id": "p-yixin-a0ee",
+      "displayName": "奕䜣",
+      "firstYear": 1860,
+      "identityHash": "3c2e6229"
+    },
+    {
+      "id": "p-yiyin-d03f",
+      "displayName": "伊尹",
+      "firstYear": -1617,
+      "identityHash": "7ec562fc"
+    },
+    {
+      "id": "p-yizhixiechanyu-464e",
+      "displayName": "伊稚邪单于",
+      "firstYear": -119,
+      "identityHash": "fddc5660"
+    },
+    {
+      "id": "p-yonglidi-0829",
+      "displayName": "永历帝",
+      "firstYear": 1652,
+      "identityHash": "86770cc6"
+    },
+    {
+      "id": "p-yongzhengdi-7908",
+      "displayName": "雍正帝",
+      "firstYear": 1700,
+      "identityHash": "ce3a9301"
+    },
+    {
+      "id": "p-youyu-05c3",
+      "displayName": "由余",
+      "firstYear": -623,
+      "identityHash": "ea8e03db"
+    },
+    {
+      "id": "p-yu-53cd",
+      "displayName": "禹",
+      "firstYear": -2083,
+      "identityHash": "bcb75153"
+    },
+    {
+      "id": "p-yuanbaoju-f4a1",
+      "displayName": "元宝炬",
+      "firstYear": 534,
+      "identityHash": "032dc418"
+    },
+    {
+      "id": "p-yuanchonghuan-25d7",
+      "displayName": "袁崇焕",
+      "firstYear": 1626,
+      "identityHash": "a2e5f5b4"
+    },
+    {
+      "id": "p-yuanmingzong-38ef",
+      "displayName": "元明宗",
+      "firstYear": 1328,
+      "identityHash": "90906954"
+    },
+    {
+      "id": "p-yuanshanjian-c4db",
+      "displayName": "元善见",
+      "firstYear": 534,
+      "identityHash": "2d0f927e"
+    },
+    {
+      "id": "p-yuanshao-882d",
+      "displayName": "袁绍",
+      "firstYear": 189,
+      "identityHash": "aed75c91"
+    },
+    {
+      "id": "p-yuanshikai-813f",
+      "displayName": "袁世凯",
+      "firstYear": 1911,
+      "identityHash": "84ff0edb"
+    },
+    {
+      "id": "p-yuanshu-f330",
+      "displayName": "袁术",
+      "firstYear": 191,
+      "identityHash": "2c7f98ec"
+    },
+    {
+      "id": "p-yuanshundi-d583",
+      "displayName": "元顺帝",
+      "firstYear": 1333,
+      "identityHash": "8af29b58"
+    },
+    {
+      "id": "p-yuanwenzong-5c7b",
+      "displayName": "元文宗",
+      "firstYear": 1328,
+      "identityHash": "ee88dad5"
+    },
+    {
+      "id": "p-yuanxiu-d2c2",
+      "displayName": "元修",
+      "firstYear": 534,
+      "identityHash": "f99fc750"
+    },
+    {
+      "id": "p-yuanyingzong-91da",
+      "displayName": "元英宗",
+      "firstYear": 1323,
+      "identityHash": "2830978d"
+    },
+    {
+      "id": "p-yuanziyou-61c0",
+      "displayName": "元子攸",
+      "firstYear": 528,
+      "identityHash": "f7c67d18"
+    },
+    {
+      "id": "p-yudayou-f221",
+      "displayName": "俞大猷",
+      "firstYear": 1555,
+      "identityHash": "3d71716d"
+    },
+    {
+      "id": "p-yuefei-9308",
+      "displayName": "岳飞",
+      "firstYear": 1128,
+      "identityHash": "a115e441"
+    },
+    {
+      "id": "p-yuewanggoujian-9786",
+      "displayName": "越王勾践",
+      "firstYear": -496,
+      "identityHash": "9824ffb4"
+    },
+    {
+      "id": "p-yueyun-46db",
+      "displayName": "岳云",
+      "firstYear": 1140,
+      "identityHash": "0b4645ca"
+    },
+    {
+      "id": "p-yuezhongqi-c16b",
+      "displayName": "岳钟琪",
+      "firstYear": 1720,
+      "identityHash": "42fa0bd5"
+    },
+    {
+      "id": "p-yugong-6a40",
+      "displayName": "虞公",
+      "firstYear": -655,
+      "identityHash": "9dbf5e47"
+    },
+    {
+      "id": "p-yuji-2d9a",
+      "displayName": "虞集",
+      "firstYear": 1329,
+      "identityHash": "cbc94982"
+    },
+    {
+      "id": "p-yujin-eeea",
+      "displayName": "于禁",
+      "firstYear": 219,
+      "identityHash": "376e10b4"
+    },
+    {
+      "id": "p-yunti-1c84",
+      "displayName": "允禵",
+      "firstYear": 1720,
+      "identityHash": "a1e8ec65"
+    },
+    {
+      "id": "p-yuqian-b0da",
+      "displayName": "于谦",
+      "firstYear": 1449,
+      "identityHash": "23dbae09"
+    },
+    {
+      "id": "p-yuwenchan-4964",
+      "displayName": "宇文阐",
+      "firstYear": 581,
+      "identityHash": "ffa69c15"
+    },
+    {
+      "id": "p-yuwenhuaji-0012",
+      "displayName": "宇文化及",
+      "firstYear": 618,
+      "identityHash": "60ea2fa3"
+    },
+    {
+      "id": "p-yuwenkai-e00f",
+      "displayName": "宇文恺",
+      "firstYear": 582,
+      "identityHash": "555bb7b6"
+    },
+    {
+      "id": "p-yuwentai-ee99",
+      "displayName": "宇文泰",
+      "firstYear": 534,
+      "identityHash": "58c714b8"
+    },
+    {
+      "id": "p-yuwenxian-b728",
+      "displayName": "宇文宪",
+      "firstYear": 577,
+      "identityHash": "4699bee0"
+    },
+    {
+      "id": "p-yuwenyong-a1bb",
+      "displayName": "宇文邕",
+      "firstYear": 577,
+      "identityHash": "d8650c30"
+    },
+    {
+      "id": "p-yuyunwen-9b84",
+      "displayName": "虞允文",
+      "firstYear": 1161,
+      "identityHash": "dae01164"
+    },
+    {
+      "id": "p-zaikong-92f7",
+      "displayName": "宰孔",
+      "firstYear": -651,
+      "identityHash": "c1a4ece8"
+    },
+    {
+      "id": "p-zhairang-6144",
+      "displayName": "翟让",
+      "firstYear": 611,
+      "identityHash": "e6d60503"
+    },
+    {
+      "id": "p-zhaiyi-63d2",
+      "displayName": "翟义",
+      "firstYear": 6,
+      "identityHash": "ce035cfe"
+    },
+    {
+      "id": "p-zhangbangchang-0de7",
+      "displayName": "张邦昌",
+      "firstYear": 1127,
+      "identityHash": "f94acbe0"
+    },
+    {
+      "id": "p-zhangbao-9187",
+      "displayName": "张宝",
+      "firstYear": 184,
+      "identityHash": "50f3617d"
+    },
+    {
+      "id": "p-zhangcong-8354",
+      "displayName": "张璁",
+      "firstYear": 1521,
+      "identityHash": "33c1e3f2"
+    },
+    {
+      "id": "p-zhangdun-4f77",
+      "displayName": "章惇",
+      "firstYear": 1094,
+      "identityHash": "f3f79588"
+    },
+    {
+      "id": "p-zhangfei-68f8",
+      "displayName": "张飞",
+      "firstYear": 196,
+      "identityHash": "e41665f9"
+    },
+    {
+      "id": "p-zhangfu-974d",
+      "displayName": "张辅",
+      "firstYear": 1449,
+      "identityHash": "14f772f9"
+    },
+    {
+      "id": "p-zhanghan-06e2",
+      "displayName": "章邯",
+      "firstYear": -208,
+      "identityHash": "863c45fd"
+    },
+    {
+      "id": "p-zhanghao-caeb",
+      "displayName": "张浩",
+      "firstYear": 1153,
+      "identityHash": "ed259d7f"
+    },
+    {
+      "id": "p-zhanghe-7ecd",
+      "displayName": "张郃",
+      "firstYear": 228,
+      "identityHash": "16a40ddd"
+    },
+    {
+      "id": "p-zhangheng-787d",
+      "displayName": "张衡",
+      "firstYear": 117,
+      "identityHash": "6be08c9c"
+    },
+    {
+      "id": "p-zhanghongfan-dbd6",
+      "displayName": "张弘范",
+      "firstYear": 1278,
+      "identityHash": "ef7711d0"
+    },
+    {
+      "id": "p-zhanghuangyan-71cf",
+      "displayName": "张煌言",
+      "firstYear": 1659,
+      "identityHash": "108d4cb8"
+    },
+    {
+      "id": "p-zhangjianzhi-bd6d",
+      "displayName": "张柬之",
+      "firstYear": 705,
+      "identityHash": "e602e759"
+    },
+    {
+      "id": "p-zhangjiao-b131",
+      "displayName": "张角",
+      "firstYear": 184,
+      "identityHash": "9a503bb2"
+    },
+    {
+      "id": "p-zhangjun-7960",
+      "displayName": "张浚",
+      "firstYear": 1129,
+      "identityHash": "321d8abd"
+    },
+    {
+      "id": "p-zhangjuzheng-f48e",
+      "displayName": "张居正",
+      "firstYear": 1568,
+      "identityHash": "b9f4bac2"
+    },
+    {
+      "id": "p-zhangliang-621a",
+      "displayName": "张梁",
+      "firstYear": 184,
+      "identityHash": "850e56c1"
+    },
+    {
+      "id": "p-zhangliang-f427",
+      "displayName": "张良",
+      "firstYear": -218,
+      "identityHash": "12267999"
+    },
+    {
+      "id": "p-zhangliao-a420",
+      "displayName": "张辽",
+      "firstYear": 198,
+      "identityHash": "c52b7d8d"
+    },
+    {
+      "id": "p-zhangqian-b738",
+      "displayName": "张骞",
+      "firstYear": -138,
+      "identityHash": "11b19d6b"
+    },
+    {
+      "id": "p-zhangrang-6324",
+      "displayName": "张让",
+      "firstYear": 166,
+      "identityHash": "c84b63e4"
+    },
+    {
+      "id": "p-zhangshicheng-bad2",
+      "displayName": "张士诚",
+      "firstYear": 1354,
+      "identityHash": "eccfce77"
+    },
+    {
+      "id": "p-zhangshijie-542a",
+      "displayName": "张世杰",
+      "firstYear": 1278,
+      "identityHash": "fdda34b6"
+    },
+    {
+      "id": "p-zhangshuo-2a8c",
+      "displayName": "张说",
+      "firstYear": 725,
+      "identityHash": "2d36322d"
+    },
+    {
+      "id": "p-zhangshuye-9f2b",
+      "displayName": "张叔夜",
+      "firstYear": 1119,
+      "identityHash": "153abed4"
+    },
+    {
+      "id": "p-zhangsunwuji-f890",
+      "displayName": "长孙无忌",
+      "firstYear": 626,
+      "identityHash": "f8dc65b1"
+    },
+    {
+      "id": "p-zhangxian-894b",
+      "displayName": "张宪",
+      "firstYear": 1140,
+      "identityHash": "99314308"
+    },
+    {
+      "id": "p-zhangxiu-dad4",
+      "displayName": "张绣",
+      "firstYear": 197,
+      "identityHash": "6e646c18"
+    },
+    {
+      "id": "p-zhangxun-1d1a",
+      "displayName": "张巡",
+      "firstYear": 757,
+      "identityHash": "a7a85085"
+    },
+    {
+      "id": "p-zhangxutuo-9d70",
+      "displayName": "张须陀",
+      "firstYear": 611,
+      "identityHash": "9d98d269"
+    },
+    {
+      "id": "p-zhangyanghao-d8fa",
+      "displayName": "张养浩",
+      "firstYear": 1313,
+      "identityHash": "05c8744b"
+    },
+    {
+      "id": "p-zhangyi-1bae",
+      "displayName": "张仪",
+      "firstYear": -328,
+      "identityHash": "4c4249a7"
+    },
+    {
+      "id": "p-zhangyong-30eb",
+      "displayName": "张永",
+      "firstYear": 1506,
+      "identityHash": "21ba985c"
+    },
+    {
+      "id": "p-zhaobing-df5d",
+      "displayName": "赵昺",
+      "firstYear": 1279,
+      "identityHash": "b02bd4de"
+    },
+    {
+      "id": "p-zhaocheng-d544",
+      "displayName": "赵成",
+      "firstYear": -207,
+      "identityHash": "dfe341a7"
+    },
+    {
+      "id": "p-zhaochongguo-3548",
+      "displayName": "赵充国",
+      "firstYear": -61,
+      "identityHash": "18fec9f5"
+    },
+    {
+      "id": "p-zhaodejun-a9f8",
+      "displayName": "赵德钧",
+      "firstYear": 936,
+      "identityHash": "427b8f12"
+    },
+    {
+      "id": "p-zhaofang-10de",
+      "displayName": "赵方",
+      "firstYear": 1217,
+      "identityHash": "2f27624b"
+    },
+    {
+      "id": "p-zhaogao-66a2",
+      "displayName": "赵高",
+      "firstYear": -210,
+      "identityHash": "a191b297"
+    },
+    {
+      "id": "p-zhaogou-757a",
+      "displayName": "赵构",
+      "firstYear": 1127,
+      "identityHash": "5eaea7cd"
+    },
+    {
+      "id": "p-zhaoguangyi-cfda",
+      "displayName": "赵光义",
+      "firstYear": 960,
+      "identityHash": "d37b057c"
+    },
+    {
+      "id": "p-zhaoheng-ce40",
+      "displayName": "赵恒",
+      "firstYear": 1002,
+      "identityHash": "ee019ed5"
+    },
+    {
+      "id": "p-zhaohuan-4764",
+      "displayName": "赵桓",
+      "firstYear": 1126,
+      "identityHash": "2fdba19e"
+    },
+    {
+      "id": "p-zhaohui-8790",
+      "displayName": "兆惠",
+      "firstYear": 1755,
+      "identityHash": "d33c8d53"
+    },
+    {
+      "id": "p-zhaohuiwenwang-275b",
+      "displayName": "赵惠文王",
+      "firstYear": -283,
+      "identityHash": "cf87a558"
+    },
+    {
+      "id": "p-zhaoji-6736",
+      "displayName": "赵佶",
+      "firstYear": 1100,
+      "identityHash": "5e67141a"
+    },
+    {
+      "id": "p-zhaojia-2942",
+      "displayName": "赵嘉",
+      "firstYear": -228,
+      "identityHash": "3083d93f"
+    },
+    {
+      "id": "p-zhaojiande-10bb",
+      "displayName": "赵建德",
+      "firstYear": -111,
+      "identityHash": "860978c8"
+    },
+    {
+      "id": "p-zhaokuangyin-9bfb",
+      "displayName": "赵匡胤",
+      "firstYear": 954,
+      "identityHash": "2800a78f"
+    },
+    {
+      "id": "p-zhaokuo-0b0e",
+      "displayName": "赵扩",
+      "firstYear": 1195,
+      "identityHash": "01861103"
+    },
+    {
+      "id": "p-zhaokuo-4558",
+      "displayName": "赵括",
+      "firstYear": -260,
+      "identityHash": "d84930ee"
+    },
+    {
+      "id": "p-zhaoliehou-1a22",
+      "displayName": "赵烈侯",
+      "firstYear": -403,
+      "identityHash": "7c25e9e5"
+    },
+    {
+      "id": "p-zhaomugong-8694",
+      "displayName": "召穆公",
+      "firstYear": -828,
+      "identityHash": "0c4d1d9b"
+    },
+    {
+      "id": "p-zhaopu-8cdf",
+      "displayName": "赵普",
+      "firstYear": 960,
+      "identityHash": "159b6158"
+    },
+    {
+      "id": "p-zhaoshen-abe1",
+      "displayName": "赵昚",
+      "firstYear": 1163,
+      "identityHash": "d45d1be1"
+    },
+    {
+      "id": "p-zhaoshu-334b",
+      "displayName": "赵曙",
+      "firstYear": 1063,
+      "identityHash": "9e9a8346"
+    },
+    {
+      "id": "p-zhaoshuai-f4da",
+      "displayName": "赵衰",
+      "firstYear": -635,
+      "identityHash": "c20369f3"
+    },
+    {
+      "id": "p-zhaosuhou-6635",
+      "displayName": "赵肃侯",
+      "firstYear": -334,
+      "identityHash": "94766461"
+    },
+    {
+      "id": "p-zhaotaihou-8f34",
+      "displayName": "赵太后",
+      "firstYear": -238,
+      "identityHash": "cf2ecb21"
+    },
+    {
+      "id": "p-zhaowangqian-a471",
+      "displayName": "赵王迁",
+      "firstYear": -228,
+      "identityHash": "c19eadf4"
+    },
+    {
+      "id": "p-zhaowu-91a5",
+      "displayName": "赵武",
+      "firstYear": -546,
+      "identityHash": "9a3722f7"
+    },
+    {
+      "id": "p-zhaowulingwang-327e",
+      "displayName": "赵武灵王",
+      "firstYear": -323,
+      "identityHash": "e7ffb57a"
+    },
+    {
+      "id": "p-zhaoxian-f5e8",
+      "displayName": "赵㬎",
+      "firstYear": 1276,
+      "identityHash": "7174ec77"
+    },
+    {
+      "id": "p-zhaoxiangzi-b4be",
+      "displayName": "赵襄子",
+      "firstYear": -453,
+      "identityHash": "3cbc995e"
+    },
+    {
+      "id": "p-zhaoxiaochengwang-b6d9",
+      "displayName": "赵孝成王",
+      "firstYear": -260,
+      "identityHash": "7bd958e4"
+    },
+    {
+      "id": "p-zhaoxie-ed1f",
+      "displayName": "赵歇",
+      "firstYear": -207,
+      "identityHash": "945a7956"
+    },
+    {
+      "id": "p-zhaoxu-32a9",
+      "displayName": "赵顼",
+      "firstYear": 1069,
+      "identityHash": "0466c4ed"
+    },
+    {
+      "id": "p-zhaoxu-b423",
+      "displayName": "赵煦",
+      "firstYear": 1094,
+      "identityHash": "87e59154"
+    },
+    {
+      "id": "p-zhaoyang-22fa",
+      "displayName": "赵鞅",
+      "firstYear": -482,
+      "identityHash": "09cb8fef"
+    },
+    {
+      "id": "p-zhaoyun-b8ce",
+      "displayName": "赵昀",
+      "firstYear": 1234,
+      "identityHash": "d4110b70"
+    },
+    {
+      "id": "p-zhaoyun-f7b5",
+      "displayName": "赵云",
+      "firstYear": 228,
+      "identityHash": "23a6b6b2"
+    },
+    {
+      "id": "p-zhaozhen-072c",
+      "displayName": "赵祯",
+      "firstYear": 1022,
+      "identityHash": "0e644416"
+    },
+    {
+      "id": "p-zhengce-5cb3",
+      "displayName": "征侧",
+      "firstYear": 40,
+      "identityHash": "b3943375"
+    },
+    {
+      "id": "p-zhengchenggong-8fe0",
+      "displayName": "郑成功",
+      "firstYear": 1646,
+      "identityHash": "f3bb2aac"
+    },
+    {
+      "id": "p-zhenger-a736",
+      "displayName": "征贰",
+      "firstYear": 40,
+      "identityHash": "ee33f254"
+    },
+    {
+      "id": "p-zhengguo-4fe8",
+      "displayName": "郑国",
+      "firstYear": -246,
+      "identityHash": "7f83f109"
+    },
+    {
+      "id": "p-zhenghe-b299",
+      "displayName": "郑和",
+      "firstYear": 1405,
+      "identityHash": "192724c2"
+    },
+    {
+      "id": "p-zhengji-a784",
+      "displayName": "郑吉",
+      "firstYear": -60,
+      "identityHash": "7d36a1c9"
+    },
+    {
+      "id": "p-zhengjiangong-9764",
+      "displayName": "郑简公",
+      "firstYear": -536,
+      "identityHash": "9ecd4000"
+    },
+    {
+      "id": "p-zhengkeshuang-2aba",
+      "displayName": "郑克塽",
+      "firstYear": 1683,
+      "identityHash": "929b59b8"
+    },
+    {
+      "id": "p-zhengwugong-8799",
+      "displayName": "郑武公",
+      "firstYear": -770,
+      "identityHash": "f1d5b12a"
+    },
+    {
+      "id": "p-zhengzhilong-ed01",
+      "displayName": "郑芝龙",
+      "firstYear": 1646,
+      "identityHash": "fea31f50"
+    },
+    {
+      "id": "p-zhengzhuanggong-2203",
+      "displayName": "郑庄公",
+      "firstYear": -722,
+      "identityHash": "287a2dfb"
+    },
+    {
+      "id": "p-zhibo-a2be",
+      "displayName": "智伯",
+      "firstYear": -453,
+      "identityHash": "cf3dc327"
+    },
+    {
+      "id": "p-zhizhichanyu-4f04",
+      "displayName": "郅支单于",
+      "firstYear": -51,
+      "identityHash": "f6a83777"
+    },
+    {
+      "id": "p-zhonge-482a",
+      "displayName": "种谔",
+      "firstYear": 1081,
+      "identityHash": "b2e8bbda"
+    },
+    {
+      "id": "p-zhonghui-e593",
+      "displayName": "钟会",
+      "firstYear": 262,
+      "identityHash": "29bcece2"
+    },
+    {
+      "id": "p-zhonglimei-77e2",
+      "displayName": "钟离眛",
+      "firstYear": -201,
+      "identityHash": "bdc06da3"
+    },
+    {
+      "id": "p-zhongshanwang-a9b8",
+      "displayName": "中山王",
+      "firstYear": -323,
+      "identityHash": "29c93449"
+    },
+    {
+      "id": "p-zhongshidao-f2e5",
+      "displayName": "种师道",
+      "firstYear": 1126,
+      "identityHash": "49cee8e6"
+    },
+    {
+      "id": "p-zhoubo-b0af",
+      "displayName": "周勃",
+      "firstYear": -180,
+      "identityHash": "d21a2a43"
+    },
+    {
+      "id": "p-zhouchengwang-c3f5",
+      "displayName": "周成王",
+      "firstYear": -1042,
+      "identityHash": "2d5d6fd6"
+    },
+    {
+      "id": "p-zhoudewei-d295",
+      "displayName": "周德威",
+      "firstYear": 908,
+      "identityHash": "40f04619"
+    },
+    {
+      "id": "p-zhoudinggong-fe02",
+      "displayName": "周定公",
+      "firstYear": -828,
+      "identityHash": "fee5e7b1"
+    },
+    {
+      "id": "p-zhougongdan-1d7a",
+      "displayName": "周公旦",
+      "firstYear": -1046,
+      "identityHash": "6fbf2018"
+    },
+    {
+      "id": "p-zhougongdi-94d2",
+      "displayName": "周恭帝",
+      "firstYear": 960,
+      "identityHash": "4a82ea58"
+    },
+    {
+      "id": "p-zhouhuanwang-b253",
+      "displayName": "周桓王",
+      "firstYear": -707,
+      "identityHash": "8c87b777"
+    },
+    {
+      "id": "p-zhoujingdi-f828",
+      "displayName": "周静帝",
+      "firstYear": 581,
+      "identityHash": "7a85f5bb"
+    },
+    {
+      "id": "p-zhoukangwang-1b49",
+      "displayName": "周康王",
+      "firstYear": -1042,
+      "identityHash": "3a458d6b"
+    },
+    {
+      "id": "p-zhouliwang-2141",
+      "displayName": "周厉王",
+      "firstYear": -841,
+      "identityHash": "d0685609"
+    },
+    {
+      "id": "p-zhoupingwang-6ed8",
+      "displayName": "周平王",
+      "firstYear": -770,
+      "identityHash": "2388c20d"
+    },
+    {
+      "id": "p-zhouweiliewang-bc57",
+      "displayName": "周威烈王",
+      "firstYear": -403,
+      "identityHash": "13be541a"
+    },
+    {
+      "id": "p-zhouwenwang-37e4",
+      "displayName": "周文王",
+      "firstYear": -1080,
+      "identityHash": "8657a139"
+    },
+    {
+      "id": "p-zhouwuwang-1530",
+      "displayName": "周武王",
+      "firstYear": -1048,
+      "identityHash": "b7f59d21"
+    },
+    {
+      "id": "p-zhouxiangwang-6702",
+      "displayName": "周襄王",
+      "firstYear": -651,
+      "identityHash": "fdb05773"
+    },
+    {
+      "id": "p-zhouxuanwang-f434",
+      "displayName": "周宣王",
+      "firstYear": -828,
+      "identityHash": "284eea56"
+    },
+    {
+      "id": "p-zhouyafu-61ad",
+      "displayName": "周亚夫",
+      "firstYear": -154,
+      "identityHash": "915cae45"
+    },
+    {
+      "id": "p-zhouyouwang-cb3c",
+      "displayName": "周幽王",
+      "firstYear": -779,
+      "identityHash": "dad4a4c8"
+    },
+    {
+      "id": "p-zhouyu-b475",
+      "displayName": "周瑜",
+      "firstYear": 195,
+      "identityHash": "f5498bb8"
+    },
+    {
+      "id": "p-zhouzhang-82d4",
+      "displayName": "周章",
+      "firstYear": -208,
+      "identityHash": "1d413215"
+    },
+    {
+      "id": "p-zhuangzi-5208",
+      "displayName": "庄子",
+      "firstYear": -334,
+      "identityHash": "4cedc379"
+    },
+    {
+      "id": "p-zhuanzhu-c86d",
+      "displayName": "专诸",
+      "firstYear": -515,
+      "identityHash": "9cb9ff9f"
+    },
+    {
+      "id": "p-zhuci-ad4d",
+      "displayName": "朱泚",
+      "firstYear": 783,
+      "identityHash": "773c884e"
+    },
+    {
+      "id": "p-zhudi-e93d",
+      "displayName": "朱棣",
+      "firstYear": 1398,
+      "identityHash": "5a6e1645"
+    },
+    {
+      "id": "p-zhufalan-711b",
+      "displayName": "竺法兰",
+      "firstYear": 67,
+      "identityHash": "9d7294db"
+    },
+    {
+      "id": "p-zhufuyan-23d3",
+      "displayName": "主父偃",
+      "firstYear": -127,
+      "identityHash": "b4862423"
+    },
+    {
+      "id": "p-zhugeliang-b65a",
+      "displayName": "诸葛亮",
+      "firstYear": 219,
+      "identityHash": "4ca813ae"
+    },
+    {
+      "id": "p-zhuhai-14a4",
+      "displayName": "朱亥",
+      "firstYear": -258,
+      "identityHash": "2f82f5f7"
+    },
+    {
+      "id": "p-zhuhouzhao-58a2",
+      "displayName": "朱厚照",
+      "firstYear": 1506,
+      "identityHash": "f0256f9e"
+    },
+    {
+      "id": "p-zhuwen-e421",
+      "displayName": "朱温",
+      "firstYear": 907,
+      "identityHash": "a1f48d5d"
+    },
+    {
+      "id": "p-zhuxi-74b0",
+      "displayName": "朱熹",
+      "firstYear": 1175,
+      "identityHash": "f78517a0"
+    },
+    {
+      "id": "p-zhuyougui-dd32",
+      "displayName": "朱友珪",
+      "firstYear": 912,
+      "identityHash": "4c34ccb6"
+    },
+    {
+      "id": "p-zhuyouzhen-03ca",
+      "displayName": "朱友贞",
+      "firstYear": 912,
+      "identityHash": "5ac24deb"
+    },
+    {
+      "id": "p-zhuyuanzhang-b188",
+      "displayName": "朱元璋",
+      "firstYear": 1352,
+      "identityHash": "e169b478"
+    },
+    {
+      "id": "p-zichan-755d",
+      "displayName": "子产",
+      "firstYear": -554,
+      "identityHash": "1e72760f"
+    },
+    {
+      "id": "p-zifan-4e8a",
+      "displayName": "子反",
+      "firstYear": -584,
+      "identityHash": "25ec12f6"
+    },
+    {
+      "id": "p-zigong-a241",
+      "displayName": "子贡",
+      "firstYear": -484,
+      "identityHash": "5e7c8812"
+    },
+    {
+      "id": "p-zilan-48ab",
+      "displayName": "子兰",
+      "firstYear": -278,
+      "identityHash": "6eba6523"
+    },
+    {
+      "id": "p-zilu-9562",
+      "displayName": "子路",
+      "firstYear": -484,
+      "identityHash": "ef0ef24f"
+    },
+    {
+      "id": "p-ziying-5dd8",
+      "displayName": "子婴",
+      "firstYear": -207,
+      "identityHash": "bcabff07"
+    },
+    {
+      "id": "p-ziyu-9028",
+      "displayName": "子玉",
+      "firstYear": -632,
+      "identityHash": "cbc90703"
+    },
+    {
+      "id": "p-zongze-4487",
+      "displayName": "宗泽",
+      "firstYear": 1127,
+      "identityHash": "3e5a5257"
+    },
+    {
+      "id": "p-zouji-7002",
+      "displayName": "邹忌",
+      "firstYear": -357,
+      "identityHash": "9a81bac1"
+    },
+    {
+      "id": "p-zouyan-c890",
+      "displayName": "邹衍",
+      "firstYear": -311,
+      "identityHash": "5e33e827"
+    },
+    {
+      "id": "p-zuozongtang-d7f2",
+      "displayName": "左宗棠",
+      "firstYear": 1864,
+      "identityHash": "ca240555"
+    },
+    {
+      "id": "p-zuti-a3a6",
+      "displayName": "祖逖",
+      "firstYear": 289,
+      "identityHash": "8d431a69"
+    }
+  ]
+}

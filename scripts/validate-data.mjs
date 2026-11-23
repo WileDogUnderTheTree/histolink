@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 《史脉》全量数据校验（V0.8.2）。
+ * 《史脉》全量数据校验（V1.0.1：事件 / 图谱 / 关系 / 人物主数据 / 别名 / 锁文件 / docs）。
  *
  * 直接加载 frontend/data 下的 TypeScript 数据模块（用 TypeScript 编译器转译后执行），
  * 检查事件、图谱分期、人物关系三层数据的完整性与引用一致性，并输出全量统计。
@@ -10,80 +10,31 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
-
-const require = createRequire(import.meta.url);
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
-const DATA_DIR = path.join(ROOT, "frontend", "data");
-const ts = require(path.join(ROOT, "frontend", "node_modules", "typescript"));
-
-const errors = [];
-const warnings = [];
-const fail = (message) => errors.push(message);
-const warn = (message) => warnings.push(message);
-
-/** 用 TypeScript 编译器把 .ts 模块转成 CommonJS 后加载，支持无扩展名的相对导入。 */
-const moduleCache = new Map();
-function loadModule(filePath) {
-  const absolute = path.resolve(filePath);
-  if (moduleCache.has(absolute)) return moduleCache.get(absolute).exports;
-  const source = fs.readFileSync(absolute, "utf8");
-  const output = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      target: ts.ScriptTarget.ES2022,
-      esModuleInterop: true,
-    },
-    fileName: absolute,
-  }).outputText;
-  const module = { exports: {} };
-  moduleCache.set(absolute, module);
-  const dir = path.dirname(absolute);
-  const requireShim = (specifier) => {
-    let target = path.resolve(dir, specifier);
-    if (!target.endsWith(".ts")) target += ".ts";
-    return loadModule(target);
-  };
-  // eslint-disable-next-line no-new-func
-  new Function("exports", "require", "module", "__dirname", "__filename", output)(
-    module.exports,
-    requireShim,
-    module,
-    dir,
-    absolute,
-  );
-  return module.exports;
-}
-
-const timeline = loadModule(path.join(DATA_DIR, "timeline-events.ts"));
-const participantsModule = loadModule(path.join(DATA_DIR, "timeline-participants.ts"));
-const relationsModule = loadModule(path.join(DATA_DIR, "person-relations.ts"));
-const weijin = loadModule(path.join(DATA_DIR, "weijin-events.ts"));
-const graphModule = loadModule(path.join(DATA_DIR, "person-graph.ts"));
+import { DATA_DIR, ROOT, loadTsData, loadDataModule } from "./lib/load-ts-data.mjs";
 
 const {
   TIMELINE_EVENTS,
   DYNASTY_START_YEARS,
   DYNASTY_GROUPS,
   importanceOf,
-} = timeline;
-const { EVENT_PARTICIPANTS: participantIndex } = participantsModule;
-const { PERSON_RELATIONS, pairKey } = relationsModule;
-const { WEIJIN_EVENTS } = weijin;
-const {
+  EVENT_PARTICIPANTS: participantIndex,
+  PERSON_RELATIONS,
+  pairKey,
+  WEIJIN_EVENTS,
   PERSON_GRAPH_ERAS,
   PERSON_GRAPH_SCOPES,
   ERA_TO_SCOPE,
   SCOPE_TO_ERA,
   KEY_FIGURES,
   PERSON_NAME_ALIASES,
-} = graphModule;
+  eventPool,
+  eventIndex,
+} = loadTsData();
 
-const eventPool = [...TIMELINE_EVENTS, ...WEIJIN_EVENTS];
-const eventIndex = new Map(eventPool.map((event) => [event.id, event]));
-
+const errors = [];
+const warnings = [];
+const fail = (message) => errors.push(message);
+const warn = (message) => warnings.push(message);
 // ========== 1. 事件数据 ==========
 const seenIds = new Set();
 for (const event of eventPool) {
@@ -370,6 +321,198 @@ for (const graph of allGraphs) {
   }
 }
 
+// ========== 7. 人物主数据（V1.0.1 / TC-02） ==========
+const { PERSONS, PERSON_BY_ID } = loadDataModule("persons");
+const { PERSON_ALIAS_TO_ID } = loadDataModule("person-aliases");
+const { PERSON_SPLIT_RULES, PERSON_ALIAS_OVERRIDES } = loadDataModule("person-overrides");
+
+const PERSON_ID_PATTERN = /^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$/;
+const uniqueParticipantNames = new Set();
+for (const event of eventPool) {
+  for (const name of event.participants ?? []) uniqueParticipantNames.add(name);
+}
+
+const personsByName = new Map();
+for (const person of PERSONS) {
+  const bucket = personsByName.get(person.displayName) ?? [];
+  bucket.push(person);
+  personsByName.set(person.displayName, bucket);
+}
+const personsById = new Map();
+const personAliasTargets = new Map();
+for (const [alias, personId] of Object.entries(PERSON_ALIAS_TO_ID)) {
+  personAliasTargets.set(alias, personId);
+}
+const eraById = new Map(PERSON_GRAPH_ERAS.map((era) => [era.id, era]));
+const scopeById = new Map(PERSON_GRAPH_SCOPES.map((scope) => [scope.id, scope]));
+
+for (const person of PERSONS) {
+  const label = `人物「${person.displayName}」(${person.id})`;
+  if (!PERSON_ID_PATTERN.test(person.id)) fail(`${label}：person_id 不符合正则 ${PERSON_ID_PATTERN}`);
+  if (personsById.has(person.id)) fail(`${label}：person_id 重复`);
+  personsById.set(person.id, person);
+  if (PERSON_BY_ID.get(person.id) !== person) fail(`${label}：persons.ts 的 PERSON_BY_ID 索引不一致`);
+  if (!(person.primaryDynasty in DYNASTY_START_YEARS)) fail(`${label}：primaryDynasty 非法（${person.primaryDynasty}）`);
+  if (!person.dynasties.includes(person.primaryDynasty)) fail(`${label}：primaryDynasty 不在 dynasties 中`);
+  for (const dynasty of person.dynasties) {
+    if (!(dynasty in DYNASTY_START_YEARS)) fail(`${label}：dynasties 含非法朝代（${dynasty}）`);
+  }
+  if (!Number.isInteger(person.firstYear) || person.firstYear === 0) fail(`${label}：firstYear 非法（${person.firstYear}）`);
+  if (!Number.isInteger(person.lastYear) || person.lastYear === 0) fail(`${label}：lastYear 非法（${person.lastYear}）`);
+  if (person.firstYear > person.lastYear) fail(`${label}：firstYear(${person.firstYear}) > lastYear(${person.lastYear})`);
+  if (person.eventIds.length === 0) fail(`${label}：没有任何关联事件`);
+  if (new Set(person.eventIds).size !== person.eventIds.length) fail(`${label}：eventIds 有重复`);
+  const allowedNames = new Set([person.displayName, ...person.aliases]);
+  for (const eventId of person.eventIds) {
+    const event = eventIndex.get(eventId);
+    if (!event) {
+      fail(`${label}：关联了不存在的事件 ${eventId}`);
+      continue;
+    }
+    if (![...allowedNames].some((name) => event.participants.includes(name))) {
+      fail(`${label}：事件 ${eventId} 并未把该人物（或其别名）列为参与者`);
+    }
+    if (event.year < person.firstYear || event.year > person.lastYear) {
+      fail(`${label}：事件 ${eventId} 的年份 ${event.year} 超出 [${person.firstYear}, ${person.lastYear}]`);
+    }
+  }
+  for (const eraId of person.eraIds) {
+    const era = eraById.get(eraId);
+    if (!era) {
+      fail(`${label}：eraIds 含未知分期 ${eraId}`);
+      continue;
+    }
+    const node = era.graph.nodes.find((item) => allowedNames.has(item.name));
+    if (!node) fail(`${label}：声明属于分期 ${eraId}，但该期图中没有对应节点`);
+    else if (!node.relatedEvents.some((reference) => person.eventIds.includes(reference.id))) {
+      fail(`${label}：声明属于分期 ${eraId}，但该期节点与关联事件不相交`);
+    }
+  }
+  for (const scopeId of person.scopeIds) {
+    const scope = scopeById.get(scopeId);
+    if (!scope) {
+      fail(`${label}：scopeIds 含未知断代 ${scopeId}`);
+      continue;
+    }
+    const node = scope.graph.nodes.find((item) => allowedNames.has(item.name));
+    if (!node) fail(`${label}：声明属于断代 ${scopeId}，但该组图中没有对应节点`);
+    else if (!node.relatedEvents.some((reference) => person.eventIds.includes(reference.id))) {
+      fail(`${label}：声明属于断代 ${scopeId}，但该组节点与关联事件不相交`);
+    }
+  }
+  for (const alias of person.aliases) {
+    if (PERSON_NAME_ALIASES[alias] !== person.displayName) {
+      fail(`${label}：aliases 含未指向本名的别名「${alias}」`);
+    }
+  }
+}
+
+if (PERSONS.length !== personsById.size) fail(`人物记录数不一致：${PERSONS.length} vs ${personsById.size}`);
+
+// 每个事件参与者姓名必须能解析到 1 个 person_id（本名或别名）。
+for (const name of uniqueParticipantNames) {
+  const byName = personsByName.get(name) ?? [];
+  const aliasTarget = personAliasTargets.get(name);
+  const resolved = new Set(byName.map((person) => person.id));
+  if (aliasTarget) resolved.add(aliasTarget);
+  if (resolved.size === 0) fail(`事件参与者「${name}」没有映射到任何 person_id`);
+  if (resolved.size > 1 && !PERSON_SPLIT_RULES.some((rule) => rule.displayName === name)) {
+    fail(`事件参与者「${name}」映射到多个 person_id，但没有拆分裁决`);
+  }
+}
+
+// 同名组：必须有拆分裁决、事件互斥且并集完整。
+const sameNameGroups = [...personsByName.entries()].filter(([, bucket]) => bucket.length > 1);
+for (const [displayName, bucket] of sameNameGroups) {
+  const rule = PERSON_SPLIT_RULES.find((item) => item.displayName === displayName);
+  if (!rule) {
+    fail(`同名组「${displayName}」有 ${bucket.length} 条记录，但 person-overrides 缺少裁决`);
+    continue;
+  }
+  if (rule.candidates.length !== bucket.length) {
+    fail(`同名组「${displayName}」记录数 ${bucket.length} 与裁决候选数 ${rule.candidates.length} 不一致`);
+  }
+  const seen = new Set();
+  for (const person of bucket) {
+    if (!person.disambiguator.role) fail(`同名组「${displayName}」的 ${person.id} 缺少身份副标题 role`);
+    for (const eventId of person.eventIds) {
+      if (seen.has(eventId)) fail(`同名组「${displayName}」的事件 ${eventId} 被多条记录重复占用`);
+      seen.add(eventId);
+    }
+  }
+  const allEvents = new Set();
+  for (const event of eventPool) {
+    if (event.participants.includes(displayName)) allEvents.add(event.id);
+  }
+  for (const eventId of allEvents) {
+    if (!seen.has(eventId)) fail(`同名组「${displayName}」的事件 ${eventId} 未被任何候选覆盖`);
+  }
+}
+for (const rule of PERSON_SPLIT_RULES) {
+  if (!personsByName.has(rule.displayName)) fail(`person-overrides：拆分规则「${rule.displayName}」没有生成对应人物记录`);
+}
+for (const alias of Object.keys(PERSON_ALIAS_OVERRIDES)) {
+  if (!(alias in PERSON_NAME_ALIASES)) fail(`person-overrides：PERSON_ALIAS_OVERRIDES 含未登记别名「${alias}」`);
+}
+
+// 别名表：目标存在、不跨人、且与人物记录不冲突。
+for (const [alias, personId] of Object.entries(PERSON_ALIAS_TO_ID)) {
+  const target = personsById.get(personId);
+  if (!target) {
+    fail(`别名「${alias}」指向不存在的 person_id：${personId}`);
+    continue;
+  }
+  if (!(alias in PERSON_NAME_ALIASES)) fail(`person-aliases：别名「${alias}」未在 PERSON_NAME_ALIASES 登记`);
+  if (!target.aliases.includes(alias)) fail(`别名「${alias}」没有写进 ${personId} 的 aliases[]`);
+  const byName = personsByName.get(alias) ?? [];
+  if (byName.some((person) => person.id !== personId)) {
+    fail(`别名「${alias}」与真实人物记录冲突（${byName.map((person) => person.id).join("、")}）`);
+  }
+}
+for (const [alias, target] of Object.entries(PERSON_NAME_ALIASES)) {
+  if (!(alias in PERSON_ALIAS_TO_ID)) fail(`PERSON_NAME_ALIASES 的别名「${alias}」→「${target}」未生成 person_aliases 映射`);
+}
+
+// ID 锁文件必须与当前记录一致（防止 ID 漂移）。
+const LOCK_PATH = path.join(DATA_DIR, "locks", "person-ids.lock.json");
+if (!fs.existsSync(LOCK_PATH)) {
+  fail("缺少人物 ID 锁文件 frontend/data/locks/person-ids.lock.json");
+} else {
+  let lock = null;
+  try {
+    lock = JSON.parse(fs.readFileSync(LOCK_PATH, "utf8"));
+  } catch (error) {
+    fail(`人物 ID 锁文件不是合法 JSON：${error.message}`);
+  }
+  if (lock) {
+    if (lock.schema_version !== "person-ids.v1") fail(`人物 ID 锁文件 schema_version 非法：${lock.schema_version}`);
+    if (lock.person_count !== PERSONS.length) fail(`锁文件 person_count=${lock.person_count}，实际 ${PERSONS.length}`);
+    const lockById = new Map((lock.persons ?? []).map((entry) => [entry.id, entry]));
+    if (lockById.size !== PERSONS.length) fail("锁文件条目数与人物记录数不一致");
+    for (const person of PERSONS) {
+      const entry = lockById.get(person.id);
+      if (!entry) {
+        fail(`锁文件缺少人物 ${person.id}（ID 可能已漂移）`);
+        continue;
+      }
+      if (entry.displayName !== person.displayName) fail(`锁文件 ${person.id} 的 displayName 不一致`);
+      if (entry.firstYear !== person.firstYear) fail(`锁文件 ${person.id} 的 firstYear 不一致`);
+      if (!/^[0-9a-f]{8}$/.test(entry.identityHash ?? "")) fail(`锁文件 ${person.id} 的 identityHash 非法`);
+      lockById.delete(person.id);
+    }
+    for (const leftover of lockById.keys()) fail(`锁文件含已不存在的 person_id：${leftover}`);
+  }
+}
+
+const personsWithoutEra = PERSONS.filter((person) => person.eraIds.length === 0).length;
+const mergedAliasNameCount = Object.keys(PERSON_NAME_ALIASES).filter((alias) => uniqueParticipantNames.has(alias)).length;
+const expectedPersonCount =
+  uniqueParticipantNames.size - mergedAliasNameCount + PERSON_SPLIT_RULES.reduce((sum, rule) => sum + rule.candidates.length - 1, 0);
+if (PERSONS.length !== expectedPersonCount) {
+  fail(`人物记录数 ${PERSONS.length} 与推导值 ${expectedPersonCount}（姓名 ${uniqueParticipantNames.size} − 异名合并 ${mergedAliasNameCount} + 同名拆分）不一致`);
+}
+const aliasCount = Object.keys(PERSON_ALIAS_TO_ID).length;
+if (aliasCount !== Object.keys(PERSON_NAME_ALIASES).length) fail(`别名映射数 ${aliasCount} 与 PERSON_NAME_ALIASES 条数不一致`);
 // ========== 6. 统计输出 ==========
 const importance3 = TIMELINE_EVENTS.filter((event) => importanceOf(event) === 3).length;
 const describedEvents = TIMELINE_EVENTS.filter((event) => event.participants.length > 0).length;
@@ -382,7 +525,7 @@ const relationCoveredEdges = allGraphs.reduce(
 );
 
 console.log("=".repeat(72));
-console.log("《史脉》V0.8.2.1 全量数据校验");
+console.log("《史脉》V1.0.1 全量数据校验");
 console.log("=".repeat(72));
 console.log(`时间轴事件：${TIMELINE_EVENTS.length} 条（其中 ${describedEvents} 条有明确参与人物）`);
 console.log(`图谱补足事件（只进人物图）：${WEIJIN_EVENTS.length} 条`);
@@ -392,6 +535,7 @@ console.log(`图谱：细览 ${PERSON_GRAPH_ERAS.length} 期 + 简阅 ${PERSON_G
 console.log(`图谱合计：${totalGraphNodes} 个节点位（含跨期重复）、${totalGraphEdges} 条边、去重人物对 ${uniqueEdgePairs} 对`);
 console.log(`人物关系库：${PERSON_RELATIONS.length} 对，覆盖图谱边 ${relationCoveredEdges} 条`);
 console.log(`docs 数据文件：${DOC_FILES.length} 份，共 ${docRows} 行核心事件（已去重合并）`);
+console.log(`人物主数据：${PERSONS.length} 条（${uniqueParticipantNames.size} 个姓名；同名组 ${sameNameGroups.length}；无细览分期 ${personsWithoutEra} 条；别名 ${aliasCount} 条）`);
 console.log("-".repeat(72));
 console.log("分朝事件数：");
 console.log(
@@ -419,4 +563,4 @@ if (errors.length > 0) {
   for (const message of errors) console.error(`  - ${message}`);
   process.exit(1);
 }
-console.log("\n✓ ALL CHECKS PASSED：事件、图谱分期隔离、关系、别名、名人堂与 docs 数据全部通过。");
+console.log("\n✓ ALL CHECKS PASSED：事件、图谱分期隔离、关系、别名、名人堂、docs 数据与人物主数据全部通过。");
