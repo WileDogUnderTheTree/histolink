@@ -1,10 +1,15 @@
-"""史脉 HistoLink · FastAPI 后端入口（V1.0.1 只读数据服务）。
+"""史脉 HistoLink · FastAPI 后端入口（V1.0.1 只读数据服务 + V1.0.3 问答入口）。
 
 V1.0.1 职责：
 - 启动时一次性加载 `backend/data/snapshot.v1.json`（schema/counts/hash 校验失败即拒绝启动）；
 - 提供只读接口：`/api/health`、`/api/meta`、`/api/entities/*`、`/api/agent/ping_llm`；
-- **无任何写接口**：错误统一走 `{ok:false, request_id, error:{code,message,retryable}}` envelope；
+- **唯一写入口是 `POST /api/agent/ask`（V1.0.3）**，其余 `/api` 写方法仍统一 405；
+- 错误统一走 `{ok:false, request_id, error:{code,message,retryable}}` envelope；
 - 保留 `main:app` 入口，`scripts/launch.ps1` 无需改动。
+
+V1.0.3 问答：
+- `POST /api/agent/ask` 由 `AgentOrchestrator` 执行「规划 → 工具 → 证据校验 → 回答」循环，
+  返回冻结的 `AnswerEnvelope`；LLM 未配置 503、超时 504、上游错误 502。
 
 LLM 连通性（TC-10）：
 - `/api/agent/ping_llm` 读取 `backend/.env`（或环境变量）调用 ModelScope / OpenAI 兼容服务，
@@ -43,7 +48,7 @@ from errors import install_error_handlers, read_only_violation_response
 from routers import register_routes
 from snapshot_store import SnapshotLoadError, SnapshotStore
 
-APP_VERSION = "1.0.2"
+APP_VERSION = "1.0.3"
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_SNAPSHOT_PATH = BASE_DIR / "data" / "snapshot.v1.json"
@@ -104,7 +109,7 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title="史脉 HistoLink API",
         version=APP_VERSION,
-        description="V1.0.1 只读数据服务：快照 meta / 人物 / 事件 / 姓名候选。",
+        description="V1.0.3 Agent 问答服务：快照 API 与基于证据校验的问答。",
         lifespan=lifespan,
     )
 
@@ -123,16 +128,21 @@ def create_app() -> FastAPI:
 
     install_error_handlers(application)
 
-    # 只读闸门：V1.0.1 的 /api 不提供任何写接口（POST /api/agent/ask 属 V1.0.3）。
+    # 只读闸门：`/api` 除问答入口 `/api/agent/ask` 外不提供任何写接口。
     # 放在路由之前统一拦截，保证 405 也走 ErrorEnvelope，而不是 Starlette 默认 detail。
     read_only_methods = {"POST", "PUT", "PATCH", "DELETE"}
+    write_allowlist = {"/api/agent/ask"}
 
     @application.middleware("http")
     async def enforce_read_only(
         request: Request,
         call_next: Callable[[Request], Awaitable[Response]],
     ) -> Response:
-        if request.method in read_only_methods and request.url.path.startswith("/api"):
+        if (
+            request.method in read_only_methods
+            and request.url.path.startswith("/api")
+            and request.url.path not in write_allowlist
+        ):
             return read_only_violation_response()
         return await call_next(request)
 

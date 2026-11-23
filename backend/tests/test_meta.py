@@ -33,7 +33,7 @@ def test_health(client: TestClient) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["ok"] is True
-    assert payload["version"] == "1.0.1"
+    assert payload["version"] == "1.0.3"
 
 
 def test_meta_counts_and_hash_match_snapshot_meta(

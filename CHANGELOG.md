@@ -11,11 +11,67 @@
 
 ---
 
-## [Unreleased]
+## [1.0.3] - 2026-11-23
 
-### 规划中（未发布）
+### 新增与安全加固
 
-- V1.0.2 工具层、V1.0.3 规划器与问答生成、V1.0.4 动作联动、V1.0.5 检索与引用校验、V1.1 终极 UI
+- **V1.0.3 Agent Core（2026-11-23）**：新增 `backend/agent/{schemas,prompts,tool_registry,orchestrator,validator}.py`，
+  实现问答核心循环「System Prompt（纯 JSON 协议）→ Qwen（`enable_thinking=false` + JSON 模式）→
+  工具白名单 + 严格 Pydantic 参数校验 → 工具执行 → 证据校验 → `AnswerEnvelope`」。
+  - `AgentOrchestrator` 最多 4 轮，防死循环；模型 JSON 解析失败自动修复重试，轮次耗尽兜底 `insufficient`；
+  - `EvidenceValidator` 最高优先级：`evidence.entity_id` / `claims[].citation_ids` 必须命中本轮工具真实返回，
+    否则强制降级 `insufficient`（API 仍 200，`missing` 说明原因）；
+  - `tool_registry.py` 不把模型原始 dict 直接传给 Python：8 个工具各有 `extra="forbid"` + `strict=True`
+    的参数模型，未知工具 / 多余字段 / 类型漂移全部拒绝；
+  - 新增 `POST /api/agent/ask`（唯一写入口；其余 `/api` 写方法仍 405），`llm_client.chat()` 支持顶层
+    `enable_thinking=false`、`response_format=json_object`、超时/上游错误映射；
+  - 新增 69 条 pytest（三态 schema / 工具注册表 / 证据校验 / 多轮循环 / JSON 修复 / LLM chat / API 三态与错误码），
+    后端全量 149 → **218 passed**；新增设计文档 `docs/V1.0.3-Agent-Core设计.md`。
+- **V1.0.3 安全加固（2026-11-23，回应《V1.0.3 Agent Core 核心代码审查报告》）**：
+  - **P0-1 证据图校验**：`ObservedEvidence` 从 `set[str]` 升级为带类型 / 来源 / 出现形态 / 事实可用性 /
+    citation 绑定的证据图；evidence 必须类型一致、有事实详情（排除 `*_ids` 列表里的裸 ID）、
+    `fact_usable=true`，并与 claim 的 citation 绑定到同一事件 / 人物 / 关系；彩蛋事件、
+    `is_special`、`source_status=easter_egg` 一律不可作为证据；`related_event_ids` 只接受事件 ID；
+  - **P0-2 服务端重写**：grounded 的 `claims[].text` 与 `markdown` 不再信任模型文本，改由服务端用
+    工具真实返回的 citation / 实体详情生成；提示词注入无法把工具中不存在的内容带进最终回答；
+  - **P0-3 全模式服务端文案**：新增 `ModelAnswer`（模型协议，移除 `certainty`、自由 `missing` 改为
+    枚举 `missing_reasons`）与 `FinalAnswer`（服务端输出）。`insufficient` 使用固定模板
+    `抱歉，现有的历史数据无法完整回答您的问题。缺少的信息：…`，`refusal` 按 `reason_code`
+    使用绝对固定文案；`certainty` 由服务端写死（grounded high/medium、insufficient low、refusal null）。
+    模型在所有模式下提供的 `markdown` 均被完全废弃；`ObservedEvidence.absorb()` 增加最前置
+    `ok is not True` 判断，失败信封即使被篡改出 citations 也不会进入证据图；
+  - **P1-1**：`max_steps` 硬上限收紧为 4；**P1-2**：UI Action 校验 `person_id_a/b`、动作类型与
+    `target.surface` 匹配、最多 3 个、降级 / 拒答 / 资料不足统一清空；**P1-3**：工具内部异常统一转
+    `INTERNAL` 安全信封，API 边界兜底 500 envelope；**P1-4**：模型响应必须是完整且唯一的 JSON 对象；
+    **P1-5**：LLM 请求禁止自动跟随重定向；
+  - **放行后清理（架构师非阻断建议）**：`ModelAnswer` 移除 `markdown` 与 `claims[].text`
+    （新增 `ModelClaim`：仅 `id + citation_ids`）；新增 `ModelUIAction`（模型不提供 `label`），
+    `label` 由服务端 `ACTION_LABEL` 按 `action.type` 写死；模型协议中已不存在任何用户可见文本字段。
+    ruff 格式 / lint 存量告警与 `httpx2` 弃用警告列为后续处理项；
+  - 新增 `tests/test_evidence_security.py`、`tests/test_agent_prompt_injection.py` 及 P1 / P0-3 / 清理回归用例，
+    后端全量 **269 passed**（新增 51 条安全 / 回归测试）。
+
+### 后续规划
+
+- V1.0.4 动作联动、V1.0.5 检索与引用校验、V1.1 终极 UI
+
+---
+
+## [1.0.2] - 2026-11-23
+
+> 版本主题：**Agent 工具层**（审核报告 §9.1 的 8 个只读工具可执行实现 + 工具契约测试；tag `v1.0.2`）。
+
+- **新增工具层**：`backend/agent/tools/` 实现 `resolve_entity` / `search_events` / `get_event` /
+  `get_person` / `get_person_events` / `get_relation` / `get_era_graph` / `timeline_span`。
+  工具直接读内存 `SnapshotStore`，不发 HTTP、不写盘；`ToolContext` 预建关系对 / 人物事件 /
+  时期图索引；空结果与错误语义明确（`total=0` / `ENTITY_NOT_FOUND` / `INVALID_REQUEST`）。
+- **统一返回信封**：`ok/tool/items/citations/truncated/snapshot_version/data/error/meta`；
+  产品批复后 `contracts/tools.py` 的 `output` 同步升级为信封（成功 / 失败 `oneOf`，工具专属出参
+  保留在 `data`），`contracts/tools-v1.schema.json` 已重新导出并纳入 `--check`。
+  `contracts.models.ToolResult` 只新增可选字段，不破坏 V1.0.1 调用方。
+- **测试**：新增 62 条 pytest（真实快照，覆盖正常 / 空结果 / 歧义 / 彩蛋排除 / 负年份 /
+  非法参数 / 统一信封与冻结 Schema 校验），后端全量 87 → **149 passed**。
+- **文档**：新增 `docs/V1.0.2-工具层设计.md`（工具口径、返回示例、批复落地）。
 
 ---
 

@@ -66,6 +66,19 @@ ACTION_AVAILABILITY: dict[UIActionType, Literal["available", "planned"]] = {
     UIActionType.OPEN_PERSON_CARD: "planned",
 }
 
+#: 动作类型 → 服务端写死的 UI 文案（V1.0.4：模型不再提供 label）。
+ACTION_LABEL: dict[UIActionType, str] = {
+    UIActionType.TIMELINE_FOCUS_EVENT: "在时间轴中查看",
+    UIActionType.TIMELINE_FOCUS_DYNASTY: "在时间轴中查看该时期",
+    UIActionType.GRAPH_FOCUS_PERSON: "在关系图中查看",
+    UIActionType.GRAPH_FOCUS_RELATION: "在关系图中查看人物关系",
+    UIActionType.ASK_SUGGEST: "继续提问",
+    UIActionType.TIMELINE_HIGHLIGHT_EVENTS: "在时间轴中高亮事件",
+    UIActionType.GRAPH_HIGHLIGHT_PERSONS: "在关系图中高亮人物",
+    UIActionType.OPEN_EVENT_CARD: "查看事件详情",
+    UIActionType.OPEN_PERSON_CARD: "查看人物详情",
+}
+
 #: V1.0 冻结可用动作集合（报告 §5.4）。
 V1_AVAILABLE_ACTIONS: tuple[UIActionType, ...] = tuple(
     action for action, availability in ACTION_AVAILABILITY.items() if availability == "available"

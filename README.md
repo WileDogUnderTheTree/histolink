@@ -4,7 +4,7 @@
 
 **中国历史探索 · 以结构化数据为核心的可视化历史探索 Web 应用**
 
-当前版本 **V1.0.1（Agent 前置基建版）** ｜ 数据快照 **705 条事件（时间轴 671 + 图谱补足 34）· 23 个朝代/时期 · 1,058 人物 · 639 对人物关系 · 18 期 / 7 组人物关系图数据**（V1.0.1 新增人物主数据、引用结构化、三份契约、前后端同源快照、只读 API、AppShell / ActionBus、组件受控接口与 30 条评测夹具）
+当前版本 **V1.0.3（Agent Core 问答版）**；**V1.0.2 工具层已发布**（tag `v1.0.2`；8 个只读工具 + 统一信封契约 + 62 条单测）；**V1.0.3 Agent Core 已发布**（规划器 / 执行器 / 证据校验与安全加固；后端全量 269 条测试通过） ｜ 数据快照 **705 条事件（时间轴 671 + 图谱补足 34）· 23 个朝代/时期 · 1,058 人物 · 639 对人物关系 · 18 期 / 7 组人物关系图数据**（V1.0.1 新增人物主数据、引用结构化、三份契约、前后端同源快照、只读 API、AppShell / ActionBus、组件受控接口与 30 条评测夹具）
 
 </div>
 
@@ -35,15 +35,17 @@
 | 组件受控与深链接（V1.0.1） | `/timeline` · `/graph` | `PersonGraph2D` 新增可选 `highlightedPersonIds` / `selectedPersonId` / `onPersonSelect`（不传时行为与 V0.9.0 完全一致）；ActionBus 在时间轴 / 图谱页注册同页动作并回写 URL；支持 `/timeline?event=…`、`/graph?person=…&era=…&selected=…` 直接恢复视图（含受控关系面板） |
 | 评测骨架（V1.0.1） | `evals/` + `scripts/run-evals.mjs` | 30 条 golden 用例覆盖 12 类（公元前年份 / 同名歧义 / 资料不足 / 跨朝代 / 关系 / 对比 / 超范围 / 彩蛋排除 / 仅图谱事件 / 多轮 / 事件人物联动 / UI 动作策略）；contract 模式离线校验 schema、快照绑定、0 悬空 ID、工具入参与动作策略，含负向自测 |
 | 模型连通性（V1.0.1 / TC-10） | `/api/agent/ping_llm` | 实测 `Qwen/Qwen3.5-35B-A3B`：连通性 / JSON 模式 / tool calling / SSE / 中文回答均通过；默认思考模式延迟高，已给出 V1.0.3 参数与降级路线 |
+| Agent 问答（V1.0.3） | `POST /api/agent/ask` | 规划器 + 工具循环（最多 4 轮）+ 证据校验；Qwen `enable_thinking=false` + JSON 模式；evidence / citation 对不上工具真实结果时强制降级 `insufficient`；返回冻结 `AnswerEnvelope`（含 citations / entities / trace） |
 | 人物主数据（V1.0.1） | `frontend/data/persons.ts` | 1,058 条 person 记录 = 1,059 个姓名 − 3 条异名同一人合并 + 2 条同名拆分（梁太后 / 刘崇）；稳定 `person_id` + ID 锁文件 + 66 条全局别名 + 同名报告 + `--check` 门禁 |
 | 数据快照与只读 API（V1.0.1） | `backend/data/` · `/api/meta` · `/api/entities/*` | 前后端同源快照（705 事件 / 1,058 人物 / 639 关系 / 18 期 / 7 断代，约 2.7MB，内容寻址 hash）；FastAPI 启动校验快照，提供 meta / person / event / 姓名候选只读接口与统一错误 envelope |
+| 只读工具层（V1.0.2） | `backend/agent/tools/` | 8 个只读工具（实体消歧 / 事件检索 / 事件 / 人物 / 人物事件 / 关系 / 时期图谱 / 时间区间）直接读内存快照；统一信封 `ok/items/citations/truncated/snapshot_version/data/error/meta` 已写入 `tools-v1.schema.json` 的 `output`；62 条单测覆盖正常 / 空结果 / 歧义 / 非法参数 |
 
 ### 规划中（尚未实现）
 
 | 模块 | 计划版本 | 说明 |
 |---|---|---|
 | 人物首字母索引（`/people`） | V1.0 前后 | SPEC 规划模块 |
-| Agent 与语义 RAG 问答 | V1.0.3–V1.0.5 | `/ask` 与悬浮抽屉壳层已在 V1.0.1 落地（占位、不请求后端）；检索、规划器、回答生成与引用校验按版本接入 |
+| Agent 与语义 RAG 问答 | V1.0.4–V1.0.6 | `/ask` 与悬浮抽屉壳层已在 V1.0.1 落地；V1.0.3 规划器、回答生成与证据校验已完成，后续接入动作联动、检索与多轮能力 |
 | 3D 人物关系视图、时间轴滑块交互 | V1.1 | 终极 UI 重构 |
 | 时间轴尽头彩蛋节点（1893-12-26） | V1.1.1 | 全部 UI 完成后制作 |
 
@@ -61,7 +63,7 @@
 | 包管理与构建 | pnpm + Next.js Turbopack | 锁文件 `frontend/pnpm-lock.yaml` |
 | 后端 | [FastAPI](https://fastapi.tiangolo.com/) + Uvicorn + Pydantic v2 | `fastapi>=0.115`、`uvicorn[standard]>=0.34`、`pydantic>=2.9,<3`（Python 3.11 虚拟环境） |
 | 契约与门禁 | Pydantic → OpenAPI 3.1 → `openapi-typescript` | 后端 `backend/contracts` 为唯一事实源；三份契约 + 动作策略 + 32 条后端契约测试 |
-| 测试 | pytest / vitest / evals | 后端 87 条（契约 + 只读 API + LLM 客户端 + fail-fast）；前端 66 条（动作策略 / ActionBus / 深链接 / 受控选中 / 能力映射）；评测 30 条 golden（contract 模式） |
+| 测试 | pytest / vitest / evals | 后端 269 条（契约 + 只读 API + 工具层 + Agent Core + 安全加固 + LLM 客户端 + fail-fast）；前端 66 条（动作策略 / ActionBus / 深链接 / 受控选中 / 能力映射）；评测 30 条 golden（contract 模式） |
 | 运行形态 | 前后端分离 | 前端渲染与交互；后端为只读数据服务（快照 + `/api/entities/*`），不接数据库、无写接口 |
 
 浏览器支持：桌面 Chrome / Edge 最近两个大版本，Safari 16+ 可浏览；桌面优先，移动端保证可浏览与降级。
@@ -105,11 +107,18 @@
 │  ├─ main.py                       create_app() + lifespan 加载快照 + CORS + 只读闸门
 │  ├─ llm_client.py                 ModelScope / OpenAI 兼容最小客户端（TC-10）
 │  ├─ snapshot_store.py             快照加载 / 校验 / 只读查询
+│  ├─ agent/                         V1.0.3 Agent Core
+│  │  ├─ schemas.py                 ToolCall / Evidence / FinalAnswer / AgentResult
+│  │  ├─ prompts.py                 System Prompt（纯 JSON 协议 + 三态 + 禁止幻觉）
+│  │  ├─ tool_registry.py           工具白名单 + 严格 Pydantic 参数校验
+│  │  ├─ orchestrator.py            规划 / 执行 / 回传循环（最多 4 轮）
+│  │  ├─ validator.py               EvidenceValidator（证据不可核验 → insufficient）
+│  │  └─ tools/                     V1.0.2 只读工具层（8 工具 + ToolContext + 统一信封）
 │  ├─ contracts/                    API / Action / Tool 契约的 Pydantic 事实源
-│  ├─ routers/                      health / meta / entities / agent 只读路由
+│  ├─ routers/                      health / meta / entities / agent（ping + ask）
 │  ├─ errors.py                     统一错误 envelope 与 /api 只读闸门
 │  ├─ data/                         snapshot.v1.json + snapshot.meta.json（生成物）
-│  ├─ tests/                        pytest（契约 / 只读 API / LLM / 快照 fail-fast）
+│  ├─ tests/                        pytest（契约 / 只读 API / 工具层 / Agent Core / LLM / fail-fast）
 │  └─ scripts/                      export_contracts.py / spike_llm.py
 ├─ contracts/                       三份契约导出物 + action-policy + samples + README
 ├─ scripts/
@@ -226,9 +235,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -Only 1,3
 | 首页 | <http://localhost:3000> | 模块入口与后端连通状态 |
 | 时间轴 | <http://localhost:3000/timeline> | 全朝代事件时间轴 |
 | 人物关系图 | <http://localhost:3000/graph> | 三栏布局，分期可切换 |
-| 健康检查 | `GET http://127.0.0.1:8000/api/health` | 响应 `{"ok": true, "version": "1.0.1"}`；也可经前端同源访问 `GET http://localhost:3000/api/health` |
+| 健康检查 | `GET http://127.0.0.1:8000/api/health` | 响应 `{"ok": true, "version": "1.0.3"}`；也可经前端同源访问 `GET http://localhost:3000/api/health` |
 
-V1.0.1 起后端是**只读数据服务**（无任何写接口），全部接口如下（响应均带 `schema_version` 与 `snapshot.version/hash`）：
+V1.0.1 起后端是**只读数据服务**；V1.0.3 新增唯一写入口 `POST /api/agent/ask`（问答），其余 `/api` 写方法仍返回 405。全部接口如下（响应均带 `schema_version` 与 `snapshot.version/hash`）：
 
 | 方法 | 路径 | 说明 |
 |---|---|---|
@@ -238,6 +247,7 @@ V1.0.1 起后端是**只读数据服务**（无任何写接口），全部接口
 | GET | `/api/entities/event/{event_id}` | 事件 + `person_ids` + 结构化 `source_refs` + `surface` |
 | GET | `/api/entities/persons?name=&era_id=&limit=` | 姓名候选（同名时返回多条，带消歧副标题） |
 | GET | `/api/agent/ping_llm?message=请回复 OK` | **TC-10 连通性探测**：向模型发一句测试话，返回真实回复 / 模型名 / 耗时（需要配置 `backend/.env`） |
+| POST | `/api/agent/ask` | **V1.0.3 问答**：规划 → 工具 → 证据校验 → `AnswerEnvelope`；模型未配置 503 / 超时 504 / 上游错误 502 |
 
 ```powershell
 curl http://127.0.0.1:8000/api/meta
@@ -245,10 +255,20 @@ curl http://127.0.0.1:8000/api/entities/person/p-liangtaihou-xixia-0d0f
 curl "http://127.0.0.1:8000/api/entities/persons?name=梁太后"          # 2 个候选
 curl "http://127.0.0.1:8000/api/entities/persons?name=梁太后&era_id=xixia"  # 1 个候选
 curl http://127.0.0.1:8000/api/agent/ping_llm                         # 模型连通性（需 .env）
+
+# V1.0.3 问答（PowerShell；中文请求体需按 UTF-8 字节发送）
+$body = @{
+  question   = "赤壁之战发生在哪一年？"
+  session_id = "demo-1"
+  context    = @{ route = "/timeline" }
+} | ConvertTo-Json -Depth 5
+Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/agent/ask" -Method Post `
+  -ContentType "application/json; charset=utf-8" `
+  -Body ([System.Text.Encoding]::UTF8.GetBytes($body)) | ConvertTo-Json -Depth 12
 ```
 
 错误统一为 `{"ok": false, "request_id": "...", "error": {"code", "message", "retryable", "details?"}}`：
-未知 id → 404 `ENTITY_NOT_FOUND`；写方法 → 405 `METHOD_NOT_ALLOWED`；非法参数 → 400 `INVALID_REQUEST`；
+未知 id → 404 `ENTITY_NOT_FOUND`；写方法（除 `/api/agent/ask`）→ 405 `METHOD_NOT_ALLOWED`；非法参数 → 400 `INVALID_REQUEST`；
 快照未加载 → 503 `SNAPSHOT_NOT_LOADED`；模型未配置 → 503 `LLM_NOT_CONFIGURED`；
 上游报错 → 502 `LLM_UPSTREAM_ERROR`；模型超时 → 504 `LLM_TIMEOUT`。
 后端启动时校验快照 hash/counts，失败即拒绝启动。
@@ -527,8 +547,8 @@ interface PersonGraphEdge {
 | V0.8.2.2 | 时间轴特殊节点及致敬横幅（隐藏彩蛋） | 已完成 |
 | **V0.9.0** | **内测版封装：聊天问答入口封印为「开发中」、`/api` 同源代理 + 可配置 CORS、局域网 / UUMit 分享部署说明** | 已完成（tag `v0.9.0`） |
 | **V1.0.1** | **Agent 前置基建纵切片：人物主数据与消歧、引用结构化、三份契约、数据快照、只读 API、AppShell / ActionBus、组件受控接口与深链接、30 条评测夹具、模型能力实测** | **已完成（tag `v1.0.1`）** |
-| V1.0.2 | Agent 工具层：8 个只读工具的可执行实现 + 工具契约测试 | 计划中 |
-| V1.0.3 | 规划器与问答生成（tool calling 为主 / JSON 兜底） | 计划中 |
+| V1.0.2 | Agent 工具层：8 个只读工具的可执行实现 + 工具契约测试 | 已完成（tag `v1.0.2`，工作区待提交） |
+| V1.0.3 | 规划器与问答生成（tool calling 为主 / JSON 兜底） | 开发中（Agent Core + `/api/agent/ask` + 69 条测试已落地，待验收） |
 | V1.0.4 | 动作联动：同页自动 / 跨页确认、全量 URL 状态化、时间轴与图谱高亮 | 计划中 |
 | V1.0.5 | 检索与引用校验（BM25 / 引用 V1–V7 / 资料不足路径） | 计划中 |
 | V1.0.6 | 多轮记忆与实体承接 | 计划中 |
@@ -579,6 +599,8 @@ interface PersonGraphEdge {
 | [docs/V1.0.1-任务卡拆解.md](docs/V1.0.1-任务卡拆解.md) | V1.0.1 基建阶段 11 张任务卡（TC-01~TC-11）与验收标准 |
 | [docs/V1.0.1-验收记录-纵切片.md](docs/V1.0.1-验收记录-纵切片.md) | TC-01~TC-07 纵切片的逐卡验收记录、命令与偏差说明 |
 | [docs/V1.0.1-验收记录.md](docs/V1.0.1-验收记录.md) | **V1.0.1 出口验收**：TC-01~TC-11 逐项勾选、12 步门禁输出、快照 hash 与手工验收记录 |
+| [docs/V1.0.2-工具层设计.md](docs/V1.0.2-工具层设计.md) | 8 个只读工具的口径、统一返回信封、真实返回示例与验收记录 |
+| [docs/V1.0.3-Agent-Core设计.md](docs/V1.0.3-Agent-Core设计.md) | Agent Core：数据结构、JSON 协议、工具注册表、证据校验、API 测试方法 |
 | [docs/component-capability-map.md](docs/component-capability-map.md) | TC-08 组件能力现状、受控接口、深链接与 V1.0.4 缺口清单 |
 | [contracts/README.md](contracts/README.md) | 三份契约的冻结规则、版本升级规则与字段清单 |
 | [docs/spikes/README.md](docs/spikes/README.md) | TC-10 模型能力复现说明（env、命令、失败码、10 项探针结论） |
@@ -593,13 +615,14 @@ interface PersonGraphEdge {
 
 ## 十、已知限制
 
-- V1.0.1 起后端提供**只读数据服务**（快照 + `/api/meta` + `/api/entities/*` + `/api/agent/ping_llm`），仍**不接数据库**、无任何写接口；页面渲染在 V1.0 仍读前端 TS 数据。
+- V1.0.1 起后端提供**只读数据服务**（快照 + `/api/meta` + `/api/entities/*` + `/api/agent/ping_llm`）；V1.0.3 新增唯一写入口 `POST /api/agent/ask`（问答）。仍**不接数据库**；页面渲染在 V1.0 仍读前端 TS 数据。
 - 页面渲染数据链路（时间轴 / 图谱）与人物 `person_id` 尚未合并：图谱节点仍以姓名为 id，关系库 `person_id` 迁移属 V1.1；因此 `PersonGraph2D` 的受控 `selectedPersonId` / `onPersonSelect` 当前参数是**图节点 id（姓名）**，语义待 V1.1 切换。
-- 问答壳层（抽屉 / `/ask`）是**占位**：不调用后端、不检索；真实问答与 UI Action 执行分别在 V1.0.3 / V1.0.4。首页「聊天问答」入口继续保持 V0.9.0 的封印行为。
+- 问答壳层（抽屉 / `/ask`）仍是**前端占位**：不调用后端；后端 `POST /api/agent/ask` 已可用，前端接入与 UI Action 执行分别在 V1.0.4 / V1.0.5。首页「聊天问答」入口继续保持 V0.9.0 的封印行为。
+- 本版歧义实体（如「梁太后」）不返回 `clarification` 候选列表，由模型输出 `insufficient` 提示用户指定；澄清状态机属多轮记忆版本。
 - ActionBus 已在时间轴 / 图谱页注册**同页**动作，但跨页动作只有待确认队列、**没有确认按钮 UI**；完整动作联动属 V1.0.4。
 - 深链接只做「打开链接恢复视图 + 动作执行后回写 URL」，**不做全量 URL 状态化**（每次点击同步 query、浏览器前进后退恢复属 V1.0.4）。
-- 评测骨架只跑 **contract 模式**（schema / ID / 动作策略 / 引用纪律的离线校验）；真实 LLM 评分在 V1.0.3 接入。
-- 模型默认开启思考：`max_tokens` 不限制 reasoning tokens，思考模式中文回答实测 68.7s / 6341 tokens；V1.0.3 将默认 `enable_thinking=false`，仅长文解释按需开启（见 [能力报告](docs/spikes/modelscope-qwen3.5-35b-a3b-capability.md)）。
+- 评测骨架只跑 **contract 模式**（schema / ID / 动作策略 / 引用纪律的离线校验）；真实 LLM 评分在 V1.0.3 之后接入。
+- Agent 默认 `enable_thinking=false`（顶层参数）追求极速；长文解释若需思考模式，需显式提高超时到 90–120s（见 [能力报告](docs/spikes/modelscope-qwen3.5-35b-a3b-capability.md)）。
 - 人物关系网为**一度关系视图**（只展示当前中心人物的直接关系），不做多跳裁剪与全图布局。
 - 时间轴为**精选数据**而非穷举：每个朝代只收录关键事件（当前共 670 条）。
 - 人物关系由图数据派生，未接入自动抽取；`participants` 采用人工校订口径。

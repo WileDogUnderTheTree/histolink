@@ -8,7 +8,9 @@
 安全约定：
 - **密钥只经环境变量 / `.env` 传入**，不写日志、不入库、不出现在响应里；
 - 响应只返回模型名、回复、耗时与 token 用量；base URL 仅用于构造请求；
-- 上游错误信息会截断并做一次 key 脱敏，避免反向代理回显请求头。
+- 上游错误信息会截断并做一次 key 脱敏，避免反向代理回显请求头；
+- **禁止自动跟随重定向**（P1-5）：任何 3xx 都按上游错误处理，防止 Authorization 头被带到
+  非预期主机。
 
 本模块不依赖 FastAPI，可被 `backend/scripts/spike_llm.py` 单独调用。
 应用入口是 `routers/agent.py` 的 `GET /api/agent/ping_llm`。
@@ -36,6 +38,11 @@ DEFAULT_TIMEOUT_SECONDS = 30.0
 DEFAULT_PING_MESSAGE = "请回复 OK"
 MAX_REPLY_LENGTH = 2000
 MAX_ERROR_EXCERPT = 200
+#: Agent 对话（chat）参数上限。
+MAX_CHAT_MESSAGES = 40
+MAX_CHAT_MESSAGE_CHARS = 20000
+MAX_CHAT_TOKENS = 8192
+MAX_CHAT_CONTENT_CHARS = 40000
 
 #: 环境变量别名（按顺序取第一个非空值）；主推 MODELSCOPE_*，兼容常见 LLM_* / OPENAI_*。
 _API_KEY_ENV_NAMES = ("MODELSCOPE_API_KEY", "MODELSCOPE_KEY", "LLM_API_KEY", "OPENAI_API_KEY")
@@ -97,6 +104,16 @@ class LLMSettings:
 @dataclass(frozen=True)
 class LLMPingResult:
     reply: str
+    model: str
+    latency_ms: int
+    usage: dict[str, int] | None = None
+
+
+@dataclass(frozen=True)
+class LLMChatResult:
+    """一次 chat completion 的原始回复（V1.0.3 Agent 循环使用）。"""
+
+    content: str
     model: str
     latency_ms: int
     usage: dict[str, int] | None = None
@@ -207,7 +224,7 @@ class LLMClient:
         self._transport = transport
 
     @classmethod
-    def from_env(cls) -> "LLMClient":
+    def from_env(cls) -> LLMClient:
         return cls(load_llm_settings())
 
     @property
@@ -231,6 +248,82 @@ class LLMClient:
             "max_tokens": 64,
             "stream": False,
         }
+        data, latency_ms = self._post_chat(payload)
+        reply = _extract_content(data).strip()
+        if len(reply) > MAX_REPLY_LENGTH:
+            reply = reply[:MAX_REPLY_LENGTH] + "…"
+        return LLMPingResult(
+            reply=reply,
+            model=_extract_model(data, settings.model),
+            latency_ms=latency_ms,
+            usage=_parse_usage(data.get("usage")),
+        )
+
+    def chat(
+        self,
+        messages: list[dict[str, str]],
+        *,
+        temperature: float = 0.0,
+        max_tokens: int = 2048,
+        response_format: dict[str, Any] | None = None,
+        enable_thinking: bool = False,
+        timeout_seconds: float | None = None,
+    ) -> LLMChatResult:
+        """OpenAI 兼容 chat completion（V1.0.3 Agent 使用）。
+
+        - 默认 **`enable_thinking=False`**：spike 实测思考模式会消耗大量 reasoning tokens
+          且 `max_tokens` 不约束它们，必须显式关闭以追求极速响应；
+        - `response_format={"type":"json_object"}` 由 Orchestrator 按需传入；
+        - 超时 / 上游错误沿用与 `ping()` 相同的异常映射。
+        """
+
+        normalized = _normalize_messages(messages)
+        if not 0.0 <= temperature <= 2.0:
+            raise LLMConfigError("temperature 必须在 0–2 之间")
+        if not 1 <= max_tokens <= MAX_CHAT_TOKENS:
+            raise LLMConfigError(f"max_tokens 必须在 1–{MAX_CHAT_TOKENS} 之间")
+        if not isinstance(enable_thinking, bool):
+            raise LLMConfigError("enable_thinking 必须是布尔值")
+        if response_format is not None and (
+            not isinstance(response_format, dict)
+            or response_format.get("type") != "json_object"
+        ):
+            raise LLMConfigError('response_format 目前只支持 {"type": "json_object"}')
+        if timeout_seconds is not None and not 1.0 <= timeout_seconds <= 300.0:
+            raise LLMConfigError("timeout_seconds 必须在 1–300 秒之间")
+
+        settings = self._settings
+        payload: dict[str, Any] = {
+            "model": settings.model,
+            "messages": normalized,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "stream": False,
+            # spike 结论：顶层 enable_thinking 才生效；不要放进 extra_body。
+            "enable_thinking": enable_thinking,
+        }
+        if response_format is not None:
+            payload["response_format"] = response_format
+
+        data, latency_ms = self._post_chat(payload, timeout_seconds=timeout_seconds)
+        content = _extract_content(data)
+        if len(content) > MAX_CHAT_CONTENT_CHARS:
+            content = content[:MAX_CHAT_CONTENT_CHARS] + "…"
+        return LLMChatResult(
+            content=content,
+            model=_extract_model(data, settings.model),
+            latency_ms=latency_ms,
+            usage=_parse_usage(data.get("usage")),
+        )
+
+    # ------------------------------------------------------------------
+    # HTTP 公共路径
+    # ------------------------------------------------------------------
+    def _post_chat(
+        self, payload: dict[str, Any], *, timeout_seconds: float | None = None
+    ) -> tuple[dict[str, Any], int]:
+        settings = self._settings
+        timeout = timeout_seconds if timeout_seconds is not None else settings.timeout_seconds
         headers = {
             "Authorization": f"Bearer {settings.api_key}",
             "Content-Type": "application/json",
@@ -239,14 +332,18 @@ class LLMClient:
         started = time.perf_counter()
         try:
             with httpx.Client(
-                timeout=httpx.Timeout(settings.timeout_seconds),
+                timeout=httpx.Timeout(timeout),
                 transport=self._transport,
-                follow_redirects=True,
+                # P1-5：禁止自动跟随重定向。模型服务被错误配置 / 劫持时，
+                # 跟随 3xx 会把 Authorization 头带到攻击者指定的地址。
+                follow_redirects=False,
             ) as client:
-                response = client.post(settings.chat_completions_url, headers=headers, json=payload)
+                response = client.post(
+                    settings.chat_completions_url, headers=headers, json=payload
+                )
         except httpx.TimeoutException as exc:
             raise LLMTimeoutError(
-                f"模型服务超时（>{settings.timeout_seconds:.0f}s），可调大 LLM_TIMEOUT_SECONDS 后重试。"
+                f"模型服务超时（>{timeout:.0f}s），可调大 LLM_TIMEOUT_SECONDS 后重试。"
             ) from exc
         except httpx.HTTPError as exc:
             raise LLMUpstreamError(
@@ -255,6 +352,13 @@ class LLMClient:
             ) from exc
         latency_ms = int((time.perf_counter() - started) * 1000)
 
+        if 300 <= response.status_code < 400:
+            raise LLMUpstreamError(
+                "模型服务返回重定向 HTTP "
+                f"{response.status_code}（出于安全已禁用自动跟随，请检查 MODELSCOPE_BASE_URL）",
+                upstream_status=response.status_code,
+                retryable=False,
+            )
         if response.status_code >= 400:
             retryable = response.status_code == 429 or response.status_code >= 500
             excerpt = _safe_excerpt(response.text, secret=settings.api_key)
@@ -270,26 +374,44 @@ class LLMClient:
             raise LLMUpstreamError("上游返回的不是合法 JSON", retryable=False) from exc
         if not isinstance(data, dict):
             raise LLMUpstreamError("上游返回 JSON 结构异常（期望对象）", retryable=False)
+        return data, latency_ms
 
-        choices = data.get("choices")
-        content: Any = None
-        if isinstance(choices, list) and choices:
-            first_choice = choices[0]
-            if isinstance(first_choice, dict):
-                message_payload = first_choice.get("message")
-                if isinstance(message_payload, dict):
-                    content = message_payload.get("content")
+
+def _extract_content(data: Mapping[str, Any]) -> str:
+    choices = data.get("choices")
+    content: Any = None
+    if isinstance(choices, list) and choices:
+        first_choice = choices[0]
+        if isinstance(first_choice, dict):
+            message_payload = first_choice.get("message")
+            if isinstance(message_payload, dict):
+                content = message_payload.get("content")
+    if not isinstance(content, str) or not content.strip():
+        raise LLMUpstreamError("上游返回缺少 choices[0].message.content", retryable=False)
+    return content
+
+
+def _extract_model(data: Mapping[str, Any], fallback: str) -> str:
+    model = data.get("model")
+    return str(model) if isinstance(model, str) and model else fallback
+
+
+def _normalize_messages(messages: Any) -> list[dict[str, str]]:
+    if not isinstance(messages, (list, tuple)) or not messages:
+        raise LLMConfigError("messages 不能为空")
+    if len(messages) > MAX_CHAT_MESSAGES:
+        raise LLMConfigError(f"messages 最多 {MAX_CHAT_MESSAGES} 条")
+    normalized: list[dict[str, str]] = []
+    for index, message in enumerate(messages):
+        if not isinstance(message, Mapping):
+            raise LLMConfigError(f"messages[{index}] 必须是对象")
+        role = message.get("role")
+        content = message.get("content")
+        if role not in {"system", "user", "assistant"}:
+            raise LLMConfigError(f"messages[{index}].role 必须是 system/user/assistant")
         if not isinstance(content, str) or not content.strip():
-            raise LLMUpstreamError("上游返回缺少 choices[0].message.content", retryable=False)
-
-        reply = content.strip()
-        if len(reply) > MAX_REPLY_LENGTH:
-            reply = reply[:MAX_REPLY_LENGTH] + "…"
-
-        model = data.get("model")
-        return LLMPingResult(
-            reply=reply,
-            model=str(model) if isinstance(model, str) and model else settings.model,
-            latency_ms=latency_ms,
-            usage=_parse_usage(data.get("usage")),
-        )
+            raise LLMConfigError(f"messages[{index}].content 不能为空")
+        if len(content) > MAX_CHAT_MESSAGE_CHARS:
+            raise LLMConfigError(f"messages[{index}].content 超过 {MAX_CHAT_MESSAGE_CHARS} 字")
+        normalized.append({"role": role, "content": content})
+    return normalized
