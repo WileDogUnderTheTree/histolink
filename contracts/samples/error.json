@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "request_id": "req_01J8Z3K4M5N6P7Q8R9S0T2",
+  "error": {
+    "code": "LLM_TIMEOUT",
+    "message": "模型响应超时，已返回本地摘要模式。",
+    "retryable": true
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "schema_version": "actions-policy.v1",
+  "decisions": {
+    "same_page": "前端判定 target.surface === 当前路由 → 同页；同页且 auto=true 才自动执行",
+    "cross_page": "跨页一律渲染为确认按钮，用户点击后才跳转；绝不自动导航",
+    "server_auto": "后端 auto 仅为建议值，前端必须按路由强制覆盖",
+    "unknown_action": "未知动作类型静默忽略 + 上报 unsupported_action",
+    "invalid_id": "动作引用的 ID 不在本地数据中 → 不执行、不白屏，提示刷新"
+  },
+  "surfaces": ["timeline", "graph", "ask"],
+  "actions": {
+    "timeline.focus_event": {
+      "surface": "timeline",
+      "availability": "available",
+      "auto": "same_page_only",
+      "since": "1.0.4",
+      "payload": ["event_id"]
+    },
+    "timeline.focus_dynasty": {
+      "surface": "timeline",
+      "availability": "available",
+      "auto": "same_page_only",
+      "since": "1.0.4",
+      "payload": ["dynasty", "group_id", "mode"]
+    },
+    "graph.focus_person": {
+      "surface": "graph",
+      "availability": "available",
+      "auto": "same_page_only",
+      "since": "1.0.4",
+      "payload": ["person_id", "era_id?"]
+    },
+    "graph.focus_relation": {
+      "surface": "graph",
+      "availability": "available",
+      "auto": "same_page_only",
+      "since": "1.0.4",
+      "payload": ["person_id_a", "person_id_b"]
+    },
+    "ask.suggest": {
+      "surface": "ask",
+      "availability": "available",
+      "auto": "same_page_only",
+      "since": "1.0.6",
+      "payload": ["questions"]
+    },
+    "timeline.highlight_events": {
+      "surface": "timeline",
+      "availability": "planned",
+      "auto": "same_page_only",
+      "since": "1.0.4",
+      "payload": ["event_ids"]
+    },
+    "graph.highlight_persons": {
+      "surface": "graph",
+      "availability": "planned",
+      "auto": "same_page_only",
+      "since": "1.0.4",
+      "payload": ["person_ids"]
+    },
+    "open.event_card": {
+      "surface": null,
+      "availability": "planned",
+      "auto": "requires_confirmation",
+      "since": "1.0.5",
+      "payload": ["event_id"]
+    },
+    "open.person_card": {
+      "surface": null,
+      "availability": "planned",
+      "auto": "requires_confirmation",
+      "since": "1.0.5",
+      "payload": ["person_id"]
+    }
+  }
+}

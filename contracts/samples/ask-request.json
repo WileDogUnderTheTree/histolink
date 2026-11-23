@@ -1,0 +1,11 @@
+{
+  "question": "梁太后为什么攻打北宋？",
+  "session_id": "s-8b8c5e9e-99b1-4ad4-9e39-8d3a10b9c5e1",
+  "history": [],
+  "context": {
+    "route": "/timeline",
+    "mode": "detail",
+    "dynasty": "西夏"
+  },
+  "client_schema_version": "1.0"
+}

@@ -1,0 +1,725 @@
+{
+  "$id": "https://histolink.local/contracts/tools-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "8 个只读工具的入参/出参 JSON Schema；工具不暴露给浏览器（除 dev 调试）。",
+  "title": "史脉 V1.0 只读工具契约",
+  "tools": [
+    {
+      "description": "把姓名/别名（可带时期上下文）解析为候选人物或事件；无上下文时必须返回全部候选，禁止默认取第一条。",
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "era_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "query": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "name": "resolve_entity",
+      "output": {
+        "additionalProperties": false,
+        "properties": {
+          "ambiguous": {
+            "type": "boolean"
+          },
+          "candidates": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "disambiguator": {
+                  "type": "string"
+                },
+                "era_ids": {
+                  "items": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "maxItems": 10,
+                  "type": "array"
+                },
+                "event_id": {
+                  "pattern": "^[a-z0-9][a-z0-9-]*$",
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "person_id": {
+                  "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "disambiguator"
+              ],
+              "type": "object"
+            },
+            "maxItems": 10,
+            "type": "array"
+          }
+        },
+        "required": [
+          "candidates",
+          "ambiguous"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "description": "按关键词 / 朝代 / 年份区间 / 最低重要度检索事件，返回结构化事件 ID 列表。",
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "dynasty": {
+            "type": "string"
+          },
+          "importance_min": {
+            "maximum": 3,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "limit": {
+            "default": 20,
+            "maximum": 80,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "q": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "year_range": {
+            "additionalProperties": false,
+            "properties": {
+              "end": {
+                "description": "史书纪年：公元前为负，不允许 0",
+                "type": "integer"
+              },
+              "start": {
+                "description": "史书纪年：公元前为负，不允许 0",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "start",
+              "end"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "q"
+        ],
+        "type": "object"
+      },
+      "name": "search_events",
+      "output": {
+        "additionalProperties": false,
+        "properties": {
+          "events": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "dynasty": {
+                  "type": "string"
+                },
+                "event_id": {
+                  "pattern": "^[a-z0-9][a-z0-9-]*$",
+                  "type": "string"
+                },
+                "importance": {
+                  "maximum": 3,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "year": {
+                  "description": "史书纪年：公元前为负，不允许 0",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "event_id",
+                "title",
+                "dynasty",
+                "year"
+              ],
+              "type": "object"
+            },
+            "maxItems": 80,
+            "type": "array"
+          },
+          "total": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "events",
+          "total"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "description": "按稳定 event_id 取事件全字段 + 参与者 person_id + 结构化引用。",
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "event_id": {
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id"
+        ],
+        "type": "object"
+      },
+      "name": "get_event",
+      "output": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "dynasty": {
+            "type": "string"
+          },
+          "event_id": {
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "type": "string"
+          },
+          "importance": {
+            "maximum": 3,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "is_special": {
+            "type": "boolean"
+          },
+          "person_ids": {
+            "items": {
+              "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+              "type": "string"
+            },
+            "maxItems": 50,
+            "type": "array"
+          },
+          "source_refs": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "book": {
+                  "type": "string"
+                },
+                "chapter": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "raw": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "label",
+                "book",
+                "raw"
+              ],
+              "type": "object"
+            },
+            "maxItems": 10,
+            "type": "array"
+          },
+          "source_status": {
+            "enum": [
+              "cited",
+              "easter_egg"
+            ]
+          },
+          "surface": {
+            "additionalProperties": false,
+            "properties": {
+              "graph": {
+                "type": "boolean"
+              },
+              "timeline": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "timeline",
+              "graph"
+            ],
+            "type": "object"
+          },
+          "title": {
+            "type": "string"
+          },
+          "year": {
+            "description": "史书纪年：公元前为负，不允许 0",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "title",
+          "dynasty",
+          "year",
+          "description",
+          "person_ids",
+          "source_refs"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "description": "按 person_id 取人物主数据 + 别名 + 所在分期/断代 + 一句话提示。",
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "person_id": {
+            "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "person_id"
+        ],
+        "type": "object"
+      },
+      "name": "get_person",
+      "output": {
+        "additionalProperties": false,
+        "properties": {
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 20,
+            "type": "array"
+          },
+          "disambiguator": {
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "dynasties": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "type": "array"
+          },
+          "era_ids": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 20,
+            "type": "array"
+          },
+          "event_ids": {
+            "items": {
+              "pattern": "^[a-z0-9][a-z0-9-]*$",
+              "type": "string"
+            },
+            "maxItems": 200,
+            "type": "array"
+          },
+          "first_year": {
+            "description": "史书纪年：公元前为负，不允许 0",
+            "type": "integer"
+          },
+          "last_year": {
+            "description": "史书纪年：公元前为负，不允许 0",
+            "type": "integer"
+          },
+          "person_id": {
+            "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+            "type": "string"
+          },
+          "primary_dynasty": {
+            "type": "string"
+          },
+          "romanized": {
+            "type": "string"
+          },
+          "scope_ids": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 10,
+            "type": "array"
+          }
+        },
+        "required": [
+          "person_id",
+          "display_name",
+          "disambiguator",
+          "primary_dynasty",
+          "event_ids"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "description": "按 person_id 取参与事件（按年排序），并给出每人与谁同现。",
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "default": 20,
+            "maximum": 80,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "person_id": {
+            "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "person_id"
+        ],
+        "type": "object"
+      },
+      "name": "get_person_events",
+      "output": {
+        "additionalProperties": false,
+        "properties": {
+          "co_occurring_person_ids": {
+            "items": {
+              "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+              "type": "string"
+            },
+            "maxItems": 80,
+            "type": "array"
+          },
+          "events": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "dynasty": {
+                  "type": "string"
+                },
+                "event_id": {
+                  "pattern": "^[a-z0-9][a-z0-9-]*$",
+                  "type": "string"
+                },
+                "importance": {
+                  "maximum": 3,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "year": {
+                  "description": "史书纪年：公元前为负，不允许 0",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "event_id",
+                "title",
+                "dynasty",
+                "year"
+              ],
+              "type": "object"
+            },
+            "maxItems": 80,
+            "type": "array"
+          },
+          "total": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "events",
+          "total",
+          "co_occurring_person_ids"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "description": "取两个人物的关系定性、共同事件与来龙去脉；关系引用不新增书目，只能用共同事件的 sourceRefs。",
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "person_id_a": {
+            "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+            "type": "string"
+          },
+          "person_id_b": {
+            "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "person_id_a",
+          "person_id_b"
+        ],
+        "type": "object"
+      },
+      "name": "get_relation",
+      "output": {
+        "additionalProperties": false,
+        "properties": {
+          "attribution": {
+            "type": "string"
+          },
+          "basis_event_ids": {
+            "items": {
+              "pattern": "^[a-z0-9][a-z0-9-]*$",
+              "type": "string"
+            },
+            "maxItems": 50,
+            "type": "array"
+          },
+          "description": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "person_id_a": {
+            "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+            "type": "string"
+          },
+          "person_id_b": {
+            "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+            "type": "string"
+          },
+          "shared_event_ids": {
+            "items": {
+              "pattern": "^[a-z0-9][a-z0-9-]*$",
+              "type": "string"
+            },
+            "maxItems": 50,
+            "type": "array"
+          }
+        },
+        "required": [
+          "person_id_a",
+          "person_id_b",
+          "label",
+          "shared_event_ids",
+          "basis_event_ids",
+          "attribution"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "description": "取某期（细览）或某断代（简阅）的人物图节点/边，裁剪到上限 80；节点以 person_id + 姓名双写。",
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "center_person_id": {
+            "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+            "type": "string"
+          },
+          "era_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "limit": {
+            "default": 20,
+            "maximum": 80,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "scope_id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [],
+        "type": "object"
+      },
+      "name": "get_era_graph",
+      "output": {
+        "additionalProperties": false,
+        "properties": {
+          "center_person_id": {
+            "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+            "type": "string"
+          },
+          "edges": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "person_id_a": {
+                  "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+                  "type": "string"
+                },
+                "person_id_b": {
+                  "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+                  "type": "string"
+                },
+                "relation_label": {
+                  "type": "string"
+                },
+                "weight": {
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "person_id_a",
+                "person_id_b",
+                "weight"
+              ],
+              "type": "object"
+            },
+            "maxItems": 160,
+            "type": "array"
+          },
+          "era_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "nodes": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "person_id": {
+                  "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "person_id",
+                "name"
+              ],
+              "type": "object"
+            },
+            "maxItems": 80,
+            "type": "array"
+          },
+          "scope_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "nodes",
+          "edges",
+          "truncated"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "description": "取年份区间内的事件（史书纪年，含负数），返回总数与代表事件。",
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "end_year": {
+            "description": "史书纪年：公元前为负，不允许 0",
+            "type": "integer"
+          },
+          "limit": {
+            "default": 20,
+            "maximum": 80,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "start_year": {
+            "description": "史书纪年：公元前为负，不允许 0",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "start_year",
+          "end_year"
+        ],
+        "type": "object"
+      },
+      "name": "timeline_span",
+      "output": {
+        "additionalProperties": false,
+        "properties": {
+          "events": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "dynasty": {
+                  "type": "string"
+                },
+                "event_id": {
+                  "pattern": "^[a-z0-9][a-z0-9-]*$",
+                  "type": "string"
+                },
+                "importance": {
+                  "maximum": 3,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "year": {
+                  "description": "史书纪年：公元前为负，不允许 0",
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "event_id",
+                "title",
+                "dynasty",
+                "year"
+              ],
+              "type": "object"
+            },
+            "maxItems": 80,
+            "type": "array"
+          },
+          "representative_event_ids": {
+            "items": {
+              "pattern": "^[a-z0-9][a-z0-9-]*$",
+              "type": "string"
+            },
+            "maxItems": 10,
+            "type": "array"
+          },
+          "total": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "events",
+          "total",
+          "representative_event_ids"
+        ],
+        "type": "object"
+      }
+    }
+  ],
+  "version": "1.0"
+}

@@ -1,0 +1,96 @@
+{
+  "ok": true,
+  "request_id": "req_01J8Z3K4M5N6P7Q8R9S0T1",
+  "schema_version": "1.0",
+  "snapshot": {
+    "version": "2026-11-23.1",
+    "hash": "sha256:3b1f2c4d5e6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c",
+    "events": 705,
+    "persons": 1058
+  },
+  "answer": {
+    "markdown": "西夏梁太后在 1081–1082 年对北宋用兵，起因是宋神宗采种谔等议发动五路伐夏；梁太后以坚壁清野应对，灵州、永乐城两战使宋军大败。",
+    "mode": "grounded",
+    "claims": [
+      {
+        "id": "c1",
+        "text": "宋神宗于 1081 年发动五路伐夏。",
+        "citation_ids": ["cite_1"]
+      },
+      {
+        "id": "c2",
+        "text": "西夏梁太后坚壁清野，灵州之战宋军粮尽溃败。",
+        "citation_ids": ["cite_2"]
+      }
+    ],
+    "certainty": "high"
+  },
+  "citations": [
+    {
+      "id": "cite_1",
+      "kind": "event",
+      "event_id": "beisong-25",
+      "title": "五路伐夏",
+      "year": 1081,
+      "dynasty": "北宋",
+      "quote": "神宗采种谔等议五路伐夏，高遵裕、李宪诸军乏粮溃退，灵州城下宋军大败。",
+      "source_label": "宋史",
+      "source_ref": {
+        "label": "宋史",
+        "book": "宋史",
+        "raw": "（据《宋史》《宋史·夏国传》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite_2",
+      "kind": "event",
+      "event_id": "xixia-09",
+      "title": "灵州之战",
+      "year": 1081,
+      "dynasty": "西夏",
+      "quote": "宋五路伐夏，西夏梁太后坚壁清野，宋军围灵州十八日不克，粮尽溃败。",
+      "source_label": "宋史·夏国传",
+      "source_ref": {
+        "label": "宋史·夏国传",
+        "book": "宋史",
+        "chapter": "夏国传",
+        "raw": "（据《宋史·夏国传》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    }
+  ],
+  "entities": [
+    {
+      "kind": "person",
+      "person_id": "p-liangtaihou-xixia-0d0f",
+      "name": "梁太后",
+      "disambiguator": "西夏·毅宗后",
+      "era_ids": ["xixia", "beisong"]
+    }
+  ],
+  "ui_actions": [
+    {
+      "id": "act_1",
+      "type": "timeline.focus_event",
+      "payload": { "event_id": "xixia-09" },
+      "target": { "surface": "timeline" },
+      "auto": false,
+      "label": "在时间轴中查看灵州之战"
+    }
+  ],
+  "trace": {
+    "tools": [
+      {
+        "name": "search_events",
+        "args": { "q": "梁太后 灵州" },
+        "hits": 2,
+        "ms": 8
+      }
+    ],
+    "model": "XiaoHong-v1",
+    "latency_ms": 1260
+  }
+}

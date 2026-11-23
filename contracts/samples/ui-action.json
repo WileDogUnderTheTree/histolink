@@ -1,0 +1,9 @@
+{
+  "id": "act_02",
+  "type": "graph.focus_person",
+  "payload": { "person_id": "p-liangtaihou-xixia-0d0f", "era_id": "xixia" },
+  "target": { "surface": "graph" },
+  "auto": false,
+  "label": "在图谱中查看西夏梁太后",
+  "reason": "cross_page_confirmation"
+}

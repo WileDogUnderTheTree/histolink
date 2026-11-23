@@ -1,0 +1,164 @@
+{
+  "$defs": {
+    "UIActionTarget": {
+      "additionalProperties": false,
+      "description": "动作目标；前端据此判定同页 / 跨页（Q2），不信任后端 auto。",
+      "properties": {
+        "params": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maxProperties": 30,
+          "title": "Params",
+          "type": "object"
+        },
+        "surface": {
+          "$ref": "#/$defs/UISurface"
+        }
+      },
+      "required": [
+        "surface"
+      ],
+      "title": "UIActionTarget",
+      "type": "object"
+    },
+    "UIActionType": {
+      "description": "动作类型枚举（V1.0 冻结）。",
+      "enum": [
+        "timeline.focus_event",
+        "timeline.focus_dynasty",
+        "graph.focus_person",
+        "graph.focus_relation",
+        "ask.suggest",
+        "timeline.highlight_events",
+        "graph.highlight_persons",
+        "open.event_card",
+        "open.person_card"
+      ],
+      "title": "UIActionType",
+      "type": "string"
+    },
+    "UISurface": {
+      "description": "动作目标界面；V1.0 只允许这三个。",
+      "enum": [
+        "timeline",
+        "graph",
+        "ask"
+      ],
+      "title": "UISurface",
+      "type": "string"
+    }
+  },
+  "$id": "https://histolink.local/contracts/actions-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "动作信封（冻结字段：id/type/payload/target/auto/label/reason）。",
+  "properties": {
+    "auto": {
+      "default": false,
+      "description": "仅建议值；跨页由前端强制覆盖为需确认",
+      "title": "Auto",
+      "type": "boolean"
+    },
+    "id": {
+      "description": "幂等键：同一次 request_id 内只执行一次",
+      "maxLength": 128,
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "label": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Label",
+      "type": "string"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "title": "Payload",
+      "type": "object"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "maxLength": 300,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reason"
+    },
+    "target": {
+      "$ref": "#/$defs/UIActionTarget"
+    },
+    "type": {
+      "$ref": "#/$defs/UIActionType"
+    }
+  },
+  "required": [
+    "id",
+    "type",
+    "target",
+    "label"
+  ],
+  "title": "UIAction",
+  "type": "object",
+  "version": "1.0",
+  "x-action-surface": {
+    "ask.suggest": "ask",
+    "graph.focus_person": "graph",
+    "graph.focus_relation": "graph",
+    "graph.highlight_persons": "graph",
+    "open.event_card": null,
+    "open.person_card": null,
+    "timeline.focus_dynasty": "timeline",
+    "timeline.focus_event": "timeline",
+    "timeline.highlight_events": "timeline"
+  },
+  "x-action-types": [
+    "timeline.focus_event",
+    "timeline.focus_dynasty",
+    "graph.focus_person",
+    "graph.focus_relation",
+    "ask.suggest",
+    "timeline.highlight_events",
+    "graph.highlight_persons",
+    "open.event_card",
+    "open.person_card"
+  ],
+  "x-availability": {
+    "ask.suggest": "available",
+    "graph.focus_person": "available",
+    "graph.focus_relation": "available",
+    "graph.highlight_persons": "planned",
+    "open.event_card": "planned",
+    "open.person_card": "planned",
+    "timeline.focus_dynasty": "available",
+    "timeline.focus_event": "available",
+    "timeline.highlight_events": "planned"
+  },
+  "x-surfaces": [
+    "timeline",
+    "graph",
+    "ask"
+  ]
+}

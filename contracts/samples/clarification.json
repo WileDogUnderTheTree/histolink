@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "request_id": "req_01J8Z3K4M5N6P7Q8R9S0T3",
+  "schema_version": "1.0",
+  "snapshot": {
+    "version": "2026-11-23.1",
+    "hash": "sha256:3b1f2c4d5e6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c",
+    "events": 705,
+    "persons": 1058
+  },
+  "clarification": {
+    "id": "clar_01J8Z3K4M5N",
+    "type": "entity",
+    "question": "你问的是哪位「梁太后」？",
+    "candidates": [
+      {
+        "person_id": "p-liangtaihou-handong-90be",
+        "name": "梁太后",
+        "disambiguator": "东汉·梁冀妹·顺烈皇后",
+        "era_ids": ["qinhan"],
+        "hint": "146 年与梁冀毒杀质帝"
+      },
+      {
+        "person_id": "p-liangtaihou-xixia-0d0f",
+        "name": "梁太后",
+        "disambiguator": "西夏·毅宗后",
+        "era_ids": ["xixia", "beisong"],
+        "hint": "1081–1082 灵州、永乐城之战"
+      }
+    ]
+  },
+  "citations": [],
+  "entities": [],
+  "ui_actions": []
+}
