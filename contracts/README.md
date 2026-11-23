@@ -110,6 +110,14 @@ cd backend
 `get_person_events`、`get_relation`、`get_era_graph`、`timeline_span`；
 只读、有界（`limit` 上限）、返回 ID、空结果有明确语义。工具不暴露给浏览器（除 dev 调试）。
 
+V1.0.2 起（产品批复），工具契约的 `output` 升级为 `ToolResult` **统一返回信封**：
+`ok/tool/items/citations/truncated/snapshot_version/data/error/meta`，成功 / 失败用 `oneOf`
+表达；V1.0.1 的工具专属出参原样收进 `data`，因此**数据字段零丢失**。
+`items/citations/truncated/snapshot_version` 是 V1.0.2 新增字段；实现侧同步在
+`contracts/models.py::ToolResult` 上以可选字段落地。该变更已按产品批复重新导出
+`tools-v1.schema.json`（见 `export_contracts.py --check`）。
+详细口径见 [../docs/V1.0.2-工具层设计.md](../docs/V1.0.2-工具层设计.md)。
+
 ## 5. 与任务卡的差异记录
 
 - `actions-v1.schema.json` 顶层对象直接是 `UIAction` 的 JSON Schema（可逐个校验动作样例），

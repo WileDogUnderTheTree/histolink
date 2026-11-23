@@ -87,7 +87,7 @@ class AskRequest(StrictModel):
     selected_person_id: str | None = Field(default=None, max_length=128)
 
     @model_validator(mode="after")
-    def validate_clarification_reply(self) -> "AskRequest":
+    def validate_clarification_reply(self) -> AskRequest:
         if self.clarification_id is None and self.selected_person_id is not None:
             raise ValueError("selected_person_id 必须与 clarification_id 一起提交")
         return self
@@ -163,7 +163,7 @@ class Answer(StrictModel):
     related_event_ids: list[str] = Field(default_factory=list, max_length=5)
 
     @model_validator(mode="after")
-    def validate_mode_fields(self) -> "Answer":
+    def validate_mode_fields(self) -> Answer:
         if self.mode == AnswerMode.GROUNDED:
             if not self.claims:
                 raise ValueError("grounded 回答必须至少包含 1 条 claim")
@@ -271,7 +271,7 @@ class AnswerEnvelope(StrictModel):
     trace: Trace | None = None
 
     @model_validator(mode="after")
-    def validate_envelope(self) -> "AnswerEnvelope":
+    def validate_envelope(self) -> AnswerEnvelope:
         if self.answer is None and self.clarification is None:
             raise ValueError("answer 与 clarification 至少提供一个")
         if self.answer is not None and self.clarification is not None:
@@ -474,7 +474,15 @@ class ToolError(StrictModel):
 
 
 class ToolResult(StrictModel):
-    """工具统一返回：只读、有界、返回 ID、空结果有明确语义。"""
+    """工具统一返回：只读、有界、返回 ID、空结果有明确语义。
+
+    V1.0.2（工具层）在冻结信封上**只新增可选字段**（`contracts/README.md` §3 版本规则）：
+    - `items`：主结果列表（与 `data` 中的主结果一致，便于规划器统一消费）；
+    - `citations`：本次结果可用的结构化引用（`Citation`，关系类引用只指向共同事件书目）；
+    - `truncated`：主结果是否因 `limit` / 图谱上限被裁剪；
+    - `snapshot_version`：结果对应的快照版本（内容寻址，可回查）。
+    以上字段对 V1.0.1 既有调用方均为可选，不构成破坏性变更。
+    """
 
     ok: bool
     tool: str = Field(min_length=1, max_length=100)
@@ -482,8 +490,16 @@ class ToolResult(StrictModel):
     error: ToolError | None = None
     meta: dict[str, Any] = Field(default_factory=dict)
 
+    # ---- V1.0.2 新增可选字段：统一返回格式 ----
+    items: list[Any] = Field(default_factory=list, max_length=80)
+    citations: list[Citation] = Field(default_factory=list, max_length=50)
+    truncated: bool = False
+    snapshot_version: str | None = Field(default=None, max_length=64)
+
     @model_validator(mode="after")
-    def validate_tool_result(self) -> "ToolResult":
+    def validate_tool_result(self) -> ToolResult:
         if not self.ok and self.error is None:
             raise ValueError("ok=false 的 ToolResult 必须提供 error")
+        if self.ok and self.error is not None:
+            raise ValueError("ok=true 的 ToolResult 不应携带 error")
         return self

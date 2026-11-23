@@ -43,7 +43,7 @@ from errors import install_error_handlers, read_only_violation_response
 from routers import register_routes
 from snapshot_store import SnapshotLoadError, SnapshotStore
 
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.0.2"
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_SNAPSHOT_PATH = BASE_DIR / "data" / "snapshot.v1.json"

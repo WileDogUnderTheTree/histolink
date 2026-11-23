@@ -26,3 +26,12 @@ next-env.d.ts
 Thumbs.db
 .vscode/
 .idea/
+
+# 忽略环境变量文件，保护密钥
+.env
+.env.local
+.env.*
+
+# pytest 临时目录
+pytest-of-*/
+.pytest_cache/
