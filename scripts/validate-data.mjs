@@ -11,6 +11,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { DATA_DIR, ROOT, loadTsData, loadDataModule } from "./lib/load-ts-data.mjs";
+import { parseEventSourceRefs } from "./lib/parse-sources.mjs";
 
 const {
   TIMELINE_EVENTS,
@@ -513,6 +514,76 @@ if (PERSONS.length !== expectedPersonCount) {
 }
 const aliasCount = Object.keys(PERSON_ALIAS_TO_ID).length;
 if (aliasCount !== Object.keys(PERSON_NAME_ALIASES).length) fail(`别名映射数 ${aliasCount} 与 PERSON_NAME_ALIASES 条数不一致`);
+// ========== 8. 引用结构化（V1.0.1 / TC-03） ==========
+const { EVENT_SOURCES, EVENT_SOURCE_STATUS } = loadDataModule("event-sources");
+const EXPECTED_SOURCE_REF_COUNT = 823;
+const EXPECTED_SOURCE_LABEL_COUNT = 191;
+
+const sourceEventIds = new Set(Object.keys(EVENT_SOURCES));
+const sourceStatusIds = new Set(Object.keys(EVENT_SOURCE_STATUS));
+for (const event of eventPool) {
+  if (!sourceEventIds.has(event.id)) fail(`引用索引缺少事件 ${event.id}`);
+  if (!sourceStatusIds.has(event.id)) fail(`引用状态缺少事件 ${event.id}`);
+}
+for (const eventId of sourceEventIds) {
+  if (!eventIndex.has(eventId)) fail(`引用索引含不存在的事件 ${eventId}`);
+}
+for (const eventId of sourceStatusIds) {
+  if (!sourceEventIds.has(eventId)) fail(`引用状态含未登记引用的事件 ${eventId}`);
+}
+
+let sourceRefTotal = 0;
+let sourceOneBook = 0;
+let sourceTwoBook = 0;
+const sourceLabels = new Set();
+for (const event of eventPool) {
+  const refs = EVENT_SOURCES[event.id] ?? [];
+  const status = EVENT_SOURCE_STATUS[event.id];
+  const expected = parseEventSourceRefs(event.description).refs;
+  const label = `事件 ${event.id}`;
+
+  if (status === "easter_egg") {
+    if (event.isSpecial !== true) fail(`${label}：状态为 easter_egg 但不是彩蛋事件`);
+    if (refs.length !== 0) fail(`${label}：彩蛋事件必须显式 sourceRefs: []`);
+    if (expected.length !== 0) fail(`${label}：彩蛋事件的简述不应包含「据《…》」`);
+  } else if (status !== "cited") {
+    fail(`${label}：引用状态非法（${status}）`);
+  } else {
+    if (event.isSpecial === true) fail(`${label}：彩蛋事件不应标记为 cited`);
+    if (refs.length === 0) fail(`${label}：cited 事件没有引用条目`);
+    if (JSON.stringify(refs) !== JSON.stringify(expected)) {
+      fail(`${label}：引用条目与原文括注不一致（期望 ${JSON.stringify(expected)}，实际 ${JSON.stringify(refs)}）`);
+    }
+  }
+
+  if (refs.length > 0 && !event.description.includes(refs[0].raw)) { fail(`${label}：引用 raw 不是简述原文片段`); }
+
+  if (refs.length === 1) sourceOneBook += 1;
+  if (refs.length === 2) sourceTwoBook += 1;
+  for (const ref of refs) {
+    sourceRefTotal += 1;
+    sourceLabels.add(ref.label);
+    if (!ref.raw.includes(`《${ref.label}》`)) fail(`${label}：label「${ref.label}」不是 raw 的子串`);
+    if (!ref.book?.trim()) fail(`${label}：book 为空（label=${ref.label}）`);
+    if (ref.label.split("·")[0] !== ref.book) fail(`${label}：book 必须等于 label 的首个「·」前部分`);
+    const expectedChapter = ref.label.split("·").slice(1).join("·");
+    if ((ref.chapter ?? "") !== expectedChapter) fail(`${label}：chapter 与 label 切分不一致（${ref.label}）`);
+  }
+}
+if (sourceRefTotal !== EXPECTED_SOURCE_REF_COUNT) {
+  fail(`引用条目总数 ${sourceRefTotal} 与冻结值 ${EXPECTED_SOURCE_REF_COUNT} 不一致；数据变更必须同步 docs/source-review.md 与任务卡口径`);
+}
+if (sourceOneBook !== 585) fail(`单书引用事件数 ${sourceOneBook} 与冻结值 585 不一致`);
+if (sourceTwoBook !== 119) fail(`两书并列事件数 ${sourceTwoBook} 与冻结值 119 不一致`);
+if (sourceLabels.size !== EXPECTED_SOURCE_LABEL_COUNT) {
+  fail(`书目标签数 ${sourceLabels.size} 与冻结值 ${EXPECTED_SOURCE_LABEL_COUNT} 不一致`);
+}
+const easterEggIds = Object.entries(EVENT_SOURCE_STATUS)
+  .filter(([, status]) => status === "easter_egg")
+  .map(([eventId]) => eventId);
+if (easterEggIds.length !== 1 || easterEggIds[0] !== "special-star-1893") {
+  fail(`彩蛋事件应恰好为 special-star-1893，实际：${easterEggIds.join("、")}`);
+}
 // ========== 6. 统计输出 ==========
 const importance3 = TIMELINE_EVENTS.filter((event) => importanceOf(event) === 3).length;
 const describedEvents = TIMELINE_EVENTS.filter((event) => event.participants.length > 0).length;
@@ -536,6 +607,7 @@ console.log(`图谱合计：${totalGraphNodes} 个节点位（含跨期重复）
 console.log(`人物关系库：${PERSON_RELATIONS.length} 对，覆盖图谱边 ${relationCoveredEdges} 条`);
 console.log(`docs 数据文件：${DOC_FILES.length} 份，共 ${docRows} 行核心事件（已去重合并）`);
 console.log(`人物主数据：${PERSONS.length} 条（${uniqueParticipantNames.size} 个姓名；同名组 ${sameNameGroups.length}；无细览分期 ${personsWithoutEra} 条；别名 ${aliasCount} 条）`);
+console.log(`引用结构化：${sourceOneBook + sourceTwoBook} 条有据事件 / ${sourceRefTotal} 条引用（${sourceOneBook} 条 1 书 + ${sourceTwoBook} 条 2 书）/ ${sourceLabels.size} 个标签`);
 console.log("-".repeat(72));
 console.log("分朝事件数：");
 console.log(
@@ -563,4 +635,4 @@ if (errors.length > 0) {
   for (const message of errors) console.error(`  - ${message}`);
   process.exit(1);
 }
-console.log("\n✓ ALL CHECKS PASSED：事件、图谱分期隔离、关系、别名、名人堂、docs 数据与人物主数据全部通过。");
+console.log("\n✓ ALL CHECKS PASSED：事件、图谱分期隔离、关系、别名、名人堂、docs 数据、人物主数据与结构化引用全部通过。");
