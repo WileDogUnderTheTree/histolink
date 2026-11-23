@@ -7,4 +7,9 @@
  * 新代码请直接从 `@/contexts/AgentContext` 引入。
  */
 export { AgentProvider, useAgentSession } from "@/contexts/AgentContext";
-export type { AgentAnswerView, AgentSessionValue, AgentTurn } from "@/contexts/AgentContext";
+export type {
+  AgentAnswerView,
+  AgentGuide,
+  AgentSessionValue,
+  AgentTurn,
+} from "@/contexts/AgentContext";

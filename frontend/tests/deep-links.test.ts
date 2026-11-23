@@ -129,6 +129,19 @@ describe("resolveGraphDeepLink", () => {
     expect(resolved.centerPersonId).toBe("孔子");
   });
 
+  it("只给 person_id（史引面板 / 引用跳转）时跨分期找到人物所属图", () => {
+    const resolved = resolveGraphDeepLink("person=p-zhouyu-b475&mode=detail");
+    expect(resolved.mode).toBe("detail");
+    expect(resolved.eraId).toBe("sanguo");
+    expect(resolved.scopeId).toBe("sanguo");
+    expect(resolved.centerPersonId).toBe("周瑜");
+
+    // 简阅模式下同样跨断代查找。
+    const brief = resolveGraphDeepLink("person=p-wuzetian-2920&mode=brief");
+    expect(brief.mode).toBe("brief");
+    expect(brief.centerPersonId).toBe("武则天");
+  });
+
   it("selected 参数驱动受控选中（刷新可复现关系面板）", () => {
     const resolved = resolveGraphDeepLink(
       "person=p-caocao-b012&era=sanguo&selected=p-liubei-0c86",

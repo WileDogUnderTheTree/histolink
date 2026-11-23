@@ -27,6 +27,8 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { createAgentActionBus } from "@/lib/action-bus";
 import type { ActionBus, DispatchResult } from "@/lib/action-bus";
+import { resolveGuideFromTranscript } from "@/lib/agent-guide";
+import type { AgentGuide } from "@/lib/agent-guide";
 import type { UIAction, UISurface } from "@/lib/action-policy";
 import {
   AgentClientError,
@@ -44,7 +46,7 @@ import {
 } from "@/lib/agent-client";
 import { surfaceFromPathname } from "@/lib/routes";
 
-export type { AgentAnswerView };
+export type { AgentAnswerView, AgentGuide };
 
 export interface AgentTurn extends AgentTranscriptTurn {
   id: string;
@@ -59,6 +61,11 @@ export interface AgentSessionValue {
   isAsking: boolean;
   /** 最近一次成功回答（便捷访问；完整历史在 transcript）。 */
   lastAnswer: AgentAnswerView | null;
+  /**
+   * 当前应展示的史引副驾驶联动目标；null 表示本轮回答没有可联动的历史内容。
+   * `/ask` 页面据此自动展开右侧面板（P2：绝对不需要用户再点按钮）。
+   */
+  guide: AgentGuide | null;
   /** 跨页动作等待用户确认。 */
   pendingActions: UIAction[];
   /** 当前页面对应的动作 surface（首页为 null）。 */
@@ -102,6 +109,12 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
   const [isAsking, setIsAsking] = useState(false);
   const [pendingActions, setPendingActions] = useState<UIAction[]>([]);
   const [lastAnswer, setLastAnswer] = useState<AgentAnswerView | null>(null);
+
+  /**
+   * 史引副驾驶联动目标（P2）：任何一轮回答落地后自动更新。
+   * `/ask` 页面只消费这个值并展开面板，不再自己解析动作 / 深链接。
+   */
+  const guide = useMemo(() => resolveGuideFromTranscript(transcript), [transcript]);
 
   /** 给 ask() 读「提问前的历史」，避免把当前问题重复放进 history。 */
   const transcriptRef = useRef(transcript);
@@ -266,6 +279,7 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
       isOpen,
       isAsking,
       lastAnswer,
+      guide,
       pendingActions,
       currentSurface,
       actionBus,
@@ -281,6 +295,7 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
       isOpen,
       isAsking,
       lastAnswer,
+      guide,
       pendingActions,
       currentSurface,
       actionBus,

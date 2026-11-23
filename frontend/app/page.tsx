@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 /**
  * 健康检查默认走**同源** `/api`（由 `next.config.ts` 的 rewrites 代理到 FastAPI）。
@@ -14,9 +15,8 @@ const API_BASE = (process.env.NEXT_PUBLIC_API_BASE ?? "").replace(/\/$/, "");
 type HealthState = "checking" | "connected" | "disconnected";
 
 export default function HomePage() {
+  const router = useRouter();
   const [health, setHealth] = useState<HealthState>("checking");
-  const [toast, setToast] = useState<string | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -33,16 +33,6 @@ export default function HomePage() {
     return () => controller.abort();
   }, []);
 
-  useEffect(() => () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-  }, []);
-
-  const showToast = (message: string) => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    setToast(message);
-    timerRef.current = setTimeout(() => setToast(null), 2400);
-  };
-
   const statusText =
     health === "checking" ? "检测中…" : health === "connected" ? "后端已连接" : "后端未连接";
 
@@ -54,24 +44,20 @@ export default function HomePage() {
         <p className="subtitle">
           时间轴覆盖夏—清（约前 2070—1912，含新莽、三国两晋十六国、五代辽宋夏金）；人物关系图已覆盖先秦、秦汉、三国、魏晋南北朝、隋唐、宋辽金夏与元明清。
         </p>
-        <p className="version">V1.0.1</p>
+        <p className="version">V1.0.4</p>
       </header>
 
       <nav className="entries" aria-label="模块入口">
         <button
           type="button"
-          className="entry entry-muted"
-          aria-disabled="true"
-          aria-describedby="chat-entry-hint"
-          title="Agent 智能问答模块正在闭关开发中"
-          onClick={() => showToast("Agent 智能问答模块正在闭关开发中，敬请期待！")}
+          className="entry entry-agent"
+          onClick={() => router.push("/ask")}
         >
           <span className="entry-label">
             聊天问答
-            <span className="entry-tag">开发中</span>
           </span>
-          <span className="entry-hint" id="chat-entry-hint">
-            Agent 智能问答 · 敬请期待
+          <span className="entry-hint">
+            史令 × 史引 · 对话驱动历史探索
           </span>
         </button>
 
@@ -92,7 +78,7 @@ export default function HomePage() {
         aria-live="polite"
         title={
           health === "disconnected"
-            ? "问答模块暂未上线；时间轴与人物关系图为纯前端数据，不依赖后端，可正常浏览。"
+            ? "Agent 服务暂未连接；时间轴与人物关系图仍可正常浏览。"
             : undefined
         }
       >
@@ -100,9 +86,8 @@ export default function HomePage() {
         {statusText}
       </div>
 
-      <div className={`toast${toast ? " toast-show" : ""}`} role="alert" aria-live="assertive">
-        {toast}
-      </div>
+      <footer className="site-footer">史脉 HistoLink · V1.0.4</footer>
+
     </main>
   );
 }

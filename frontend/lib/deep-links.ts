@@ -173,17 +173,57 @@ const DEFAULT_ERA = PERSON_GRAPH_ERAS[0];
 const DEFAULT_SCOPE = PERSON_GRAPH_SCOPES[0];
 
 /**
+ * 没有显式分期时，跨 18 期 / 7 组找包含该人物的关系图。
+ *
+ * 史引副驾驶 / 引用跳转生成的深链接只带 `person_id`，不带 `era`；如果直接用默认
+ * （春秋）图解析，周瑜、武则天等人物会落回孔子，面板看起来「联动错了人」。
+ * 这里按请求的视图模式优先扫对应视图，找到就切换到该分期。
+ */
+function findGraphViewForPerson(
+  value: string,
+  preferredMode: ViewMode,
+): {
+  mode: ViewMode;
+  eraId: PersonGraphEraId;
+  scopeId: PersonGraphScopeId;
+  personId: string;
+} | null {
+  const eraHit = (era: (typeof PERSON_GRAPH_ERAS)[number]) => {
+    const personId = resolvePersonInGraph(value, era.graph);
+    if (!personId) return null;
+    const scope =
+      PERSON_GRAPH_SCOPES.find((item) => item.id === ERA_TO_SCOPE[era.id]) ?? DEFAULT_SCOPE;
+    return { mode: "detail" as const, eraId: era.id, scopeId: scope.id, personId };
+  };
+  const scopeHit = (scope: (typeof PERSON_GRAPH_SCOPES)[number]) => {
+    const personId = resolvePersonInGraph(value, scope.graph);
+    if (!personId) return null;
+    const era =
+      PERSON_GRAPH_ERAS.find((item) => item.id === SCOPE_TO_ERA[scope.id]) ?? DEFAULT_ERA;
+    return { mode: "brief" as const, eraId: era.id, scopeId: scope.id, personId };
+  };
+
+  const candidates =
+    preferredMode === "brief"
+      ? [...PERSON_GRAPH_SCOPES.map(scopeHit), ...PERSON_GRAPH_ERAS.map(eraHit)]
+      : [...PERSON_GRAPH_ERAS.map(eraHit), ...PERSON_GRAPH_SCOPES.map(scopeHit)];
+  return candidates.find((item) => item !== null) ?? null;
+}
+
+/**
  * 解析图谱深链接。
  *
  * `era` 同时接受细览分期 id 与简阅断代 id：
  * - 命中细览 id → 默认细览；命中简阅 id → 默认简阅；
  * - `mode` 显式给出时以 mode 为准，并自动换算到对应的另一视图；
- * - `person` 无法解析时回落到该视图默认中心，不产生空白画布。
+ * - `person` 无法解析时回落到该视图默认中心，不产生空白画布；
+ * - **未显式给 era / group 时**：person 不在默认期里就跨期查找（否则史引面板会显示错的人）。
  */
 export function resolveGraphDeepLink(search: string): ResolvedGraphDeepLink {
   const params = new URLSearchParams(search);
   const requestedMode = readMode(params.get("mode"));
   const eraParam = params.get("era");
+  const groupParam = params.get("group");
 
   const matchedEra = PERSON_GRAPH_ERAS.find((item) => item.id === eraParam);
   const matchedScope = PERSON_GRAPH_SCOPES.find((item) => item.id === eraParam);
@@ -204,17 +244,32 @@ export function resolveGraphDeepLink(search: string): ResolvedGraphDeepLink {
   if (!scope) scope = DEFAULT_SCOPE;
 
   const graph = mode === "brief" ? scope.graph : era.graph;
-  const fallbackCenter = mode === "brief" ? scope.defaultCenterPersonId : era.defaultCenterPersonId;
   const personParam = params.get("person");
-  const centerPersonId =
-    (personParam ? resolvePersonInGraph(personParam, graph) : null) ?? fallbackCenter;
+  let centerPersonId = personParam ? resolvePersonInGraph(personParam, graph) : null;
+
+  // 没有显式分期上下文时跨期查找人物，保证「只带 person_id」的深链接也能打开正确的人。
+  if (personParam && !centerPersonId && !eraParam && !groupParam) {
+    const found = findGraphViewForPerson(personParam, mode);
+    if (found) {
+      centerPersonId = found.personId;
+      mode = found.mode;
+      era =
+        PERSON_GRAPH_ERAS.find((item) => item.id === found.eraId) ?? DEFAULT_ERA;
+      scope =
+        PERSON_GRAPH_SCOPES.find((item) => item.id === found.scopeId) ?? DEFAULT_SCOPE;
+    }
+  }
+
+  const finalGraph = mode === "brief" ? scope.graph : era.graph;
+  const fallbackCenter = mode === "brief" ? scope.defaultCenterPersonId : era.defaultCenterPersonId;
+  const resolvedCenter = centerPersonId ?? fallbackCenter;
 
   // V1.0.1 / TC-08：`?selected=` 直接驱动 PersonGraph2D 的受控选中，
   // 刷新或分享链接时关系面板可复现。非法 / 中心自己一律视为非受控（不打开面板）。
   const selectedParam = params.get("selected");
-  const resolvedSelected = selectedParam ? resolvePersonInGraph(selectedParam, graph) : null;
+  const resolvedSelected = selectedParam ? resolvePersonInGraph(selectedParam, finalGraph) : null;
   const selectedPersonId =
-    resolvedSelected && resolvedSelected !== centerPersonId ? resolvedSelected : undefined;
+    resolvedSelected && resolvedSelected !== resolvedCenter ? resolvedSelected : undefined;
 
-  return { mode, eraId: era.id, scopeId: scope.id, centerPersonId, selectedPersonId };
+  return { mode, eraId: era.id, scopeId: scope.id, centerPersonId: resolvedCenter, selectedPersonId };
 }

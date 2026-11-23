@@ -359,6 +359,41 @@
   line-height: 1.7;
 }
 
+/* 史引副驾驶 iframe：压掉页头装饰，把半屏空间留给关系图本体。 */
+.page[data-embed="true"] {
+  min-height: 100%;
+  padding: 14px 12px 28px;
+}
+
+.page[data-embed="true"] .topbar {
+  display: none;
+}
+
+.page[data-embed="true"] .title {
+  margin-top: 0;
+  font-size: clamp(20px, 4.4vw, 26px);
+}
+
+.page[data-embed="true"] .lead {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.page[data-embed="true"] .tabsRow {
+  margin-top: 16px;
+  gap: 8px 10px;
+}
+
+.page[data-embed="true"] .eraMeta {
+  margin-top: 10px;
+}
+
+.page[data-embed="true"] .workspace {
+  margin-top: 16px;
+  gap: 14px;
+}
+
 /* 平板及以下：左栏移到画布上方，搜索与名人堂并排，画布仍占满宽度。 */
 @media (max-width: 1180px) {
   .workspace {

@@ -9,6 +9,7 @@ import { ScrollableTabs } from "@/components/ScrollableTabs";
 import { ViewModeSwitch } from "@/components/ViewModeSwitch";
 import type { ViewMode } from "@/components/ViewModeSwitch";
 import { useAgentSession } from "@/contexts/AgentContext";
+import { actionFields } from "@/lib/action-navigation";
 import {
   DYNASTY_GROUPS,
   DYNASTY_START_YEARS,
@@ -28,9 +29,17 @@ import styles from "./timeline.module.css";
 const PAD = 6;
 
 /**
+ * 轨道**设计宽度**（px）：布局按这个宽度校准（1.8% ≈ 12px，与圆点直径相当）。
+ *
+ * 副驾驶半屏容器比它窄时，不再出现横向滚动条，而是把整条轨道等比缩小（scale）渲染，
+ * 圆点间距随比例一起缩小，所以无论容器多窄都不会相撞。
+ */
+const TRACK_MIN_WIDTH = 680;
+
+/**
  * 相邻圆点水平间距小于该百分比时做垂直错层，避免圆点互相压住、点不到。
- * 轨道最窄 680px（见 .track 的 min-width），1.8% ≈ 12px，与圆点直径相当；
- * 因此无论窗口多窄，圆点都不会重叠。
+ * 轨道设计宽度 680px（见 TRACK_MIN_WIDTH），1.8% ≈ 12px，与圆点直径相当；
+ * 窄容器下整体等比缩放，相对间距不变，所以圆点仍然不会重叠。
  */
 const STACK_GAP_PERCENT = 1.8;
 
@@ -216,6 +225,30 @@ function TimelinePageContent() {
   const [selectedId, setSelectedId] = useState<string | null>(deepLink.selectedEventId);
   const [showEgg, setShowEgg] = useState(deepLink.openEasterEgg);
 
+  /** 是否渲染在史引副驾驶 iframe 里：嵌入时压缩页头，把高度让给轨道。 */
+  const [isEmbedded, setIsEmbedded] = useState(false);
+  /** 轨道视口实测宽度：窄于设计宽度时改等比缩放，绝不出现横向滚动条（P3）。 */
+  const trackViewportRef = useRef<HTMLDivElement>(null);
+  const [trackViewportWidth, setTrackViewportWidth] = useState<number | null>(null);
+
+  useEffect(() => {
+    setIsEmbedded(window.self !== window.top);
+  }, []);
+
+  useEffect(() => {
+    const node = trackViewportRef.current;
+    if (!node) return;
+    const measure = () => setTrackViewportWidth(node.clientWidth);
+    measure();
+    if (typeof ResizeObserver === "function") {
+      const observer = new ResizeObserver(measure);
+      observer.observe(node);
+      return () => observer.disconnect();
+    }
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+
   /** 记住每个大断代上次停留的细分朝代；简阅 ↔ 细览切换时据此恢复，而不是重置。 */
   const lastDynastyByGroup = useRef<Partial<Record<DynastyGroupId, Dynasty>>>({});
 
@@ -227,7 +260,8 @@ function TimelinePageContent() {
     if (currentSurface !== "timeline") return;
 
     const unregisterFocusEvent = actionBus.register("timeline.focus_event", (action) => {
-      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      // payload / target.params 任一携带均可（与 hrefForAction 同一口径）。
+      const payload = actionFields(action);
       const eventId = typeof payload.event_id === "string" ? payload.event_id : "";
       const event = TIMELINE_EVENTS.find((item) => item.id === eventId);
       if (!event) return;
@@ -251,7 +285,7 @@ function TimelinePageContent() {
     });
 
     const unregisterFocusDynasty = actionBus.register("timeline.focus_dynasty", (action) => {
-      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const payload = actionFields(action);
       const requestedMode =
         payload.mode === "brief" ? "brief" : payload.mode === "detail" ? "detail" : null;
       const groupParam = typeof payload.group_id === "string" ? payload.group_id : null;
@@ -309,6 +343,16 @@ function TimelinePageContent() {
 
   const layout = useMemo(() => buildLayout(events), [events]);
   const positioned = layout.events;
+
+  /**
+   * 轨道宽度与缩放（P3）：容器比设计宽度窄时，轨道保持 680px 布局并整体 scale 到容器宽度，
+   * 横坐标 / 错层 / 高度全部按比例缩放；容器比设计宽度宽时保持 100% 铺满。
+   */
+  const measuredWidth =
+    trackViewportWidth !== null && trackViewportWidth > 0 ? trackViewportWidth : TRACK_MIN_WIDTH;
+  const trackWidth = Math.max(measuredWidth, TRACK_MIN_WIDTH);
+  const trackScale = measuredWidth / trackWidth;
+  const scaledTrackHeight = Math.ceil(layout.trackHeight * trackScale);
 
   // 事件多或错层深时缩小圆点，缓解密集年份的视觉拥挤（点击热区不变）。
   const density =
@@ -389,14 +433,14 @@ function TimelinePageContent() {
       : DYNASTIES.map((option) => ({ id: option as string, label: option }));
 
   return (
-    <main className={styles.page}>
+    <main className={styles.page} data-embed={isEmbedded ? "true" : undefined}>
       <EasterEgg isOpen={showEgg} onClose={closeEgg} />
       <div className={styles.shell}>
         <div className={styles.topbar}>
           <Link className={styles.back} href="/">
             ← 返回首页
           </Link>
-          <p className={styles.eyebrow}>中国历史探索 · 时间轴 · V1.0.1</p>
+          <p className={styles.eyebrow}>中国历史探索 · 时间轴 · V1.0.4</p>
         </div>
 
         <h1 className={styles.title}>{heading}</h1>
@@ -434,11 +478,16 @@ function TimelinePageContent() {
           </div>
         </div>
 
-        <div className={styles.trackViewport}>
+        <div className={styles.trackViewport} ref={trackViewportRef} style={{ height: `${scaledTrackHeight}px` }}>
           <div
             className={styles.track}
             data-density={density}
-            style={{ height: `${layout.trackHeight}px` }}
+            style={{
+              width: `${trackWidth}px`,
+              height: `${layout.trackHeight}px`,
+              transform: `scale(${trackScale})`,
+              transformOrigin: "top left",
+            }}
             onClick={handleTrackClick}
           >
             <div
@@ -458,13 +507,16 @@ function TimelinePageContent() {
                     style={{ left: `${event.left}%`, top: stackTop(event.offset) }}
                     aria-pressed={!isSpecial && selectedId === event.id}
                     aria-label={`${formatYear(event.year, { full: mixedEra })}，${event.title}${isSpecial ? "，打开隐藏彩蛋" : ""}`}
-                    onClick={() => {
+                    onClick={(clickEvent) => {
+                      // 不让轨道的空白区点击处理器在同一次冒泡中清掉刚选中的节点；
+                      // 这也保证从引用跳入后仍可连续切换多个年份。
+                      clickEvent.stopPropagation();
                       if (isSpecial) {
                         setSelectedId(event.id);
                         setShowEgg(true);
                         return;
                       }
-                      setSelectedId(selectedId === event.id ? null : event.id);
+                      setSelectedId((previous) => (previous === event.id ? null : event.id));
                     }}
                   >
                     <span className={styles.pointLabel}>

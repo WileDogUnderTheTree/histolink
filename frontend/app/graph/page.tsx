@@ -10,6 +10,7 @@ import { ScrollableTabs } from "@/components/ScrollableTabs";
 import { ViewModeSwitch } from "@/components/ViewModeSwitch";
 import type { ViewMode } from "@/components/ViewModeSwitch";
 import { useAgentSession } from "@/contexts/AgentContext";
+import { actionFields } from "@/lib/action-navigation";
 import {
   ERA_TO_SCOPE,
   KEY_FIGURES,
@@ -68,6 +69,13 @@ function GraphPageContent() {
 
   /** 记住每个简阅断代在细览里停留过的分期；切回细览时据此恢复。 */
   const lastDetailEraByScope = useRef<Partial<Record<PersonGraphScopeId, PersonGraphEraId>>>({});
+
+  /** 是否渲染在史引副驾驶 iframe 里：嵌入时压缩页头，把高度让给关系图。 */
+  const [isEmbedded, setIsEmbedded] = useState(false);
+
+  useEffect(() => {
+    setIsEmbedded(window.self !== window.top);
+  }, []);
 
   const era = useMemo(
     () => PERSON_GRAPH_ERAS.find((option) => option.id === eraId) ?? INITIAL_ERA,
@@ -132,7 +140,7 @@ function GraphPageContent() {
     if (currentSurface !== "graph") return;
 
     const unregisterFocusPerson = actionBus.register("graph.focus_person", (action) => {
-      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const payload = actionFields(action);
       const eraParam = typeof payload.era_id === "string" ? payload.era_id : null;
       const nextEra = eraParam
         ? PERSON_GRAPH_ERAS.find((option) => option.id === eraParam)
@@ -171,7 +179,7 @@ function GraphPageContent() {
     });
 
     const unregisterFocusRelation = actionBus.register("graph.focus_relation", (action) => {
-      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const payload = actionFields(action);
       const rawA = typeof payload.person_id_a === "string" ? payload.person_id_a : "";
       const rawB = typeof payload.person_id_b === "string" ? payload.person_id_b : "";
       const graph = mode === "brief" ? scope.graph : era.graph;
@@ -319,13 +327,13 @@ function GraphPageContent() {
   };
 
   return (
-    <main className={styles.page}>
+    <main className={styles.page} data-embed={isEmbedded ? "true" : undefined}>
       <div className={styles.shell}>
         <div className={styles.topbar}>
           <Link className={styles.back} href="/">
             ← 返回首页
           </Link>
-          <p className={styles.eyebrow}>史脉 HistoLink · V1.0.1</p>
+          <p className={styles.eyebrow}>史脉 HistoLink · V1.0.4</p>
         </div>
 
         <h1 className={styles.title}>人物关系图</h1>

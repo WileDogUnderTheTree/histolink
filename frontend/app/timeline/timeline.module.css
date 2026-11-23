@@ -67,19 +67,15 @@
   margin-left: auto;
 }
 
-/* 轨道视口：窄屏时允许横向滚动，保证点与点之间仍有足够像素间距。 */
+/* 轨道视口：**永不出现横向滚动条**。窄容器（史引副驾驶半屏）由 page.tsx 等比缩放轨道。 */
 .trackViewport {
   margin-top: 44px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 2px;
+  overflow: hidden;
 }
 
 .track {
   position: relative;
   width: 100%;
-  /* 最窄 680px：page.tsx 的 STACK_GAP_PERCENT 按此宽度折算，低于它圆点会相撞。 */
-  min-width: 680px;
   height: 148px;
 }
 
@@ -255,6 +251,47 @@
 
 .footer a:hover {
   color: var(--accent);
+}
+
+/* 史引副驾驶 iframe：压掉页头装饰，把半屏高度尽量留给轨道与事件卡。 */
+.page[data-embed="true"] {
+  min-height: 100%;
+  padding: 14px 12px 28px;
+}
+
+.page[data-embed="true"] .topbar {
+  display: none;
+}
+
+.page[data-embed="true"] .title {
+  margin-top: 0;
+  font-size: clamp(20px, 4.4vw, 26px);
+}
+
+.page[data-embed="true"] .lead {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.page[data-embed="true"] .tabsRow {
+  margin-top: 16px;
+  gap: 8px 10px;
+}
+
+.page[data-embed="true"] .trackViewport {
+  margin-top: 24px;
+}
+
+.page[data-embed="true"] .card {
+  margin-top: 18px;
+  padding: 16px 18px;
+}
+
+.page[data-embed="true"] .footer {
+  margin-top: 24px;
+  padding-top: 10px;
+  font-size: 11px;
 }
 
 @media (max-width: 720px) {

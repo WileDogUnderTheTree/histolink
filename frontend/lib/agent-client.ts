@@ -55,6 +55,7 @@ export const WELCOME_TURN_ID = "turn-welcome";
 export const MAX_HISTORY_TURNS = 10;
 export const MAX_HISTORY_CONTENT = 4000;
 export const MAX_QUESTION_LENGTH = 2000;
+export const RATE_LIMIT_MESSAGE = "史令查阅太频繁啦，请稍等几秒再问哦～";
 const MAX_CONTEXT_ID_LENGTH = 128;
 
 export class AgentClientError extends Error {
@@ -209,6 +210,11 @@ export async function postAsk(
     });
   }
 
+  // 429 可能来自反向代理并且不一定返回可解析的 JSON；在读取 body 前统一转成友好提示。
+  if (response.status === 429) {
+    throw new AgentClientError(RATE_LIMIT_MESSAGE, { status: 429 });
+  }
+
   let payload: unknown;
   try {
     payload = await response.json();
@@ -219,7 +225,13 @@ export async function postAsk(
     });
   }
 
-  if (isErrorEnvelope(payload)) return payload;
+  if (isErrorEnvelope(payload)) {
+    const errorText = `${payload.error.code} ${payload.error.message}`;
+    if (/\b429\b|rate\s*limit|too\s*many\s*requests/i.test(errorText)) {
+      throw new AgentClientError(RATE_LIMIT_MESSAGE, { status: response.status });
+    }
+    return payload;
+  }
   if (isAnswerEnvelope(payload)) return payload;
   throw new AgentClientError("史脉服务返回了无法识别的响应结构", {
     status: response.status,

@@ -20,6 +20,7 @@ import {
   isErrorEnvelope,
   namespaceUiActions,
   postAsk,
+  RATE_LIMIT_MESSAGE,
   readPageContext,
   type AgentResponse,
   type AnswerEnvelope,
@@ -207,6 +208,11 @@ describe("postAsk", () => {
     const fetchImpl = (async () =>
       new Response("<html>bad gateway</html>", { status: 502 })) as unknown as typeof fetch;
     await expect(postAsk(request, { fetchImpl })).rejects.toBeInstanceOf(AgentClientError);
+  });
+
+  it("HTTP 429 映射成中文限流提示，不泄露原始网关错误", async () => {
+    const fetchImpl = (async () => new Response("HTTP 429 Too Many Requests", { status: 429 })) as unknown as typeof fetch;
+    await expect(postAsk(request, { fetchImpl })).rejects.toThrow(RATE_LIMIT_MESSAGE);
   });
 
   it("无法识别的 JSON 形状抛 AgentClientError", async () => {

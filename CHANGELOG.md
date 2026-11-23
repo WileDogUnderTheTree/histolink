@@ -11,9 +11,9 @@
 
 ---
 
-## [Unreleased]
+## [1.0.4] - 2026-11-24
 
-### V1.0.4 前端 Agent 数据层（开发中）
+### V1.0.4 前端 Agent 数据层
 
 - **新增 `frontend/contexts/AgentContext.tsx`**：全局 Agent 状态（单一会话事实源）。`ask(question)`
   组装页面上下文 + 最近 10 轮 history → `POST /api/agent/ask`（Next 同源代理）→ 写入 transcript；
@@ -31,6 +31,28 @@
   ActionBus 导航 / 批量 7 条、timeline group 深链接 1 条）；`pnpm exec tsc --noEmit` 与 `pnpm build` 通过。
 - **文档**：新增 `docs/V1.0.4-Agent-UI数据层设计.md`（调用链 + 手工验收步骤）；
   `docs/V1.0.7-TODO.md` 记录 ruff 格式 / lint 存量告警与 `httpx2` 弃用警告。
+
+### V1.0.4 收尾修复（分屏联调体验 / 联动 / 响应式 / 顶部压缩）
+
+- **P1 推荐问题改为单跳简单事实**：`/ask` 推荐位从「刘邦和项羽身边有哪些共同人物？」这类多跳图
+  交叉查询，换成 3 个单轮工具即可回答的库内事实题（赤壁之战年份 / 玄武门之变年份 / 武则天所属朝代），
+  避免「推荐问题一点就报错 / 资料不足」。
+- **P2 史引副驾驶自动展开**：新增 `frontend/lib/agent-guide.ts`（`resolveGuideFromTranscript`），
+  `AgentContext` 暴露 `guide`；`/ask` 在回答的 `ui_actions` 含 `timeline.focus_event` /
+  `timeline.focus_dynasty` / `graph.focus_person` / `graph.focus_relation`（或 grounded 回答自带
+  可定位引用）时**自动展开**右侧面板，无需再点按钮。根因修复：`hrefForAction` 合并 `payload` 与
+  `target.params`（模型可能只写其中一处，后端 required 字段校验本就是合并判断），时间轴 / 图谱的
+  ActionBus handler 同步同一口径。
+- **P3 时间轴半屏响应式**：轨道按 680px 设计宽度布局，容器更窄时整体 `scale` 等比缩放并同步视口高度；
+  轨道视口改为 `overflow: hidden`，副驾驶半屏里不再出现横向滚动条，错层与横坐标按同一比例缩放。
+  副驾驶 iframe（`data-embed`）内同时压缩页头，把高度让给轨道。
+- **P4 顶部空间压缩**：删除 `/ask` 中部「史脉问答 / 史令查阅 · 史引联动」标题块与推荐卡里的
+  「可以从这里开始」；品牌「史脉问答」+ 印章图标常驻顶部导航栏（`SHIMAI · CONSOLE`），推荐问题
+  改为一行 chip，聊天列表获得更多高度；`/ask` 隐藏全局悬浮球，避免压住右侧副驾驶面板。
+- **跨期人物深链接**：`resolveGraphDeepLink` 在未显式给 `era` / `group` 时跨 18 期 / 7 组查找 `person`，
+  修复「引用 / 副驾驶跳关系图却落回默认中心（孔子）」的问题。
+- **测试**：新增 `frontend/tests/agent-guide.test.ts`（9 条）与深链接跨期、`target.params` 兜底用例，
+  前端单测 **99 → 110**。
 
 ---
 

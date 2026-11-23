@@ -8,12 +8,16 @@ import { describe, expect, it } from "vitest";
 import { hrefForAction } from "@/lib/action-navigation";
 import type { UIAction } from "@/lib/action-policy";
 
-function makeAction(type: UIAction["type"], payload: Record<string, unknown> = {}): UIAction {
+function makeAction(
+  type: UIAction["type"],
+  payload: Record<string, unknown> = {},
+  params?: Record<string, string | number | boolean | null>,
+): UIAction {
   return {
     id: "act-1",
     type,
     payload,
-    target: { surface: "timeline" },
+    target: { surface: "timeline", params },
     auto: false,
     label: "查看",
   };
@@ -78,5 +82,22 @@ describe("hrefForAction", () => {
     expect(
       hrefForAction(makeAction("timeline.focus_event", { event_id: "x", mode: "evil" })),
     ).toBe("/timeline?event=x");
+  });
+
+  it("实体 ID 只写在 target.params 时同样能生成深链接（与后端合并校验口径一致）", () => {
+    expect(
+      hrefForAction(makeAction("timeline.focus_event", {}, { event_id: "handong-chibi" })),
+    ).toBe("/timeline?event=handong-chibi");
+    expect(
+      hrefForAction(
+        makeAction("graph.focus_person", {}, { person_id: "p-zhouyu-b475", era_id: "sanguo" }),
+      ),
+    ).toBe("/graph?person=p-zhouyu-b475&era=sanguo");
+    // target.params 与 payload 同时存在时以 target.params 为准（与后端 required 字段校验一致）。
+    expect(
+      hrefForAction(
+        makeAction("timeline.focus_event", { event_id: "old" }, { event_id: "new" }),
+      ),
+    ).toBe("/timeline?event=new");
   });
 });

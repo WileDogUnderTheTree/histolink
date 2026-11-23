@@ -10,12 +10,23 @@
  * - ask.suggest           → /ask?q=
  *
  * 所有字段都做运行时容错：payload 缺失 / 类型不对 → 返回 null（调用方忽略，不导航到空白页）。
+ *
+ * V1.0.4 修复：模型可能只把实体 ID 写进 `target.params`（后端 required-field 校验会
+ * 把 payload 与 target.params 合并判断，所以两种写法都合法）。之前只读 `payload`，
+ * 导致「后端返回了动作、前端却算不出深链接」，副驾驶面板无法自动展开。
+ * 现在统一把 `payload` 与 `target.params` 合并后再取值（target.params 优先，与后端一致）。
  */
 import type { UIAction } from "@/lib/action-policy";
 import { askHref, graphHref, timelineHref } from "@/lib/routes";
 
 const MAX_QUERY_LENGTH = 200;
 const MAX_QUESTION_LENGTH = 2000;
+
+/** 合并动作的 payload 与 target.params（与后端 `_action_has_required_fields` 同一口径）。 */
+export function actionFields(action: UIAction): Record<string, unknown> {
+  const params = (action.target?.params ?? {}) as Record<string, unknown>;
+  return { ...(action.payload ?? {}), ...params };
+}
 
 function readText(source: Record<string, unknown>, key: string, maxLength: number): string | null {
   const value = source[key];
@@ -31,7 +42,7 @@ function readMode(source: Record<string, unknown>): "detail" | "brief" | undefin
 
 /** 动作 → 目标深链接；无法推导时返回 null。 */
 export function hrefForAction(action: UIAction): string | null {
-  const payload = (action.payload ?? {}) as Record<string, unknown>;
+  const payload = actionFields(action);
 
   switch (action.type) {
     case "timeline.focus_event": {
