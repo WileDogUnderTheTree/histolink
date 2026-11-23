@@ -584,6 +584,233 @@ const easterEggIds = Object.entries(EVENT_SOURCE_STATUS)
 if (easterEggIds.length !== 1 || easterEggIds[0] !== "special-star-1893") {
   fail(`彩蛋事件应恰好为 special-star-1893，实际：${easterEggIds.join("、")}`);
 }
+// ========== 9. 数据快照（V1.0.1 / TC-05） ==========
+const crypto = await import("node:crypto");
+const SNAPSHOT_PATH = path.join(ROOT, "backend", "data", "snapshot.v1.json");
+const SNAPSHOT_META_PATH = path.join(ROOT, "backend", "data", "snapshot.meta.json");
+const EVENT_LOCK_PATH = path.join(DATA_DIR, "locks", "event-ids.lock.json");
+
+const readJsonFile = (file, label) => {
+  if (!fs.existsSync(file)) {
+    fail(`缺少${label}：${path.relative(ROOT, file)}`);
+    return null;
+  }
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch (error) {
+    fail(`${label}不是合法 JSON：${error.message}`);
+    return null;
+  }
+};
+
+const snapshotRaw = fs.existsSync(SNAPSHOT_PATH) ? fs.readFileSync(SNAPSHOT_PATH, "utf8") : null;
+const snapshot = snapshotRaw ? JSON.parse(snapshotRaw) : null;
+const snapshotMeta = readJsonFile(SNAPSHOT_META_PATH, "快照元数据");
+const eventLock = readJsonFile(EVENT_LOCK_PATH, "事件 ID 锁文件");
+
+let snapshotBytes = 0;
+if (!snapshot) {
+  fail("缺少快照 backend/data/snapshot.v1.json（先运行 node scripts/export-snapshot.mjs）");
+} else {
+  snapshotBytes = Buffer.byteLength(snapshotRaw, "utf8");
+  if (snapshot.schema_version !== "snapshot.v1") fail(`快照 schema_version 非法：${snapshot.schema_version}`);
+  if (!/^v1-[0-9a-f]{12}$/.test(snapshot.snapshot_version ?? "")) {
+    fail(`快照 snapshot_version 非法：${snapshot.snapshot_version}`);
+  }
+  if (snapshotBytes > 5 * 1024 * 1024) fail(`快照体积 ${snapshotBytes} bytes 超过 5MB 预算`);
+
+  const counts = snapshot.counts ?? {};
+  const expectedCounts = {
+    events: eventPool.length,
+    persons: PERSONS.length,
+    relations: PERSON_RELATIONS.length,
+    eras: PERSON_GRAPH_ERAS.length,
+    scopes: PERSON_GRAPH_SCOPES.length,
+    groups: DYNASTY_GROUPS.length,
+    aliases: Object.keys(PERSON_NAME_ALIASES).length,
+  };
+  for (const [key, expected] of Object.entries(expectedCounts)) {
+    if (counts[key] !== expected) fail(`快照 counts.${key}=${counts[key]}，期望 ${expected}`);
+  }
+  if (counts.events !== 705) fail(`快照事件数 ${counts.events} 与冻结值 705 不一致`);
+  if (counts.relations !== 639) fail(`快照关系数 ${counts.relations} 与冻结值 639 不一致`);
+  if (counts.eras !== 18 || counts.scopes !== 7 || counts.groups !== 7) fail("快照分期/断代/分组数与预期不一致");
+  if (counts.aliases !== 66) fail(`快照别名数 ${counts.aliases} 与冻结值 66 不一致`);
+
+  // 元数据：hash / version / counts / license 必须与快照一致。
+  if (snapshotMeta) {
+    const actualHash = crypto.createHash("sha256").update(snapshotRaw, "utf8").digest("hex");
+    if (snapshotMeta.content_hash !== actualHash) fail("快照 content_hash 与实际文件 sha256 不一致");
+    if (snapshotMeta.snapshot_version !== snapshot.snapshot_version) fail("快照 meta.snapshot_version 与快照不一致");
+    if (JSON.stringify(snapshotMeta.counts) !== JSON.stringify(counts)) fail("快照 meta.counts 与快照 counts 不一致");
+    if (snapshotMeta.license !== "CC BY-NC-SA 4.0") fail("快照许可必须是 CC BY-NC-SA 4.0");
+    if (!snapshotMeta.generated_at) fail("快照 meta 缺少 generated_at");
+  }
+
+  // events
+  const snapshotEvents = new Map();
+  for (const event of snapshot.events ?? []) {
+    const label = `快照事件 ${event.event_id}`;
+    if (snapshotEvents.has(event.event_id)) fail(`${label}：event_id 重复`);
+    snapshotEvents.set(event.event_id, event);
+    const source = eventIndex.get(event.event_id);
+    if (!source) {
+      fail(`${label}：不存在于 TS 事件池`);
+      continue;
+    }
+    if (event.title !== source.title || event.year !== source.year || event.dynasty !== source.dynasty) {
+      fail(`${label}：title/year/dynasty 与 TS 事件不一致`);
+    }
+    if (event.is_special !== (source.isSpecial === true)) fail(`${label}：is_special 不一致`);
+    if (JSON.stringify(event.source_refs) !== JSON.stringify(EVENT_SOURCES[event.event_id] ?? [])) {
+      fail(`${label}：source_refs 与引用索引不一致`);
+    }
+    if (event.source_status !== EVENT_SOURCE_STATUS[event.event_id]) fail(`${label}：source_status 不一致`);
+    if (event.surface?.timeline !== TIMELINE_EVENTS.some((item) => item.id === event.event_id)) {
+      fail(`${label}：surface.timeline 与时间轴事件不一致`);
+    }
+    if (event.surface?.graph !== undefined && typeof event.surface.graph !== "boolean") {
+      fail(`${label}：surface.graph 非法`);
+    }
+    if (event.person_ids.length === 0 && (source.participants ?? []).length > 0) {
+      fail(`${label}：有参与者但没有 person_ids`);
+    }
+    for (const personId of event.person_ids) {
+      const person = personsById.get(personId);
+      if (!person) fail(`${label}：person_id ${personId} 不存在`);
+      else if (!person.eventIds.includes(event.event_id)) fail(`${label}：person_id ${personId} 未关联该事件`);
+    }
+    for (const name of source.participants ?? []) {
+      const resolved = [...(personsByName.get(name) ?? [])].some((person) => person.eventIds.includes(event.event_id));
+      const viaAlias = (personsByName.get(name) ?? []).length === 0 && PERSONS.some((person) => person.aliases.includes(name) && person.eventIds.includes(event.event_id));
+      if (!resolved && !viaAlias) fail(`${label}：参与者「${name}」未映射到 person_id`);
+    }
+  }
+  if (snapshotEvents.size !== eventPool.length) fail(`快照事件数 ${snapshotEvents.size} 与 TS 事件池 ${eventPool.length} 不一致`);
+  for (const event of eventPool) {
+    if (!snapshotEvents.has(event.id)) fail(`快照缺少事件 ${event.id}`);
+  }
+
+  // persons
+  const snapshotPersons = new Map();
+  for (const person of snapshot.persons ?? []) {
+    const label = `快照人物 ${person.person_id}`;
+    if (snapshotPersons.has(person.person_id)) fail(`${label}：person_id 重复`);
+    snapshotPersons.set(person.person_id, person);
+    const source = personsById.get(person.person_id);
+    if (!source) {
+      fail(`${label}：不存在于人物主数据`);
+      continue;
+    }
+    if (person.display_name !== source.displayName) fail(`${label}：display_name 不一致`);
+    if (JSON.stringify(person.era_ids) !== JSON.stringify(source.eraIds)) fail(`${label}：era_ids 不一致`);
+    if (JSON.stringify(person.scope_ids) !== JSON.stringify(source.scopeIds)) fail(`${label}：scope_ids 不一致`);
+    if (JSON.stringify(person.event_ids) !== JSON.stringify(source.eventIds)) fail(`${label}：event_ids 不一致`);
+    for (const eventId of person.event_ids) {
+      if (!snapshotEvents.has(eventId)) fail(`${label}：event_id ${eventId} 不存在于快照`);
+      else if (!snapshotEvents.get(eventId).person_ids.includes(person.person_id)) {
+        fail(`${label}：事件 ${eventId} 的 person_ids 未包含该人物`);
+      }
+    }
+  }
+  if (snapshotPersons.size !== PERSONS.length) fail(`快照人物数 ${snapshotPersons.size} 与人物主数据 ${PERSONS.length} 不一致`);
+
+  // aliases / relations
+  const snapshotAliases = new Map((snapshot.aliases ?? []).map((entry) => [entry.alias, entry.person_id]));
+  if (snapshotAliases.size !== Object.keys(PERSON_ALIAS_TO_ID).length) fail("快照别名数与别名表不一致");
+  for (const [alias, personId] of Object.entries(PERSON_ALIAS_TO_ID)) {
+    if (snapshotAliases.get(alias) !== personId) fail(`快照别名「${alias}」映射不一致`);
+  }
+  if ((snapshot.relations ?? []).length !== PERSON_RELATIONS.length) fail("快照关系数与关系库不一致");
+  const snapshotRelationKeys = new Set();
+  for (const relation of snapshot.relations ?? []) {
+    const label = `快照关系 ${relation.pair_key}`;
+    if (snapshotRelationKeys.has(relation.pair_key)) fail(`${label}：pair_key 重复`);
+    snapshotRelationKeys.add(relation.pair_key);
+    for (const personId of [relation.person_id_a, relation.person_id_b]) {
+      if (!snapshotPersons.has(personId)) fail(`${label}：person_id ${personId} 不存在`);
+    }
+    if (relation.person_id_a === relation.person_id_b) fail(`${label}：两端指向同一 person_id`);
+    if (!relation.label?.trim()) fail(`${label}：缺少关系定性`);
+    for (const eventId of relation.basis_event_ids ?? []) {
+      if (!snapshotEvents.has(eventId)) {
+        fail(`${label}：basis_event_id ${eventId} 不存在`);
+        continue;
+      }
+      const sourceEvent = eventIndex.get(eventId);
+      if (!sourceEvent.participants.includes(relation.pair_key.split("__")[0])) {
+        // 原始 pairKey 姓名顺序可能不同，改用两人姓名集合判断。
+        const [a, b] = relation.pair_key.split("__");
+        if (!(sourceEvent.participants.includes(a) && sourceEvent.participants.includes(b))) {
+          fail(`${label}：basis_event_id ${eventId} 不是两人的共同事件`);
+        }
+      }
+    }
+  }
+
+  // eras / scopes / groups
+  const checkGraph = (entry, kind) => {
+    const label = `快照${kind} ${entry.era_id ?? entry.scope_id}`;
+    const nodeIds = new Set();
+    for (const node of entry.graph?.nodes ?? []) {
+      if (!snapshotPersons.has(node.person_id)) fail(`${label}：节点 person_id ${node.person_id} 不存在`);
+      if (nodeIds.has(node.person_id)) fail(`${label}：节点重复 ${node.person_id}`);
+      nodeIds.add(node.person_id);
+      if (!node.name) fail(`${label}：节点缺少 name`);
+    }
+    for (const edge of entry.graph?.edges ?? []) {
+      if (!nodeIds.has(edge.person_id_a) || !nodeIds.has(edge.person_id_b)) {
+        fail(`${label}：边 ${edge.person_id_a}×${edge.person_id_b} 端点不在图中`);
+      }
+      if (edge.person_id_a === edge.person_id_b) fail(`${label}：自环边`);
+      if (edge.weight !== (edge.shared_event_ids ?? []).length) fail(`${label}：边 weight 与共同事件数不一致`);
+      for (const eventId of edge.shared_event_ids ?? []) {
+        if (!snapshotEvents.has(eventId)) fail(`${label}：边引用了不存在的事件 ${eventId}`);
+      }
+    }
+  };
+  for (const era of snapshot.eras ?? []) checkGraph(era, "分期");
+  for (const scope of snapshot.scopes ?? []) checkGraph(scope, "断代");
+  if ((snapshot.eras ?? []).length !== PERSON_GRAPH_ERAS.length) fail("快照分期数与图数据不一致");
+  if ((snapshot.scopes ?? []).length !== PERSON_GRAPH_SCOPES.length) fail("快照断代数与图数据不一致");
+  if ((snapshot.groups ?? []).length !== DYNASTY_GROUPS.length) fail("快照分组数与断代分组不一致");
+
+  // indexes
+  const indexes = snapshot.indexes ?? {};
+  for (const [name, ids] of Object.entries(indexes.name_to_persons ?? {})) {
+    for (const personId of ids) {
+      if (!snapshotPersons.has(personId)) fail(`快照 name_to_persons「${name}」指向不存在的 ${personId}`);
+    }
+  }
+  for (const person of snapshot.persons ?? []) {
+    const eras = indexes.person_to_eras?.[person.person_id];
+    if (!eras || JSON.stringify(eras) !== JSON.stringify(person.era_ids)) {
+      fail(`快照 person_to_eras 与人物 ${person.person_id} 的 era_ids 不一致`);
+    }
+    const byName = indexes.name_to_persons?.[person.display_name] ?? [];
+    if (!byName.includes(person.person_id)) fail(`快照 name_to_persons 未收录 ${person.person_id}`);
+  }
+  for (const event of snapshot.events ?? []) {
+    if (indexes.event_to_dynasty?.[event.event_id] !== event.dynasty) {
+      fail(`快照 event_to_dynasty 与事件 ${event.event_id} 不一致`);
+    }
+  }
+  for (const era of snapshot.eras ?? []) {
+    const members = indexes.era_members?.[era.era_id];
+    if (!members || JSON.stringify(members) !== JSON.stringify(era.graph.nodes.map((node) => node.person_id))) {
+      fail(`快照 era_members 与分期 ${era.era_id} 节点不一致`);
+    }
+  }
+
+  // 事件 ID 锁文件
+  if (eventLock) {
+    if (eventLock.schema_version !== "event-ids.v1") fail(`事件锁文件 schema_version 非法：${eventLock.schema_version}`);
+    if (eventLock.event_count !== eventPool.length) fail(`事件锁文件 event_count=${eventLock.event_count}，实际 ${eventPool.length}`);
+    const lockIds = (eventLock.events ?? []).map((entry) => entry.id);
+    const snapshotIds = (snapshot.events ?? []).map((event) => event.event_id);
+    if (JSON.stringify(lockIds) !== JSON.stringify(snapshotIds)) fail("事件锁文件与快照事件 id 列表不一致");
+  }
+}
 // ========== 6. 统计输出 ==========
 const importance3 = TIMELINE_EVENTS.filter((event) => importanceOf(event) === 3).length;
 const describedEvents = TIMELINE_EVENTS.filter((event) => event.participants.length > 0).length;
@@ -608,6 +835,7 @@ console.log(`人物关系库：${PERSON_RELATIONS.length} 对，覆盖图谱边 
 console.log(`docs 数据文件：${DOC_FILES.length} 份，共 ${docRows} 行核心事件（已去重合并）`);
 console.log(`人物主数据：${PERSONS.length} 条（${uniqueParticipantNames.size} 个姓名；同名组 ${sameNameGroups.length}；无细览分期 ${personsWithoutEra} 条；别名 ${aliasCount} 条）`);
 console.log(`引用结构化：${sourceOneBook + sourceTwoBook} 条有据事件 / ${sourceRefTotal} 条引用（${sourceOneBook} 条 1 书 + ${sourceTwoBook} 条 2 书）/ ${sourceLabels.size} 个标签`);
+console.log(`数据快照：${snapshot ? snapshot.snapshot_version : "缺失"}，${(snapshotBytes / 1024 / 1024).toFixed(2)} MB；事件 ${snapshot?.counts?.events ?? 0} / 人物 ${snapshot?.counts?.persons ?? 0} / 关系 ${snapshot?.counts?.relations ?? 0}`);
 console.log("-".repeat(72));
 console.log("分朝事件数：");
 console.log(
@@ -635,4 +863,4 @@ if (errors.length > 0) {
   for (const message of errors) console.error(`  - ${message}`);
   process.exit(1);
 }
-console.log("\n✓ ALL CHECKS PASSED：事件、图谱分期隔离、关系、别名、名人堂、docs 数据、人物主数据与结构化引用全部通过。");
+console.log("\n✓ ALL CHECKS PASSED：事件、图谱分期隔离、关系、别名、名人堂、docs 数据、人物主数据、结构化引用与数据快照全部通过。");

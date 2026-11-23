@@ -1,0 +1,7056 @@
+{
+  "schema_version": "event-ids.v1",
+  "event_count": 705,
+  "events": [
+    {
+      "id": "beisong-01",
+      "title": "陈桥兵变",
+      "dynasty": "北宋",
+      "year": 960,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-02",
+      "title": "杯酒释兵权",
+      "dynasty": "北宋",
+      "year": 961,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-03",
+      "title": "烛影斧声",
+      "dynasty": "北宋",
+      "year": 976,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-04",
+      "title": "寇准入朝",
+      "dynasty": "北宋",
+      "year": 989,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-05",
+      "title": "半部论语治天下",
+      "dynasty": "北宋",
+      "year": 992,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-06",
+      "title": "澶渊之盟",
+      "dynasty": "北宋",
+      "year": 1005,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-07",
+      "title": "庆历新政",
+      "dynasty": "北宋",
+      "year": 1043,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-08",
+      "title": "西北御夏",
+      "dynasty": "北宋",
+      "year": 1040,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-09",
+      "title": "古文运动",
+      "dynasty": "北宋",
+      "year": 1057,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-10",
+      "title": "熙宁变法",
+      "dynasty": "北宋",
+      "year": 1069,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-11",
+      "title": "新旧党争",
+      "dynasty": "北宋",
+      "year": 1070,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-12",
+      "title": "资治通鉴成书",
+      "dynasty": "北宋",
+      "year": 1084,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-13",
+      "title": "乌台诗案",
+      "dynasty": "北宋",
+      "year": 1079,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-14",
+      "title": "武将拜枢密",
+      "dynasty": "北宋",
+      "year": 1052,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-15",
+      "title": "海上之盟",
+      "dynasty": "北宋",
+      "year": 1120,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-16",
+      "title": "高梁河之战",
+      "dynasty": "北宋",
+      "year": 979,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-17",
+      "title": "雍熙北伐",
+      "dynasty": "北宋",
+      "year": 986,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-18",
+      "title": "王小波李顺起义",
+      "dynasty": "北宋",
+      "year": 993,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-19",
+      "title": "澶州之战",
+      "dynasty": "北宋",
+      "year": 1004,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-20",
+      "title": "仁宗即位·刘太后垂帘",
+      "dynasty": "北宋",
+      "year": 1022,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-21",
+      "title": "范仲淹上《百官图》遭贬",
+      "dynasty": "北宋",
+      "year": 1036,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-22",
+      "title": "包拯权知开封府",
+      "dynasty": "北宋",
+      "year": 1052,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-23",
+      "title": "濮议之争",
+      "dynasty": "北宋",
+      "year": 1063,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-24",
+      "title": "王安石二次罢相",
+      "dynasty": "北宋",
+      "year": 1076,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-25",
+      "title": "五路伐夏",
+      "dynasty": "北宋",
+      "year": 1081,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-26",
+      "title": "永乐城之战",
+      "dynasty": "北宋",
+      "year": 1082,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-27",
+      "title": "绍圣绍述",
+      "dynasty": "北宋",
+      "year": 1094,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-28",
+      "title": "徽宗即位·蔡京入相",
+      "dynasty": "北宋",
+      "year": 1100,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-29",
+      "title": "崇宁党禁·元祐党籍碑",
+      "dynasty": "北宋",
+      "year": 1102,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-30",
+      "title": "宋江起义",
+      "dynasty": "北宋",
+      "year": 1119,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-31",
+      "title": "方腊起义",
+      "dynasty": "北宋",
+      "year": 1120,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-32",
+      "title": "金军南下",
+      "dynasty": "北宋",
+      "year": 1125,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-33",
+      "title": "开封保卫战",
+      "dynasty": "北宋",
+      "year": 1126,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "beisong-34",
+      "title": "靖康之变",
+      "dynasty": "北宋",
+      "year": 1127,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-01",
+      "title": "平王东迁，东周开始",
+      "dynasty": "春秋",
+      "year": -770,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-02",
+      "title": "郑伯克段于鄢",
+      "dynasty": "春秋",
+      "year": -722,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-03",
+      "title": "繻葛之战，桓王伐郑中肩",
+      "dynasty": "春秋",
+      "year": -707,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-04",
+      "title": "楚熊通自立为武王",
+      "dynasty": "春秋",
+      "year": -704,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-05",
+      "title": "齐桓公任管仲为政",
+      "dynasty": "春秋",
+      "year": -685,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-06",
+      "title": "齐桓公始霸",
+      "dynasty": "春秋",
+      "year": -679,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-07",
+      "title": "齐桓公伐楚，盟于召陵",
+      "dynasty": "春秋",
+      "year": -656,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-08",
+      "title": "晋假道灭虢、虞",
+      "dynasty": "春秋",
+      "year": -655,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-09",
+      "title": "葵丘之会，齐桓公称霸",
+      "dynasty": "春秋",
+      "year": -651,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-10",
+      "title": "秦晋韩原之战",
+      "dynasty": "春秋",
+      "year": -645,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-11",
+      "title": "泓之战，宋襄公败绩",
+      "dynasty": "春秋",
+      "year": -638,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-12",
+      "title": "秦穆公迎重耳归晋",
+      "dynasty": "春秋",
+      "year": -637,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-13",
+      "title": "晋文公勤王，纳襄王于周",
+      "dynasty": "春秋",
+      "year": -635,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-14",
+      "title": "城濮之战，晋文公败楚",
+      "dynasty": "春秋",
+      "year": -632,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-15",
+      "title": "践土之盟，晋文公称霸",
+      "dynasty": "春秋",
+      "year": -632,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-16",
+      "title": "崤之战，秦师覆没",
+      "dynasty": "春秋",
+      "year": -627,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-17",
+      "title": "秦穆公霸西戎",
+      "dynasty": "春秋",
+      "year": -623,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-18",
+      "title": "楚庄王一鸣惊人",
+      "dynasty": "春秋",
+      "year": -611,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-19",
+      "title": "楚庄王问鼎中原",
+      "dynasty": "春秋",
+      "year": -606,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-20",
+      "title": "邲之战，楚庄王败晋",
+      "dynasty": "春秋",
+      "year": -597,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-21",
+      "title": "鞍之战，晋败齐",
+      "dynasty": "春秋",
+      "year": -589,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-22",
+      "title": "申公巫臣教吴用兵",
+      "dynasty": "春秋",
+      "year": -584,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-23",
+      "title": "鄢陵之战，晋复霸",
+      "dynasty": "春秋",
+      "year": -575,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-24",
+      "title": "子产执政于郑",
+      "dynasty": "春秋",
+      "year": -554,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-25",
+      "title": "崔杼弑齐庄公",
+      "dynasty": "春秋",
+      "year": -548,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-26",
+      "title": "季札出使，观乐论政",
+      "dynasty": "春秋",
+      "year": -544,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-27",
+      "title": "伍子胥奔吴",
+      "dynasty": "春秋",
+      "year": -522,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-28",
+      "title": "专诸刺王僚，阖闾立",
+      "dynasty": "春秋",
+      "year": -515,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-29",
+      "title": "孙武练兵斩爱姬",
+      "dynasty": "春秋",
+      "year": -512,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-30",
+      "title": "柏举之战，吴破楚入郢",
+      "dynasty": "春秋",
+      "year": -506,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-31",
+      "title": "槜李之战，阖闾伤死",
+      "dynasty": "春秋",
+      "year": -496,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-32",
+      "title": "夫椒之战，越王勾践请和",
+      "dynasty": "春秋",
+      "year": -494,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-33",
+      "title": "勾践卧薪尝胆",
+      "dynasty": "春秋",
+      "year": -493,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-34",
+      "title": "老子著书西去",
+      "dynasty": "春秋",
+      "year": -485,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-35",
+      "title": "黄池之会，吴晋争长",
+      "dynasty": "春秋",
+      "year": -482,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-36",
+      "title": "田常弑齐简公",
+      "dynasty": "春秋",
+      "year": -481,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-37",
+      "title": "孔子作《春秋》",
+      "dynasty": "春秋",
+      "year": -481,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-38",
+      "title": "孔子卒，楚灭陈",
+      "dynasty": "春秋",
+      "year": -479,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-39",
+      "title": "齐桓公救燕，北伐山戎",
+      "dynasty": "春秋",
+      "year": -664,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-40",
+      "title": "孔子诞生于鲁",
+      "dynasty": "春秋",
+      "year": -551,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-41",
+      "title": "弭兵之会，向戌倡和",
+      "dynasty": "春秋",
+      "year": -546,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-42",
+      "title": "子产铸刑书",
+      "dynasty": "春秋",
+      "year": -536,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-43",
+      "title": "晏子使楚，不辱使命",
+      "dynasty": "春秋",
+      "year": -531,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-44",
+      "title": "孔子问礼于老子",
+      "dynasty": "春秋",
+      "year": -518,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "chunqiu-45",
+      "title": "孔子归鲁，删述六经",
+      "dynasty": "春秋",
+      "year": -484,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "dongjin-01",
+      "title": "司马睿南渡建东晋",
+      "dynasty": "东晋十六国",
+      "year": 317,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "dongjin-02",
+      "title": "王敦之乱",
+      "dynasty": "东晋十六国",
+      "year": 322,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "dongjin-03",
+      "title": "石勒灭前赵",
+      "dynasty": "东晋十六国",
+      "year": 329,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "dongjin-04",
+      "title": "兰亭雅集",
+      "dynasty": "东晋十六国",
+      "year": 353,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "dongjin-05",
+      "title": "桓温收复洛阳",
+      "dynasty": "东晋十六国",
+      "year": 356,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "dongjin-06",
+      "title": "前秦灭前燕，北方渐定",
+      "dynasty": "东晋十六国",
+      "year": 370,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "dongjin-07",
+      "title": "淝水之战",
+      "dynasty": "东晋十六国",
+      "year": 383,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "dongjin-08",
+      "title": "北魏建立",
+      "dynasty": "东晋十六国",
+      "year": 386,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "dongjin-09",
+      "title": "桓玄篡晋",
+      "dynasty": "东晋十六国",
+      "year": 403,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "dongjin-10",
+      "title": "刘裕灭后秦",
+      "dynasty": "东晋十六国",
+      "year": 417,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "han-cai-lun",
+      "title": "蔡伦改进造纸术",
+      "dynasty": "东汉",
+      "year": 105,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "han-founded",
+      "title": "刘邦建立汉朝",
+      "dynasty": "西汉",
+      "year": -202,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "han-seven-states",
+      "title": "七国之乱",
+      "dynasty": "西汉",
+      "year": -154,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "han-wang-mang",
+      "title": "王莽篡汉",
+      "dynasty": "西汉",
+      "year": 8,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "han-xiyu-protectorate",
+      "title": "设西域都护府",
+      "dynasty": "西汉",
+      "year": -60,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "han-yellow-turban",
+      "title": "黄巾起义",
+      "dynasty": "东汉",
+      "year": 184,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "han-zhang-qian",
+      "title": "张骞出使西域",
+      "dynasty": "西汉",
+      "year": -138,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-baihuguan",
+      "title": "白虎观会议",
+      "dynasty": "东汉",
+      "year": 79,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-banchao-death",
+      "title": "班超归洛阳，卒",
+      "dynasty": "东汉",
+      "year": 102,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-banchao-duhu",
+      "title": "班超任西域都护",
+      "dynasty": "东汉",
+      "year": 91,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-banchao-start",
+      "title": "班超使西域",
+      "dynasty": "东汉",
+      "year": 73,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-caocao-emperor",
+      "title": "曹操迎献帝都许",
+      "dynasty": "东汉",
+      "year": 196,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-chibi",
+      "title": "赤壁之战",
+      "dynasty": "东汉",
+      "year": 208,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-chimei",
+      "title": "赤眉平定",
+      "dynasty": "东汉",
+      "year": 27,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-danggu-1",
+      "title": "第一次党锢之祸",
+      "dynasty": "东汉",
+      "year": 166,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-danggu-2",
+      "title": "第二次党锢之祸",
+      "dynasty": "东汉",
+      "year": 169,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-dizhenyi",
+      "title": "张衡造候风地动仪",
+      "dynasty": "东汉",
+      "year": 132,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-dongzhuo",
+      "title": "董卓之乱",
+      "dynasty": "东汉",
+      "year": 189,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-dongzhuo-death",
+      "title": "董卓被诛",
+      "dynasty": "东汉",
+      "year": 192,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-dutian",
+      "title": "度田事件",
+      "dynasty": "东汉",
+      "year": 39,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-fanchang",
+      "title": "襄樊之战，关羽败走麦城",
+      "dynasty": "东汉",
+      "year": 219,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-fojiao",
+      "title": "永平求法，佛教传入",
+      "dynasty": "东汉",
+      "year": 67,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-founded",
+      "title": "刘秀称帝，东汉建立",
+      "dynasty": "东汉",
+      "year": 25,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-ganying",
+      "title": "甘英使大秦",
+      "dynasty": "东汉",
+      "year": 97,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-gongsunshu",
+      "title": "灭公孙述，光武统一",
+      "dynasty": "东汉",
+      "year": 36,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-guandu",
+      "title": "官渡之战",
+      "dynasty": "东汉",
+      "year": 200,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-guangwu-death",
+      "title": "光武帝崩，明帝即位",
+      "dynasty": "东汉",
+      "year": 57,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-han-fall",
+      "title": "曹丕篡汉，东汉覆亡",
+      "dynasty": "三国",
+      "year": 220,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-hanshu",
+      "title": "班固《汉书》成书",
+      "dynasty": "东汉",
+      "year": 82,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-huntianyi",
+      "title": "张衡制浑天仪",
+      "dynasty": "东汉",
+      "year": 117,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-liandong",
+      "title": "关东联军讨董，迁都长安",
+      "dynasty": "东汉",
+      "year": 190,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-liangji",
+      "title": "桓帝诛梁冀",
+      "dynasty": "东汉",
+      "year": 159,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-lingdi",
+      "title": "灵帝即位",
+      "dynasty": "东汉",
+      "year": 168,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-qiang-revolt",
+      "title": "西羌起义",
+      "dynasty": "东汉",
+      "year": 107,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-shijing",
+      "title": "熹平石经",
+      "dynasty": "东汉",
+      "year": 175,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-shun-emperor",
+      "title": "宦官拥立顺帝",
+      "dynasty": "东汉",
+      "year": 125,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-shuowen",
+      "title": "许慎《说文解字》成书",
+      "dynasty": "东汉",
+      "year": 100,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-wangjing",
+      "title": "王景治河",
+      "dynasty": "东汉",
+      "year": 69,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-xiongnu-split",
+      "title": "匈奴分裂，南匈奴内附",
+      "dynasty": "东汉",
+      "year": 48,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-yanran",
+      "title": "窦宪破北匈奴，燕然勒石",
+      "dynasty": "东汉",
+      "year": 89,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-zhangdi",
+      "title": "明帝崩，章帝即位",
+      "dynasty": "东汉",
+      "year": 75,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-zhengce",
+      "title": "交趾二征起义",
+      "dynasty": "东汉",
+      "year": 40,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-zhidi",
+      "title": "梁冀毒杀质帝",
+      "dynasty": "东汉",
+      "year": 146,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "handong-zhoumu",
+      "title": "改刺史为州牧",
+      "dynasty": "东汉",
+      "year": 188,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-01",
+      "title": "孙坚战死岘山，孙策继领部曲",
+      "dynasty": "东汉",
+      "year": 191,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-02",
+      "title": "刘备附公孙瓒，领平原相",
+      "dynasty": "东汉",
+      "year": 191,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-03",
+      "title": "孙策渡江，平定江东",
+      "dynasty": "东汉",
+      "year": 195,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-04",
+      "title": "袁术攻徐州，吕布袭下邳",
+      "dynasty": "东汉",
+      "year": 196,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-05",
+      "title": "袁术寿春称帝",
+      "dynasty": "东汉",
+      "year": 197,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-06",
+      "title": "宛城之战，典韦战死",
+      "dynasty": "东汉",
+      "year": 197,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-07",
+      "title": "下邳之战，吕布败亡",
+      "dynasty": "东汉",
+      "year": 198,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-08",
+      "title": "易京之战，公孙瓒败亡",
+      "dynasty": "东汉",
+      "year": 199,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-09",
+      "title": "孙策遇刺，孙权继位",
+      "dynasty": "东汉",
+      "year": 200,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-10",
+      "title": "司马徽荐卧龙凤雏",
+      "dynasty": "东汉",
+      "year": 207,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-11",
+      "title": "曹操赎蔡琰归汉",
+      "dynasty": "东汉",
+      "year": 207,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-12",
+      "title": "刘表病卒，刘琮举荆州降曹",
+      "dynasty": "东汉",
+      "year": 208,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-13",
+      "title": "华佗被杀",
+      "dynasty": "东汉",
+      "year": 208,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-14",
+      "title": "刘备入蜀，法正庞统归心",
+      "dynasty": "东汉",
+      "year": 211,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-15",
+      "title": "潼关之战，曹操破马超",
+      "dynasty": "东汉",
+      "year": 211,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-16",
+      "title": "马超归降，刘璋出降",
+      "dynasty": "东汉",
+      "year": 214,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-17",
+      "title": "雒城之战，庞统中流矢",
+      "dynasty": "东汉",
+      "year": 214,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-18",
+      "title": "定军山之战，黄忠斩夏侯渊",
+      "dynasty": "东汉",
+      "year": 219,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "hanmo-19",
+      "title": "刘备称汉中王，魏延督汉中",
+      "dynasty": "东汉",
+      "year": 219,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-01",
+      "title": "金灭辽之战",
+      "dynasty": "金",
+      "year": 1125,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-02",
+      "title": "完颜亮弑熙宗夺位",
+      "dynasty": "金",
+      "year": 1150,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-03",
+      "title": "采石之战",
+      "dynasty": "金",
+      "year": 1161,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-04",
+      "title": "完颜阿骨打建金",
+      "dynasty": "金",
+      "year": 1115,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-05",
+      "title": "海陵王迁都燕京",
+      "dynasty": "金",
+      "year": 1153,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-06",
+      "title": "金军第一次南下",
+      "dynasty": "金",
+      "year": 1126,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-07",
+      "title": "金立张邦昌",
+      "dynasty": "金",
+      "year": 1127,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-08",
+      "title": "金立刘豫",
+      "dynasty": "金",
+      "year": 1130,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-09",
+      "title": "世宗即位·大定之治",
+      "dynasty": "金",
+      "year": 1161,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-10",
+      "title": "金章宗崩·卫绍王立",
+      "dynasty": "金",
+      "year": 1208,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-11",
+      "title": "野狐岭之战",
+      "dynasty": "金",
+      "year": 1211,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-12",
+      "title": "金宣宗南迁",
+      "dynasty": "金",
+      "year": 1214,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-13",
+      "title": "中都陷落",
+      "dynasty": "金",
+      "year": 1215,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-14",
+      "title": "金哀宗即位",
+      "dynasty": "金",
+      "year": 1224,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-15",
+      "title": "三峰山之战",
+      "dynasty": "金",
+      "year": 1232,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-16",
+      "title": "汴京被围·崔立之变",
+      "dynasty": "金",
+      "year": 1232,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-17",
+      "title": "胡沙虎政变",
+      "dynasty": "金",
+      "year": 1213,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-18",
+      "title": "金军搜山检海",
+      "dynasty": "金",
+      "year": 1129,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "jin-19",
+      "title": "顺昌之战",
+      "dynasty": "金",
+      "year": 1140,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-01",
+      "title": "耶律阿保机建立辽朝",
+      "dynasty": "辽",
+      "year": 916,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-02",
+      "title": "述律太后称制",
+      "dynasty": "辽",
+      "year": 926,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-03",
+      "title": "灭后晋",
+      "dynasty": "辽",
+      "year": 947,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-04",
+      "title": "耶律阿保机即可汗位",
+      "dynasty": "辽",
+      "year": 907,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-05",
+      "title": "诸弟之乱",
+      "dynasty": "辽",
+      "year": 913,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-06",
+      "title": "创制契丹文字",
+      "dynasty": "辽",
+      "year": 920,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-07",
+      "title": "灭渤海国",
+      "dynasty": "辽",
+      "year": 926,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-08",
+      "title": "助石敬瑭灭后唐",
+      "dynasty": "辽",
+      "year": 936,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-09",
+      "title": "述律平之乱",
+      "dynasty": "辽",
+      "year": 953,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-10",
+      "title": "辽穆宗暴政",
+      "dynasty": "辽",
+      "year": 969,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-11",
+      "title": "辽景宗崩·圣宗即位",
+      "dynasty": "辽",
+      "year": 982,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-12",
+      "title": "辽圣宗改制",
+      "dynasty": "辽",
+      "year": 1009,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-13",
+      "title": "辽兴宗即位·萧耨斤之乱",
+      "dynasty": "辽",
+      "year": 1031,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-14",
+      "title": "辽夏战争",
+      "dynasty": "辽",
+      "year": 1044,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-15",
+      "title": "滦河之变",
+      "dynasty": "辽",
+      "year": 1063,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-16",
+      "title": "辽宋划界",
+      "dynasty": "辽",
+      "year": 1075,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-17",
+      "title": "宁江州之战",
+      "dynasty": "辽",
+      "year": 1114,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-18",
+      "title": "天祚帝西逃",
+      "dynasty": "辽",
+      "year": 1120,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "liao-19",
+      "title": "耶律大石西迁",
+      "dynasty": "辽",
+      "year": 1124,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-01",
+      "title": "鄱阳湖之战",
+      "dynasty": "明",
+      "year": 1363,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-02",
+      "title": "朱元璋建立明朝",
+      "dynasty": "明",
+      "year": 1368,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-03",
+      "title": "传位建文",
+      "dynasty": "明",
+      "year": 1398,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-04",
+      "title": "靖难之役",
+      "dynasty": "明",
+      "year": 1399,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-05",
+      "title": "郑和下西洋",
+      "dynasty": "明",
+      "year": 1405,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-06",
+      "title": "平定宁王叛乱",
+      "dynasty": "明",
+      "year": 1519,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-07",
+      "title": "阳明心学",
+      "dynasty": "明",
+      "year": 1527,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-08",
+      "title": "严嵩专权二十年",
+      "dynasty": "明",
+      "year": 1550,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-09",
+      "title": "徐阶倒严",
+      "dynasty": "明",
+      "year": 1562,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-10",
+      "title": "抗倭战争",
+      "dynasty": "明",
+      "year": 1555,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-11",
+      "title": "海瑞上疏",
+      "dynasty": "明",
+      "year": 1566,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-12",
+      "title": "海瑞清田",
+      "dynasty": "明",
+      "year": 1569,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-13",
+      "title": "蓟镇练兵",
+      "dynasty": "明",
+      "year": 1568,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-14",
+      "title": "万历新政",
+      "dynasty": "明",
+      "year": 1573,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-15",
+      "title": "宁远之战",
+      "dynasty": "明",
+      "year": 1626,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-16",
+      "title": "凌迟袁崇焕",
+      "dynasty": "明",
+      "year": 1630,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-17",
+      "title": "明朝灭亡",
+      "dynasty": "明",
+      "year": 1644,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-18",
+      "title": "山海关之战",
+      "dynasty": "明",
+      "year": 1644,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-19",
+      "title": "郑成功抗清决裂",
+      "dynasty": "明",
+      "year": 1646,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-20",
+      "title": "郑成功抗清复明",
+      "dynasty": "明",
+      "year": 1655,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-21",
+      "title": "徐达北伐·元亡",
+      "dynasty": "明",
+      "year": 1368,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-22",
+      "title": "胡惟庸案",
+      "dynasty": "明",
+      "year": 1380,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-23",
+      "title": "平定云南",
+      "dynasty": "明",
+      "year": 1382,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-24",
+      "title": "蓝玉案",
+      "dynasty": "明",
+      "year": 1393,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-25",
+      "title": "壬午殉难",
+      "dynasty": "明",
+      "year": 1402,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-26",
+      "title": "朱棣首次北征",
+      "dynasty": "明",
+      "year": 1410,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-27",
+      "title": "迁都北京",
+      "dynasty": "明",
+      "year": 1421,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-28",
+      "title": "土木堡之变",
+      "dynasty": "明",
+      "year": 1449,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-29",
+      "title": "北京保卫战",
+      "dynasty": "明",
+      "year": 1449,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-30",
+      "title": "夺门之变",
+      "dynasty": "明",
+      "year": 1457,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-31",
+      "title": "刘瑾专权",
+      "dynasty": "明",
+      "year": 1506,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-32",
+      "title": "大礼议",
+      "dynasty": "明",
+      "year": 1521,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-33",
+      "title": "庚戌之变",
+      "dynasty": "明",
+      "year": 1550,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-34",
+      "title": "台州大捷",
+      "dynasty": "明",
+      "year": 1561,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-35",
+      "title": "俺答封贡",
+      "dynasty": "明",
+      "year": 1571,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-36",
+      "title": "万历三大征",
+      "dynasty": "明",
+      "year": 1592,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-37",
+      "title": "播州之役",
+      "dynasty": "明",
+      "year": 1600,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-38",
+      "title": "萨尔浒之战",
+      "dynasty": "明",
+      "year": 1619,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-39",
+      "title": "广宁之战",
+      "dynasty": "明",
+      "year": 1622,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-40",
+      "title": "己巳之变",
+      "dynasty": "明",
+      "year": 1629,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "ming-41",
+      "title": "利玛窦入京",
+      "dynasty": "明",
+      "year": 1601,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-01",
+      "title": "刘裕代晋，刘宋建立",
+      "dynasty": "南北朝",
+      "year": 420,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-02",
+      "title": "北魏统一北方",
+      "dynasty": "南北朝",
+      "year": 439,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-03",
+      "title": "孝文帝太和改制",
+      "dynasty": "南北朝",
+      "year": 485,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-04",
+      "title": "迁都洛阳与汉化",
+      "dynasty": "南北朝",
+      "year": 494,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-05",
+      "title": "六镇起义",
+      "dynasty": "南北朝",
+      "year": 523,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-06",
+      "title": "河阴之变",
+      "dynasty": "南北朝",
+      "year": 528,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-07",
+      "title": "北魏分裂",
+      "dynasty": "南北朝",
+      "year": 534,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-08",
+      "title": "侯景之乱",
+      "dynasty": "南北朝",
+      "year": 548,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-09",
+      "title": "北齐代东魏",
+      "dynasty": "南北朝",
+      "year": 550,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-10",
+      "title": "北周灭北齐",
+      "dynasty": "南北朝",
+      "year": 577,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-11",
+      "title": "杨坚代周，隋朝建立",
+      "dynasty": "南北朝",
+      "year": 581,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-12",
+      "title": "隋灭陈，南北统一",
+      "dynasty": "南北朝",
+      "year": 589,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-13",
+      "title": "萧道成代宋建齐",
+      "dynasty": "南北朝",
+      "year": 479,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-14",
+      "title": "萧衍代齐建梁",
+      "dynasty": "南北朝",
+      "year": 502,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nanbeichao-15",
+      "title": "陈霸先代梁建陈",
+      "dynasty": "南北朝",
+      "year": 557,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-01",
+      "title": "宗泽守汴与三呼过河",
+      "dynasty": "南宋",
+      "year": 1128,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-02",
+      "title": "黄天荡之战",
+      "dynasty": "南宋",
+      "year": 1130,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-03",
+      "title": "韩世忠反对议和",
+      "dynasty": "南宋",
+      "year": 1140,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-04",
+      "title": "绍兴和议",
+      "dynasty": "南宋",
+      "year": 1141,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-05",
+      "title": "风波亭之冤",
+      "dynasty": "南宋",
+      "year": 1142,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-06",
+      "title": "辛弃疾起义南归",
+      "dynasty": "南宋",
+      "year": 1162,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-07",
+      "title": "开禧北伐",
+      "dynasty": "南宋",
+      "year": 1206,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-08",
+      "title": "崖山之战",
+      "dynasty": "南宋",
+      "year": 1279,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-09",
+      "title": "南宋建立",
+      "dynasty": "南宋",
+      "year": 1127,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-10",
+      "title": "苗刘兵变",
+      "dynasty": "南宋",
+      "year": 1129,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-11",
+      "title": "富平之战",
+      "dynasty": "南宋",
+      "year": 1130,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-12",
+      "title": "和尚原之战",
+      "dynasty": "南宋",
+      "year": 1131,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-13",
+      "title": "岳飞收复襄阳六郡",
+      "dynasty": "南宋",
+      "year": 1134,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-14",
+      "title": "郾城大捷",
+      "dynasty": "南宋",
+      "year": 1140,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-15",
+      "title": "隆兴北伐",
+      "dynasty": "南宋",
+      "year": 1163,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-16",
+      "title": "隆兴和议",
+      "dynasty": "南宋",
+      "year": 1164,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-17",
+      "title": "鹅湖之会",
+      "dynasty": "南宋",
+      "year": 1175,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-18",
+      "title": "庆元党禁",
+      "dynasty": "南宋",
+      "year": 1195,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-19",
+      "title": "嘉定和议",
+      "dynasty": "南宋",
+      "year": 1207,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-20",
+      "title": "金宣宗南侵",
+      "dynasty": "南宋",
+      "year": 1217,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-21",
+      "title": "联蒙灭金",
+      "dynasty": "南宋",
+      "year": 1234,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-22",
+      "title": "钓鱼城之战",
+      "dynasty": "南宋",
+      "year": 1259,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-23",
+      "title": "襄樊之战",
+      "dynasty": "南宋",
+      "year": 1273,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-24",
+      "title": "丁家洲之战",
+      "dynasty": "南宋",
+      "year": 1275,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-25",
+      "title": "临安降元",
+      "dynasty": "南宋",
+      "year": 1276,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "nansong-26",
+      "title": "文天祥兵败被俘",
+      "dynasty": "南宋",
+      "year": 1278,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-arms-treasure",
+      "title": "收天下兵铸十二金人",
+      "dynasty": "秦",
+      "year": -221,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-baiyue",
+      "title": "南取陆梁，置桂林、南海、象郡",
+      "dynasty": "秦",
+      "year": -214,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-bolangsha",
+      "title": "博浪沙张良刺秦",
+      "dynasty": "秦",
+      "year": -218,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-book-burning",
+      "title": "焚书坑儒",
+      "dynasty": "秦",
+      "year": -213,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-bury-scholars",
+      "title": "坑杀方士儒生四百六十余人",
+      "dynasty": "秦",
+      "year": -212,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-commandery",
+      "title": "废分封，行郡县",
+      "dynasty": "秦",
+      "year": -221,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-daze-uprising",
+      "title": "陈胜吴广起义",
+      "dynasty": "秦",
+      "year": -209,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-death-shafu",
+      "title": "始皇崩于沙丘平台",
+      "dynasty": "秦",
+      "year": -210,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-deer-horse",
+      "title": "指鹿为马",
+      "dynasty": "秦",
+      "year": -207,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-emperor-title",
+      "title": "议帝号，称“始皇帝”",
+      "dynasty": "秦",
+      "year": -221,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-epang-palace",
+      "title": "营建阿房宫，修直道",
+      "dynasty": "秦",
+      "year": -212,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-ershi-enthroned",
+      "title": "胡亥即位，是为秦二世",
+      "dynasty": "秦",
+      "year": -210,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-ershi-killed",
+      "title": "赵高弑二世于望夷宫",
+      "dynasty": "秦",
+      "year": -207,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-ershi-purge",
+      "title": "二世诛公子大臣，复作阿房宫",
+      "dynasty": "秦",
+      "year": -209,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-fengshan",
+      "title": "泰山封禅",
+      "dynasty": "秦",
+      "year": -219,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-fusu-remonstrance",
+      "title": "扶苏进谏被贬上郡",
+      "dynasty": "秦",
+      "year": -212,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-great-wall",
+      "title": "筑长城，置九原郡",
+      "dynasty": "秦",
+      "year": -214,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-julu-battle",
+      "title": "巨鹿之战：项羽破釜沉舟",
+      "dynasty": "秦",
+      "year": -207,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-langya",
+      "title": "琅邪刻石，遣徐市求仙",
+      "dynasty": "秦",
+      "year": -219,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-last-tour",
+      "title": "始皇最后巡游，会稽刻石",
+      "dynasty": "秦",
+      "year": -210,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-liubang-xiangliang",
+      "title": "刘邦起于沛，项梁起于会稽",
+      "dynasty": "秦",
+      "year": -209,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-mausoleum-burial",
+      "title": "始皇葬骊山，后宫工匠殉葬",
+      "dynasty": "秦",
+      "year": -209,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-roads",
+      "title": "治驰道，巡陇西、北地",
+      "dynasty": "秦",
+      "year": -220,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-sanchen-remonstrance",
+      "title": "三臣进谏下狱，李斯受五刑",
+      "dynasty": "秦",
+      "year": -208,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-shafu-coup",
+      "title": "沙丘之变：赵高李斯矫诏立胡亥",
+      "dynasty": "秦",
+      "year": -210,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-six-states-restore",
+      "title": "山东郡县响应，六国复国",
+      "dynasty": "秦",
+      "year": -209,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-standardization",
+      "title": "书同文，统一度量衡与货币",
+      "dynasty": "秦",
+      "year": -221,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-unify",
+      "title": "秦始皇统一六国",
+      "dynasty": "秦",
+      "year": -221,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-xiangyu-xianyang",
+      "title": "项羽入关，屠咸阳烧宫室",
+      "dynasty": "秦",
+      "year": -206,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-xiongnu",
+      "title": "蒙恬北击匈奴，收河南地",
+      "dynasty": "秦",
+      "year": -215,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-zhanghan",
+      "title": "章邯击破周章，赦骊山刑徒",
+      "dynasty": "秦",
+      "year": -208,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-zhaogao-chancellor",
+      "title": "赵高杀李斯，自为丞相",
+      "dynasty": "秦",
+      "year": -207,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qin-ziying-surrender",
+      "title": "子婴诛赵高，秦亡",
+      "dynasty": "秦",
+      "year": -207,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-01",
+      "title": "努尔哈赤建立后金",
+      "dynasty": "清",
+      "year": 1616,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-02",
+      "title": "皇太极改国号为清",
+      "dynasty": "清",
+      "year": 1636,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-03",
+      "title": "松锦之战",
+      "dynasty": "清",
+      "year": 1641,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-04",
+      "title": "清军入关定鼎",
+      "dynasty": "清",
+      "year": 1644,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-05",
+      "title": "多尔衮摄政专权",
+      "dynasty": "清",
+      "year": 1645,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-06",
+      "title": "康熙智擒鳌拜",
+      "dynasty": "清",
+      "year": 1669,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-07",
+      "title": "平定三藩",
+      "dynasty": "清",
+      "year": 1673,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-08",
+      "title": "康乾盛世",
+      "dynasty": "清",
+      "year": 1700,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-09",
+      "title": "雍正继位改革",
+      "dynasty": "清",
+      "year": 1722,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-10",
+      "title": "秘密立储",
+      "dynasty": "清",
+      "year": 1723,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-11",
+      "title": "和珅专权",
+      "dynasty": "清",
+      "year": 1780,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-12",
+      "title": "虎门销烟",
+      "dynasty": "清",
+      "year": 1839,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-13",
+      "title": "鸦片战争",
+      "dynasty": "清",
+      "year": 1840,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-14",
+      "title": "太平天国",
+      "dynasty": "清",
+      "year": 1851,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-15",
+      "title": "天京事变",
+      "dynasty": "清",
+      "year": 1856,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-16",
+      "title": "平定太平天国",
+      "dynasty": "清",
+      "year": 1864,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-17",
+      "title": "洋务运动",
+      "dynasty": "清",
+      "year": 1865,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-18",
+      "title": "海防与塞防之争",
+      "dynasty": "清",
+      "year": 1874,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-19",
+      "title": "左宗棠收复新疆",
+      "dynasty": "清",
+      "year": 1876,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-20",
+      "title": "晚清外交",
+      "dynasty": "清",
+      "year": 1895,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-21",
+      "title": "辛酉政变",
+      "dynasty": "清",
+      "year": 1861,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-22",
+      "title": "戊戌政变",
+      "dynasty": "清",
+      "year": 1898,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-23",
+      "title": "李定国抗清",
+      "dynasty": "清",
+      "year": 1652,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-24",
+      "title": "郑成功北伐南京",
+      "dynasty": "清",
+      "year": 1659,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-25",
+      "title": "郑成功收复台湾",
+      "dynasty": "清",
+      "year": 1661,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-26",
+      "title": "顺治崩·康熙即位",
+      "dynasty": "清",
+      "year": 1661,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-27",
+      "title": "收复台湾",
+      "dynasty": "清",
+      "year": 1683,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-28",
+      "title": "雅克萨之战",
+      "dynasty": "清",
+      "year": 1685,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-29",
+      "title": "尼布楚条约",
+      "dynasty": "清",
+      "year": 1689,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-30",
+      "title": "乌兰布通之战",
+      "dynasty": "清",
+      "year": 1690,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-31",
+      "title": "昭莫多之战",
+      "dynasty": "清",
+      "year": 1696,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-32",
+      "title": "驱准保藏",
+      "dynasty": "清",
+      "year": 1720,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-33",
+      "title": "改土归流",
+      "dynasty": "清",
+      "year": 1726,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-34",
+      "title": "平定罗卜藏丹津",
+      "dynasty": "清",
+      "year": 1724,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-35",
+      "title": "平定准噶尔",
+      "dynasty": "清",
+      "year": 1755,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-36",
+      "title": "平定大小和卓",
+      "dynasty": "清",
+      "year": 1759,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-37",
+      "title": "马戛尔尼使华",
+      "dynasty": "清",
+      "year": 1793,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-38",
+      "title": "白莲教起义",
+      "dynasty": "清",
+      "year": 1796,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-39",
+      "title": "南京条约",
+      "dynasty": "清",
+      "year": 1842,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-40",
+      "title": "太平军定都天京",
+      "dynasty": "清",
+      "year": 1853,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-41",
+      "title": "英法联军入京",
+      "dynasty": "清",
+      "year": 1860,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-42",
+      "title": "甲午战争",
+      "dynasty": "清",
+      "year": 1894,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-43",
+      "title": "马关条约",
+      "dynasty": "清",
+      "year": 1895,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-44",
+      "title": "辛亥革命",
+      "dynasty": "清",
+      "year": 1911,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "qing-45",
+      "title": "清帝退位",
+      "dynasty": "清",
+      "year": 1912,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-01",
+      "title": "刘备称帝，蜀汉建立",
+      "dynasty": "三国",
+      "year": 221,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-02",
+      "title": "夷陵之战",
+      "dynasty": "三国",
+      "year": 222,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-03",
+      "title": "白帝城托孤",
+      "dynasty": "三国",
+      "year": 223,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-04",
+      "title": "诸葛亮南征",
+      "dynasty": "三国",
+      "year": 225,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-05",
+      "title": "街亭之战",
+      "dynasty": "三国",
+      "year": 228,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-06",
+      "title": "孙权称帝",
+      "dynasty": "三国",
+      "year": 229,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-07",
+      "title": "诸葛亮病逝五丈原",
+      "dynasty": "三国",
+      "year": 234,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-08",
+      "title": "高平陵之变",
+      "dynasty": "三国",
+      "year": 249,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-09",
+      "title": "嵇康被杀",
+      "dynasty": "三国",
+      "year": 262,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-10",
+      "title": "魏灭蜀",
+      "dynasty": "三国",
+      "year": 263,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-01",
+      "title": "伊尹辅汤",
+      "dynasty": "商",
+      "year": -1617,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-02",
+      "title": "汤伐桀于鸣条",
+      "dynasty": "商",
+      "year": -1600,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-03",
+      "title": "汤践天子位，商朝建立",
+      "dynasty": "商",
+      "year": -1600,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-04",
+      "title": "伊尹放太甲",
+      "dynasty": "商",
+      "year": -1577,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-05",
+      "title": "太戊修德，殷道复兴",
+      "dynasty": "商",
+      "year": -1490,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "shang-06",
+      "title": "九世之乱，殷道中衰",
+      "dynasty": "商",
+      "year": -1400,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "shang-07",
+      "title": "盘庚迁殷",
+      "dynasty": "商",
+      "year": -1300,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-08",
+      "title": "武丁中兴，得傅说",
+      "dynasty": "商",
+      "year": -1250,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-09",
+      "title": "武乙射天，震死",
+      "dynasty": "商",
+      "year": -1113,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "shang-10",
+      "title": "羑里之囚",
+      "dynasty": "商",
+      "year": -1080,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-11",
+      "title": "纣王暴政",
+      "dynasty": "商",
+      "year": -1075,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-12",
+      "title": "文王征伐，周势渐强",
+      "dynasty": "商",
+      "year": -1060,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-13",
+      "title": "太公遇文王于渭水",
+      "dynasty": "商",
+      "year": -1050,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-14",
+      "title": "比干死谏，微子去殷",
+      "dynasty": "商",
+      "year": -1050,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-15",
+      "title": "武王观兵盟津",
+      "dynasty": "商",
+      "year": -1048,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "special-star-1893",
+      "title": "教员诞辰",
+      "dynasty": "清",
+      "year": 1893,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "sui-01",
+      "title": "开皇之治",
+      "dynasty": "隋",
+      "year": 581,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-02",
+      "title": "平陈之役",
+      "dynasty": "隋",
+      "year": 588,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-03",
+      "title": "废太子杨勇，杨广夺嫡",
+      "dynasty": "隋",
+      "year": 600,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-04",
+      "title": "仁寿宫之变",
+      "dynasty": "隋",
+      "year": 604,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-05",
+      "title": "高颎被诛",
+      "dynasty": "隋",
+      "year": 607,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-06",
+      "title": "江都之变",
+      "dynasty": "隋",
+      "year": 618,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-07",
+      "title": "瓦岗军内讧",
+      "dynasty": "隋",
+      "year": 617,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-08",
+      "title": "童山之战",
+      "dynasty": "隋",
+      "year": 618,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-09",
+      "title": "晋阳起兵",
+      "dynasty": "隋",
+      "year": 617,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-10",
+      "title": "隋朝建立（杨坚代周）",
+      "dynasty": "隋",
+      "year": 581,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-11",
+      "title": "营建大兴城",
+      "dynasty": "隋",
+      "year": 582,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-12",
+      "title": "科举制创立（始设进士科）",
+      "dynasty": "隋",
+      "year": 605,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-13",
+      "title": "开凿大运河",
+      "dynasty": "隋",
+      "year": 605,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-14",
+      "title": "三征高句丽",
+      "dynasty": "隋",
+      "year": 612,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-15",
+      "title": "隋末农民起义",
+      "dynasty": "隋",
+      "year": 611,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-16",
+      "title": "李密投瓦岗",
+      "dynasty": "隋",
+      "year": 616,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-17",
+      "title": "隋定三省六部",
+      "dynasty": "隋",
+      "year": 583,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-18",
+      "title": "废郡置州",
+      "dynasty": "隋",
+      "year": 583,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-19",
+      "title": "均田租庸调",
+      "dynasty": "隋",
+      "year": 584,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-20",
+      "title": "隋征高句丽",
+      "dynasty": "隋",
+      "year": 598,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-21",
+      "title": "仁寿宫成",
+      "dynasty": "隋",
+      "year": 595,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sui-22",
+      "title": "裴矩经营西域",
+      "dynasty": "隋",
+      "year": 609,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-01",
+      "title": "建立唐朝",
+      "dynasty": "唐",
+      "year": 618,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-02",
+      "title": "秦王府十八学士",
+      "dynasty": "唐",
+      "year": 621,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-03",
+      "title": "平定萧铣",
+      "dynasty": "唐",
+      "year": 621,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-04",
+      "title": "玄武门之变",
+      "dynasty": "唐",
+      "year": 626,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-05",
+      "title": "贞观之治",
+      "dynasty": "唐",
+      "year": 627,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-06",
+      "title": "灭东突厥",
+      "dynasty": "唐",
+      "year": 630,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-07",
+      "title": "武则天入宫为才人",
+      "dynasty": "唐",
+      "year": 637,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-08",
+      "title": "永徽之治",
+      "dynasty": "唐",
+      "year": 650,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-09",
+      "title": "武则天改唐为周",
+      "dynasty": "唐",
+      "year": 690,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-10",
+      "title": "狄仁杰荐贤",
+      "dynasty": "唐",
+      "year": 692,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-11",
+      "title": "神龙政变",
+      "dynasty": "唐",
+      "year": 705,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-12",
+      "title": "先天政变",
+      "dynasty": "唐",
+      "year": 713,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-13",
+      "title": "开元盛世",
+      "dynasty": "唐",
+      "year": 713,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-14",
+      "title": "李林甫专权",
+      "dynasty": "唐",
+      "year": 740,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-15",
+      "title": "蕃将专兵",
+      "dynasty": "唐",
+      "year": 742,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-16",
+      "title": "杨氏专权",
+      "dynasty": "唐",
+      "year": 745,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-17",
+      "title": "安史之乱",
+      "dynasty": "唐",
+      "year": 755,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-18",
+      "title": "常山之战",
+      "dynasty": "唐",
+      "year": 756,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-19",
+      "title": "睢阳之战",
+      "dynasty": "唐",
+      "year": 757,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-20",
+      "title": "收复两京",
+      "dynasty": "唐",
+      "year": 757,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-21",
+      "title": "平叛方略",
+      "dynasty": "唐",
+      "year": 757,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-22",
+      "title": "河阳之战",
+      "dynasty": "唐",
+      "year": 759,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-23",
+      "title": "平定安史之乱",
+      "dynasty": "唐",
+      "year": 763,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-24",
+      "title": "奉天之难",
+      "dynasty": "唐",
+      "year": 783,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-25",
+      "title": "收复长安",
+      "dynasty": "唐",
+      "year": 784,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-26",
+      "title": "贞元拜相",
+      "dynasty": "唐",
+      "year": 787,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-27",
+      "title": "讨灭董昌",
+      "dynasty": "唐",
+      "year": 896,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-28",
+      "title": "玄奘西行",
+      "dynasty": "唐",
+      "year": 629,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-29",
+      "title": "文成公主入藏",
+      "dynasty": "唐",
+      "year": 641,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-30",
+      "title": "唐灭高句丽",
+      "dynasty": "唐",
+      "year": 668,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-31",
+      "title": "唐复安西四镇",
+      "dynasty": "唐",
+      "year": 692,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-32",
+      "title": "唐隆政变",
+      "dynasty": "唐",
+      "year": 710,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-33",
+      "title": "唐玄宗封禅泰山",
+      "dynasty": "唐",
+      "year": 725,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-34",
+      "title": "怛罗斯之战",
+      "dynasty": "唐",
+      "year": 751,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-35",
+      "title": "鉴真东渡",
+      "dynasty": "唐",
+      "year": 753,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-36",
+      "title": "两税法推行",
+      "dynasty": "唐",
+      "year": 780,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-37",
+      "title": "永贞革新",
+      "dynasty": "唐",
+      "year": 805,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-38",
+      "title": "元和中兴",
+      "dynasty": "唐",
+      "year": 806,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-39",
+      "title": "李愬雪夜入蔡州",
+      "dynasty": "唐",
+      "year": 817,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-40",
+      "title": "长庆会盟",
+      "dynasty": "唐",
+      "year": 821,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-41",
+      "title": "甘露之变",
+      "dynasty": "唐",
+      "year": 835,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-42",
+      "title": "会昌灭佛",
+      "dynasty": "唐",
+      "year": 845,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-43",
+      "title": "大中之治",
+      "dynasty": "唐",
+      "year": 847,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-44",
+      "title": "黄巢起义",
+      "dynasty": "唐",
+      "year": 875,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-45",
+      "title": "黄巢入长安，僖宗奔蜀",
+      "dynasty": "唐",
+      "year": 881,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-46",
+      "title": "灭高昌",
+      "dynasty": "唐",
+      "year": 640,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-47",
+      "title": "灭西突厥",
+      "dynasty": "唐",
+      "year": 657,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-48",
+      "title": "白江口之战",
+      "dynasty": "唐",
+      "year": 663,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-49",
+      "title": "遣唐使来朝",
+      "dynasty": "唐",
+      "year": 717,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "tang-50",
+      "title": "马嵬驿之变",
+      "dynasty": "唐",
+      "year": 756,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-baipao",
+      "title": "白袍北伐",
+      "dynasty": "南北朝",
+      "year": 529,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-beifu",
+      "title": "谢玄组建北府兵",
+      "dynasty": "东晋十六国",
+      "year": 377,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-beizhou-guanzhi",
+      "title": "西魏六官制",
+      "dynasty": "南北朝",
+      "year": 556,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-beizhou-waiqi",
+      "title": "杨坚以外戚辅政",
+      "dynasty": "南北朝",
+      "year": 578,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-bohaiwang",
+      "title": "高欢封渤海王",
+      "dynasty": "南北朝",
+      "year": 546,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-canhebei",
+      "title": "参合陂之战",
+      "dynasty": "东晋十六国",
+      "year": 395,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-dazui",
+      "title": "阮籍大醉拒婚",
+      "dynasty": "三国",
+      "year": 258,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-doufu",
+      "title": "石崇王恺斗富",
+      "dynasty": "西晋",
+      "year": 285,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-erlu",
+      "title": "二陆入洛",
+      "dynasty": "西晋",
+      "year": 289,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-erwang",
+      "title": "二王书法并称",
+      "dynasty": "东晋十六国",
+      "year": 350,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-feicaofang",
+      "title": "司马师废曹芳",
+      "dynasty": "三国",
+      "year": 254,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-feiyinhao",
+      "title": "桓温逼废殷浩",
+      "dynasty": "东晋十六国",
+      "year": 354,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-fengjinwang",
+      "title": "司马昭封晋王",
+      "dynasty": "三国",
+      "year": 264,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-guiyin",
+      "title": "陶渊明归隐终老",
+      "dynasty": "南北朝",
+      "year": 420,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-houjing-pan",
+      "title": "侯景叛东魏奔梁",
+      "dynasty": "南北朝",
+      "year": 547,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-jingu",
+      "title": "金谷二十四友之游",
+      "dynasty": "西晋",
+      "year": 296,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-jingzhou",
+      "title": "羊祜经营荆州",
+      "dynasty": "西晋",
+      "year": 269,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-linchao",
+      "title": "冯太后临朝称制",
+      "dynasty": "南北朝",
+      "year": 476,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-liutiao",
+      "title": "苏绰六条诏书",
+      "dynasty": "南北朝",
+      "year": 541,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-luoyang",
+      "title": "陈庆之败归南梁",
+      "dynasty": "南北朝",
+      "year": 529,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-menshi",
+      "title": "桓温王猛扪虱而谈",
+      "dynasty": "东晋十六国",
+      "year": 354,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-shayuan",
+      "title": "沙苑之战",
+      "dynasty": "南北朝",
+      "year": 537,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-shmaohuan",
+      "title": "成济弑曹髦，立曹奂",
+      "dynasty": "三国",
+      "year": 260,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-simashi-zhuanquan",
+      "title": "司马师继掌魏政",
+      "dynasty": "三国",
+      "year": 254,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-taizifei",
+      "title": "立司马衷为太子，贾南风为妃",
+      "dynasty": "西晋",
+      "year": 272,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-wenji",
+      "title": "祖逖刘琨闻鸡起舞",
+      "dynasty": "西晋",
+      "year": 289,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-wudoumi",
+      "title": "陶渊明不为五斗米折腰",
+      "dynasty": "东晋十六国",
+      "year": 405,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-xiean-huanwen",
+      "title": "桓温辟谢安为司马",
+      "dynasty": "东晋十六国",
+      "year": 360,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-xiexuan-beifa",
+      "title": "谢玄北伐中原",
+      "dynasty": "东晋十六国",
+      "year": 384,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-yanglu",
+      "title": "羊祜陆抗荆州对峙",
+      "dynasty": "西晋",
+      "year": 272,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-yuanjia",
+      "title": "元嘉之治",
+      "dynasty": "南北朝",
+      "year": 424,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-zhiguo",
+      "title": "王猛辅秦治国",
+      "dynasty": "东晋十六国",
+      "year": 360,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-zhongliu",
+      "title": "祖逖中流击楫",
+      "dynasty": "东晋十六国",
+      "year": 313,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "weijin-zhulin",
+      "title": "竹林之游",
+      "dynasty": "三国",
+      "year": 247,
+      "surface": {
+        "timeline": false,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-01",
+      "title": "朱温篡唐建梁",
+      "dynasty": "五代十国",
+      "year": 907,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-02",
+      "title": "钱镠受封吴越王",
+      "dynasty": "五代十国",
+      "year": 907,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-03",
+      "title": "梁晋争霸",
+      "dynasty": "五代十国",
+      "year": 910,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-04",
+      "title": "灭后梁",
+      "dynasty": "五代十国",
+      "year": 923,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-05",
+      "title": "灭梁灭蜀",
+      "dynasty": "五代十国",
+      "year": 925,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-06",
+      "title": "兴教门之变",
+      "dynasty": "五代十国",
+      "year": 926,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-07",
+      "title": "石敬瑭建后晋",
+      "dynasty": "五代十国",
+      "year": 936,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-08",
+      "title": "割燕云十六州",
+      "dynasty": "五代十国",
+      "year": 938,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-09",
+      "title": "郭威建后周",
+      "dynasty": "五代十国",
+      "year": 951,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-10",
+      "title": "郭威传位柴荣",
+      "dynasty": "五代十国",
+      "year": 954,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-11",
+      "title": "李煜继位南唐",
+      "dynasty": "五代十国",
+      "year": 961,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-12",
+      "title": "灭南唐",
+      "dynasty": "五代十国",
+      "year": 975,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-13",
+      "title": "前蜀建立",
+      "dynasty": "五代十国",
+      "year": 907,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-14",
+      "title": "后蜀建立",
+      "dynasty": "五代十国",
+      "year": 934,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-15",
+      "title": "南唐建立",
+      "dynasty": "五代十国",
+      "year": 937,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-16",
+      "title": "后汉建立",
+      "dynasty": "五代十国",
+      "year": 947,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-17",
+      "title": "高平之战",
+      "dynasty": "五代十国",
+      "year": 954,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-18",
+      "title": "后周世宗改革",
+      "dynasty": "五代十国",
+      "year": 955,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-19",
+      "title": "后周取淮南",
+      "dynasty": "五代十国",
+      "year": 956,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-20",
+      "title": "吴越纳土归宋",
+      "dynasty": "五代十国",
+      "year": 978,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-21",
+      "title": "北汉灭亡",
+      "dynasty": "五代十国",
+      "year": 979,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-22",
+      "title": "潞州之战",
+      "dynasty": "五代十国",
+      "year": 908,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-23",
+      "title": "柏乡之战",
+      "dynasty": "五代十国",
+      "year": 917,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-24",
+      "title": "朱友珪弑父",
+      "dynasty": "五代十国",
+      "year": 912,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-25",
+      "title": "后唐明宗之治",
+      "dynasty": "五代十国",
+      "year": 932,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-26",
+      "title": "南唐灭闽",
+      "dynasty": "五代十国",
+      "year": 945,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-27",
+      "title": "后汉内乱",
+      "dynasty": "五代十国",
+      "year": 950,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "wudai-28",
+      "title": "南唐灭楚",
+      "dynasty": "五代十国",
+      "year": 951,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-01",
+      "title": "鲧治水失败",
+      "dynasty": "夏",
+      "year": -2100,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-02",
+      "title": "大禹治水",
+      "dynasty": "夏",
+      "year": -2083,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-03",
+      "title": "禹疏九川，划定九州",
+      "dynasty": "夏",
+      "year": -2080,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xia-04",
+      "title": "禹即天子位，夏朝建立",
+      "dynasty": "夏",
+      "year": -2070,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-05",
+      "title": "禹定五服",
+      "dynasty": "夏",
+      "year": -2070,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xia-06",
+      "title": "启伐有扈氏",
+      "dynasty": "夏",
+      "year": -2050,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xia-07",
+      "title": "太康失国",
+      "dynasty": "夏",
+      "year": -1990,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-08",
+      "title": "羲和乱日，胤往征之",
+      "dynasty": "夏",
+      "year": -1980,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xia-09",
+      "title": "夏室中衰，少康嗣位",
+      "dynasty": "夏",
+      "year": -1850,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-10",
+      "title": "孔甲乱夏，诸侯多叛",
+      "dynasty": "夏",
+      "year": -1700,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xia-11",
+      "title": "刘累豢龙",
+      "dynasty": "夏",
+      "year": -1690,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xia-12",
+      "title": "夏桀暴虐，囚汤于夏台",
+      "dynasty": "夏",
+      "year": -1610,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-13",
+      "title": "鸣条之战，夏亡",
+      "dynasty": "夏",
+      "year": -1600,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-baideng",
+      "title": "白登之围与汉匈和亲",
+      "dynasty": "西汉",
+      "year": -200,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-chaocuo-guishu",
+      "title": "晁错上《论贵粟疏》",
+      "dynasty": "西汉",
+      "year": -168,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-chaoxian",
+      "title": "灭卫氏朝鲜，置四郡",
+      "dynasty": "西汉",
+      "year": -108,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-chentang",
+      "title": "陈汤斩郅支单于",
+      "dynasty": "西汉",
+      "year": -36,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-confucianism",
+      "title": "罢黜百家，独尊儒术",
+      "dynasty": "西汉",
+      "year": -134,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-dawan",
+      "title": "李广利伐大宛，取汗血马",
+      "dynasty": "西汉",
+      "year": -101,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-four-generals",
+      "title": "四将军出击匈奴",
+      "dynasty": "西汉",
+      "year": -129,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-fujiezi",
+      "title": "傅介子刺楼兰王",
+      "dynasty": "西汉",
+      "year": -77,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-gaixia",
+      "title": "垓下之围，项羽自刎乌江",
+      "dynasty": "西汉",
+      "year": -202,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-gaozu-death",
+      "title": "汉高祖崩，吕后专权",
+      "dynasty": "西汉",
+      "year": -195,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-green-red",
+      "title": "绿林、赤眉起义",
+      "dynasty": "西汉",
+      "year": 17,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-hanxin-pengyue",
+      "title": "韩信、彭越被诛",
+      "dynasty": "西汉",
+      "year": -196,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-hanxin-qi",
+      "title": "韩信破齐，下临淄",
+      "dynasty": "西汉",
+      "year": -204,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-henan-battle",
+      "title": "河南之战，置朔方郡",
+      "dynasty": "西汉",
+      "year": -127,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-hexi-battle",
+      "title": "河西之战，浑邪王降汉",
+      "dynasty": "西汉",
+      "year": -121,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-hongmen",
+      "title": "鸿门宴",
+      "dynasty": "西汉",
+      "year": -206,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-huhanye",
+      "title": "呼韩邪单于来朝",
+      "dynasty": "西汉",
+      "year": -51,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-jia-yi",
+      "title": "贾谊上《治安策》",
+      "dynasty": "西汉",
+      "year": -174,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-kunyang",
+      "title": "昆阳之战",
+      "dynasty": "西汉",
+      "year": 23,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-liuxiang",
+      "title": "刘向校书秘府",
+      "dynasty": "西汉",
+      "year": -26,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-luntai",
+      "title": "轮台罪己诏",
+      "dynasty": "西汉",
+      "year": -89,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-lvhou-regent",
+      "title": "惠帝崩，吕后临朝称制",
+      "dynasty": "西汉",
+      "year": -188,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-mayi",
+      "title": "马邑之谋",
+      "dynasty": "西汉",
+      "year": -133,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-mobei",
+      "title": "漠北之战，封狼居胥",
+      "dynasty": "西汉",
+      "year": -119,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-nanyue",
+      "title": "灭南越，置九郡",
+      "dynasty": "西汉",
+      "year": -111,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-pengcheng",
+      "title": "彭城之战",
+      "dynasty": "西汉",
+      "year": -205,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-shiji",
+      "title": "司马迁著《史记》成书",
+      "dynasty": "西汉",
+      "year": -91,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-taichu-calendar",
+      "title": "太初改历",
+      "dynasty": "西汉",
+      "year": -104,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-tiying",
+      "title": "缇萦上书救父，文帝废肉刑",
+      "dynasty": "西汉",
+      "year": -167,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-tuien",
+      "title": "推恩令",
+      "dynasty": "西汉",
+      "year": -127,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-wangmang-regent",
+      "title": "王莽居摄，称假皇帝",
+      "dynasty": "西汉",
+      "year": 6,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-wangmang-rise",
+      "title": "王莽复起，迎立平帝",
+      "dynasty": "西汉",
+      "year": -1,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-weishui",
+      "title": "潍水之战，韩信斩龙且",
+      "dynasty": "西汉",
+      "year": -203,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-wenjing",
+      "title": "文景之治",
+      "dynasty": "西汉",
+      "year": -180,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-wudi-enthroned",
+      "title": "汉武帝即位",
+      "dynasty": "西汉",
+      "year": -141,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-wugu",
+      "title": "巫蛊之祸",
+      "dynasty": "西汉",
+      "year": -91,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-wuzhu",
+      "title": "铸五铢钱，统一币制",
+      "dynasty": "西汉",
+      "year": -118,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-xiao-cao",
+      "title": "萧规曹随",
+      "dynasty": "西汉",
+      "year": -193,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-xin-fall",
+      "title": "新莽覆亡",
+      "dynasty": "西汉",
+      "year": 23,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-xin-reform",
+      "title": "新莽新政：王田、五均六筦",
+      "dynasty": "西汉",
+      "year": 9,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-xuandi",
+      "title": "霍光废昌邑王，立宣帝",
+      "dynasty": "西汉",
+      "year": -74,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-yantie",
+      "title": "盐铁会议",
+      "dynasty": "西汉",
+      "year": -81,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-yunmeng",
+      "title": "伪游云梦，擒韩信",
+      "dynasty": "西汉",
+      "year": -201,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-zhangqian-again",
+      "title": "张骞再使乌孙",
+      "dynasty": "西汉",
+      "year": -119,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-zhaochongguo",
+      "title": "赵充国屯田平羌",
+      "dynasty": "西汉",
+      "year": -61,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-zhaodi",
+      "title": "武帝崩，霍光辅政",
+      "dynasty": "西汉",
+      "year": -87,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-zhaojun",
+      "title": "昭君出塞",
+      "dynasty": "西汉",
+      "year": -33,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xihan-zhulv",
+      "title": "诛诸吕，迎立文帝",
+      "dynasty": "西汉",
+      "year": -180,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-01",
+      "title": "司马炎代魏，西晋建立",
+      "dynasty": "西晋",
+      "year": 265,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-02",
+      "title": "晋灭吴，三国归晋",
+      "dynasty": "西晋",
+      "year": 280,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-03",
+      "title": "晋武帝崩，贾后干政",
+      "dynasty": "西晋",
+      "year": 290,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-04",
+      "title": "八王之乱",
+      "dynasty": "西晋",
+      "year": 291,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-05",
+      "title": "刘渊起兵，建汉",
+      "dynasty": "西晋",
+      "year": 304,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-06",
+      "title": "永嘉之乱",
+      "dynasty": "西晋",
+      "year": 311,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-07",
+      "title": "西晋灭亡",
+      "dynasty": "西晋",
+      "year": 316,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xixia-01",
+      "title": "李元昊建西夏",
+      "dynasty": "西夏",
+      "year": 1038,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xixia-02",
+      "title": "宋夏战争",
+      "dynasty": "西夏",
+      "year": 1041,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xixia-03",
+      "title": "李继迁攻取灵州",
+      "dynasty": "西夏",
+      "year": 1002,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xixia-04",
+      "title": "李元昊继位",
+      "dynasty": "西夏",
+      "year": 1032,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xixia-05",
+      "title": "创制西夏文",
+      "dynasty": "西夏",
+      "year": 1036,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xixia-06",
+      "title": "三川口之战",
+      "dynasty": "西夏",
+      "year": 1040,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xixia-07",
+      "title": "好水川之战",
+      "dynasty": "西夏",
+      "year": 1041,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xixia-08",
+      "title": "庆历和议",
+      "dynasty": "西夏",
+      "year": 1044,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xixia-09",
+      "title": "灵州之战",
+      "dynasty": "西夏",
+      "year": 1081,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xixia-10",
+      "title": "西夏联辽抗金",
+      "dynasty": "西夏",
+      "year": 1114,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xixia-11",
+      "title": "蒙古围中兴府",
+      "dynasty": "西夏",
+      "year": 1209,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xixia-12",
+      "title": "西夏灭亡",
+      "dynasty": "西夏",
+      "year": 1227,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-01",
+      "title": "牧野之战",
+      "dynasty": "西周",
+      "year": -1046,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-02",
+      "title": "封建诸侯，分土治民",
+      "dynasty": "西周",
+      "year": -1046,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-03",
+      "title": "箕子陈洪范九畴",
+      "dynasty": "西周",
+      "year": -1046,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-04",
+      "title": "周公摄政",
+      "dynasty": "西周",
+      "year": -1042,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-05",
+      "title": "管蔡之乱，周公东征",
+      "dynasty": "西周",
+      "year": -1042,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-06",
+      "title": "成康之治",
+      "dynasty": "西周",
+      "year": -1042,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-07",
+      "title": "桐叶封弟，唐叔虞封晋",
+      "dynasty": "西周",
+      "year": -1040,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xizhou-08",
+      "title": "周公还政成王",
+      "dynasty": "西周",
+      "year": -1036,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-09",
+      "title": "营建洛邑，定鼎中原",
+      "dynasty": "西周",
+      "year": -1036,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-10",
+      "title": "兴正礼乐，周制大备",
+      "dynasty": "西周",
+      "year": -1030,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-11",
+      "title": "昭王南征不返",
+      "dynasty": "西周",
+      "year": -977,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xizhou-12",
+      "title": "穆王征犬戎",
+      "dynasty": "西周",
+      "year": -960,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xizhou-13",
+      "title": "穆王作甫刑（吕刑）",
+      "dynasty": "西周",
+      "year": -950,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xizhou-14",
+      "title": "熊渠兴兵，楚始称王",
+      "dynasty": "西周",
+      "year": -880,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xizhou-15",
+      "title": "厉王专利，暴政虐民",
+      "dynasty": "西周",
+      "year": -848,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xizhou-16",
+      "title": "国人暴动，厉王奔彘",
+      "dynasty": "西周",
+      "year": -841,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-17",
+      "title": "共和行政，中国确切纪年之始",
+      "dynasty": "西周",
+      "year": -841,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-18",
+      "title": "宣王即位，共和罢",
+      "dynasty": "西周",
+      "year": -828,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-19",
+      "title": "郑桓公始封于郑",
+      "dynasty": "西周",
+      "year": -806,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xizhou-20",
+      "title": "千亩之战，王师败绩",
+      "dynasty": "西周",
+      "year": -789,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "xizhou-21",
+      "title": "烽火戏诸侯",
+      "dynasty": "西周",
+      "year": -779,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-22",
+      "title": "犬戎攻镐京，西周灭亡",
+      "dynasty": "西周",
+      "year": -771,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-01",
+      "title": "成吉思汗征召耶律楚材西征",
+      "dynasty": "元",
+      "year": 1219,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-02",
+      "title": "成吉思汗指定继承人",
+      "dynasty": "元",
+      "year": 1229,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-03",
+      "title": "耶律楚材治理中原",
+      "dynasty": "元",
+      "year": 1230,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-04",
+      "title": "蒙古灭金伐宋",
+      "dynasty": "元",
+      "year": 1234,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-05",
+      "title": "创八思巴文",
+      "dynasty": "元",
+      "year": 1269,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-06",
+      "title": "忽必烈建立元朝",
+      "dynasty": "元",
+      "year": 1271,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-07",
+      "title": "元灭南宋",
+      "dynasty": "元",
+      "year": 1276,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-08",
+      "title": "皋亭山交锋",
+      "dynasty": "元",
+      "year": 1276,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-09",
+      "title": "修三史与至正新政",
+      "dynasty": "元",
+      "year": 1344,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-10",
+      "title": "贾鲁治河",
+      "dynasty": "元",
+      "year": 1351,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-11",
+      "title": "拔都西征",
+      "dynasty": "元",
+      "year": 1235,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-12",
+      "title": "窝阔台崩·乃马真称制",
+      "dynasty": "元",
+      "year": 1241,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-13",
+      "title": "凉州会盟",
+      "dynasty": "元",
+      "year": 1247,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-14",
+      "title": "蒙哥即位",
+      "dynasty": "元",
+      "year": 1251,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-15",
+      "title": "忽必烈平大理",
+      "dynasty": "元",
+      "year": 1253,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-16",
+      "title": "旭烈兀西征",
+      "dynasty": "元",
+      "year": 1258,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-17",
+      "title": "忽必烈即位·阿里不哥争位",
+      "dynasty": "元",
+      "year": 1260,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-18",
+      "title": "李璮之乱",
+      "dynasty": "元",
+      "year": 1262,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-19",
+      "title": "阿里不哥败降",
+      "dynasty": "元",
+      "year": 1264,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-20",
+      "title": "元军征日",
+      "dynasty": "元",
+      "year": 1274,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-21",
+      "title": "郭守敬修《授时历》",
+      "dynasty": "元",
+      "year": 1280,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-22",
+      "title": "弘安之役",
+      "dynasty": "元",
+      "year": 1281,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-23",
+      "title": "元征占城",
+      "dynasty": "元",
+      "year": 1283,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-24",
+      "title": "元征安南",
+      "dynasty": "元",
+      "year": 1285,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-25",
+      "title": "桑哥理财",
+      "dynasty": "元",
+      "year": 1287,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-26",
+      "title": "杨琏真迦盗宋陵",
+      "dynasty": "元",
+      "year": 1285,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-27",
+      "title": "忽必烈崩·铁穆耳即位",
+      "dynasty": "元",
+      "year": 1294,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-28",
+      "title": "武仁授受",
+      "dynasty": "元",
+      "year": 1307,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-29",
+      "title": "延祐复科",
+      "dynasty": "元",
+      "year": 1313,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-30",
+      "title": "南坡之变",
+      "dynasty": "元",
+      "year": 1323,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-31",
+      "title": "天历之变",
+      "dynasty": "元",
+      "year": 1328,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-32",
+      "title": "奎章阁·修经世大典",
+      "dynasty": "元",
+      "year": 1329,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-33",
+      "title": "伯颜专权",
+      "dynasty": "元",
+      "year": 1333,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-34",
+      "title": "脱脱更化",
+      "dynasty": "元",
+      "year": 1340,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-35",
+      "title": "红巾军起义",
+      "dynasty": "元",
+      "year": 1351,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-36",
+      "title": "朱元璋投郭子兴",
+      "dynasty": "元",
+      "year": 1352,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-37",
+      "title": "脱脱征高邮",
+      "dynasty": "元",
+      "year": 1354,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "yuan-38",
+      "title": "刘福通迎韩林儿",
+      "dynasty": "元",
+      "year": 1355,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-01",
+      "title": "越灭吴，勾践称霸",
+      "dynasty": "战国",
+      "year": -473,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-02",
+      "title": "晋阳之战，三家灭智伯",
+      "dynasty": "战国",
+      "year": -453,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-03",
+      "title": "三家始列为诸侯",
+      "dynasty": "战国",
+      "year": -403,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-04",
+      "title": "吴起相楚变法",
+      "dynasty": "战国",
+      "year": -386,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-05",
+      "title": "商鞅变法",
+      "dynasty": "战国",
+      "year": -359,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-06",
+      "title": "申不害相韩",
+      "dynasty": "战国",
+      "year": -355,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-07",
+      "title": "桂陵之战，围魏救赵",
+      "dynasty": "战国",
+      "year": -353,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-08",
+      "title": "迁都咸阳，置县开阡陌",
+      "dynasty": "战国",
+      "year": -350,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-09",
+      "title": "马陵之战，庞涓自刭",
+      "dynasty": "战国",
+      "year": -341,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-10",
+      "title": "商鞅车裂",
+      "dynasty": "战国",
+      "year": -338,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-11",
+      "title": "苏秦倡合纵",
+      "dynasty": "战国",
+      "year": -334,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-12",
+      "title": "庄子拒楚威王聘",
+      "dynasty": "战国",
+      "year": -334,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-13",
+      "title": "齐魏相王于徐州",
+      "dynasty": "战国",
+      "year": -334,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-14",
+      "title": "张仪相秦，连横开局",
+      "dynasty": "战国",
+      "year": -328,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-15",
+      "title": "孟子游说齐、梁",
+      "dynasty": "战国",
+      "year": -320,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-16",
+      "title": "五国攻秦，修鱼之战",
+      "dynasty": "战国",
+      "year": -318,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-17",
+      "title": "司马错伐灭蜀国",
+      "dynasty": "战国",
+      "year": -316,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-18",
+      "title": "张仪欺楚，绝齐亲秦",
+      "dynasty": "战国",
+      "year": -313,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-19",
+      "title": "丹阳之战，楚败失汉中",
+      "dynasty": "战国",
+      "year": -312,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-20",
+      "title": "稷下学宫，百家争鸣",
+      "dynasty": "战国",
+      "year": -310,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-21",
+      "title": "赵武灵王胡服骑射",
+      "dynasty": "战国",
+      "year": -307,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-22",
+      "title": "赵武灵王灭中山",
+      "dynasty": "战国",
+      "year": -296,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-23",
+      "title": "伊阙之战，白起斩首二十四万",
+      "dynasty": "战国",
+      "year": -293,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-24",
+      "title": "秦齐称帝，旋复去帝",
+      "dynasty": "战国",
+      "year": -288,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-25",
+      "title": "齐湣王灭宋",
+      "dynasty": "战国",
+      "year": -286,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-26",
+      "title": "五国伐齐，乐毅破齐",
+      "dynasty": "战国",
+      "year": -284,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-27",
+      "title": "完璧归赵",
+      "dynasty": "战国",
+      "year": -283,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-28",
+      "title": "田单火牛阵，复齐七十城",
+      "dynasty": "战国",
+      "year": -279,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-29",
+      "title": "屈原投汨罗",
+      "dynasty": "战国",
+      "year": -278,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-30",
+      "title": "范雎献策，远交近攻",
+      "dynasty": "战国",
+      "year": -270,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-31",
+      "title": "长平之战，白起坑赵卒",
+      "dynasty": "战国",
+      "year": -260,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-32",
+      "title": "信陵君窃符救赵",
+      "dynasty": "战国",
+      "year": -258,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-33",
+      "title": "白起赐死杜邮",
+      "dynasty": "战国",
+      "year": -257,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-34",
+      "title": "秦灭西周，周室覆亡",
+      "dynasty": "战国",
+      "year": -256,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-35",
+      "title": "李冰凿离碓，修都江堰",
+      "dynasty": "战国",
+      "year": -251,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-36",
+      "title": "信陵君率五国破秦于河外",
+      "dynasty": "战国",
+      "year": -247,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-37",
+      "title": "郑国渠建成",
+      "dynasty": "战国",
+      "year": -246,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-38",
+      "title": "吕不韦编《吕氏春秋》",
+      "dynasty": "战国",
+      "year": -239,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-39",
+      "title": "嫪毐之乱，夷三族",
+      "dynasty": "战国",
+      "year": -238,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-40",
+      "title": "荀子著书，卒于兰陵",
+      "dynasty": "战国",
+      "year": -238,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-41",
+      "title": "李斯上《谏逐客书》",
+      "dynasty": "战国",
+      "year": -237,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-42",
+      "title": "韩非使秦，被害于狱中",
+      "dynasty": "战国",
+      "year": -233,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-43",
+      "title": "秦灭韩",
+      "dynasty": "战国",
+      "year": -230,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-44",
+      "title": "秦灭赵，虏赵王迁",
+      "dynasty": "战国",
+      "year": -228,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-45",
+      "title": "荆轲刺秦王",
+      "dynasty": "战国",
+      "year": -227,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-46",
+      "title": "秦灭魏",
+      "dynasty": "战国",
+      "year": -225,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-47",
+      "title": "秦灭楚",
+      "dynasty": "战国",
+      "year": -223,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-48",
+      "title": "秦灭燕",
+      "dynasty": "战国",
+      "year": -222,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-49",
+      "title": "墨子止楚攻宋",
+      "dynasty": "战国",
+      "year": -440,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-50",
+      "title": "魏文侯礼贤，李悝变法",
+      "dynasty": "战国",
+      "year": -406,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-51",
+      "title": "田氏代齐",
+      "dynasty": "战国",
+      "year": -386,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-52",
+      "title": "邹忌讽齐王纳谏",
+      "dynasty": "战国",
+      "year": -357,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-53",
+      "title": "五国相王",
+      "dynasty": "战国",
+      "year": -323,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-54",
+      "title": "燕昭王筑黄金台招贤",
+      "dynasty": "战国",
+      "year": -311,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "zhanguo-55",
+      "title": "将相和，负荆请罪",
+      "dynasty": "战国",
+      "year": -279,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    }
+  ]
+}

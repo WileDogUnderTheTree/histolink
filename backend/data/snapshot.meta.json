@@ -1,0 +1,21 @@
+{
+  "schema_version": "snapshot.v1",
+  "snapshot_version": "v1-2978ceda7d15",
+  "generated_at": "2026-11-23T11:38:14.634Z",
+  "content_hash": "5b89c7e0b9aee85aff06eabc5d0642e29e147d038da2e24856956768c449d06b",
+  "counts": {
+    "events": 705,
+    "persons": 1058,
+    "relations": 639,
+    "eras": 18,
+    "scopes": 7,
+    "groups": 7,
+    "aliases": 66
+  },
+  "license": "CC BY-NC-SA 4.0",
+  "attribution": "数据依据 shiji-kb（CC BY-NC-SA 4.0）与史脉人工校订；非商用。",
+  "files": {
+    "snapshot": "snapshot.v1.json",
+    "size_bytes": 2862384
+  }
+}
