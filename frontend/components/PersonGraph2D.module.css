@@ -93,6 +93,27 @@
   filter: none;
 }
 
+/* TC-08 受控状态：高亮 = 次要强调（不抢中心 / 选中的视觉权重）。 */
+.node.nodeHighlighted circle {
+  fill: #eef4ef;
+  stroke: #3f6b57;
+  stroke-width: 3px;
+  filter: drop-shadow(0 1px 4px rgb(63 107 87 / 28%));
+}
+
+/* TC-08 受控选中：关系面板已打开的人物，用最重的描边 + 实心浅底标示。 */
+.node.nodeSelected circle {
+  fill: #f2ddd3;
+  stroke: #3d1b15;
+  stroke-width: 3.4px;
+  filter: drop-shadow(0 2px 7px rgb(61 27 21 / 30%));
+}
+
+.nodeSelected .nodeLabel,
+.nodeHighlighted .nodeLabel {
+  font-weight: 700;
+}
+
 .nodeLabel {
   fill: var(--ink);
   font-family: "PingFang SC", "Microsoft YaHei", sans-serif;

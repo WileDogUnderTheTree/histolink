@@ -40,8 +40,20 @@ export class ActionBus {
     private readonly getCurrentSurface: () => UISurface | null = () => null,
   ) {}
 
-  register(type: UIActionType, handler: ActionHandler): void {
+  /**
+   * 注册动作 handler；返回注销函数。
+   *
+   * 页面级接入（TC-08）在 `useEffect` 里注册、卸载时注销：单例 ActionBus 生命周期
+   * 长于页面，不注销会把旧页面闭包留在内存里，切页后执行到过期状态。
+   * 注销只删除「仍是本次注册的那个 handler」，避免后注册的页面被先卸载的页面误删。
+   */
+  register(type: UIActionType, handler: ActionHandler): () => void {
     this.handlers.set(type, handler);
+    return () => {
+      if (this.handlers.get(type) === handler) {
+        this.handlers.delete(type);
+      }
+    };
   }
 
   on(listener: ActionBusListener): () => void {

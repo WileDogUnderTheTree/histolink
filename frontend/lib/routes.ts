@@ -47,6 +47,8 @@ export interface GraphHrefParams {
   person?: string;
   era?: string;
   mode?: string;
+  /** 受控选中的人物（V1.0.1 / TC-08）：刷新后仍保持关系面板。 */
+  selected?: string;
 }
 
 export function timelineHref(params: TimelineHrefParams = {}): string {
@@ -62,6 +64,7 @@ export function graphHref(params: GraphHrefParams = {}): string {
     person: params.person,
     era: params.era,
     mode: params.mode,
+    selected: params.selected,
   });
 }
 

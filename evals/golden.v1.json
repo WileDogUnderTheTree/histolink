@@ -1,0 +1,650 @@
+{
+  "$schema": "./schema.json",
+  "version": "golden.v1",
+  "generated_at": "2026-11-23",
+  "snapshot": {
+    "version": "v1-2978ceda7d15",
+    "hash": "sha256:5b89c7e0b9aee85aff06eabc5d0642e29e147d038da2e24856956768c449d06b",
+    "counts": {
+      "events": 705,
+      "persons": 1058,
+      "relations": 639,
+      "eras": 18,
+      "scopes": 7,
+      "groups": 7,
+      "aliases": 66
+    }
+  },
+  "category_counts": {
+    "bc_year": 3,
+    "ambiguous_name": 4,
+    "insufficient": 3,
+    "cross_dynasty": 3,
+    "relation": 4,
+    "comparison": 3,
+    "out_of_scope": 2,
+    "easter_egg": 1,
+    "graph_only_event": 1,
+    "multi_turn": 2,
+    "event_person_link": 2,
+    "ui_action": 2
+  },
+  "cases": [
+    {
+      "id": "bc-01-qin-unify",
+      "category": "bc_year",
+      "question": "秦始皇在哪一年统一六国？",
+      "context": { "route": "/timeline", "mode": "detail", "dynasty": "秦", "event_id": "qin-unify" },
+      "expected": {
+        "tool_calls": [
+          { "name": "search_events", "args": { "q": "秦始皇 统一六国" } },
+          { "name": "get_event", "args": { "event_id": "qin-unify" } }
+        ],
+        "entity_ids": ["p-qinshihuang-f6c7"],
+        "event_ids": ["qin-unify"],
+        "action_types": ["timeline.focus_event"],
+        "action_target_surfaces": ["timeline"],
+        "action_decisions": ["auto"],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "公元前 221 年，秦始皇统一六国。", "event_ids": ["qin-unify"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "bc-02-changping",
+      "category": "bc_year",
+      "question": "长平之战发生在哪一年？结果如何？",
+      "context": { "route": "/timeline", "mode": "detail", "dynasty": "战国", "event_id": "zhanguo-31" },
+      "expected": {
+        "tool_calls": [
+          { "name": "search_events", "args": { "q": "长平之战" } },
+          { "name": "get_event", "args": { "event_id": "zhanguo-31" } }
+        ],
+        "entity_ids": ["p-baiqi-f74d", "p-lianpo-8900"],
+        "event_ids": ["zhanguo-31"],
+        "action_types": ["timeline.focus_event"],
+        "action_target_surfaces": ["timeline"],
+        "action_decisions": ["auto"],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "公元前 260 年，秦赵长平之战，白起坑杀赵卒。", "event_ids": ["zhanguo-31"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "bc-03-confucius-death",
+      "category": "bc_year",
+      "question": "孔子卒于哪一年？",
+      "context": { "route": "/timeline", "mode": "detail", "dynasty": "春秋", "event_id": "chunqiu-38" },
+      "expected": {
+        "tool_calls": [
+          { "name": "search_events", "args": { "q": "孔子卒" } },
+          { "name": "get_event", "args": { "event_id": "chunqiu-38" } }
+        ],
+        "entity_ids": ["p-kongzi-e89c"],
+        "event_ids": ["chunqiu-38"],
+        "action_types": ["timeline.focus_event"],
+        "action_target_surfaces": ["timeline"],
+        "action_decisions": ["auto"],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "孔子卒于公元前 479 年。", "event_ids": ["chunqiu-38"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "amb-01-liangtaihou-no-context",
+      "category": "ambiguous_name",
+      "question": "梁太后是谁？",
+      "context": { "route": "/ask" },
+      "expected": {
+        "tool_calls": [{ "name": "resolve_entity", "args": { "query": "梁太后" } }],
+        "entity_ids": [],
+        "event_ids": [],
+        "action_types": [],
+        "action_target_surfaces": [],
+        "answer_mode": null,
+        "clarification_candidates": ["p-liangtaihou-handong-90be", "p-liangtaihou-xixia-0d0f"],
+        "citation_required": false,
+        "facts": [],
+        "notes": "无上下文时必须返回两个候选，禁止默认取第一条。"
+      }
+    },
+    {
+      "id": "amb-02-liangtaihou-xixia",
+      "category": "ambiguous_name",
+      "question": "西夏的梁太后经历过哪些战事？",
+      "context": {
+        "route": "/graph",
+        "mode": "detail",
+        "era_id": "xixia",
+        "person_id": "p-liangtaihou-xixia-0d0f"
+      },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_person_events", "args": { "person_id": "p-liangtaihou-xixia-0d0f" } }
+        ],
+        "entity_ids": ["p-liangtaihou-xixia-0d0f"],
+        "event_ids": ["xixia-09", "beisong-26"],
+        "action_types": ["graph.focus_person"],
+        "action_target_surfaces": ["graph"],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "西夏梁太后在灵州、永乐城之战中主持对宋防御。", "event_ids": ["xixia-09", "beisong-26"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "amb-03-liuchong-no-context",
+      "category": "ambiguous_name",
+      "question": "刘崇是谁？",
+      "context": { "route": "/ask" },
+      "expected": {
+        "tool_calls": [{ "name": "resolve_entity", "args": { "query": "刘崇" } }],
+        "entity_ids": [],
+        "event_ids": [],
+        "action_types": [],
+        "action_target_surfaces": [],
+        "answer_mode": null,
+        "clarification_candidates": ["p-liuchong-xihan-800c", "p-liuchong-wudai-f904"],
+        "citation_required": false,
+        "facts": []
+      }
+    },
+    {
+      "id": "amb-04-liuchong-wudai",
+      "category": "ambiguous_name",
+      "question": "北汉的刘崇参与了哪场关键战役？",
+      "context": { "route": "/graph", "mode": "detail", "era_id": "wudai", "person_id": "p-liuchong-wudai-f904" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_person", "args": { "person_id": "p-liuchong-wudai-f904" } },
+          { "name": "get_person_events", "args": { "person_id": "p-liuchong-wudai-f904" } }
+        ],
+        "entity_ids": ["p-liuchong-wudai-f904"],
+        "event_ids": ["wudai-17"],
+        "action_types": ["graph.focus_person"],
+        "action_target_surfaces": ["graph"],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "北汉世祖刘崇参与高平之战。", "event_ids": ["wudai-17"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "ins-01-unknown-person",
+      "category": "insufficient",
+      "question": "史脉数据里有没有叫张无忌的历史人物？",
+      "context": { "route": "/ask" },
+      "expected": {
+        "tool_calls": [{ "name": "resolve_entity", "args": { "query": "张无忌" } }],
+        "entity_ids": [],
+        "event_ids": [],
+        "action_types": [],
+        "answer_mode": "insufficient",
+        "missing": ["史脉未收录「张无忌」这一人物"],
+        "citation_required": false,
+        "facts": []
+      }
+    },
+    {
+      "id": "ins-02-daily-life-detail",
+      "category": "insufficient",
+      "question": "秦始皇每天吃什么？",
+      "context": { "route": "/timeline", "mode": "detail", "event_id": "qin-unify" },
+      "expected": {
+        "tool_calls": [{ "name": "get_event", "args": { "event_id": "qin-unify" } }],
+        "entity_ids": ["p-qinshihuang-f6c7"],
+        "event_ids": ["qin-unify"],
+        "action_types": [],
+        "answer_mode": "insufficient",
+        "missing": ["史脉事件摘要只收录政治与军事大事，没有秦始皇日常饮食记载"],
+        "citation_required": false,
+        "facts": []
+      }
+    },
+    {
+      "id": "ins-03-battle-casualties",
+      "category": "insufficient",
+      "question": "赤壁之战曹军到底伤亡多少？",
+      "context": { "route": "/timeline", "mode": "detail", "event_id": "handong-chibi" },
+      "expected": {
+        "tool_calls": [
+          { "name": "search_events", "args": { "q": "赤壁之战" } },
+          { "name": "get_event", "args": { "event_id": "handong-chibi" } }
+        ],
+        "entity_ids": ["p-caocao-b012"],
+        "event_ids": ["handong-chibi"],
+        "action_types": [],
+        "answer_mode": "insufficient",
+        "missing": ["史脉事件摘要未收录赤壁之战的具体伤亡数字"],
+        "citation_required": false,
+        "facts": []
+      }
+    },
+    {
+      "id": "cross-01-caocao",
+      "category": "cross_dynasty",
+      "question": "曹操属于东汉还是三国？",
+      "context": { "route": "/graph", "mode": "detail", "era_id": "sanguo", "person_id": "p-caocao-b012" },
+      "expected": {
+        "tool_calls": [{ "name": "get_person", "args": { "person_id": "p-caocao-b012" } }],
+        "entity_ids": ["p-caocao-b012"],
+        "event_ids": ["handong-guandu", "handong-chibi"],
+        "action_types": ["graph.focus_person"],
+        "action_target_surfaces": ["graph"],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "曹操主要活动于东汉末年至三国，图谱按汉末与三国事件共同收录。", "event_ids": ["handong-guandu", "handong-chibi"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "cross-02-yangjian",
+      "category": "cross_dynasty",
+      "question": "杨坚在南北朝与隋朝分别是什么身份？",
+      "context": { "route": "/graph", "mode": "detail", "era_id": "nanbeichao", "person_id": "p-yangjian-fbec" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_person", "args": { "person_id": "p-yangjian-fbec" } },
+          { "name": "get_person_events", "args": { "person_id": "p-yangjian-fbec" } }
+        ],
+        "entity_ids": ["p-yangjian-fbec"],
+        "event_ids": ["nanbeichao-11", "sui-10"],
+        "action_types": ["graph.focus_person"],
+        "action_target_surfaces": ["graph"],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "杨坚以北周外戚身份辅政，代周建隋。", "event_ids": ["nanbeichao-11", "sui-10"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "cross-03-zhaokuangyin",
+      "category": "cross_dynasty",
+      "question": "赵匡胤在五代十国与北宋分别做了什么？",
+      "context": { "route": "/timeline", "mode": "detail", "dynasty": "五代十国", "person_id": "p-zhaokuangyin-9bfb" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_person", "args": { "person_id": "p-zhaokuangyin-9bfb" } },
+          { "name": "get_person_events", "args": { "person_id": "p-zhaokuangyin-9bfb" } }
+        ],
+        "entity_ids": ["p-zhaokuangyin-9bfb"],
+        "event_ids": ["wudai-17", "beisong-01"],
+        "action_types": [],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "赵匡胤在高平之战立功，后发动陈桥兵变建立北宋。", "event_ids": ["wudai-17", "beisong-01"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "rel-01-wangyangming-zhuxi",
+      "category": "relation",
+      "question": "王阳明与朱熹是什么关系？",
+      "context": { "route": "/graph", "mode": "detail", "era_id": "ming", "person_id": "p-wangyangming-7a98" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_relation", "args": { "person_id_a": "p-wangyangming-7a98", "person_id_b": "p-zhuxi-74b0" } },
+          { "name": "get_event", "args": { "event_id": "ming-07" } }
+        ],
+        "entity_ids": ["p-wangyangming-7a98", "p-zhuxi-74b0"],
+        "event_ids": ["ming-07"],
+        "action_types": ["graph.focus_relation"],
+        "action_target_surfaces": ["graph"],
+        "relation_pair": ["p-wangyangming-7a98", "p-zhuxi-74b0"],
+        "relation_label": "思想对立",
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "王阳明反对朱熹「格物致知」的外求路线，提出心即理、知行合一。", "event_ids": ["ming-07"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "rel-02-liubang-xiangyu",
+      "category": "relation",
+      "question": "刘邦与项羽是什么关系？",
+      "context": { "route": "/graph", "mode": "detail", "era_id": "qinhan", "person_id": "p-liubang-f5be" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_relation", "args": { "person_id_a": "p-liubang-f5be", "person_id_b": "p-xiangyu-3d47" } },
+          { "name": "get_event", "args": { "event_id": "xihan-gaixia" } }
+        ],
+        "entity_ids": ["p-liubang-f5be", "p-xiangyu-3d47"],
+        "event_ids": ["xihan-gaixia"],
+        "action_types": ["graph.focus_relation"],
+        "action_target_surfaces": ["graph"],
+        "relation_pair": ["p-liubang-f5be", "p-xiangyu-3d47"],
+        "relation_label": null,
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "两人为楚汉相争的对手，共同经历垓下之围。", "event_ids": ["xihan-gaixia"], "citation_required": true }
+        ],
+        "notes": "关系库未收录此对定性，应回退共同事件与事件正文。"
+      }
+    },
+    {
+      "id": "rel-03-caocao-liubei",
+      "category": "relation",
+      "question": "曹操与刘备是什么关系？",
+      "context": { "route": "/graph", "mode": "detail", "era_id": "sanguo", "person_id": "p-caocao-b012" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_relation", "args": { "person_id_a": "p-caocao-b012", "person_id_b": "p-liubei-0c86" } }
+        ],
+        "entity_ids": ["p-caocao-b012", "p-liubei-0c86"],
+        "event_ids": ["handong-chibi", "hanmo-07"],
+        "action_types": ["graph.focus_relation"],
+        "action_target_surfaces": ["graph"],
+        "relation_pair": ["p-caocao-b012", "p-liubei-0c86"],
+        "relation_label": "对手",
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "曹操与刘备为对手：下邳曾合力灭吕布，赤壁后终生为敌。", "event_ids": ["handong-chibi", "hanmo-07"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "rel-04-kangxi-qianlong",
+      "category": "relation",
+      "question": "康熙帝与乾隆帝是什么关系？",
+      "context": { "route": "/graph", "mode": "detail", "era_id": "qing", "person_id": "p-kangxidi-aaa3" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_relation", "args": { "person_id_a": "p-kangxidi-aaa3", "person_id_b": "p-qianlongdi-5757" } },
+          { "name": "get_event", "args": { "event_id": "qing-08" } }
+        ],
+        "entity_ids": ["p-kangxidi-aaa3", "p-qianlongdi-5757"],
+        "event_ids": ["qing-08"],
+        "action_types": ["graph.focus_relation"],
+        "action_target_surfaces": ["graph"],
+        "relation_pair": ["p-kangxidi-aaa3", "p-qianlongdi-5757"],
+        "relation_label": "祖孙（盛世）",
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "康熙与乾隆为祖孙，共同构成康乾盛世。", "event_ids": ["qing-08"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "cmp-01-qinshihuang-hanwudi",
+      "category": "comparison",
+      "question": "对比秦始皇与汉武帝的历史功过。",
+      "context": { "route": "/ask" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_person", "args": { "person_id": "p-qinshihuang-f6c7" } },
+          { "name": "get_person", "args": { "person_id": "p-hanwudi-be67" } },
+          { "name": "get_person_events", "args": { "person_id": "p-qinshihuang-f6c7" } },
+          { "name": "get_person_events", "args": { "person_id": "p-hanwudi-be67" } }
+        ],
+        "entity_ids": ["p-qinshihuang-f6c7", "p-hanwudi-be67"],
+        "event_ids": ["qin-unify", "xihan-tuien"],
+        "action_types": [],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "秦始皇统一六国、书同文；汉武帝推恩令削弱诸侯、开疆拓土。", "event_ids": ["qin-unify", "xihan-tuien"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "cmp-02-hanwudi-lishimin",
+      "category": "comparison",
+      "question": "汉武帝与唐太宗谁的开疆与治世更成功？",
+      "context": { "route": "/ask" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_person", "args": { "person_id": "p-hanwudi-be67" } },
+          { "name": "get_person", "args": { "person_id": "p-lishimin-7efd" } },
+          { "name": "get_era_graph", "args": { "era_id": "tang" } }
+        ],
+        "entity_ids": ["p-hanwudi-be67", "p-lishimin-7efd"],
+        "event_ids": ["xihan-tuien", "tang-05"],
+        "action_types": [],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "汉武帝以推恩令与对外用兵著称；唐太宗以贞观之治与纳谏著称。", "event_ids": ["xihan-tuien", "tang-05"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "cmp-03-kangxi-qianlong",
+      "category": "comparison",
+      "question": "康熙帝与乾隆帝的治国风格有何不同？",
+      "context": { "route": "/graph", "mode": "detail", "era_id": "qing" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_person", "args": { "person_id": "p-kangxidi-aaa3" } },
+          { "name": "get_person", "args": { "person_id": "p-qianlongdi-5757" } },
+          { "name": "get_person_events", "args": { "person_id": "p-kangxidi-aaa3" } },
+          { "name": "get_person_events", "args": { "person_id": "p-qianlongdi-5757" } }
+        ],
+        "entity_ids": ["p-kangxidi-aaa3", "p-qianlongdi-5757"],
+        "event_ids": ["qing-08"],
+        "action_types": [],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "康熙平定三藩、统一台湾；乾隆时清朝达于极盛，亦潜伏吏治腐败。", "event_ids": ["qing-08"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "oos-01-python-code",
+      "category": "out_of_scope",
+      "question": "帮我写一段 Python 快速排序。",
+      "context": { "route": "/ask" },
+      "expected": {
+        "tool_calls": [],
+        "entity_ids": [],
+        "event_ids": [],
+        "action_types": [],
+        "answer_mode": "refusal",
+        "reason_code": "OUT_OF_SCOPE",
+        "citation_required": false,
+        "facts": []
+      }
+    },
+    {
+      "id": "oos-02-weather",
+      "category": "out_of_scope",
+      "question": "今天北京天气怎么样？",
+      "context": { "route": "/ask" },
+      "expected": {
+        "tool_calls": [],
+        "entity_ids": [],
+        "event_ids": [],
+        "action_types": [],
+        "answer_mode": "refusal",
+        "reason_code": "OUT_OF_SCOPE",
+        "citation_required": false,
+        "facts": []
+      }
+    },
+    {
+      "id": "egg-01-exclusion",
+      "category": "easter_egg",
+      "question": "1893 年 12 月 26 日发生了什么历史事件？",
+      "context": { "route": "/timeline", "mode": "detail", "dynasty": "清", "event_id": "special-star-1893" },
+      "expected": {
+        "tool_calls": [{ "name": "get_event", "args": { "event_id": "special-star-1893" } }],
+        "entity_ids": [],
+        "event_ids": ["special-star-1893"],
+        "action_types": [],
+        "answer_mode": "insufficient",
+        "missing": ["该节点是隐藏彩蛋，不参与史实回答"],
+        "citation_required": false,
+        "facts": [],
+        "excluded_event_ids": ["special-star-1893"],
+        "notes": "彩蛋事件 source_status=easter_egg，禁止作为史实引用。"
+      }
+    },
+    {
+      "id": "graph-01-weijin-baipao",
+      "category": "graph_only_event",
+      "question": "白袍北伐是怎么回事？",
+      "context": { "route": "/graph", "mode": "detail", "era_id": "nanbeichao" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_event", "args": { "event_id": "weijin-baipao" } },
+          { "name": "get_person", "args": { "person_id": "p-chenqingzhi-7547" } }
+        ],
+        "entity_ids": ["p-chenqingzhi-7547"],
+        "event_ids": ["weijin-baipao"],
+        "action_types": [],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "白袍北伐发生于 529 年，事件仅收入图谱，不在时间轴。", "event_ids": ["weijin-baipao"], "citation_required": true }
+        ],
+        "graph_only_event_ids": ["weijin-baipao"],
+        "notes": "回答需明确标注「仅图谱事件」，避免用户去时间轴找不到。"
+      }
+    },
+    {
+      "id": "multi-01-liangtaihou-followup",
+      "category": "multi_turn",
+      "question": "她参与过哪些战事？",
+      "history": [
+        { "role": "user", "content": "梁太后是谁？" },
+        { "role": "assistant", "content": "梁太后有两位候选：东汉顺烈皇后与西夏毅宗后。" },
+        { "role": "user", "content": "西夏的哪位。" }
+      ],
+      "context": { "route": "/ask", "person_id": "p-liangtaihou-xixia-0d0f" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_person_events", "args": { "person_id": "p-liangtaihou-xixia-0d0f" } }
+        ],
+        "entity_ids": ["p-liangtaihou-xixia-0d0f"],
+        "event_ids": ["xixia-09", "beisong-26"],
+        "action_types": [],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "西夏梁太后主持灵州、永乐城对宋防御。", "event_ids": ["xixia-09", "beisong-26"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "multi-02-yangjian-followup",
+      "category": "multi_turn",
+      "question": "他在隋朝建立中起了什么作用？",
+      "history": [
+        { "role": "user", "content": "杨坚是谁？" },
+        { "role": "assistant", "content": "杨坚是隋朝开国皇帝，此前为北周外戚重臣。" },
+        { "role": "user", "content": "具体说说建立隋朝的过程。" }
+      ],
+      "context": { "route": "/ask", "person_id": "p-yangjian-fbec" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_person_events", "args": { "person_id": "p-yangjian-fbec" } }
+        ],
+        "entity_ids": ["p-yangjian-fbec"],
+        "event_ids": ["nanbeichao-11", "sui-10"],
+        "action_types": [],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "杨坚受遗辅政，接受周静帝禅让，建立隋朝。", "event_ids": ["nanbeichao-11", "sui-10"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "link-01-chibi-zhouyu",
+      "category": "event_person_link",
+      "question": "赤壁之战有哪些人物参与？带我去看看周瑜。",
+      "context": { "route": "/timeline", "mode": "detail", "event_id": "handong-chibi" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_event", "args": { "event_id": "handong-chibi" } },
+          { "name": "resolve_entity", "args": { "query": "周瑜" } }
+        ],
+        "entity_ids": ["p-zhouyu-b475", "p-caocao-b012"],
+        "event_ids": ["handong-chibi"],
+        "action_types": ["timeline.focus_event", "graph.focus_person"],
+        "action_target_surfaces": ["timeline", "graph"],
+        "action_decisions": ["auto", "confirm"],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "赤壁之战由周瑜统兵、曹操南下，孙刘联军火攻破曹。", "event_ids": ["handong-chibi"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "link-02-xuanwumen-lishimin",
+      "category": "event_person_link",
+      "question": "玄武门之变里李世民做了什么？在图谱中查看他。",
+      "context": { "route": "/timeline", "mode": "detail", "event_id": "tang-04" },
+      "expected": {
+        "tool_calls": [
+          { "name": "get_event", "args": { "event_id": "tang-04" } },
+          { "name": "resolve_entity", "args": { "query": "李世民" } }
+        ],
+        "entity_ids": ["p-lishimin-7efd"],
+        "event_ids": ["tang-04"],
+        "action_types": ["timeline.focus_event", "graph.focus_person"],
+        "action_target_surfaces": ["timeline", "graph"],
+        "action_decisions": ["auto", "confirm"],
+        "answer_mode": "grounded",
+        "citation_required": true,
+        "facts": [
+          { "text": "李世民在玄武门之变中杀兄建成、弟元吉，随后即位。", "event_ids": ["tang-04"], "citation_required": true }
+        ]
+      }
+    },
+    {
+      "id": "ui-01-same-page-graph",
+      "category": "ui_action",
+      "question": "把图谱中心切到诸葛亮。",
+      "context": { "route": "/graph", "mode": "detail", "era_id": "sanguo" },
+      "expected": {
+        "tool_calls": [{ "name": "resolve_entity", "args": { "query": "诸葛亮" } }],
+        "entity_ids": ["p-zhugeliang-b65a"],
+        "event_ids": [],
+        "action_types": ["graph.focus_person"],
+        "action_target_surfaces": ["graph"],
+        "action_decisions": ["auto"],
+        "answer_mode": "grounded",
+        "citation_required": false,
+        "facts": [
+          { "text": "已在当前图谱内把中心人物切换为诸葛亮。", "event_ids": [], "citation_required": false }
+        ]
+      }
+    },
+    {
+      "id": "ui-02-cross-page-confirm",
+      "category": "ui_action",
+      "question": "在图谱里查看岳飞。",
+      "context": { "route": "/timeline", "mode": "detail", "dynasty": "南宋" },
+      "expected": {
+        "tool_calls": [{ "name": "resolve_entity", "args": { "query": "岳飞" } }],
+        "entity_ids": ["p-yuefei-9308"],
+        "event_ids": [],
+        "action_types": ["graph.focus_person"],
+        "action_target_surfaces": ["graph"],
+        "action_decisions": ["confirm"],
+        "answer_mode": "grounded",
+        "citation_required": false,
+        "facts": [
+          { "text": "跨页动作需要用户确认后才会跳转到图谱。", "event_ids": [], "citation_required": false }
+        ]
+      }
+    }
+  ]
+}

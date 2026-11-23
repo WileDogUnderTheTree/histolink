@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://histolink.local/evals/schema.json",
+  "title": "史脉 golden 评测用例 v1",
+  "description": "30 条 golden 评测用例的字段约束（V1.0.1 / TC-09）。contract 模式只校验结构与 ID 可解析，不调用 LLM。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "snapshot", "category_counts", "cases"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": "golden.v1" },
+    "generated_at": { "type": "string", "minLength": 10 },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "hash", "counts"],
+      "properties": {
+        "version": { "type": "string", "pattern": "^v1-[0-9a-f]{12}$" },
+        "hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["events", "persons", "relations", "eras", "scopes", "groups", "aliases"],
+          "properties": {
+            "events": { "type": "integer", "minimum": 1 },
+            "persons": { "type": "integer", "minimum": 1 },
+            "relations": { "type": "integer", "minimum": 0 },
+            "eras": { "type": "integer", "minimum": 1 },
+            "scopes": { "type": "integer", "minimum": 1 },
+            "groups": { "type": "integer", "minimum": 1 },
+            "aliases": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "category_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bc_year",
+        "ambiguous_name",
+        "insufficient",
+        "cross_dynasty",
+        "relation",
+        "comparison",
+        "out_of_scope",
+        "easter_egg",
+        "graph_only_event",
+        "multi_turn",
+        "event_person_link",
+        "ui_action"
+      ],
+      "properties": {
+        "bc_year": { "type": "integer", "minimum": 3 },
+        "ambiguous_name": { "type": "integer", "minimum": 4 },
+        "insufficient": { "type": "integer", "minimum": 3 },
+        "cross_dynasty": { "type": "integer", "minimum": 3 },
+        "relation": { "type": "integer", "minimum": 4 },
+        "comparison": { "type": "integer", "minimum": 3 },
+        "out_of_scope": { "type": "integer", "minimum": 2 },
+        "easter_egg": { "type": "integer", "minimum": 1 },
+        "graph_only_event": { "type": "integer", "minimum": 1 },
+        "multi_turn": { "type": "integer", "minimum": 2 },
+        "event_person_link": { "type": "integer", "minimum": 2 },
+        "ui_action": { "type": "integer", "minimum": 2 }
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 30,
+      "maxItems": 30,
+      "items": { "$ref": "#/$defs/goldenCase" }
+    }
+  },
+  "$defs": {
+    "personId": { "type": "string", "pattern": "^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$" },
+    "eventId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "surface": { "type": "string", "enum": ["timeline", "graph", "ask"] },
+    "actionType": {
+      "type": "string",
+      "enum": [
+        "timeline.focus_event",
+        "timeline.focus_dynasty",
+        "graph.focus_person",
+        "graph.focus_relation",
+        "ask.suggest",
+        "timeline.highlight_events",
+        "graph.highlight_persons",
+        "open.event_card",
+        "open.person_card"
+      ]
+    },
+    "toolName": {
+      "type": "string",
+      "enum": [
+        "resolve_entity",
+        "search_events",
+        "get_event",
+        "get_person",
+        "get_person_events",
+        "get_relation",
+        "get_era_graph",
+        "timeline_span"
+      ]
+    },
+    "fact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "event_ids", "citation_required"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "event_ids": {
+          "type": "array",
+          "maxItems": 10,
+          "items": { "$ref": "#/$defs/eventId" }
+        },
+        "citation_required": { "type": "boolean" }
+      }
+    },
+    "goldenCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "category", "question", "context", "expected"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "category": {
+          "type": "string",
+          "enum": [
+            "bc_year",
+            "ambiguous_name",
+            "insufficient",
+            "cross_dynasty",
+            "relation",
+            "comparison",
+            "out_of_scope",
+            "easter_egg",
+            "graph_only_event",
+            "multi_turn",
+            "event_person_link",
+            "ui_action"
+          ]
+        },
+        "question": { "type": "string", "minLength": 2, "maxLength": 500 },
+        "history": {
+          "type": "array",
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role", "content"],
+            "properties": {
+              "role": { "type": "string", "enum": ["user", "assistant"] },
+              "content": { "type": "string", "minLength": 1, "maxLength": 4000 }
+            }
+          }
+        },
+        "context": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["route"],
+          "properties": {
+            "route": { "type": "string", "pattern": "^/" },
+            "mode": { "type": "string", "enum": ["browse", "detail", "compare"] },
+            "dynasty": { "type": "string", "minLength": 1 },
+            "era_id": { "type": "string", "minLength": 1 },
+            "person_id": { "$ref": "#/$defs/personId" },
+            "event_id": { "$ref": "#/$defs/eventId" }
+          }
+        },
+        "expected": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tool_calls",
+            "entity_ids",
+            "event_ids",
+            "action_types",
+            "answer_mode",
+            "citation_required",
+            "facts"
+          ],
+          "properties": {
+            "tool_calls": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["name", "args"],
+                "properties": {
+                  "name": { "$ref": "#/$defs/toolName" },
+                  "args": { "type": "object" }
+                }
+              }
+            },
+            "entity_ids": {
+              "type": "array",
+              "maxItems": 20,
+              "items": { "$ref": "#/$defs/personId" }
+            },
+            "event_ids": {
+              "type": "array",
+              "maxItems": 20,
+              "items": { "$ref": "#/$defs/eventId" }
+            },
+            "action_types": {
+              "type": "array",
+              "maxItems": 6,
+              "items": { "$ref": "#/$defs/actionType" }
+            },
+            "action_target_surfaces": {
+              "type": "array",
+              "maxItems": 6,
+              "items": { "$ref": "#/$defs/surface" }
+            },
+            "action_decisions": {
+              "type": "array",
+              "maxItems": 6,
+              "items": { "type": "string", "enum": ["auto", "confirm"] }
+            },
+            "answer_mode": {
+              "enum": ["grounded", "insufficient", "refusal", null]
+            },
+            "missing": {
+              "type": "array",
+              "maxItems": 10,
+              "items": { "type": "string", "minLength": 1 }
+            },
+            "reason_code": {
+              "enum": ["OUT_OF_SCOPE", "UNSAFE_REQUEST", "NO_RELIABLE_BASIS", null]
+            },
+            "clarification_candidates": {
+              "type": "array",
+              "maxItems": 5,
+              "items": { "$ref": "#/$defs/personId" }
+            },
+            "citation_required": { "type": "boolean" },
+            "facts": {
+              "type": "array",
+              "maxItems": 10,
+              "items": { "$ref": "#/$defs/fact" }
+            },
+            "relation_pair": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "$ref": "#/$defs/personId" }
+            },
+            "relation_label": { "type": ["string", "null"] },
+            "graph_only_event_ids": {
+              "type": "array",
+              "maxItems": 5,
+              "items": { "$ref": "#/$defs/eventId" }
+            },
+            "excluded_event_ids": {
+              "type": "array",
+              "maxItems": 5,
+              "items": { "$ref": "#/$defs/eventId" }
+            },
+            "notes": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  }
+}

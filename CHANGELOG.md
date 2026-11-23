@@ -5,7 +5,7 @@
 - `V0.x`：时间轴深度扩充主版本（每版聚焦一个历史时期）；
 - `V0.x.1`：该时期的人物关系网次版本 / 数据修复补丁；
 - `V0.9.0`：内测版封装（功能冻结，面向朋友分享测试）；
-- `V1.0`：Agent 与语义 RAG 接入；`V1.1`：终极 UI 重构。
+- `V1.0.x`：Agent 接入的分阶段基建（V1.0.1 前置基建 → V1.0.2 工具层 → V1.0.3 规划器 → V1.0.4 动作联动 → V1.0.5 检索与引用校验 → V1.0.6 多轮）；`V1.1`：终极 UI 重构。
 
 变更分类：**新增** / **变更** / **修复** / **数据** / **文档** / **验证**。日期为版本归档日期；`0.1.0` 取首个提交日期，`0.2.0 – 0.4.1` 为早期迭代的验收归档日期（早期未逐版本提交）。
 
@@ -19,12 +19,13 @@
 
 ---
 
-## [1.0.1-dev] - 2026-11-23
+## [1.0.1] - 2026-11-23
 
-> 版本主题：**Agent 前置基建纵切片**（《V1.0.1-任务卡拆解》TC-01~TC-07 完成；TC-08/09/10/11 未做，因此**未打 `v1.0.1` tag**，前端版本号仍为 0.9.0）。
+> 版本主题：**Agent 前置基建纵切片**（《V1.0.1-任务卡拆解》TC-01~TC-11 全部完成，tag `v1.0.1`）。
 > 依据：[docs/V1.0-项目现状与开发前置审核报告.md](docs/V1.0-项目现状与开发前置审核报告.md) Q1–Q6 决策。
+> 本版**不交付**规划器 / 真实问答 / BM25 检索 / 多轮记忆；只交付可被后续版本依赖的基座。
 
-### 追加（TC-10 LLM 连通性，2026-11-23）
+### 追加（TC-10 模型能力实测，2026-11-23）
 
 - **新增 LLM Client**（`backend/llm_client.py`）：从 `backend/.env` / 环境变量读取
   `MODELSCOPE_API_KEY` / `MODELSCOPE_BASE_URL` / `MODELSCOPE_MODEL`（兼容 `LLM_*` / `OPENAI_*` 别名），
@@ -34,12 +35,20 @@
   未配置 → 503 `LLM_NOT_CONFIGURED`，上游错误 → 502 `LLM_UPSTREAM_ERROR`，超时 → 504 `LLM_TIMEOUT`；
   支持 `ENABLE_LLM_PROBE=0` 关闭（公网分享时防额度消耗）。
 - **新增独立探针** `backend/scripts/spike_llm.py`（不启动服务即可验证 key/URL/模型名）与
-  `backend/.env.example` 模板；新增 `docs/spikes/`（复现说明 + Qwen3-8B 能力报告骨架）。
+  `backend/.env.example` 模板；新增 `docs/spikes/`（复现说明 + 能力报告）。
+- **真实连通性 PASS**：实测 `Qwen/Qwen3.5-35B-A3B`。4 次重复调用回复均为 `OK`，
+  total_tokens 174–184（思考模式基线 251，与用户实测 248 同一量级），延迟 2335–2764ms；
+  `/api/agent/ping_llm` 真实返回 `usage.total_tokens=175` / `latency_ms=2441`。
+- **其余能力**：JSON 模式 PASS（218 tokens / 3.35s，可解析）；tool calling PASS（1 个 `get_event` 调用，
+  参数 `{"event_id":"qin-unify"}`）；SSE PASS（首字 515ms）；中文回答 PASS（思考模式 212 字 / 68.7s、关闭思考
+  184 字 / 2.36s，均带《史记》出处）；确定性 PASS（4/4 回复一致）。
+- **关键发现**：模型默认开启思考，`max_tokens` **不限制 reasoning tokens**（`max_tokens=400` 实测
+  6281 completion tokens）；顶层 `enable_thinking=false` 生效（16 tokens / 732ms）。
+  V1.0.3 路线定为 **tool calling 为主 + JSON 兜底**，意图抽取默认关闭思考，长文解释按需开启并把超时提到 90–120s。
 - **契约同步**：`PingLLMResponse` 进入 OpenAPI（8 条路径）、新增 ping 样例；前端类型重新生成；
   后端测试 59 → **87 passed**（新增 LLM Client 与端点离线测试，不访问网络）。
 - **清理**：`main.py` 补全 `lifespan` / `enforce_read_only` 类型标注并移除 `# type: ignore`；
   `ruff --select F,E9` 无未使用导入。
-- **状态**：`backend/.env` 当前仍为 0 字节（未读到 key），真实 ping 待凭据填入后执行；TC-10 其余 9 项探针未开始。
 
 ### 新增
 
@@ -50,6 +59,9 @@
 - **TC-05 数据快照**：`scripts/export-snapshot.mjs` 产出前后端同源 `snapshot.v1.json`（705 事件 / 1,058 人物 / 639 关系 / 18 期 / 7 断代 / 7 分组 / 66 别名，2.73MB）+ `snapshot.meta.json`（内容寻址版本、sha256 content_hash）+ `event-ids.lock.json`；`--check` 保证可重复生成。
 - **TC-06 后端只读 API**：`main.py` 改为 `create_app()` + lifespan 加载快照（hash/counts/许可校验失败即拒绝启动）；新增 `/api/health`、`/api/meta`、`/api/entities/person|event|persons`；统一错误 envelope（400/404/405/503/500）与 `/api` 只读闸门；59 条后端测试（契约 / 实体 / 错误 / 快照 fail-fast）。
 - **TC-07 AppShell 与 ActionBus 骨架**：`layout` 挂 `AgentProvider`（单一会话）+ 全局悬浮抽屉 + `/ask` 独立页（ESC / 遮罩关闭、基础 a11y、不请求后端）；新增 `lib/action-policy.ts`（Q2 策略：同页自动 / 跨页确认 / 未知类型忽略 / 缺 surface 视为跨页）、`lib/action-bus.ts`（注册 / 分发 / 幂等键 / 待确认队列）、`lib/routes.ts`（深链接构造器）；vitest 30 条单测。
+- **TC-08 组件受控接口与深链接**：`PersonGraph2D` 新增可选 `highlightedPersonIds` / `selectedPersonId` / `onPersonSelect`（`undefined` = 非受控，默认行为与 V0.9.0 完全一致；非法 / 非邻居 / 中心自己安全降级）；受控状态变化只更新 SVG class / aria，不重跑力导向；新增 `lib/graph-selection.ts`（纯函数可单测）。`ActionBus.register` 返回注销函数，`/timeline` 注册 `timeline.focus_event` / `timeline.focus_dynasty`、`/graph` 注册 `graph.focus_person` / `graph.focus_relation`，执行后回写 URL。新增 `lib/deep-links.ts`：`/timeline?event=&dynasty=&mode=`、`/graph?person=<person_id|姓名|别名>&era=<era|scope>&mode=&selected=` 可恢复视图（`selected` 驱动受控关系面板）；彩蛋事件打开彩蛋、非法参数安全回落。新增 `lib/action-capabilities.ts`（动作 → 表面 → 组件能力 → 归属版本）、`docs/component-capability-map.md`、能力映射 / 受控选中 / 深链接单测。
+- **TC-09 评测骨架**：新增 `evals/golden.v1.json`（**30 条**用例，12 类覆盖：公元前年份 3 / 同名歧义 4 / 资料不足 3 / 跨朝代 3 / 关系 4 / 对比 3 / 超范围 2 / 彩蛋排除 1 / 仅图谱事件 1 / 多轮承接 2 / 事件人物联动 2 / UI 动作策略 2）、`evals/schema.json`（draft 2020-12）、`evals/README.md`、`scripts/run-evals.mjs`。contract 模式校验 schema、快照 version/hash/counts 绑定、person/event/era 0 悬空、工具入参满足 tools schema、动作 available + surface/同页判定、回答模式与 missing/reason_code/clarification 自洽、引用必须来自有据事件、彩蛋不得作事实，并内置**负向自测**（篡改 ID 必须被拦截）。已接入 `scripts/verify.ps1` 第 11 步。
+- **TC-11 出口门禁与发布**：版本文档统一推进到 **1.0.1**（`frontend/package.json` / 首页 / 图谱 / 时间轴 / 标题 / FastAPI `APP_VERSION`）；`scripts/verify.ps1` **12 步全绿**；新增 `docs/V1.0.1-验收记录.md`；打 tag `v1.0.1`。
 
 ### 数据
 
@@ -58,21 +70,22 @@
 
 ### 验证
 
-- `pwsh scripts/verify.ps1` 10 步全绿（tsc / next build / validate-data / build-persons / extract-sources / export_contracts / gen-frontend-types / export-snapshot / pytest / vitest），总耗时约 13 秒。
-- 后端 pytest **59 passed**；前端 vitest **30 passed**；`next build` 含 `/ask` 静态预渲染通过。
-- Edge headless + CDP 手工验收：三页抽屉可开关、ESC 可关、`/ask?q=test` 显示问题、抽屉与 `/ask` 会话共享、首页「聊天问答」入口保持封印、无 hydration 报错。
+- `pwsh scripts/verify.ps1` **12 步全绿**（tsc / next build / validate-data / build-persons / extract-sources / export_contracts / gen-frontend-types / export-snapshot / pytest / vitest / run-evals-contract / validate-contract），总耗时约 17 秒。
+- 后端 pytest **87 passed**；前端 vitest **66 passed**；评测 contract **30/30**；`next build` 含 `/ask`、`/timeline`、`/graph` 静态预渲染通过。
+- Edge headless + CDP 手工验收：三页抽屉可开关、ESC 可关、`/ask?q=test` 显示问题、抽屉与 `/ask` 会话共享、首页「聊天问答」入口保持封印、无 hydration 报错；深链接 `/timeline?event=qin-unify`、`/graph?person=…&era=qing`、`/graph?person=曹操&era=sanguo&selected=刘备` 均可恢复视图，受控选中打开关系面板（截图见 `docs/images/v1.0.1-deeplink-*.png`）。
+- 模型实测：`Qwen/Qwen3.5-35B-A3B` 连通性 / JSON / tool calling / SSE / 中文 / 确定性全部通过（详见 `docs/spikes/`）。
 
 ### 文档
 
-- 新增 `docs/person-same-name-report.md`、`docs/source-review.md`、`contracts/README.md`、`backend/data/README.md`、`docs/V1.0.1-验收记录-纵切片.md`；README 增补只读 API 列表、门禁命令、目录结构与限制说明。
+- 新增 `docs/person-same-name-report.md`、`docs/source-review.md`、`contracts/README.md`、`backend/data/README.md`、`docs/V1.0.1-验收记录-纵切片.md`、`docs/V1.0.1-验收记录.md`、`docs/component-capability-map.md`、`evals/README.md`、`docs/spikes/README.md`、`docs/spikes/modelscope-qwen3.5-35b-a3b-capability.md`；README 增补只读 API 列表、门禁命令、目录结构、受控接口 / 深链接 / 评测骨架与限制说明；SPEC 新增 §7.17–§7.19。
 
-### 未完成 / 已知偏差
+### 已知偏差（保留记录）
 
-- **TC-08~TC-11 未做**：组件受控接口、评测骨架、模型能力 spike（缺凭据）、V1.0.1 出口验收与 tag。
 - 人物记录 **1,058** 而非任务卡预期的 1,061：额外发现 3 组「别名本身也是事件参与者姓名」（明武宗/朱厚照、明神宗/万历帝、宋恭帝/赵㬎），按别名表合并为同一人，已在同名报告中逐条裁决；若保持 1,059 个姓名为 1,059 条记录，会让同一历史人物拿到两个 `person_id`。
 - 书目标签 **191** 而非任务卡记录的 185：任务卡仅统计括注首个书目，本实现把并列书目的第二本也视为独立标签；引用条目 823 与任务卡一致（裴注引按 1 条计）。
 - 只读 API 的 405 由中间件统一拦截（无路由的写方法也返回 envelope），错误码新增 `INVALID_REQUEST` / `METHOD_NOT_ALLOWED` / `ROUTE_NOT_FOUND` / `SNAPSHOT_NOT_LOADED` 四个 API 层枚举值。
-- `vitest.config.ts` 在 CJS 包内触发 Vite 配置加载告警（不影响运行）；后续可改 `.mts` 或调整包类型。
+- `vitest.config.ts` 的 CJS 告警已在 V1.0.1 出口前改名为 `vitest.config.mts` 消除（vitest 自动识别）。
+- 受控接口的 `selectedPersonId` / `onPersonSelect` 参数当前为图节点 id（姓名）；`person_id` 迁移随关系库在 V1.1 完成。
 
 ---
 

@@ -54,7 +54,7 @@ export default function HomePage() {
         <p className="subtitle">
           时间轴覆盖夏—清（约前 2070—1912，含新莽、三国两晋十六国、五代辽宋夏金）；人物关系图已覆盖先秦、秦汉、三国、魏晋南北朝、隋唐、宋辽金夏与元明清。
         </p>
-        <p className="version">V0.9.0 · 内测版</p>
+        <p className="version">V1.0.1</p>
       </header>
 
       <nav className="entries" aria-label="模块入口">

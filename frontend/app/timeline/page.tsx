@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { ScrollableTabs } from "@/components/ScrollableTabs";
 import { ViewModeSwitch } from "@/components/ViewModeSwitch";
 import type { ViewMode } from "@/components/ViewModeSwitch";
+import { useAgentSession } from "@/components/agent/AgentProvider";
 import {
   DYNASTY_GROUPS,
   DYNASTY_START_YEARS,
@@ -15,6 +17,8 @@ import {
   importanceOf,
 } from "@/data/timeline-events";
 import type { Dynasty, DynastyGroupId, TimelineEvent } from "@/data/timeline-events";
+import { resolveTimelineDeepLink } from "@/lib/deep-links";
+import { timelineHref } from "@/lib/routes";
 import { formatYear, toAstronomical } from "@/lib/year";
 
 import EasterEgg from "./EasterEgg";
@@ -191,15 +195,103 @@ const eventsOfGroup = (groupId: DynastyGroupId): readonly TimelineEvent[] => {
   return TIMELINE_EVENTS.filter((event) => group.dynasties.includes(event.dynasty));
 };
 
-export default function TimelinePage() {
-  const [mode, setMode] = useState<ViewMode>("detail");
-  const [dynasty, setDynasty] = useState<Dynasty>(DYNASTIES[0]);
-  const [groupId, setGroupId] = useState<DynastyGroupId>(() => groupOfDynasty(DYNASTIES[0]).id);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [showEgg, setShowEgg] = useState(false);
+/**
+ * 时间轴页（V1.0.1 / TC-08）。
+ *
+ * 在 V0.9.0 交互之外新增：
+ * 1. 深链接恢复：`/timeline?event=<event_id>&dynasty=<朝代>&mode=detail|brief`；
+ * 2. ActionBus 接入：同页 `timeline.focus_event` / `timeline.focus_dynasty` 执行后回写深链接。
+ */
+function TimelinePageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { actionBus, currentSurface } = useAgentSession();
+
+  /** 首次渲染时从 URL 推导初始状态；后续交互不再反向读取 URL（V1.0.4 做全量状态化）。 */
+  const [deepLink] = useState(() => resolveTimelineDeepLink(searchParams.toString()));
+
+  const [mode, setMode] = useState<ViewMode>(deepLink.mode);
+  const [dynasty, setDynasty] = useState<Dynasty>(deepLink.dynasty);
+  const [groupId, setGroupId] = useState<DynastyGroupId>(deepLink.groupId);
+  const [selectedId, setSelectedId] = useState<string | null>(deepLink.selectedEventId);
+  const [showEgg, setShowEgg] = useState(deepLink.openEasterEgg);
 
   /** 记住每个大断代上次停留的细分朝代；简阅 ↔ 细览切换时据此恢复，而不是重置。 */
   const lastDynastyByGroup = useRef<Partial<Record<DynastyGroupId, Dynasty>>>({});
+
+  /**
+   * ActionBus 接入（TC-08）：只在时间轴页注册时间轴动作；卸载时注销。
+   * 与图谱页同一约定：payload 非法 / id 不存在时静默不执行，避免动作把页面带到空白状态。
+   */
+  useEffect(() => {
+    if (currentSurface !== "timeline") return;
+
+    const unregisterFocusEvent = actionBus.register("timeline.focus_event", (action) => {
+      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const eventId = typeof payload.event_id === "string" ? payload.event_id : "";
+      const event = TIMELINE_EVENTS.find((item) => item.id === eventId);
+      if (!event) return;
+
+      const eventGroup = groupOfDynasty(event.dynasty);
+      const requestedMode =
+        payload.mode === "brief" ? "brief" : payload.mode === "detail" ? "detail" : null;
+      // 简阅只渲染 importance=3；非顶级事件自动回退细览，保证一定看得到该事件。
+      const nextMode: ViewMode =
+        requestedMode === "brief" && importanceOf(event) === 3 ? "brief" : "detail";
+
+      setMode(nextMode);
+      setDynasty(event.dynasty);
+      setGroupId(eventGroup.id);
+      lastDynastyByGroup.current[eventGroup.id] = event.dynasty;
+      setSelectedId(event.id);
+      if (event.isSpecial) setShowEgg(true);
+      router.replace(
+        timelineHref({ event: event.id, dynasty: event.dynasty, mode: nextMode }),
+      );
+    });
+
+    const unregisterFocusDynasty = actionBus.register("timeline.focus_dynasty", (action) => {
+      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const requestedMode =
+        payload.mode === "brief" ? "brief" : payload.mode === "detail" ? "detail" : null;
+      const groupParam = typeof payload.group_id === "string" ? payload.group_id : null;
+      const nextGroup = DYNASTY_GROUPS.find((group) => group.id === groupParam);
+      if (nextGroup) {
+        setMode(requestedMode ?? "brief");
+        setGroupId(nextGroup.id);
+        setSelectedId(null);
+        const groupDynasty =
+          nextGroup.dynasties.find((candidate) => DYNASTIES.includes(candidate)) ?? DYNASTIES[0];
+        setDynasty(groupDynasty);
+        router.replace(
+          timelineHref({ dynasty: groupDynasty, mode: requestedMode ?? "brief" }),
+        );
+        return;
+      }
+
+      const dynastyParam =
+        typeof payload.dynasty === "string" &&
+        (DYNASTIES as readonly string[]).includes(payload.dynasty)
+          ? (payload.dynasty as Dynasty)
+          : null;
+      if (!dynastyParam) return;
+
+      const nextDynastyGroup = groupOfDynasty(dynastyParam);
+      setMode(requestedMode ?? "detail");
+      setDynasty(dynastyParam);
+      setGroupId(nextDynastyGroup.id);
+      lastDynastyByGroup.current[nextDynastyGroup.id] = dynastyParam;
+      setSelectedId(null);
+      router.replace(
+        timelineHref({ dynasty: dynastyParam, mode: requestedMode ?? "detail" }),
+      );
+    });
+
+    return () => {
+      unregisterFocusEvent();
+      unregisterFocusDynasty();
+    };
+  }, [actionBus, currentSurface, router]);
 
   const group = useMemo(
     () => DYNASTY_GROUPS.find((option) => option.id === groupId) ?? DYNASTY_GROUPS[0],
@@ -304,7 +396,7 @@ export default function TimelinePage() {
           <Link className={styles.back} href="/">
             ← 返回首页
           </Link>
-          <p className={styles.eyebrow}>中国历史探索 · 时间轴</p>
+          <p className={styles.eyebrow}>中国历史探索 · 时间轴 · V1.0.1</p>
         </div>
 
         <h1 className={styles.title}>{heading}</h1>
@@ -430,5 +522,17 @@ export default function TimelinePage() {
       </div>
 
     </main>
+  );
+}
+
+/**
+ * Next 16 要求 `useSearchParams` 处于 `<Suspense>` 内，否则 `next build`
+ * 会在静态预渲染阶段报错（V1.0.1 / TC-08 深链接）。
+ */
+export default function TimelinePage() {
+  return (
+    <Suspense fallback={<main className={styles.page}>加载中…</main>}>
+      <TimelinePageContent />
+    </Suspense>
   );
 }

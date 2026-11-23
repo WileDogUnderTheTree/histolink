@@ -124,4 +124,28 @@ describe("ActionBus", () => {
     surface = null;
     expect(bus.decide(makeAction())).toEqual({ decision: "confirm", reason: "cross_page" });
   });
+
+  it("register 返回注销函数，且只删除自己注册的 handler", async () => {
+    const bus = new ActionBus(() => "timeline");
+    const first = vi.fn();
+    const second = vi.fn();
+
+    const unregisterFirst = bus.register("timeline.focus_event", first);
+    bus.register("timeline.focus_event", second);
+    // 后注册者已覆盖 first；先注销 first 不应误删 second。
+    unregisterFirst();
+
+    await expect(bus.dispatch(makeAction({ id: "act-second" }))).resolves.toEqual({
+      status: "executed",
+    });
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledTimes(1);
+
+    const unregisterSecond = bus.register("timeline.focus_event", second);
+    unregisterSecond();
+    await expect(bus.dispatch(makeAction({ id: "act-removed" }))).resolves.toEqual({
+      status: "ignored",
+      reason: "no_handler",
+    });
+  });
 });

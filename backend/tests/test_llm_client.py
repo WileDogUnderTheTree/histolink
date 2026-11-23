@@ -27,7 +27,7 @@ API_KEY = "sk-test-secret-value"
 SETTINGS = LLMSettings(
     api_key=API_KEY,
     base_url="https://example.test/v1",
-    model="Qwen/Qwen3-8B",
+    model="Qwen/Qwen3.5-35B-A3B",
     timeout_seconds=5.0,
 )
 
@@ -40,13 +40,13 @@ def ok_handler(request: httpx.Request) -> httpx.Response:
     assert str(request.url) == "https://example.test/v1/chat/completions"
     assert request.headers["authorization"] == f"Bearer {API_KEY}"
     payload = json.loads(request.content)
-    assert payload["model"] == "Qwen/Qwen3-8B"
+    assert payload["model"] == "Qwen/Qwen3.5-35B-A3B"
     assert payload["messages"][0]["content"] == "请回复 OK"
     assert payload["stream"] is False
     return httpx.Response(
         200,
         json={
-            "model": "Qwen/Qwen3-8B",
+            "model": "Qwen/Qwen3.5-35B-A3B",
             "choices": [{"message": {"role": "assistant", "content": "OK"}}],
             "usage": {"prompt_tokens": 12, "completion_tokens": 2, "total_tokens": 14},
         },
@@ -132,7 +132,7 @@ def test_full_endpoint_is_not_double_appended() -> None:
 def test_ping_success() -> None:
     result = make_client(ok_handler).ping()
     assert result.reply == "OK"
-    assert result.model == "Qwen/Qwen3-8B"
+    assert result.model == "Qwen/Qwen3.5-35B-A3B"
     assert result.latency_ms >= 0
     assert result.usage == {"prompt_tokens": 12, "completion_tokens": 2, "total_tokens": 14}
 

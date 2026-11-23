@@ -22,7 +22,7 @@ API_KEY = "sk-test-secret-value"
 SETTINGS = LLMSettings(
     api_key=API_KEY,
     base_url="https://example.test/v1",
-    model="Qwen/Qwen3-8B",
+    model="Qwen/Qwen3.5-35B-A3B",
     timeout_seconds=5.0,
 )
 PING_ENV_NAMES = (
@@ -63,7 +63,7 @@ def _success_handler(request: httpx.Request) -> httpx.Response:
     return httpx.Response(
         200,
         json={
-            "model": "Qwen/Qwen3-8B",
+            "model": "Qwen/Qwen3.5-35B-A3B",
             "choices": [{"message": {"content": "OK"}}],
             "usage": {"prompt_tokens": 12, "completion_tokens": 2, "total_tokens": 14},
         },
@@ -87,7 +87,7 @@ def test_ping_llm_success(
     assert payload["ok"] is True
     assert payload["reply"] == "OK"
     assert payload["message"] == "请回复 OK"
-    assert payload["model"] == "Qwen/Qwen3-8B"
+    assert payload["model"] == "Qwen/Qwen3.5-35B-A3B"
     assert isinstance(payload["latency_ms"], int)
     assert payload["usage"]["total_tokens"] == 14
     _validate_against_contract(payload, "PingLLMResponse", openapi_spec)

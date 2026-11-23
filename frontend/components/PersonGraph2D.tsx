@@ -9,9 +9,15 @@ import {
   type SimulationNodeDatum,
 } from "d3-force";
 import { select } from "d3-selection";
+import type { Selection } from "d3-selection";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { PersonGraphData, PersonGraphEdge, PersonGraphNode } from "@/data/person-graph";
+import {
+  findRelationship,
+  normalizeHighlightedPersonIds,
+  resolveSelectedRelationship,
+} from "@/lib/graph-selection";
 import { formatYear } from "@/lib/year";
 
 import styles from "./PersonGraph2D.module.css";
@@ -42,7 +48,7 @@ interface PointerInteraction {
   timer: ReturnType<typeof setTimeout> | null;
 }
 
-interface SelectedRelationship {
+interface SelectedRelationshipState {
   person: PersonGraphNode;
   edge: PersonGraphEdge;
 }
@@ -51,6 +57,24 @@ export interface PersonGraph2DProps {
   data: PersonGraphData;
   centerPersonId: string;
   onCenterPersonChange: (personId: string) => void;
+  /**
+   * 受控高亮集合（TC-08）：只做视觉强调，不改变布局、不打开关系面板。
+   * 传入的 id 会先按当期图节点过滤，未知 id 静默丢弃；缺省 / 空数组 = 无高亮。
+   */
+  highlightedPersonIds?: readonly string[];
+  /**
+   * 受控选中人物（TC-08）：传入即进入受控模式，关系面板由该值派生。
+   * - `undefined`：非受控，保持 V0.9.0「点击邻居自己开面板」的行为；
+   * - `null`：受控且无选中；
+   * - 合法的一跳邻居 id：打开该邻居的关系面板；
+   * - 不存在 / 中心自己 / 非邻居：不崩溃、面板不打开。
+   */
+  selectedPersonId?: string | null;
+  /**
+   * 点击（含键盘 Enter / 空格）选中邻居时触发，参数为**当期图节点 id**。
+   * V1.0.1 图节点仍以姓名为 id，`person_id` 迁移属 V1.1；语义与受控 prop 一致。
+   */
+  onPersonSelect?: (personId: string) => void;
 }
 
 function getOneHopView(data: PersonGraphData, centerPersonId: string) {
@@ -73,34 +97,52 @@ function getOneHopView(data: PersonGraphData, centerPersonId: string) {
   };
 }
 
-function findRelationship(
-  edges: readonly PersonGraphEdge[],
-  centerPersonId: string,
-  personId: string,
-): PersonGraphEdge | undefined {
-  return edges.find(
-    (edge) =>
-      (edge.source === centerPersonId && edge.target === personId) ||
-      (edge.target === centerPersonId && edge.source === personId),
-  );
-}
-
 export function PersonGraph2D({
   data,
   centerPersonId,
   onCenterPersonChange,
+  highlightedPersonIds,
+  selectedPersonId,
+  onPersonSelect,
 }: PersonGraph2DProps) {
   const graphHostRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const interactionRef = useRef<PointerInteraction | null>(null);
   const [size, setSize] = useState({ width: 860, height: 620 });
-  const [selectedRelationship, setSelectedRelationship] = useState<SelectedRelationship | null>(null);
+  const [selectedRelationship, setSelectedRelationship] = useState<SelectedRelationshipState | null>(null);
+
+  /** 受控与否只看 prop 是否为 undefined：`null` 是「受控且无选中」，不是「没传」。 */
+  const isSelectionControlled = selectedPersonId !== undefined;
 
   const oneHopView = useMemo(() => getOneHopView(data, centerPersonId), [data, centerPersonId]);
+
+  /** 受控选中：只在当期图内、且为一跳邻居时生成关系；非法值安全降级为「未选中」。 */
+  const controlledRelationship = useMemo(
+    () => resolveSelectedRelationship(data, centerPersonId, selectedPersonId),
+    [data, centerPersonId, selectedPersonId],
+  );
+
+  const activeRelationship = isSelectionControlled ? controlledRelationship : selectedRelationship;
+
+  /** 高亮集合：过滤未知 id、去重后供 D3 层使用。 */
+  const highlightedIds = useMemo(
+    () => normalizeHighlightedPersonIds(highlightedPersonIds, data.nodes),
+    [data.nodes, highlightedPersonIds],
+  );
+
+  const nodeSelectionRef = useRef<Selection<SVGGElement, ForceNode, SVGGElement, unknown> | null>(
+    null,
+  );
+  const applyNodeStatesRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     setSelectedRelationship(null);
   }, [centerPersonId]);
+
+  /** 受控选中 / 高亮变化时只更新既有 SVG 节点的 class 与 aria，不重跑力导向。 */
+  useEffect(() => {
+    applyNodeStatesRef.current?.();
+  }, [activeRelationship, highlightedIds]);
 
   useEffect(() => {
     const host = graphHostRef.current;
@@ -167,6 +209,11 @@ export function PersonGraph2D({
       .attr("class", styles.link)
       .attr("stroke-width", (edge) => 1 + Math.min(edge.weight, 4) * 0.7);
 
+    const baseNodeLabel = (node: ForceNode) =>
+      node.isCenter
+        ? `当前中心人物：${node.name}`
+        : `${node.name}；与${center.name}共同参与 ${findRelationship(sourceEdges, center.id, node.id)?.weight ?? 0} 件事件。按 Enter 查看详情，长按切换中心人物。`;
+
     const nodeSelection = nodeLayer
       .selectAll<SVGGElement, ForceNode>("g")
       .data(nodes, (node) => node.id)
@@ -174,11 +221,7 @@ export function PersonGraph2D({
       .attr("class", (node) => `${styles.node}${node.isCenter ? ` ${styles.nodeCenter}` : ""}`)
       .attr("tabindex", (node) => (node.isCenter ? -1 : 0))
       .attr("role", (node) => (node.isCenter ? "img" : "button"))
-      .attr("aria-label", (node) =>
-        node.isCenter
-          ? `当前中心人物：${node.name}`
-          : `${node.name}；与${center.name}共同参与 ${findRelationship(sourceEdges, center.id, node.id)?.weight ?? 0} 件事件。按 Enter 查看详情，长按切换中心人物。`,
-      );
+      .attr("aria-label", baseNodeLabel);
 
     nodeSelection
       .append("circle")
@@ -189,6 +232,27 @@ export function PersonGraph2D({
       .attr("class", styles.nodeLabel)
       .attr("dy", (node) => (node.isCenter ? 4 : NODE_RADIUS + 15))
       .text((node) => node.name);
+
+    // 受控选中 / 高亮只改 class 与 aria：力导向模拟不因 React 状态变化而重跑。
+    const highlightedSet = new Set(highlightedIds);
+    const applyNodeStates = () => {
+      const selectedId = activeRelationship?.person.id ?? null;
+      nodeSelection
+        .classed(styles.nodeHighlighted, (node) => !node.isCenter && highlightedSet.has(node.id))
+        .classed(styles.nodeSelected, (node) => node.id === selectedId)
+        .attr("aria-label", (node) => {
+          const label = baseNodeLabel(node);
+          if (node.id === selectedId) return `${label}（已选中）`;
+          if (!node.isCenter && highlightedSet.has(node.id)) return `${label}（重点人物）`;
+          return label;
+        })
+        .attr("aria-pressed", (node) =>
+          node.isCenter ? null : node.id === selectedId ? "true" : "false",
+        );
+    };
+    nodeSelectionRef.current = nodeSelection;
+    applyNodeStatesRef.current = applyNodeStates;
+    applyNodeStates();
 
     const clearInteraction = () => {
       const interaction = interactionRef.current;
@@ -206,7 +270,10 @@ export function PersonGraph2D({
 
     const selectRelationship = (node: ForceNode) => {
       const edge = findRelationship(sourceEdges, center.id, node.id);
-      if (edge) setSelectedRelationship({ person: node, edge });
+      if (!edge) return;
+      // 非受控模式保持 V0.9.0 行为（点击即开面板）；受控模式由父级回传 selectedPersonId。
+      if (!isSelectionControlled) setSelectedRelationship({ person: node, edge });
+      onPersonSelect?.(node.id);
     };
 
     nodeSelection
@@ -320,8 +387,12 @@ export function PersonGraph2D({
       simulation.stop();
       svg.on("contextmenu", null);
       svg.selectAll("*").remove();
+      nodeSelectionRef.current = null;
+      applyNodeStatesRef.current = null;
     };
-  }, [centerPersonId, onCenterPersonChange, oneHopView, size]);
+    // 注意：受控选中 / 高亮**故意不进入依赖**——它们只通过上面的独立 effect 更新 class，
+    // 若放进来会在每次点击时重推力导向，破坏既有交互手感（TC-08 约束）。
+  }, [centerPersonId, onCenterPersonChange, onPersonSelect, oneHopView, size]);
 
   if (!oneHopView) {
     return <p className={styles.empty}>未找到中心人物数据。</p>;
@@ -337,38 +408,38 @@ export function PersonGraph2D({
       </div>
 
       <aside className={styles.panel} aria-live="polite">
-        {selectedRelationship ? (
+        {activeRelationship ? (
           <>
             <p className={styles.panelEyebrow}>人物关系</p>
             <h2 className={styles.panelTitle}>
-              {center.name} × {selectedRelationship.person.name}
+              {center.name} × {activeRelationship.person.name}
             </h2>
             <p className={styles.panelLead}>
-              两人共同参与 {selectedRelationship.edge.weight} 件历史事件。
+              两人共同参与 {activeRelationship.edge.weight} 件历史事件。
             </p>
 
-            {selectedRelationship.edge.relation ? (
+            {activeRelationship.edge.relation ? (
               <div className={styles.relationBox}>
                 <span className={styles.relationBadge}>
-                  {selectedRelationship.edge.relation.label}
+                  {activeRelationship.edge.relation.label}
                 </span>
-                {selectedRelationship.edge.relation.description ? (
+                {activeRelationship.edge.relation.description ? (
                   <p className={styles.relationNote}>
-                    {selectedRelationship.edge.relation.description}
+                    {activeRelationship.edge.relation.description}
                   </p>
                 ) : null}
               </div>
             ) : null}
 
             <ol className={styles.eventList}>
-              {selectedRelationship.edge.sharedEvents.map((event) => (
+              {activeRelationship.edge.sharedEvents.map((event) => (
                 <li key={event.id}>
                   <span>
                     {formatYear(event.year)} · {event.dynasty}
                   </span>
                   <strong>{event.title}</strong>
                   <p className={styles.eventSummary}>
-                    {selectedRelationship.edge.relation?.eventSummaries[event.id] ??
+                    {activeRelationship.edge.relation?.eventSummaries[event.id] ??
                       event.summary}
                   </p>
                 </li>

@@ -30,8 +30,8 @@ PROJECT_ROOT = BACKEND_DIR.parent
 
 #: ModelScope 推理服务默认地址（OpenAI 兼容，实际请求 <base>/chat/completions）。
 DEFAULT_BASE_URL = "https://api-inference.modelscope.cn/v1"
-#: 默认模型（TC-10 暂用 Qwen3-8B）。
-DEFAULT_MODEL = "Qwen/Qwen3-8B"
+#: 默认模型（TC-10 实测可用：Qwen/Qwen3.5-35B-A3B）。
+DEFAULT_MODEL = "Qwen/Qwen3.5-35B-A3B"
 DEFAULT_TIMEOUT_SECONDS = 30.0
 DEFAULT_PING_MESSAGE = "请回复 OK"
 MAX_REPLY_LENGTH = 2000

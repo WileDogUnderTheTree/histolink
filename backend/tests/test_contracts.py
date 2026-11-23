@@ -252,7 +252,7 @@ def test_ping_llm_sample_validates(load_sample: Callable[[str], Any]) -> None:
 
     payload = PingLLMResponse.model_validate(load_sample("ping-llm.json"))
     assert payload.reply == "OK"
-    assert payload.model == "Qwen/Qwen3-8B"
+    assert payload.model == "Qwen/Qwen3.5-35B-A3B"
     assert payload.usage is not None and payload.usage["total_tokens"] == 14
 
 

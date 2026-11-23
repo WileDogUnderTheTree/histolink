@@ -16,6 +16,7 @@
     [9] pytest                       （TC-06）
     [10] vitest                      （TC-07）
     [11] run-evals --mode contract   （TC-09）
+    [12] validate-contract           （TC-04 / TC-11 出口加固）
 
   用法：
     pwsh scripts/verify.ps1              # 全量
@@ -284,6 +285,14 @@ try {
         Invoke-Check -Index 11 -Name 'run-evals --mode contract' `
             -Exe $node.Exe `
             -Arguments @((Join-Path $script:Root 'scripts\run-evals.mjs'), '--mode', 'contract') `
+            -WorkingDirectory $script:Root
+    }
+
+    # [12] 契约测试（TC-04；V1.0.1 出口起纳入门禁）
+    if (Test-Path -LiteralPath (Join-Path $script:Root 'scripts\validate-contract.mjs')) {
+        Invoke-Check -Index 12 -Name 'validate-contract' `
+            -Exe $node.Exe `
+            -Arguments @((Join-Path $script:Root 'scripts\validate-contract.mjs')) `
             -WorkingDirectory $script:Root
     }
 

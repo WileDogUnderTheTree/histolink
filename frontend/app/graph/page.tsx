@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FocusEvent, KeyboardEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { PersonGraph2D } from "@/components/PersonGraph2D";
 import { ScrollableTabs } from "@/components/ScrollableTabs";
 import { ViewModeSwitch } from "@/components/ViewModeSwitch";
 import type { ViewMode } from "@/components/ViewModeSwitch";
+import { useAgentSession } from "@/components/agent/AgentProvider";
 import {
   ERA_TO_SCOPE,
   KEY_FIGURES,
@@ -22,6 +24,8 @@ import type {
   PersonGraphEraId,
   PersonGraphScopeId,
 } from "@/data/person-graph";
+import { resolveGraphDeepLink, resolvePersonInGraph } from "@/lib/deep-links";
+import { graphHref } from "@/lib/routes";
 
 import styles from "./page.module.css";
 
@@ -32,14 +36,35 @@ const INITIAL_SCOPE = PERSON_GRAPH_SCOPES[0];
 /** 搜索下拉最多展示的候选数。 */
 const SEARCH_RESULT_LIMIT = 8;
 
-export default function GraphPage() {
-  const [mode, setMode] = useState<ViewMode>("detail");
-  const [eraId, setEraId] = useState<PersonGraphEraId>(INITIAL_ERA.id);
-  const [scopeId, setScopeId] = useState<PersonGraphScopeId>(INITIAL_SCOPE.id);
-  const [centerPersonId, setCenterPersonId] = useState(INITIAL_ERA.defaultCenterPersonId);
+/**
+ * 图谱页（V1.0.1 / TC-08）。
+ *
+ * 在 V0.9.0 三栏交互之外新增两件事：
+ * 1. 深链接恢复：`/graph?person=<person_id|姓名|别名>&era=<分期或断代>&mode=...`；
+ * 2. ActionBus 接入：同页 `graph.focus_person` / `graph.focus_relation` 执行后回写深链接。
+ */
+function GraphPageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { actionBus, currentSurface } = useAgentSession();
+
+  /** 首次渲染时从 URL 推导初始状态；后续交互不再反向读取 URL（V1.0.4 做全量状态化）。 */
+  const [deepLink] = useState(() => resolveGraphDeepLink(searchParams.toString()));
+
+  const [mode, setMode] = useState<ViewMode>(deepLink.mode);
+  const [eraId, setEraId] = useState<PersonGraphEraId>(deepLink.eraId);
+  const [scopeId, setScopeId] = useState<PersonGraphScopeId>(deepLink.scopeId);
+  const [centerPersonId, setCenterPersonId] = useState(deepLink.centerPersonId);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeSearchIndex, setActiveSearchIndex] = useState(0);
+  /**
+   * 受控选中（TC-08）：`undefined` = 非受控（沿用点击即开面板的默认行为）；
+   * 深链接 `?selected=` 或 ActionBus 的 `graph.focus_relation` 会把它切成受控值。
+   */
+  const [controlledSelection, setControlledSelection] = useState<string | null | undefined>(
+    deepLink.selectedPersonId,
+  );
 
   /** 记住每个简阅断代在细览里停留过的分期；切回细览时据此恢复。 */
   const lastDetailEraByScope = useRef<Partial<Record<PersonGraphScopeId, PersonGraphEraId>>>({});
@@ -87,10 +112,93 @@ export default function GraphPage() {
   const applyCenterPerson = useCallback(
     (personId: string) => {
       setCenterPersonId(personId);
+      // 用户主动换中心时退出受控选中，避免旧选中项跨中心残留。
+      setControlledSelection(undefined);
       resetSearch();
     },
     [resetSearch],
   );
+
+  /** 受控模式下的点击回传：只有父级已经控制选中时才回写。 */
+  const handlePersonSelect = useCallback((personId: string) => {
+    setControlledSelection((previous) => (previous === undefined ? undefined : personId));
+  }, []);
+
+  /**
+   * ActionBus 接入（TC-08）：只在图谱页注册图谱动作；卸载时注销，避免旧页面闭包残留。
+   * payload 解析对缺字段 / 非法 id 全部容错，解析失败即不执行（不白屏、不跳错人）。
+   */
+  useEffect(() => {
+    if (currentSurface !== "graph") return;
+
+    const unregisterFocusPerson = actionBus.register("graph.focus_person", (action) => {
+      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const eraParam = typeof payload.era_id === "string" ? payload.era_id : null;
+      const nextEra = eraParam
+        ? PERSON_GRAPH_ERAS.find((option) => option.id === eraParam)
+        : undefined;
+      const nextScope = eraParam
+        ? PERSON_GRAPH_SCOPES.find((option) => option.id === eraParam)
+        : undefined;
+      const targetMode: ViewMode = nextScope ? "brief" : nextEra ? "detail" : mode;
+      const targetGraph =
+        nextScope?.graph ?? nextEra?.graph ?? (targetMode === "brief" ? scope.graph : era.graph);
+      const rawPerson =
+        typeof payload.person_id === "string"
+          ? payload.person_id
+          : typeof payload.person === "string"
+            ? payload.person
+            : "";
+      const nextCenter = rawPerson ? resolvePersonInGraph(rawPerson, targetGraph) : null;
+      if (!nextCenter) return;
+
+      if (nextEra) {
+        setEraId(nextEra.id);
+        lastDetailEraByScope.current[ERA_TO_SCOPE[nextEra.id]] = nextEra.id;
+      }
+      if (nextScope) setScopeId(nextScope.id);
+      setMode(targetMode);
+      setCenterPersonId(nextCenter);
+      setControlledSelection(undefined);
+      resetSearch();
+      router.replace(
+        graphHref({
+          person: nextCenter,
+          era: nextEra?.id ?? nextScope?.id ?? eraId,
+          mode: targetMode,
+        }),
+      );
+    });
+
+    const unregisterFocusRelation = actionBus.register("graph.focus_relation", (action) => {
+      const payload = (action.payload ?? {}) as Record<string, unknown>;
+      const rawA = typeof payload.person_id_a === "string" ? payload.person_id_a : "";
+      const rawB = typeof payload.person_id_b === "string" ? payload.person_id_b : "";
+      const graph = mode === "brief" ? scope.graph : era.graph;
+      const center = rawA ? resolvePersonInGraph(rawA, graph) : null;
+      const related = rawB ? resolvePersonInGraph(rawB, graph) : null;
+      if (!center || !related) return;
+
+      setCenterPersonId(center);
+      setControlledSelection(related);
+      resetSearch();
+      router.replace(graphHref({ person: center, era: eraId, mode, selected: related }));
+    });
+
+    return () => {
+      unregisterFocusPerson();
+      unregisterFocusRelation();
+    };
+  }, [
+    actionBus,
+    currentSurface,
+    era,
+    eraId,
+    mode,
+    resetSearch,
+    router,
+    scope,
+  ]);
 
   /** 切模式/切期时：当前中心在目标图里仍存在就保留，否则落到目标期默认中心。 */
   const keepCenterOr = (graph: PersonGraphData, fallback: string) => {
@@ -117,6 +225,7 @@ export default function GraphPage() {
       lastDetailEraByScope.current[ERA_TO_SCOPE[nextEra.id]] = nextEra.id;
       keepCenterOr(nextEra.graph, nextEra.defaultCenterPersonId);
     }
+    setControlledSelection(undefined);
     resetSearch();
   };
 
@@ -139,6 +248,7 @@ export default function GraphPage() {
       keepCenterOr(nextEra.graph, nextEra.defaultCenterPersonId);
     }
     setMode(next);
+    setControlledSelection(undefined);
     resetSearch();
   };
 
@@ -215,7 +325,7 @@ export default function GraphPage() {
           <Link className={styles.back} href="/">
             ← 返回首页
           </Link>
-          <p className={styles.eyebrow}>史脉 HistoLink · V0.9.0 内测版</p>
+          <p className={styles.eyebrow}>史脉 HistoLink · V1.0.1</p>
         </div>
 
         <h1 className={styles.title}>人物关系图</h1>
@@ -360,10 +470,24 @@ export default function GraphPage() {
               data={active.graph}
               centerPersonId={centerPersonId}
               onCenterPersonChange={applyCenterPerson}
+              selectedPersonId={controlledSelection}
+              onPersonSelect={handlePersonSelect}
             />
           </div>
         </div>
       </div>
     </main>
+  );
+}
+
+/**
+ * Next 16 要求 `useSearchParams` 处于 `<Suspense>` 内，否则 `next build`
+ * 会在静态预渲染阶段报错（V1.0.1 / TC-08 深链接）。
+ */
+export default function GraphPage() {
+  return (
+    <Suspense fallback={<main className={styles.page}>加载中…</main>}>
+      <GraphPageContent />
+    </Suspense>
   );
 }

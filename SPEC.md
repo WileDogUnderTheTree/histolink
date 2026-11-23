@@ -626,6 +626,42 @@ Y(a) = a <= 0 ? a - 1 : a     // 天文纪年 → 史书纪年（用于展示）
 - **版本标识**：`frontend/package.json` = `0.9.0`；首页 / 图谱页显示「V0.9.0 内测版」；`/api/health` 返回 `{"ok": true, "version": "0.9.0"}`。
 - **验收**：`tsc --noEmit` 0 error、`next build` 通过；浏览器实测聊天入口点击后 URL 不变并出现 Toast，时间轴 / 图谱可进入，`/api/health` 经同源代理成功、角标显示「后端已连接」。
 
+### 7.17 组件受控接口与深链接（V1.0.1 / TC-08）
+
+- **目标**：为 V1.0.4 的 UI 动作联动预置「props 驱动」接口，并让页面能识别 / 回写深链接；**默认交互行为不得改变**。
+- **`PersonGraph2D` 受控 props**（全部可选）：
+  - `highlightedPersonIds?: readonly string[]`：最小视觉高亮；未知 id 过滤、不参与布局、不打开面板；
+  - `selectedPersonId?: string | null`：`undefined` = 非受控（保持 V0.9.0 点击开面板行为）；`null` = 受控无选中；合法一跳邻居 = 打开该邻居关系面板；不存在 / 中心自己 / 非邻居 → 不崩溃、不打开；
+  - `onPersonSelect?: (personId: string) => void`：点击或键盘选中邻居时回传；V1.0.1 参数为图节点 id（姓名），V1.1 迁移 `person_id` 后语义不变。
+  - 受控状态变化只更新既有 SVG 节点的 class / aria，**不得重跑力导向模拟**。
+- **ActionBus 页面接入**：`/timeline` 注册 `timeline.focus_event` / `timeline.focus_dynasty`；`/graph` 注册 `graph.focus_person` / `graph.focus_relation`。只在 `currentSurface` 命中时注册，卸载即注销；payload 非法 / id 不存在 / 人物不在当期图 → 静默不执行。
+- **深链接**：
+  - `/timeline?event=<event_id>&dynasty=<朝代>&mode=detail|brief`：`event` 优先，自动定位朝代 / 断代并选中事件；彩蛋事件打开彩蛋；简阅下非顶级事件自动回退细览。
+  - `/graph?person=<person_id|姓名|别名>&era=<era_id|scope_id>&mode=detail|brief&selected=<人物>`：`person` 经人物主数据 / 图谱别名解析为当期节点，解析失败回落该视图默认中心；`selected` 驱动受控选中（刷新 / 分享可复现关系面板）。
+  - V1.0.1 只做「打开链接恢复 + 动作执行后回写」；每次点击同步 query、前进后退恢复属 V1.0.4。
+- **能力映射**：`frontend/lib/action-capabilities.ts` 冻结「动作类型 → 目标表面 → 所需组件能力 → 归属版本」；能力缺口清单见 `docs/component-capability-map.md`。
+- **验收**：`tsc/build/test` 通过；能力映射覆盖动作枚举全部成员；默认行为（单击邻居弹面板、长按换中心、拖拽）回归通过；合法 `selectedPersonId` 打开面板、非法值不崩溃；深链接打开与动作回写均生效。
+
+### 7.18 评测骨架（V1.0.1 / TC-09）
+
+- **目标**：在写规划器之前冻结「问题 → 期望工具 / 实体 / 动作 / 回答模式 / 引用」的可执行夹具；V1.0.1 只跑 contract 模式，不调用 LLM。
+- **夹具**：`evals/golden.v1.json` 30 条用例，按 12 类覆盖：
+  - 公元前年份 3、同名歧义 4（梁太后 / 刘崇 无 / 有上下文）、无结果或资料不足 3、跨朝代 3（曹操 / 杨坚 / 赵匡胤）、关系 4（含未收录关系回退共同事件）、对比 3、超范围 2、彩蛋排除 1、仅图谱事件 1、多轮承接 2、事件+人物联动 2、UI 动作策略 2（同页 auto / 跨页 confirm）。
+  - 文件头绑定 `snapshot.version / hash / counts`；数据变化必须显式更新夹具版本，不得只改 hash。
+  - 字段约束由 `evals/schema.json`（draft 2020-12）冻结。
+- **运行器** `scripts/run-evals.mjs`：
+  - `--mode contract`：schema 校验、快照绑定、person/event/era 引用 0 悬空、工具入参满足 `tools-v1.schema.json`、动作类型必须 available 且 surface / 同页判定与策略一致、回答模式与 missing / reason_code / clarification 字段自洽、`citation_required` 的 fact 必须来自有据事件、彩蛋事件不得作为事实引用；**负向自测**篡改引用 ID 必须被拦截。
+  - `--mode live`：V1.0.1 打印未实现并退出 0；V1.0.3 起接真实评分，只比对结构化字段，不比对自由文本。
+  - 已接入 `scripts/verify.ps1` 第 11 步。
+- **验收**：`node scripts/run-evals.mjs --mode contract` 退出 0；30/30 通过、12 类覆盖达标、0 悬空 ID、负向自测被拦截。
+
+### 7.19 V1.0.1 出口门禁与发布（TC-11）
+
+- **完成定义（DoD）**：TC-01~TC-10 全部完成；`scripts/verify.ps1` 全绿；文档版本号统一为 `V1.0.1`；打 tag `v1.0.1`。
+- **门禁**：`scripts/verify.ps1` 串行执行 tsc / next build / validate-data / build-persons / extract-sources / export_contracts / gen-frontend-types / export-snapshot / pytest / vitest / run-evals-contract / validate-contract，任一项失败即非 0 退出；CI 复刻同一组检查。
+- **验收记录**：`docs/V1.0.1-验收记录.md` 逐项勾选命令、输出摘要与快照 hash；tag 指向包含版本号与验收记录的提交。
+- **模型能力**：TC-10 报告必须包含真实连通性数据与降级路线；密钥不得入库。
+
 ---
 
 ## 8. 模块四：RAG 问答
@@ -836,6 +872,8 @@ Y(a) = a <= 0 ? a - 1 : a     // 天文纪年 → 史书纪年（用于展示）
 | M4 实时与收尾 | 长尾实时抓取 + IndexedDB 缓存、快照重建脚本、许可与致谢页、错误矩阵、可访问性、性能预算、文档 | 断网四模块可用；错误矩阵逐项验证；性能达标；README 与运行说明 |
 
 依赖：M1/M2/M3 可在 M0 后并行，但共享实体层与查询层由 M0 先定；M4 依赖前三模块的实时查询点全部接入统一查询层。
+
+**M3 前置基建（V1.0.1）**：在 M3 RAG 开工前，先行交付「被后续版本依赖的基座」——人物主数据与消歧、引用结构化、API / Action / Tool 三份契约、数据快照、后端只读 API、AppShell / ActionBus 骨架、组件受控接口与深链接、30 条评测夹具、模型能力报告。V1.0.1 不交付规划器与真实问答；其出口门禁为 `scripts/verify.ps1` 全绿 + tag `v1.0.1`。
 
 ---
 

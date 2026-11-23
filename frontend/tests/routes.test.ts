@@ -28,6 +28,12 @@ describe("graphHref", () => {
       "/graph?person=p-liangtaihou-xixia-0d0f&era=xixia&mode=browse",
     );
   });
+
+  it("受控选中参数参与构造（TC-08 受控关系面板）", () => {
+    expect(graphHref({ person: "曹操", era: "sanguo", selected: "刘备" })).toBe(
+      "/graph?person=%E6%9B%B9%E6%93%8D&era=sanguo&selected=%E5%88%98%E5%A4%87",
+    );
+  });
 });
 
 describe("askHref", () => {
