@@ -15,7 +15,47 @@
 
 ### 规划中（未发布）
 
-- V1.0 接入 Agent 与 RAG，V1.1 完成终极 UI
+- V1.0.2 工具层、V1.0.3 规划器与问答生成、V1.0.4 动作联动、V1.0.5 检索与引用校验、V1.1 终极 UI
+
+---
+
+## [1.0.1-dev] - 2026-11-23
+
+> 版本主题：**Agent 前置基建纵切片**（《V1.0.1-任务卡拆解》TC-01~TC-07 完成；TC-08/09/10/11 未做，因此**未打 `v1.0.1` tag**，前端版本号仍为 0.9.0）。
+> 依据：[docs/V1.0-项目现状与开发前置审核报告.md](docs/V1.0-项目现状与开发前置审核报告.md) Q1–Q6 决策。
+
+### 新增
+
+- **TC-01 基线冻结与门禁**：提交 `chore(release): freeze v0.9.0 baseline` 并打轻量 tag `v0.9.0`；新增 `scripts/verify.ps1`（10 步本地权威门禁）与 `.github/workflows/ci.yml`（前端 tsc/build/validate-data + 后端 compile/pytest）。
+- **TC-02 人物主数据与消歧**：`scripts/build-persons.mjs` 生成 **1,058 条** person 记录（1,059 个姓名 − 3 条异名同一人合并 + 2 条同名拆分：梁太后东汉/西夏、刘崇西汉/五代）；稳定 ID `p-<romanized>[-<tag>]-<4位hash>` + `person-ids.lock.json` 锁文件；66 条全局别名按 `person_id` 归一；`person-overrides.ts` 为唯一人工裁决层；新增同名报告与 `--check` 门禁。
+- **TC-03 引用结构化**：从 705 条事件简述抽取 **823 条**结构化引用（585 条 1 书 + 119 条 2 书），彩蛋 `special-star-1893` 显式空引用 + `easter_egg`；新增 `event-sources.ts`、共享解析器 `scripts/lib/parse-sources.mjs`、`docs/source-review.md`（191 个标签 / 29 种书目 / 裴注引与尾注例外 / 关系引用派生规则）。
+- **TC-04 三份契约冻结**：`backend/contracts` 为唯一 Pydantic 事实源（请求/回答/错误/澄清/动作/工具/只读数据接口）；导出 OpenAPI 3.1（`info.version=1.0`）、actions/tools JSON Schema；人工维护 `action-policy.json` 并做覆盖校验；前端类型由 `openapi-typescript` 生成；32 条后端契约测试 + Node 契约测试 + 5 份样例。
+- **TC-05 数据快照**：`scripts/export-snapshot.mjs` 产出前后端同源 `snapshot.v1.json`（705 事件 / 1,058 人物 / 639 关系 / 18 期 / 7 断代 / 7 分组 / 66 别名，2.73MB）+ `snapshot.meta.json`（内容寻址版本、sha256 content_hash）+ `event-ids.lock.json`；`--check` 保证可重复生成。
+- **TC-06 后端只读 API**：`main.py` 改为 `create_app()` + lifespan 加载快照（hash/counts/许可校验失败即拒绝启动）；新增 `/api/health`、`/api/meta`、`/api/entities/person|event|persons`；统一错误 envelope（400/404/405/503/500）与 `/api` 只读闸门；59 条后端测试（契约 / 实体 / 错误 / 快照 fail-fast）。
+- **TC-07 AppShell 与 ActionBus 骨架**：`layout` 挂 `AgentProvider`（单一会话）+ 全局悬浮抽屉 + `/ask` 独立页（ESC / 遮罩关闭、基础 a11y、不请求后端）；新增 `lib/action-policy.ts`（Q2 策略：同页自动 / 跨页确认 / 未知类型忽略 / 缺 surface 视为跨页）、`lib/action-bus.ts`（注册 / 分发 / 幂等键 / 待确认队列）、`lib/routes.ts`（深链接构造器）；vitest 30 条单测。
+
+### 数据
+
+- 快照 `v1-2978ceda7d15`，`content_hash=sha256:5b89c7e0…d06b`，大小 2,862,384 bytes。
+- 事件 705（时间轴 671 + 图谱补足 34）；人物 1,058（见 TC-02 偏差说明）；关系 639；细览 18 期 / 简阅 7 组 / 7 大断代；别名 66。
+
+### 验证
+
+- `pwsh scripts/verify.ps1` 10 步全绿（tsc / next build / validate-data / build-persons / extract-sources / export_contracts / gen-frontend-types / export-snapshot / pytest / vitest），总耗时约 13 秒。
+- 后端 pytest **59 passed**；前端 vitest **30 passed**；`next build` 含 `/ask` 静态预渲染通过。
+- Edge headless + CDP 手工验收：三页抽屉可开关、ESC 可关、`/ask?q=test` 显示问题、抽屉与 `/ask` 会话共享、首页「聊天问答」入口保持封印、无 hydration 报错。
+
+### 文档
+
+- 新增 `docs/person-same-name-report.md`、`docs/source-review.md`、`contracts/README.md`、`backend/data/README.md`、`docs/V1.0.1-验收记录-纵切片.md`；README 增补只读 API 列表、门禁命令、目录结构与限制说明。
+
+### 未完成 / 已知偏差
+
+- **TC-08~TC-11 未做**：组件受控接口、评测骨架、模型能力 spike（缺凭据）、V1.0.1 出口验收与 tag。
+- 人物记录 **1,058** 而非任务卡预期的 1,061：额外发现 3 组「别名本身也是事件参与者姓名」（明武宗/朱厚照、明神宗/万历帝、宋恭帝/赵㬎），按别名表合并为同一人，已在同名报告中逐条裁决；若保持 1,059 个姓名为 1,059 条记录，会让同一历史人物拿到两个 `person_id`。
+- 书目标签 **191** 而非任务卡记录的 185：任务卡仅统计括注首个书目，本实现把并列书目的第二本也视为独立标签；引用条目 823 与任务卡一致（裴注引按 1 条计）。
+- 只读 API 的 405 由中间件统一拦截（无路由的写方法也返回 envelope），错误码新增 `INVALID_REQUEST` / `METHOD_NOT_ALLOWED` / `ROUTE_NOT_FOUND` / `SNAPSHOT_NOT_LOADED` 四个 API 层枚举值。
+- `vitest.config.ts` 在 CJS 包内触发 Vite 配置加载告警（不影响运行）；后续可改 `.mts` 或调整包类型。
 
 ---
 

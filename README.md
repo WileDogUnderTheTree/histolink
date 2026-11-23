@@ -31,13 +31,16 @@
 | 2D 人物关系图 | `/graph` | 「简阅 / 细览」双视图：细览 **18 期**（春秋 / 战国 / 秦汉 / 三国 / 西晋 / 东晋十六国 / 南北朝 / 隋 / 唐 / 五代十国 / 北宋 / 南宋 / 辽 / 西夏 / 金 / 元 / 明 / 清），简阅 **7 组**（先秦 / 秦汉 / 三国 / 魏晋南北朝 / 隋唐 / 宋辽金夏 / 元明清）；D3 力导向 + SVG；单击相邻人物查看两人关系、共同事件与事件简述，长按约 500ms 切换中心，拖拽调整位置；切期 / 切模式时中心人物能保留则保留 |
 | 图谱三栏导航 | `/graph` | 左栏 240px（人物搜索 + 名人堂 + 三国阵营快捷）｜中栏画布自适应｜右栏 280px 关系详情；搜索、名人堂与阵营按钮均可直达任意人物为中心；支持本名 / 庙号别名搜索（如「拓跋宏」→ 孝文帝、「清圣祖」→ 康熙帝）；图区上方仅保留一行操作副标题 + `?` 气泡，复杂说明不占正文 |
 | 后端服务 | `GET /api/health` | FastAPI 健康检查；CORS 默认放行本机与局域网私有网段，可用 `ALLOW_ORIGINS` / `ALLOW_ORIGIN_REGEX` 覆盖；前端默认经 Next 同源 `/api` 代理访问 |
+| 问答壳层（V1.0.1 骨架） | `/ask` + 全局抽屉 | `AgentProvider` 单一会话：页面右下角「问史脉」悬浮抽屉与 `/ask` 独立页共享同一份 transcript（ESC / 遮罩关闭、基础 a11y）；**不发任何网络请求**，真实问答 V1.0.3 接入 |
+| 人物主数据（V1.0.1） | `frontend/data/persons.ts` | 1,058 条 person 记录 = 1,059 个姓名 − 3 条异名同一人合并 + 2 条同名拆分（梁太后 / 刘崇）；稳定 `person_id` + ID 锁文件 + 66 条全局别名 + 同名报告 + `--check` 门禁 |
+| 数据快照与只读 API（V1.0.1） | `backend/data/` · `/api/meta` · `/api/entities/*` | 前后端同源快照（705 事件 / 1,058 人物 / 639 关系 / 18 期 / 7 断代，约 2.7MB，内容寻址 hash）；FastAPI 启动校验快照，提供 meta / person / event / 姓名候选只读接口与统一错误 envelope |
 
 ### 规划中（尚未实现）
 
 | 模块 | 计划版本 | 说明 |
 |---|---|---|
 | 人物首字母索引（`/people`） | V1.0 前后 | SPEC 规划模块 |
-| Agent 与语义 RAG 问答（`/ask`） | V1.0 | 首页入口已在 V0.9.0 封印为「开发中 / 敬请期待」；接入检索与问答能力，答案带可展开引用 |
+| Agent 与语义 RAG 问答 | V1.0.3–V1.0.5 | `/ask` 与悬浮抽屉壳层已在 V1.0.1 落地（占位、不请求后端）；检索、规划器、回答生成与引用校验按版本接入 |
 | 3D 人物关系视图、时间轴滑块交互 | V1.1 | 终极 UI 重构 |
 | 时间轴尽头彩蛋节点（1893-12-26） | V1.1.1 | 全部 UI 完成后制作 |
 
@@ -53,8 +56,10 @@
 | 力导向可视化 | [d3-force](https://github.com/d3/d3-force) + [d3-selection](https://github.com/d3/d3-selection) | 3.0.1 / 3.0.1，SVG 渲染 |
 | 样式 | CSS Modules + 全局 CSS 变量 | 无 UI 框架依赖，无 Tailwind |
 | 包管理与构建 | pnpm + Next.js Turbopack | 锁文件 `frontend/pnpm-lock.yaml` |
-| 后端 | [FastAPI](https://fastapi.tiangolo.com/) + Uvicorn | `fastapi>=0.115`、`uvicorn[standard]>=0.34`（Python 3.11 虚拟环境） |
-| 运行形态 | 前后端分离 | 前端渲染与交互；后端统一提供数据/检索能力（当前仅健康检查） |
+| 后端 | [FastAPI](https://fastapi.tiangolo.com/) + Uvicorn + Pydantic v2 | `fastapi>=0.115`、`uvicorn[standard]>=0.34`、`pydantic>=2.9,<3`（Python 3.11 虚拟环境） |
+| 契约与门禁 | Pydantic → OpenAPI 3.1 → `openapi-typescript` | 后端 `backend/contracts` 为唯一事实源；三份契约 + 动作策略 + 32 条后端契约测试 |
+| 测试 | pytest / vitest | 后端 59 条（契约 + 只读 API + fail-fast）、前端 30 条（动作策略 / ActionBus / 深链接） |
+| 运行形态 | 前后端分离 | 前端渲染与交互；后端为只读数据服务（快照 + `/api/entities/*`），不接数据库、无写接口 |
 
 浏览器支持：桌面 Chrome / Edge 最近两个大版本，Safari 16+ 可浏览；桌面优先，移动端保证可浏览与降级。
 
@@ -69,27 +74,49 @@
 │  │  ├─ page.tsx                   首页：模块入口 + 后端连通状态
 │  │  ├─ timeline/page.tsx          全朝代时间轴（错层布局算法在页面内）
 │  │  ├─ graph/                     人物关系图页面（三栏布局 + 搜索/名人堂）
+│  │  ├─ ask/page.tsx               V1.0.1 /ask 独立问答页（与抽屉共享会话）
 │  │  └─ globals.css                全局样式与配色变量
 │  ├─ components/
 │  │  ├─ PersonGraph2D.tsx          D3 力导向图组件（交互逻辑与页面解耦）
 │  │  ├─ ScrollableTabs.tsx         时间轴 / 图谱共用的横向滑动 Tab 栏
-│  │  └─ ViewModeSwitch.tsx         时间轴 / 图谱共用的「简阅 · 细览」开关
+│  │  ├─ ViewModeSwitch.tsx         时间轴 / 图谱共用的「简阅 · 细览」开关
+│  │  └─ agent/                     AgentProvider（单一会话）+ AgentDrawer（悬浮抽屉）
 │  ├─ data/
-│  │  ├─ timeline-events.ts         事件主数据（TimelineEvent[]，共 670 条）
+│  │  ├─ timeline-events.ts         事件主数据（TimelineEvent[]，共 671 条）
 │  │  ├─ timeline-participants.ts   事件参与者索引（人物关系网的数据源）
 │  │  ├─ person-graph.ts            事件 → 节点/边转换、分期配置、名人堂与阵营配置
 │  │  ├─ person-relations.ts        两人关系数据（关系定性 + 逐事件简述，按分期补丁）
-│  │  └─ weijin-events.ts           魏晋图谱补足事件（只进人物图，来自 docs 第一批数据）
-│  ├─ lib/
-│  │  └─ year.ts                    年份换算与格式化（无公元 0 年）
-│  └─ next.config.ts                 Next 配置（V0.9.0 起含 /api 同源代理）+ tsconfig.json / package.json
-├─ backend/                         FastAPI 后端（端口 8000）
-│  ├─ main.py                       应用入口、/api/health 与可配置 CORS 白名单
-│  └─ requirements.txt
+│  │  ├─ weijin-events.ts           魏晋图谱补足事件（只进人物图）
+│  │  ├─ persons.generated.ts       V1.0.1 生成的人物主数据（禁止手改）
+│  │  ├─ person-overrides.ts        V1.0.1 同名裁决层（唯一允许手改的人物数据）
+│  │  ├─ persons.ts / person-aliases.ts / person-types.ts   人物读取入口与类型
+│  │  ├─ event-sources.ts           结构化引用索引（禁止手改）
+│  │  └─ locks/                     person-ids / event-ids 锁文件
+│  ├─ lib/                          year.ts / api-types.ts（生成）/ action-bus.ts /
+│  │                                action-policy.ts / routes.ts
+│  └─ tests/                        vitest 单测（动作策略 / ActionBus / 深链接）
+├─ backend/                         FastAPI 只读服务（端口 8000）
+│  ├─ main.py                       create_app() + lifespan 加载快照 + CORS
+│  ├─ snapshot_store.py             快照加载 / 校验 / 只读查询
+│  ├─ contracts/                    API / Action / Tool 契约的 Pydantic 事实源
+│  ├─ routers/                      health / meta / entities 只读路由
+│  ├─ errors.py                     统一错误 envelope 与 /api 只读闸门
+│  ├─ data/                         snapshot.v1.json + snapshot.meta.json（生成物）
+│  ├─ tests/                        pytest（契约 / 只读 API / 快照 fail-fast）
+│  └─ scripts/export_contracts.py   导出契约生成物（--check）
+├─ contracts/                       三份契约导出物 + action-policy + samples + README
 ├─ scripts/
-│  ├─ launch.ps1                    一键启动器（依赖检查 → 启动 → 健康等待 → 日志聚合）
-│  ├─ stop.ps1                      按端口精确停止本项目进程
-│  └─ validate-data.mjs             全量数据校验（事件 / 图谱 / 关系 / 别名 / 名人堂 / docs）
+│  ├─ launch.ps1 / stop.ps1         一键启动与按端口停止
+│  ├─ verify.ps1                    本地权威门禁（tsc/build/校验/契约/快照/pytest/vitest）
+│  ├─ build-persons.mjs             人物主数据生成（--check）
+│  ├─ extract-sources.mjs           引用结构化生成（--check）
+│  ├─ export-snapshot.mjs           数据快照导出（--check）
+│  ├─ gen-frontend-types.mjs        OpenAPI → 前端类型（--check）
+│  ├─ validate-contract.mjs         契约测试（Node 侧）
+│  ├─ validate-data.mjs             全量数据 + 人物主数据 + 引用 + 快照一致性校验
+│  └─ lib/                          共享 TS 数据加载器 / 引用解析器
+├─ .github/workflows/ci.yml         CI（前端 + 后端）
+├─ docs/                            需求审核报告、任务卡、数据文档、同名/引用复核
 ├─ 启动史脉.cmd / 停止史脉.cmd       Windows 双击入口
 ├─ SPEC.md                          需求与验收标准（唯一需求来源）
 ├─ CHANGELOG.md                     版本更新日志
@@ -457,8 +484,9 @@ interface PersonGraphEdge {
 | V0.8.2 | 全朝代数据厚度对齐：宋辽夏金元明清 +174 条事件、关系库 461 → 640 对；合并 docs 01—06；`scripts/validate-data.mjs` 全量校验脚本入库 | 已完成 |
 | V0.8.2.1 | 修复图谱分期串期：秦汉按 184 年截止、三国收汉末前史，曹操等三国人物移出秦汉图；全分期隔离 + 名人堂同步校验 | 已完成 |
 | V0.8.2.2 | 时间轴特殊节点及致敬横幅（隐藏彩蛋） | 已完成 |
-| **V0.9.0** | **内测版封装：聊天问答入口封印为「开发中」、`/api` 同源代理 + 可配置 CORS、局域网 / UUMit 分享部署说明** | **当前版本** |
-| V1.0 | Agent 接入（语义 RAG 问答） | 计划中 |
+| **V0.9.0** | **内测版封装：聊天问答入口封印为「开发中」、`/api` 同源代理 + 可配置 CORS、局域网 / UUMit 分享部署说明** | 已完成（tag `v0.9.0`） |
+| **V1.0.1** | **Agent 前置基建纵切片：人物主数据与消歧、引用结构化、三份契约、数据快照、只读 API、AppShell / ActionBus 骨架** | **进行中（TC-01~TC-07 完成；TC-08/09/10/11 待做）** |
+| V1.0 | Agent 接入（语义 RAG 问答）：V1.0.2 工具层 → V1.0.3 规划器 → V1.0.4 动作联动 → V1.0.5 检索与引用校验 | 计划中 |
 | V1.1 | 终极 UI 重构（3D 视图、滑块交互） | 计划中 |
 | V1.1.1 | 时间轴尽头彩蛋节点（1893-12-26） | 计划中 |
 
@@ -502,14 +530,23 @@ interface PersonGraphEdge {
 |---|---|
 | [SPEC.md](SPEC.md) | 需求与验收标准的**唯一来源**；实现中出现未覆盖行为时先补 SPEC 再写代码 |
 | [CHANGELOG.md](CHANGELOG.md) | 按版本记录新增 / 变更 / 修复与数据快照 |
+| [docs/V1.0-项目现状与开发前置审核报告.md](docs/V1.0-项目现状与开发前置审核报告.md) | V1.0 架构审核：P0 缺口、契约草案、Q1–Q6 决策与开工清单 |
+| [docs/V1.0.1-任务卡拆解.md](docs/V1.0.1-任务卡拆解.md) | V1.0.1 基建阶段 11 张任务卡（TC-01~TC-11）与验收标准 |
+| [docs/V1.0.1-验收记录-纵切片.md](docs/V1.0.1-验收记录-纵切片.md) | TC-01~TC-07 纵切片的逐卡验收记录、命令与偏差说明 |
+| [contracts/README.md](contracts/README.md) | 三份契约的冻结规则、版本升级规则与字段清单 |
+| [docs/person-same-name-report.md](docs/person-same-name-report.md) | 人物同名组、异名合并与裁决结论 |
+| [docs/source-review.md](docs/source-review.md) | 事件引用结构化口径、例外与抽查记录 |
+| [backend/data/README.md](backend/data/README.md) | 数据快照字段、生成方式与禁止手改说明 |
 | 本 README | 项目介绍、运行方式、数据规模、数据来源与许可 |
 
 ---
 
 ## 十、已知限制
 
-- V0.x 阶段**不接数据库**：事件与人物图数据以 TypeScript 模块随前端打包；后续接入后端数据服务时再迁移。
-- 后端目前仅提供健康检查接口，尚未承担数据服务与检索职责。
+- V1.0.1 起后端提供**只读数据服务**（快照 + `/api/meta` + `/api/entities/*`），仍**不接数据库**、无任何写接口；页面渲染在 V1.0 仍读前端 TS 数据。
+- 页面渲染数据链路（时间轴 / 图谱）与人物 `person_id` 尚未合并：图谱节点仍以姓名为 id，关系库 `person_id` 迁移属 V1.1。
+- 问答壳层（抽屉 / `/ask`）是**占位**：不调用后端、不检索；真实问答与 UI Action 执行分别在 V1.0.3 / V1.0.4。首页「聊天问答」入口继续保持 V0.9.0 的封印行为。
+- 后端快照模型能力 spike（TC-10）尚未完成（缺模型凭据），tool calling 与否的降级路线待补。
 - 人物关系网为**一度关系视图**（只展示当前中心人物的直接关系），不做多跳裁剪与全图布局。
 - 时间轴为**精选数据**而非穷举：每个朝代只收录关键事件（当前共 670 条）。
 - 人物关系由图数据派生，未接入自动抽取；`participants` 采用人工校订口径。
