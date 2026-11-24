@@ -1163,7 +1163,7 @@
             "type": "boolean"
           },
           "version": {
-            "default": "1.0.5",
+            "default": "1.0.5.1",
             "title": "Version",
             "type": "string"
           }
@@ -1226,7 +1226,7 @@
         "additionalProperties": false,
         "properties": {
           "api_version": {
-            "default": "1.0.5",
+            "default": "1.0.5.1",
             "title": "Api Version",
             "type": "string"
           },

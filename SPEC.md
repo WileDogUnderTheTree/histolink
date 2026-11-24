@@ -1,8 +1,8 @@
 # SPEC｜中国历史探索（Chinese History Explorer）
 
-> 状态：v1.0.5 · 核心 Agent 链路打通，接入 RAG 混合检索与史料问答
+> 状态：v1.0.5.1 · 核心 Agent 链路打通，接入 RAG 混合检索与史料问答；对比任务并行工具与对话工作区 UI 已定型
 > 定稿日期：2026-11-17
-> 修订日期：2026-11-24（v1.0.5：完成 Agent 工具链、图谱-RAG 路由与证据校验）
+> 修订日期：2026-11-24（v1.0.5：完成 Agent 工具链、图谱-RAG 路由与证据校验；v1.0.5.1：对比任务优化 + 对话工作区）
 > 本文档是唯一需求来源。实现中出现本文未覆盖的行为，先补 SPEC 再写代码。
 > 决策来源：三轮访谈，结论见 §14 ADR；未确认项见 §15 开放问题。
 
@@ -661,6 +661,33 @@ Y(a) = a <= 0 ? a - 1 : a     // 天文纪年 → 史书纪年（用于展示）
 - **门禁**：`scripts/verify.ps1` 串行执行 tsc / next build / validate-data / build-persons / extract-sources / export_contracts / gen-frontend-types / export-snapshot / pytest / vitest / run-evals-contract / validate-contract，任一项失败即非 0 退出；CI 复刻同一组检查。
 - **验收记录**：`docs/V1.0.1-验收记录.md` 逐项勾选命令、输出摘要与快照 hash；tag 指向包含版本号与验收记录的提交。
 - **模型能力**：TC-10 报告必须包含真实连通性数据与降级路线；密钥不得入库。
+
+### 7.20 对比任务并行工具与对话工作区（V1.0.5.1）
+
+- **目标**：修复跨朝代对比任务「超过最大工具轮次 → insufficient」的 Bad Case；把 `/ask` 从单次问答壳层
+  升级为面向 V1.0.6 多轮对话的 Conversation Workspace（本版只定 UI 结构，不实现多轮业务）。
+- **外部契约不变**：`status / answer / evidence / ui_actions / metadata` 与三态
+  `grounded / insufficient / refusal` 全部保持不变；`tool_batch` 只是模型 ↔ 编排器的内部动作。
+- **轮次与安全边界（硬上限，不放开）**：
+  - `MAX_ITERATIONS = 6`（工具/规划轮硬上限）；工具调用总数 `MAX_TOOL_CALLS = 10`；
+  - `tool_batch` 每批 2–4 个**彼此独立的只读工具**，并行执行后按模型顺序吸收证据；批量结果总字符预算 24000；
+  - 轮次耗尽后至多 1 次「只收尾」模型调用（禁止执行工具）+ 1 次 JSON 协议修复重试；
+  - final 未通过证据校验且仍有轮次预算时，允许把校验原因回传给模型重写 final；重写结果仍必须通过原校验，
+    **不得降低 grounded 证据门槛**。
+- **对比任务 Prompt 策略**（优先策略，非所有任务固定流程）：
+  「第一轮并行定位（双方图谱）→ 第二轮并行取证（双方 `get_event` + 双方 RAG，最多 4 调用）→ 第三轮 final」；
+  某个名字一次未命中时不得逐轮换词试探；RAG claim 必须与同一 `chunk_id` 的 rag evidence 一一对应。
+- **工具层**：`search_events` 对「人物名 + 明确事件词后缀（变法/改革/新政/起义/之变/之战/之乱/之役/改制）」
+  扩展检索词，提升一次命中率；只新增检索词，不改变排序规则与证据要求。
+- **对话工作区布局**：顶部导航（压缩）→ 推荐 chips → 对话时间线（用户问题 / AI 回答 + 每轮独立状态徽标、
+  可核验来源、引用区）→ 底部输入区（文档流内 sticky，不遮挡正文）；桌面端单栏 800px / 分屏 1360px，
+  窄屏单列。
+- **长回答必须完整显示**：单一页面滚动；对话列允许 `flex-shrink`（`min-width: 0; flex: 1 1 auto`），
+  不得出现固定高度裁切、嵌套滚动条或横向裁切；Markdown 支持标题 / 列表 / 表格 / 引用 / 代码块。
+- **返回聊天状态保留**：transcript 持久化到 sessionStorage（首帧欢迎语保证 SSR/CSR 一致，mount 后恢复）；
+  页面重新进入不自动重开旧副驾驶面板；页面级滚动位置在路由往返时恢复。
+- **V1.0.6 预留边界**：本版不做多轮 Agent / Conversation Memory / 历史消息库 / 新 API / 上下文拼接；
+  仅提供静态多轮布局预览 `/ask?preview=multiturn`。
 
 ---
 

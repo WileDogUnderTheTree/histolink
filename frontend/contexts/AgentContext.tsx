@@ -57,6 +57,13 @@ export interface AgentTurn extends AgentTranscriptTurn {
 
 export interface AgentSessionValue {
   transcript: AgentTurn[];
+  /**
+   * 会话是否已从 sessionStorage 恢复完毕（V1.0.5.1）。
+   *
+   * 首屏用 `WELCOME_TURN` 保证 SSR / 客户端首次渲染一致（避免 hydration mismatch），
+   * 恢复在 mount 后的 effect 中完成；页面在 `isRestored=false` 时不应回滚历史会话。
+   */
+  isRestored: boolean;
   isOpen: boolean;
   isAsking: boolean;
   /** 最近一次成功回答（便捷访问；完整历史在 transcript）。 */
@@ -93,6 +100,33 @@ const WELCOME_TURN: AgentTurn = {
 };
 
 const GENERIC_ERROR = "史脉服务暂时不可用，请稍后重试。";
+const TRANSCRIPT_STORAGE_KEY = "histolink.agent.transcript.v1";
+
+/**
+ * 读取本次标签页保留的对话（V1.0.5.1）。
+ *
+ * 只在客户端 mount 后调用：首屏统一渲染 WELCOME_TURN，避免服务端与客户端首帧不一致的
+ * hydration 报错；损坏 / 版本不符的数据一律回落欢迎语，不让脏数据进渲染层。
+ */
+function loadStoredTranscript(): AgentTurn[] {
+  if (typeof window === "undefined") return [WELCOME_TURN];
+  try {
+    const raw = window.sessionStorage.getItem(TRANSCRIPT_STORAGE_KEY);
+    if (!raw) return [WELCOME_TURN];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return [WELCOME_TURN];
+    const turns = parsed.filter((turn): turn is AgentTurn => {
+      if (!turn || typeof turn !== "object") return false;
+      const value = turn as Partial<AgentTurn>;
+      return typeof value.id === "string"
+        && (value.role === "user" || value.role === "assistant")
+        && typeof value.content === "string";
+    });
+    return turns.length > 0 ? turns : [WELCOME_TURN];
+  } catch {
+    return [WELCOME_TURN];
+  }
+}
 
 /** 每次请求独立 id：既做 transcript key，也用来给动作 id 加前缀（避免跨轮幂等冲突）。 */
 function createTurnRequestId(now: () => number = Date.now): string {
@@ -105,6 +139,7 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
   const currentSurface = useMemo(() => surfaceFromPathname(pathname), [pathname]);
 
   const [transcript, setTranscript] = useState<AgentTurn[]>(() => [WELCOME_TURN]);
+  const [isRestored, setIsRestored] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isAsking, setIsAsking] = useState(false);
   const [pendingActions, setPendingActions] = useState<UIAction[]>([]);
@@ -121,6 +156,22 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
   useEffect(() => {
     transcriptRef.current = transcript;
   }, [transcript]);
+
+  // 会话恢复（V1.0.5.1）：mount 后再读 sessionStorage，首帧服务端 / 客户端都渲染欢迎语，
+  // 因此不会出现 hydration mismatch；恢复完成前也不写回，避免欢迎语覆盖已保存的会话。
+  useEffect(() => {
+    setTranscript(loadStoredTranscript());
+    setIsRestored(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isRestored) return;
+    try {
+      window.sessionStorage.setItem(TRANSCRIPT_STORAGE_KEY, JSON.stringify(transcript));
+    } catch {
+      // Storage may be disabled or full; the in-memory transcript remains authoritative.
+    }
+  }, [transcript, isRestored]);
 
   const surfaceRef = useRef<UISurface | null>(currentSurface);
   useEffect(() => {
@@ -276,6 +327,7 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
   const value = useMemo<AgentSessionValue>(
     () => ({
       transcript,
+      isRestored,
       isOpen,
       isAsking,
       lastAnswer,
@@ -292,6 +344,7 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
     }),
     [
       transcript,
+      isRestored,
       isOpen,
       isAsking,
       lastAnswer,

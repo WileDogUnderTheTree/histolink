@@ -29,12 +29,32 @@ from .base import (
 )
 
 
+#: 查询里嵌入人物名时的最长查询长度（避免把整段长问句拆出过多词）。
+_EMBEDDED_NAME_QUERY_MAX = 30
+#: 允许做「人物名 + 事件词」扩展的事件词后缀（如「王安石变法」→「王安石」）。
+#: 只限定在这些明确的事件名词上，避免把「秦始皇 西红柿」这类问题扩展成大量无关人物事件。
+_EVENT_TOPIC_SUFFIXES = ("变法", "改革", "新政", "起义", "之变", "之战", "之乱", "之役", "改制")
+
+
 def _search_terms(ctx: ToolContext, query: str) -> set[str]:
-    """关键词 + 别名展开：问「唐太宗」时同时检索「李世民」。"""
+    """关键词 + 别名 / 人物名展开。
+
+    - 问「唐太宗」时同时检索「李世民」（既有别名行为）；
+    - V1.0.5.1：事件图谱标题与问法常不一致（如问「王安石变法」，图谱事件标题是「熙宁变法」），
+      因此当查询是「已知人物名 + 明确事件词后缀」时，把该人物名也作为检索词，避免 Agent 为同一
+      对象反复换词试探、在对比任务里白耗轮次。只新增检索词，不改变结果排序规则与证据要求。
+    """
 
     terms = {query.casefold()}
     for person in ctx.store.persons_by_name.get(query, []):
         terms.add(person["display_name"].casefold())
+    if len(query) <= _EMBEDDED_NAME_QUERY_MAX and not any(ch.isspace() for ch in query):
+        for suffix in _EVENT_TOPIC_SUFFIXES:
+            if not query.endswith(suffix):
+                continue
+            prefix = query[: -len(suffix)]
+            for person in ctx.store.persons_by_name.get(prefix, []):
+                terms.add(person["display_name"].casefold())
     return {term for term in terms if term}
 
 

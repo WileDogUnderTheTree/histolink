@@ -16,6 +16,7 @@ from agent_testkit import (
     insufficient_answer,
     refusal_answer,
     tool_call_step,
+    tool_batch_step,
 )
 
 from agent.orchestrator import (
@@ -23,6 +24,7 @@ from agent.orchestrator import (
     AgentProtocolError,
     parse_model_step,
 )
+from agent.prompts import MAX_TOOL_BATCH_RESULT_CHARS, build_tool_result_message
 from agent.schemas import AgentResult
 
 CHIBI_CITATION = "cite-handong-chibi-0"
@@ -63,7 +65,80 @@ def test_tool_then_grounded_answer(store: Any) -> None:
     assert any(CHIBI_CITATION in message["content"] for message in second_round_messages)
 
 
+def test_parallel_tool_batch_preserves_results_and_evidence(store: Any) -> None:
+    result, fake = _run(
+        store,
+        [
+            tool_batch_step([
+                {"tool": "get_event", "arguments": {"event_id": "handong-chibi"}},
+                {"tool": "get_event", "arguments": {"event_id": "xixia-09"}},
+            ]),
+            final_step(grounded_answer(citation_ids=[CHIBI_CITATION], entity_id="handong-chibi")),
+        ],
+    )
+
+    assert result.answer.mode == "grounded"
+    assert [record.name for record in result.tools] == ["get_event", "get_event"]
+    assert result.steps == 2
+    assert "xixia-09" in fake.calls[1]["messages"][-1]["content"]
+
+
+def test_tool_batch_message_respects_total_budget() -> None:
+    """V1.0.5.1：批量结果除单条上限外，整轮还受总字符预算约束（防止上下文被撑爆）。"""
+
+    huge = {"ok": True, "items": ["x" * 1000] * 20}
+    message = build_tool_result_message([("get_event", {}, huge)] * 4)
+
+    assert len(message) < MAX_TOOL_BATCH_RESULT_CHARS + 6000
+    assert "已省略" in message or "已截断" in message
+
+
 def test_max_steps_stops_tool_loop(store: Any) -> None:
+    """轮次硬上限仍然生效；预算耗尽后只允许一次「只收尾」调用，不再执行工具。"""
+
+    result, fake = _run(
+        store,
+        [
+            tool_call_step("get_event", {"event_id": "xixia-09"}),
+            tool_call_step("get_event", {"event_id": "xixia-09"}),
+            tool_call_step("get_event", {"event_id": "xixia-09"}),
+            final_step(insufficient_answer()),
+        ],
+        max_steps=3,
+    )
+
+    # 3 个工具轮 + 1 次收尾调用；工具本身没有再被执行。
+    assert len(fake.calls) == 4
+    assert len(result.tools) == 3
+    assert result.steps == 4
+    assert result.answer.mode == "insufficient"
+    assert result.downgraded is False
+    assert "收尾轮" in fake.calls[3]["messages"][-1]["content"]
+
+
+def test_finalize_round_grounds_with_accumulated_evidence(store: Any) -> None:
+    """轮次预算刚好用尽时，收尾轮可以把已获得的工具结果组织成 grounded 回答。"""
+
+    result, fake = _run(
+        store,
+        [
+            tool_call_step("get_event", {"event_id": "handong-chibi"}),
+            tool_call_step("get_event", {"event_id": "xixia-09"}),
+            final_step(grounded_answer(citation_ids=[CHIBI_CITATION], entity_id="handong-chibi")),
+        ],
+        max_steps=2,
+    )
+
+    assert len(fake.calls) == 3
+    assert result.steps == 3
+    assert result.answer.mode == "grounded"
+    assert result.downgraded is False
+    assert [record.name for record in result.tools] == ["get_event", "get_event"]
+
+
+def test_finalize_round_rejects_further_tool_calls(store: Any) -> None:
+    """收尾轮若仍尝试调用工具，直接安全兜底（不执行、不循环）。"""
+
     result, fake = _run(
         store,
         [
@@ -71,23 +146,47 @@ def test_max_steps_stops_tool_loop(store: Any) -> None:
             tool_call_step("get_event", {"event_id": "xixia-09"}),
             tool_call_step("get_event", {"event_id": "xixia-09"}),
         ],
-        max_steps=3,
+        max_steps=2,
     )
 
     assert len(fake.calls) == 3
-    assert len(result.tools) == 3
+    assert len(result.tools) == 2
     assert result.steps == 3
     assert result.answer.mode == "insufficient"
     assert result.downgraded is True
-    assert any("轮次" in item for item in result.answer.missing)
+    assert any("收尾轮仍尝试调用工具" in item for item in result.answer.missing)
+
+
+def test_tool_call_budget_blocks_batch_flood(store: Any) -> None:
+    """V1.0.5.1：批量调用仍受总工具调用数硬上限保护，超限批次直接拒绝而不是继续并行。"""
+
+    batch = tool_batch_step(
+        [
+            {"tool": "get_event", "arguments": {"event_id": "xixia-09"}},
+            {"tool": "get_event", "arguments": {"event_id": "xixia-09"}},
+            {"tool": "get_event", "arguments": {"event_id": "xixia-09"}},
+            {"tool": "get_event", "arguments": {"event_id": "xixia-09"}},
+        ]
+    )
+    result, fake = _run(store, [batch] * 6 + [final_step(insufficient_answer())])
+
+    assert len(fake.calls) == 7
+    # 前两批共 8 条执行；第三批起 8 + 4 = 12 > MAX_TOOL_CALLS(10)，被安全上限拒绝。
+    assert len(result.tools) == 8
+    assert result.answer.mode == "insufficient"
+    assert result.downgraded is False
+    # 超限拒绝的原因确实回传给了模型，供它改用 final 收尾。
+    assert any("安全上限" in message["content"] for message in fake.calls[3]["messages"])
 
 
 def test_invalid_evidence_forces_insufficient(store: Any) -> None:
-    result, _ = _run(
+    result, fake = _run(
         store,
         [final_step(grounded_answer(citation_ids=["cite-fabricated-0"], entity_id="tang-04"))],
+        max_steps=1,
     )
 
+    assert len(fake.calls) == 1
     assert result.answer.mode == "insufficient"
     assert result.downgraded is True
     assert result.citations == []
@@ -95,15 +194,37 @@ def test_invalid_evidence_forces_insufficient(store: Any) -> None:
     assert any("tang-04" in item for item in result.answer.missing)
 
 
+def test_validation_failure_triggers_final_repair(store: Any) -> None:
+    """V1.0.5.1：final 未通过证据校验且有轮次预算时，回传原因让模型重写 final。"""
+
+    result, fake = _run(
+        store,
+        [
+            tool_call_step("get_event", {"event_id": "handong-chibi"}),
+            final_step(grounded_answer(citation_ids=["cite-fabricated-0"])),
+            final_step(grounded_answer(citation_ids=[CHIBI_CITATION], entity_id="handong-chibi")),
+        ],
+    )
+
+    assert result.answer.mode == "grounded"
+    assert result.downgraded is False
+    assert result.steps == 3
+    assert len(result.tools) == 1
+    assert any("未通过证据校验" in message["content"] for message in fake.calls[2]["messages"])
+    assert [citation.id for citation in result.citations] == [CHIBI_CITATION]
+
+
 def test_invalid_citation_forces_insufficient(store: Any) -> None:
-    result, _ = _run(
+    result, fake = _run(
         store,
         [
             tool_call_step("get_event", {"event_id": "handong-chibi"}),
             final_step(grounded_answer(citation_ids=["cite-fabricated-0"])),
         ],
+        max_steps=2,
     )
 
+    assert len(fake.calls) == 2
     assert result.answer.mode == "insufficient"
     assert result.downgraded is True
     assert result.citations == []
@@ -127,12 +248,40 @@ def test_invalid_json_then_recovers_on_next_round(store: Any) -> None:
 
 
 def test_invalid_json_every_round_falls_back(store: Any) -> None:
-    result, fake = _run(store, ["bad-json", "still-not-json"], max_steps=2)
+    result, fake = _run(
+        store,
+        ["bad-json", "still-not-json", "third-bad-json", "fourth-bad-json"],
+        max_steps=2,
+    )
 
-    assert len(fake.calls) == 2
+    # 2 个工具轮 + 2 次收尾尝试（含一次 JSON 修复重试）都拿不到合法 JSON → 安全兜底。
+    assert len(fake.calls) == 4
+    assert result.steps == 4
     assert result.answer.mode == "insufficient"
     assert result.downgraded is True
     assert any("JSON" in item for item in result.answer.missing)
+
+
+def test_finalize_round_repairs_invalid_json(store: Any) -> None:
+    """收尾轮遇到非法 JSON 时允许一次协议修复，仍不执行工具，成功后正常返回。"""
+
+    result, fake = _run(
+        store,
+        [
+            tool_call_step("get_event", {"event_id": "handong-chibi"}),
+            tool_call_step("get_event", {"event_id": "xixia-09"}),
+            "not-a-json-final",
+            final_step(grounded_answer(citation_ids=[CHIBI_CITATION], entity_id="handong-chibi")),
+        ],
+        max_steps=2,
+    )
+
+    assert len(fake.calls) == 4
+    assert result.steps == 4
+    assert result.answer.mode == "grounded"
+    assert result.downgraded is False
+    assert [record.name for record in result.tools] == ["get_event", "get_event"]
+    assert "不是合法 JSON" in fake.calls[3]["messages"][-1]["content"]
 
 
 def test_invalid_tool_arguments_are_fed_back(store: Any) -> None:
@@ -234,7 +383,7 @@ def test_selected_person_is_injected(store: Any) -> None:
 
 
 # ---------------------------------------------------------------------------
-# P1-1：最大轮次是硬上限 4
+# P1-1：最大轮次是硬上限 6（V1.0.5 放宽；V1.0.5.1 保持并由 tool_batch 提升利用率）
 # ---------------------------------------------------------------------------
 
 

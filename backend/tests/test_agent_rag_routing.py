@@ -16,6 +16,7 @@ from agent_testkit import (
     ask_request,
     final_step,
     insufficient_answer,
+    tool_batch_step,
     tool_call_step,
 )
 
@@ -24,6 +25,7 @@ from agent.orchestrator import AgentOrchestrator
 from rag.store import RetrievedChunk
 
 SHANG_YANG_EVENT = "zhanguo-05"
+WANG_AN_SHI_EVENT = "beisong-10"
 
 
 class FakeRagStore:
@@ -163,6 +165,74 @@ def test_hybrid_route_graph_then_rag(store: Any, toolkit: Any, fake_rag: Any) ->
     )
 
 
+def test_comparison_route_batches_both_dynasties(store: Any, toolkit: Any, fake_rag: Any) -> None:
+    """跨朝代比较应能在 6 轮预算内完成双方图谱 + 双方 RAG。"""
+    rag_store = fake_rag([_shang_yang_chunks()[0],
+        RetrievedChunk(
+            chunk_id="rag-wang-00",
+            text="王安石变法始于北宋熙宁年间，重点在理财、强兵与整顿吏治。",
+            event_name="王安石变法",
+            title="王安石变法",
+            record_type="正史",
+            section="白话文详述",
+            source="史脉综述",
+            source_label="",
+            book="",
+            chapter=None,
+            event_id=WANG_AN_SHI_EVENT,
+            year_min=1069,
+            year_max=1085,
+            score=0.79,
+        )
+    ])
+    shang_citation = _event_citation_id(toolkit, SHANG_YANG_EVENT)
+    wang_citation = _event_citation_id(toolkit, WANG_AN_SHI_EVENT)
+    fake = FakeLLM([
+        tool_batch_step([
+            {"tool": "get_event", "arguments": {"event_id": SHANG_YANG_EVENT}},
+            {"tool": "get_event", "arguments": {"event_id": WANG_AN_SHI_EVENT}},
+        ]),
+        tool_batch_step([
+            {"tool": "search_historical_text", "arguments": {"query": "商鞅变法 战国 秦孝公 措施 影响", "top_k": 2}},
+            {"tool": "search_historical_text", "arguments": {"query": "王安石变法 北宋 宋神宗 措施 影响", "top_k": 2}},
+        ]),
+        final_step({
+            "mode": "grounded",
+            "claims": [
+                {"id": "c1", "citation_ids": [shang_citation]},
+                {"id": "c2", "citation_ids": [wang_citation]},
+                {"id": "c3", "citation_ids": ["rag-04-00", "rag-wang-00"]},
+            ],
+            "evidence": [
+                {"entity_type": "event", "entity_id": SHANG_YANG_EVENT},
+                {"entity_type": "event", "entity_id": WANG_AN_SHI_EVENT},
+                {"entity_type": "rag", "entity_id": "rag-04-00"},
+                {"entity_type": "rag", "entity_id": "rag-wang-00"},
+            ],
+            "related_event_ids": [SHANG_YANG_EVENT, WANG_AN_SHI_EVENT],
+            "missing_reasons": [],
+            "reason_code": None,
+            "ui_actions": [],
+        }),
+    ])
+
+    result = AgentOrchestrator(store, fake).run(
+        ask_request("王安石变法和商鞅变法的区别", route="/ask")
+    )
+
+    assert result.answer.mode == "grounded"
+    assert result.downgraded is False
+    assert [record.name for record in result.tools] == [
+        "get_event", "get_event", "search_historical_text", "search_historical_text"
+    ]
+    assert len(fake.calls) == 3
+    assert {query for query, _ in rag_store.queries} == {
+        "商鞅变法 战国 秦孝公 措施 影响",
+        "王安石变法 北宋 宋神宗 措施 影响",
+    }
+    assert "商鞅变法" in result.answer.markdown and "王安石变法" in result.answer.markdown
+
+
 def test_system_prompt_advertises_rag_tool_and_status(
     store: Any, toolkit: Any, fake_rag: Any
 ) -> None:
@@ -179,6 +249,23 @@ def test_system_prompt_advertises_rag_tool_and_status(
     assert "search_historical_text" in system_prompt
     assert "RAG 史料库状态" in system_prompt
     assert "① 基础事实（来自图谱）" in system_prompt
+
+
+def test_system_prompt_documents_comparison_batch_strategy(
+    store: Any, toolkit: Any, fake_rag: Any
+) -> None:
+    """V1.0.5.1：System Prompt 必须显式给出对比任务的「并行图谱 → 并行 RAG → 回答」策略。"""
+
+    fake_rag([])
+    fake = FakeLLM([final_step(insufficient_answer())])
+    AgentOrchestrator(store, fake).run(ask_request("王安石变法和商鞅变法的区别", route="/ask"))
+
+    system_prompt = fake.calls[0]["messages"][0]["content"]
+    assert "对比任务专项策略" in system_prompt
+    assert "第一轮并行定位" in system_prompt
+    assert "第二轮并行取证" in system_prompt
+    assert "action=tool_batch" in system_prompt
+    assert "第三轮生成回答" in system_prompt
 
 
 def test_both_sources_miss_returns_insufficient(

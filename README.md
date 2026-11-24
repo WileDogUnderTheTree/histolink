@@ -4,7 +4,7 @@
 
 **中国历史探索 · 以结构化数据为核心的可视化历史探索 Web 应用**
 
-当前版本 **V1.0.5（RAG 史料检索与混合架构版）**；**V1.0.2 工具层已发布**（tag `v1.0.2`；8 个只读工具 + 统一信封契约 + 62 条单测）；**V1.0.3 Agent Core 已发布**（规划器 / 执行器 / 证据校验与安全加固）；**V1.0.4 UI 联动已完成**（AgentContext / ActionBus、史令 / 史引双人格、抽屉与 `/ask` 共享会话、同页自动 / 跨页确认与 URL 深链接闭环）；**V1.0.5 已完成 RAG 混合检索 + LLM 自动降级**（51 篇语料 → 186 条 chunk 本地向量库 + 第 9 个工具 `search_historical_text` + 图谱/RAG 分节回答与冲突标注；主模型 429/502/504/超时自动切换备用轻量模型并回填 `trace.model_used`；后端全量 **306 条测试通过**） ｜ 数据快照 **705 条事件（时间轴 671 + 图谱补足 34）· 23 个朝代/时期 · 1,058 人物 · 639 对人物关系 · 18 期 / 7 组人物关系图数据**
+当前版本 **V1.0.5.1（Agent 对比任务优化 + 对话工作区 UI 重构补丁）**；**V1.0.2 工具层已发布**（tag `v1.0.2`；8 个只读工具 + 统一信封契约 + 62 条单测）；**V1.0.3 Agent Core 已发布**（规划器 / 执行器 / 证据校验与安全加固）；**V1.0.4 UI 联动已完成**（AgentContext / ActionBus、史令 / 史引双人格、抽屉与 `/ask` 共享会话、同页自动 / 跨页确认与 URL 深链接闭环）；**V1.0.5 已完成 RAG 混合检索 + LLM 自动降级**（51 篇语料 → 186 条 chunk 本地向量库 + 第 9 个工具 `search_historical_text` + 图谱/RAG 分节回答与冲突标注；主模型 429/502/504/超时自动切换备用轻量模型并回填 `trace.model_used`）；**V1.0.5.1 已完成对比任务优化与对话工作区重构**（内部 `tool_batch` 并行只读工具 + 对比 Prompt 三阶段策略 + 有界收尾轮 / 校验修复轮；`/ask` 改为单一滚动的对话时间线 + 底部输入区，修复长回答裁切与「返回聊天」丢问题；后端全量 **318 条测试通过**，前端无头验收 **39/39**） ｜ 数据快照 **705 条事件（时间轴 671 + 图谱补足 34）· 23 个朝代/时期 · 1,058 人物 · 639 对人物关系 · 18 期 / 7 组人物关系图数据**
 
 </div>
 
@@ -26,7 +26,7 @@
 
 | 模块 | 路由 | 说明 |
 |---|---|---|
-| 首页 | `/` | 模块入口导航；**「聊天问答」入口已封印为「开发中 / 敬请期待」**（点击只弹 Toast、不跳转），时间轴 / 人物关系图入口正常；实时检测后端连通状态（右下角状态点） |
+| 首页 | `/` | 模块入口导航；「聊天问答」入口已开放（V1.0.4 起直达 `/ask` 并共享同一会话），时间轴 / 人物关系图入口正常；实时检测后端连通状态（右下角状态点） |
 | 全朝代时间轴 | `/timeline` | 夏—清共 **670 条**精选事件；「简阅 / 细览」双视图——细览按 23 个朝代/时期、简阅按 7 大断代（先秦 / 秦汉 / 三国 / 魏晋南北朝 / 隋唐 / 五代辽宋夏金 / 元明清）只看顶级事件；Tab 多时横向滑动、隐藏滚动条，支持鼠标按住拖拽与惯性滑行，箭头位于容器外侧不遮挡 Tab；圆点按年份自动上下错层、密集时自动缩小 |
 | 2D 人物关系图 | `/graph` | 「简阅 / 细览」双视图：细览 **18 期**（春秋 / 战国 / 秦汉 / 三国 / 西晋 / 东晋十六国 / 南北朝 / 隋 / 唐 / 五代十国 / 北宋 / 南宋 / 辽 / 西夏 / 金 / 元 / 明 / 清），简阅 **7 组**（先秦 / 秦汉 / 三国 / 魏晋南北朝 / 隋唐 / 宋辽金夏 / 元明清）；D3 力导向 + SVG；单击相邻人物查看两人关系、共同事件与事件简述，长按约 500ms 切换中心，拖拽调整位置；切期 / 切模式时中心人物能保留则保留 |
 | 图谱三栏导航 | `/graph` | 左栏 240px（人物搜索 + 名人堂 + 三国阵营快捷）｜中栏画布自适应｜右栏 280px 关系详情；搜索、名人堂与阵营按钮均可直达任意人物为中心；支持本名 / 庙号别名搜索（如「拓跋宏」→ 孝文帝、「清圣祖」→ 康熙帝）；图区上方仅保留一行操作副标题 + `?` 气泡，复杂说明不占正文 |
@@ -35,7 +35,7 @@
 | 组件受控与深链接（V1.0.1） | `/timeline` · `/graph` | `PersonGraph2D` 新增可选 `highlightedPersonIds` / `selectedPersonId` / `onPersonSelect`（不传时行为与 V0.9.0 完全一致）；ActionBus 在时间轴 / 图谱页注册同页动作并回写 URL；支持 `/timeline?event=…`、`/graph?person=…&era=…&selected=…` 直接恢复视图（含受控关系面板） |
 | 评测骨架（V1.0.1） | `evals/` + `scripts/run-evals.mjs` | 30 条 golden 用例覆盖 12 类（公元前年份 / 同名歧义 / 资料不足 / 跨朝代 / 关系 / 对比 / 超范围 / 彩蛋排除 / 仅图谱事件 / 多轮 / 事件人物联动 / UI 动作策略）；contract 模式离线校验 schema、快照绑定、0 悬空 ID、工具入参与动作策略，含负向自测 |
 | 模型连通性（V1.0.1 / TC-10） | `/api/agent/ping_llm` | 实测 `Qwen/Qwen3.5-35B-A3B`：连通性 / JSON 模式 / tool calling / SSE / 中文回答均通过；默认思考模式延迟高，已给出 V1.0.3 参数与降级路线 |
-| Agent 问答（V1.0.3） | `POST /api/agent/ask` | 规划器 + 工具循环（V1.0.5 起最多 6 轮）+ 证据校验；Qwen `enable_thinking=false` + JSON 模式；evidence / citation 对不上工具真实结果时强制降级 `insufficient`；主模型 429/502/504/超时自动切换备用轻量模型并在 `trace.model_used` 标明最终模型；返回冻结 `AnswerEnvelope`（含 citations / entities / trace） |
+| Agent 问答（V1.0.3） | `POST /api/agent/ask` | 规划器 + 工具循环（V1.0.5.1 起最多 6 个工具轮，支持 `tool_batch` 并行 2–4 个只读工具 + 轮次耗尽后至多 2 次「只收尾」调用）+ 证据校验；Qwen `enable_thinking=false` + JSON 模式；evidence / citation 对不上工具真实结果时强制降级 `insufficient`；主模型 429/502/504/超时自动切换备用轻量模型并在 `trace.model_used` 标明最终模型；返回冻结 `AnswerEnvelope`（含 citations / entities / trace） |
 | Agent UI 数据层（V1.0.4） | `frontend/contexts/AgentContext.tsx` | 全局 Agent 状态：提问 → 组装页面上下文 / history → 调用 `/api/agent/ask` → transcript；ActionBus 按 `target.surface` 判定同页自动执行 / 跨页确认；确认后按动作生成深链接导航（Timeline / Graph 已注册 `timeline.focus_event`、`graph.focus_person` 等 handler）；`lib/agent-guide.ts` 从回答派生 `guide`，`/ask` 据此自动展开史引副驾驶并渲染对应组件 |
 | 人物主数据（V1.0.1） | `frontend/data/persons.ts` | 1,058 条 person 记录 = 1,059 个姓名 − 3 条异名同一人合并 + 2 条同名拆分（梁太后 / 刘崇）；稳定 `person_id` + ID 锁文件 + 66 条全局别名 + 同名报告 + `--check` 门禁 |
 | 数据快照与只读 API（V1.0.1） | `backend/data/` · `/api/meta` · `/api/entities/*` | 前后端同源快照（705 事件 / 1,058 人物 / 639 关系 / 18 期 / 7 断代，约 2.7MB，内容寻址 hash）；FastAPI 启动校验快照，提供 meta / person / event / 姓名候选只读接口与统一错误 envelope |
@@ -48,7 +48,7 @@
 | 模块 | 计划版本 | 说明 |
 |---|---|---|
 | 已融合至图谱与搜索框 | V0.5 阶段完成 | 放弃了独立 `/people` 页面，将首字母与搜索能力深度整合进了 PersonGraph2D 左侧面板的‘名人堂’。 |
-| 核心链路已完成 | V1.0.1 - V1.0.5 | 包含 DSH 路由、工具链、防幻觉证据校验、ActionBus 分屏联动、以及 ChromaDB RAG 混合检索。 |
+| 核心链路已完成 | V1.0.1 - V1.0.5.1 | 包含 DSH 路由、工具链、防幻觉证据校验、ActionBus 分屏联动、ChromaDB RAG 混合检索、对比任务并行工具与对话工作区。 |
 | 3D 人物关系视图、时间轴滑块交互 | V1.1.0 (待宣发后启动) | 终极 UI 重构。为控制开发成本与 Token 消耗，当前阶段保留 2D 版本。待项目正式发布并完成宣传片制作后，再启动 3D 力导向图与滑块交互重构。 |
 | 时间轴尽头彩蛋节点（1893-12-26） | 已完成 (V0.8.2.2) | 已在历史长河尽头点亮红星，点击可弹出教员诗词的庄重横幅。 |
 
@@ -238,7 +238,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -Only 1,3
 | 首页 | <http://localhost:3000> | 模块入口与后端连通状态 |
 | 时间轴 | <http://localhost:3000/timeline> | 全朝代事件时间轴 |
 | 人物关系图 | <http://localhost:3000/graph> | 三栏布局，分期可切换 |
-| 健康检查 | `GET http://127.0.0.1:8000/api/health` | 响应 `{"ok": true, "version": "1.0.5"}`；也可经前端同源访问 `GET http://localhost:3000/api/health` |
+| 健康检查 | `GET http://127.0.0.1:8000/api/health` | 响应 `{"ok": true, "version": "1.0.5.1"}`；也可经前端同源访问 `GET http://localhost:3000/api/health` |
 
 V1.0.1 起后端是**只读数据服务**；V1.0.3 新增唯一写入口 `POST /api/agent/ask`（问答），其余 `/api` 写方法仍返回 405。全部接口如下（响应均带 `schema_version` 与 `snapshot.version/hash`）：
 
@@ -555,6 +555,7 @@ interface PersonGraphEdge {
 | V1.0.3 | 规划器与问答生成（tool calling 为主 / JSON 兜底） | 已完成（tag `v1.0.3`） |
 | V1.0.4 | 动作联动：同页自动 / 跨页确认、全量 URL 状态化、时间轴与图谱高亮、对话 UI | 已完成（准备发布 tag `v1.0.4`） |
 | V1.0.5 | 检索与引用校验：RAG 史料向量库（chromadb + bge-small-zh-v1.5）+ `search_historical_text` 工具 + 图谱/RAG 混合路由与「史料记载有异」冲突标注 + LLM 自动降级（429/502/504/超时 → 备用轻量模型，`trace.model_used`） | 已完成（tag `v1.0.5`） |
+| V1.0.5.1 | Agent 对比任务优化（`tool_batch` 并行只读工具 + 对比 Prompt 三阶段 + 有界收尾轮 / 校验修复轮 + 检索词扩展）与 `/ask` 对话工作区 UI 重构（单一滚动、长回答完整显示、返回聊天状态保留、V1.0.6 多轮布局预留） | 已完成（tag `v1.0.5.1`） |
 | V1.0.6 | 多轮记忆与实体承接 | 计划中 |
 | V1.1 | 终极 UI 重构（3D 视图、滑块交互） | 计划中 |
 | V1.1.1 | 时间轴尽头彩蛋节点（1893-12-26） | 计划中 |
@@ -607,6 +608,7 @@ interface PersonGraphEdge {
 | [docs/V1.0.3-Agent-Core设计.md](docs/V1.0.3-Agent-Core设计.md) | Agent Core：数据结构、JSON 协议、工具注册表、证据校验、API 测试方法 |
 | [docs/V1.0.4-Agent-UI数据层设计.md](docs/V1.0.4-Agent-UI数据层设计.md) | V1.0.4 前端 Agent 数据层：AgentContext / ActionBus / 动作联动调用链与手工验收 |
 | [docs/V1.0.5-RAG混合检索设计.md](docs/V1.0.5-RAG混合检索设计.md) | V1.0.5 RAG 混合检索：入库管道、embedding 选型、`search_historical_text`、图谱/RAG 分节与冲突标注 |
+| [docs/V1.0.5.1-Agent对比任务与对话工作区设计.md](docs/V1.0.5.1-Agent对比任务与对话工作区设计.md) | V1.0.5.1 对比任务优化（并行工具 / 收尾轮 / 校验修复轮）与对话工作区 UI 重构：根因、布局、状态保留、V1.0.6 预留边界与验收数据 |
 | [docs/component-capability-map.md](docs/component-capability-map.md) | TC-08 组件能力现状、受控接口、深链接与 V1.0.4 缺口清单 |
 | [contracts/README.md](contracts/README.md) | 三份契约的冻结规则、版本升级规则与字段清单 |
 | [docs/spikes/README.md](docs/spikes/README.md) | TC-10 模型能力复现说明（env、命令、失败码、10 项探针结论） |
@@ -623,7 +625,14 @@ interface PersonGraphEdge {
 
 - V1.0.1 起后端提供**只读数据服务**（快照 + `/api/meta` + `/api/entities/*` + `/api/agent/ping_llm`）；V1.0.3 新增唯一写入口 `POST /api/agent/ask`（问答）。仍**不接数据库**；页面渲染在 V1.0 仍读前端 TS 数据。
 - 页面渲染数据链路（时间轴 / 图谱）与人物 `person_id` 尚未合并：图谱节点仍以姓名为 id，关系库 `person_id` 迁移属 V1.1；因此 `PersonGraph2D` 的受控 `selectedPersonId` / `onPersonSelect` 当前参数是**图节点 id（姓名）**，语义待 V1.1 切换。
-- 问答壳层（抽屉 / `/ask`）仍是**前端占位**：不调用后端；后端 `POST /api/agent/ask` 已可用，前端接入与 UI Action 执行分别在 V1.0.4 / V1.0.5。首页「聊天问答」入口继续保持 V0.9.0 的封印行为。
+- 问答前端已接入真实 `POST /api/agent/ask`（V1.0.4 起）；V1.0.5.1 把 `/ask` 重构为对话工作区，但**仍是单轮问答**：
+  不做多轮上下文拼接 / Conversation Memory / 历史消息持久化（属 V1.0.6）；当前只做了 UI 结构与静态布局预览
+  （`/ask?preview=multiturn`）。
+- V1.0.5.1 对比任务的回答完整度取决于 RAG 语料覆盖范围：语料未覆盖「历史局限」等维度时，服务端按既有规则
+  标注缺失或降级 `insufficient`，不会编造；`search_events` 的「人物名 + 事件词」扩展只覆盖有限事件词后缀。
+- 本地 RAG 向量库为 gitignore 构建产物，需在 `backend` 下执行
+  `backend\.venv\Scripts\python backend\scripts\ingest_rag.py` 重建；未构建时 RAG 工具返回失败信封，
+  Agent 会退回图谱证据或如实说明资料不足。
 - 本版歧义实体（如「梁太后」）不返回 `clarification` 候选列表，由模型输出 `insufficient` 提示用户指定；澄清状态机属多轮记忆版本。
 - ActionBus 已在时间轴 / 图谱页注册**同页**动作，但跨页动作只有待确认队列、**没有确认按钮 UI**；完整动作联动属 V1.0.4。
 - 深链接只做「打开链接恢复视图 + 动作执行后回写 URL」，**不做全量 URL 状态化**（每次点击同步 query、浏览器前进后退恢复属 V1.0.4）。
@@ -652,6 +661,28 @@ interface PersonGraphEdge {
 ## 十二、更新日志（近期）
 
 > 完整版本记录见 [CHANGELOG.md](CHANGELOG.md)。
+
+### V1.0.5.1（Agent 对比任务优化 + 对话工作区重构） — 2026-11-24
+
+- **Agent 对比任务修复**：「王安石变法和商鞅变法的区别」从 `insufficient` 修复为 **3 轮 grounded**：
+  内部新增 `action=tool_batch`（并行 2–4 个只读工具，工具总数仍硬限 10）、System Prompt 增加对比任务
+  「并行定位 → 并行取证 → final」三阶段策略、轮次耗尽后的有界收尾轮（禁止工具，允许一次 JSON 修复）
+  与证据校验修复轮（重写 final 仍必须通过原校验）；`search_events` 支持「人物名 + 事件词后缀」扩展检索词，
+  「王安石变法」一次命中图谱事件「熙宁变法」。外部 API 契约与三态状态完全不变。
+- **`/ask` 对话工作区 UI 重构**：单一页面滚动 + 纵向对话时间线 + 底部输入区；修复「长回答被固定高度 /
+  嵌套滚动 / flex 撑破卡片裁切」与「返回聊天后问题丢失」（sessionStorage 会话持久化、SSR 安全恢复、
+  滚动位置恢复、旧副驾驶面板不重开）；新增共享 Markdown 渲染器与静态多轮布局预览
+  `/ask?preview=multiturn`，为 V1.0.6 多轮对话预留结构。
+- **版本与测试**：前端 / 后端版本号统一 `1.0.5.1`，契约导出物与前端类型同步重建；后端 **318 passed**、
+  前端 **119 passed**、`tsc` / `next build` 通过、`verify.ps1` 12 步门禁全绿、真实 LLM 验收 4/4 通过、
+  Edge 无头 UI 验收 **39/39** 通过。
+
+### V1.0.5（RAG 混合检索 + LLM 自动降级） — 2026-11-24
+
+- 新增 `backend/rag/`（语料解析 → 切分 → embedding → chromadb 向量库）与第 9 个只读工具
+  `search_historical_text`；Agent 采用「图谱基础事实 → RAG 史料细节」混合路由，年份冲突标注
+  「史料记载有异」，传说句首 `[传说]`，图谱与 RAG 双空必须 `insufficient`；轮次硬上限 4 → 6。
+- 主模型 429/502/504/超时自动切换备用轻量模型并回填 `trace.model_used`；前端在非 35B 时提示已降级。
 
 ### V1.0.1（Agent 前置基建版） — 2026-11-23
 

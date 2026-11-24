@@ -24,7 +24,7 @@ from contracts.action_types import UIActionType, UISurface
 #: 当前 API 契约版本；`AskRequest.client_schema_version` 必须与之一致。
 SCHEMA_VERSION = "1.0"
 #: API 版本（与 backend/main.py 的 APP_VERSION 对应关系见 contracts/README.md）。
-API_VERSION = "1.0.5"
+API_VERSION = "1.0.5.1"
 
 #: 引用许可（Q6）：非商用，沿用 shiji-kb 的 CC BY-NC-SA。
 ATTRIBUTION_TEXT = "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）"

@@ -1,12 +1,12 @@
 .page {
-  height: 100dvh;
-  min-height: 0;
-  overflow: hidden;
+  min-height: 100dvh;
+  /* 单一滚动容器：整页由文档滚动承载，内部列表不再各自滚动（避免长回答被裁切 / 多层滚动条）。 */
+  overflow-x: clip;
   padding: 0 24px;
   background: radial-gradient(900px 420px at 50% -12%, #fffdf4 0%, transparent 72%), #f5f1e8;
   color: #2e2a24;
 }
-.shell { width: min(100%, 800px); height: 100%; min-height: 0; margin: 0 auto; display: flex; flex-direction: column; transition: width 220ms ease; }
+.shell { width: min(100%, 800px); min-height: 100dvh; margin: 0 auto; display: flex; flex-direction: column; transition: width 220ms ease; }
 .shell.copilotMode { width: min(100%, 1360px); }
 .topbar { display: flex; flex: 0 0 50px; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid #e2d9cc; }
 .brand { display: inline-flex; min-width: 0; align-items: center; gap: 9px; color: #2e2a24; text-decoration: none; }
@@ -28,22 +28,29 @@
 .suggestionChip:hover b { transform: translateX(2px); color: #8b0000; }
 .suggestionChip:focus-visible { outline: 2px solid #8b0000; outline-offset: 3px; }
 
-.workspaceLayout { min-height: 0; flex: 1; display: flex; gap: 16px; overflow: hidden; }
-.chatCard { position: relative; min-width: 0; min-height: 0; flex: 1 1 35%; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #ded4c7; border-radius: 16px 16px 0 0; background: rgb(255 253 248 / 78%); box-shadow: 0 18px 46px rgb(87 56 31 / 8%); }
-.chatHeader { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; padding: 7px 22px 6px; border-bottom: 1px solid #ece5da; }
+.workspaceLayout { min-height: clamp(560px, calc(100dvh - 92px), 900px); flex: 1 1 auto; display: flex; align-items: stretch; gap: 16px; overflow: visible; }
+.chatCard { position: relative; min-width: 0; min-height: 0; flex: 1 1 35%; display: flex; flex-direction: column; overflow: visible; border: 1px solid #ded4c7; border-radius: 16px 16px 0 0; background: rgb(255 253 248 / 78%); box-shadow: 0 18px 46px rgb(87 56 31 / 8%); }
+.chatHeader { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 14px; padding: 7px 22px 6px; border-bottom: 1px solid #ece5da; }
 .chatHeader h2 { margin: 0; color: #3b2d28; font-family: "Songti SC", "STSong", serif; font-size: 16px; font-weight: 600; }
-.syncNote { display: inline-flex; align-items: center; gap: 7px; color: #8b8075; font-size: 10px; }
+.chatHeaderMeta { display: inline-flex; min-width: 0; flex: 0 0 auto; align-items: center; gap: 12px; }
+.workspaceKicker { display: block; margin-bottom: 2px; color: #a07e6e; font-size: 8px; font-weight: 700; letter-spacing: .16em; }
+.syncNote { display: inline-flex; align-items: center; gap: 7px; color: #8b8075; font-size: 10px; white-space: nowrap; }
 .syncNote i { width: 6px; height: 6px; border-radius: 50%; background: #47784f; box-shadow: 0 0 0 4px rgb(71 120 79 / 10%); }
-.conversationBody { min-height: 0; flex: 1; display: flex; overflow: hidden; }
-.transcript { min-width: 0; min-height: 0; flex: 1; list-style: none; display: flex; flex-direction: column; gap: 18px; overflow-y: auto; margin: 0; padding: 20px 26px; scrollbar-color: #cdbbab transparent; }
-.guideRail { flex: 0 0 180px; overflow-y: auto; padding: 30px 18px; border-left: 1px solid #eee4d9; background: linear-gradient(180deg, #fffaf4, #f8f1e9); color: #7d6d62; }
+.previewLink { flex: 0 0 auto; border-bottom: 1px dashed #d8c2a7; color: #9a7b6c; font-size: 10px; text-decoration: none; white-space: nowrap; }
+.previewLink:hover { border-color: #b98b7d; color: #8b0000; }
+.previewLink:focus-visible { outline: 2px solid #8b0000; outline-offset: 3px; }
+/* 注意：这里必须是 `flex-shrink: 1` + `min-width: 0`，否则长回答的 max-content 宽度会把
+   对话列撑出卡片（表现为文字被右侧裁切 / 覆盖副驾驶面板）。 */
+.conversationBody { min-width: 0; min-height: 0; flex: 1 1 auto; display: flex; overflow: visible; }
+.transcript { min-width: 0; flex: 1 1 auto; list-style: none; display: flex; flex-direction: column; gap: 18px; overflow: visible; margin: 0; padding: 20px 26px; scrollbar-color: #cdbbab transparent; }
+.guideRail { flex: 0 0 180px; overflow: visible; padding: 30px 18px; border-left: 1px solid #eee4d9; background: linear-gradient(180deg, #fffaf4, #f8f1e9); color: #7d6d62; }
 .guideSeal { display: grid; width: 34px; height: 34px; place-items: center; margin-bottom: 14px; border: 1px solid #b98b7d; border-radius: 9px; background: #8b0000; color: #fffaf2; font-family: "Songti SC", "STSong", serif; font-size: 18px; }
 .guideLabel { display: block; margin-bottom: 8px; color: #8b0000; font-size: 9px; font-weight: 700; letter-spacing: .14em; }
 .guideRail strong { display: block; color: #3c2d28; font-family: "Songti SC", "STSong", serif; font-size: 18px; font-weight: 600; }
 .guideRail p { margin: 12px 0 18px; color: #6d5c50; font-size: 11px; line-height: 1.7; }
 .guideOpen { border: 1px solid #8b0000; border-radius: 8px; padding: 8px 11px; background: #8b0000; color: #fff8f2; font: inherit; font-size: 11px; cursor: pointer; }
 .guideOpen:hover { background: #650000; }
-.userTurn, .agentTurn { max-width: 80%; border: 1px solid #e5ddd2; border-radius: 14px; padding: 15px 17px; box-shadow: 0 6px 16px rgb(86 56 33 / 5%); animation: messageIn 220ms ease-out both; }
+.userTurn, .agentTurn { min-width: 0; max-width: 80%; border: 1px solid #e5ddd2; border-radius: 14px; padding: 15px 17px; box-shadow: 0 6px 16px rgb(86 56 33 / 5%); animation: messageIn 220ms ease-out both; }
 .userTurn { align-self: flex-end; border-bottom-right-radius: 5px; background: #f0ede7; color: #4b443d; }
 .agentTurn { align-self: flex-start; border-color: #e1d3cc; border-left: 3px solid #8b0000; border-bottom-left-radius: 5px; background: #fff; }
 .agentTurn[data-error="true"] { border-color: #d9b4ac; border-left-color: #b23b2e; background: #fff8f5; }
@@ -54,7 +61,12 @@
 .personaIcon { display: grid; width: 20px; height: 20px; place-items: center; border: 1px solid #c99a8e; border-radius: 6px; background: #fbf0eb; color: #8b0000; font-family: "Songti SC", "STSong", serif; font-size: 11px; letter-spacing: 0; }
 .guidePersona { color: #6f160e; }
 .guidePersona .personaIcon { border-color: #b98b7d; background: #8b0000; color: #fffaf2; }
-.messageText { color: #3f3831; font-size: 14px; line-height: 1.85; overflow-wrap: anywhere; }
+.messageText { min-width: 0; color: #3f3831; font-size: 14px; line-height: 1.85; overflow-wrap: anywhere; }
+.answerMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 13px; color: #918176; font-size: 10px; }
+.statusBadge { display: inline-flex; align-items: center; border: 1px solid #c5d9c8; border-radius: 999px; padding: 3px 7px; background: #f2faf3; color: #47784f; font-weight: 700; }
+.answerMeta[data-mode="insufficient"] .statusBadge { border-color: #e4c9a6; background: #fff8ed; color: #9c6a2f; }
+.answerMeta[data-mode="refusal"] .statusBadge { border-color: #e5bdb6; background: #fff4f2; color: #a2493c; }
+.previewNotice { align-self: stretch; border: 1px dashed #d8c2a7; border-radius: 10px; padding: 9px 12px; background: #fffaf0; color: #97785c; font-size: 11px; line-height: 1.6; }
 .markdown > :first-child { margin-top: 0; }
 .markdown > :last-child { margin-bottom: 0; }
 .markdown p, .markdown h1, .markdown h2, .markdown h3 { margin: 0 0 11px; }
@@ -93,7 +105,10 @@ button.citation { width: 100%; cursor: pointer; }
 .pendingAction button { border: 1px solid #8b0000; border-radius: 7px; padding: 6px 10px; background: #8b0000; color: #fff8f2; font: inherit; font-size: 10px; cursor: pointer; }
 .pendingAction button:last-child { border-color: #dccdc2; background: transparent; color: #85776c; }
 
-.composerDock { flex: 0 0 auto; padding: 12px 26px 14px; border-top: 1px solid #ece5da; background: linear-gradient(180deg, rgb(255 253 248 / 76%), #fffdf8 35%); }
+/* 底部输入区（V1.0.5.1）：对话工作区内的固定落位。
+   - 仍处于文档流中（不 overlay 正文），长回答由整页滚动承载，不会被固定输入区压缩空间；
+   - sticky bottom 只在该卡片仍占据视口时吸附，滚到对话末尾即回到卡片底部，不会永久遮挡内容。 */
+.composerDock { position: sticky; bottom: 0; z-index: 3; flex: 0 0 auto; margin-top: auto; padding: 12px 26px 14px; border-top: 1px solid #ece5da; background: linear-gradient(180deg, rgb(255 253 248 / 92%), #fffdf8 35%); box-shadow: 0 -12px 26px rgb(87 56 31 / 6%); backdrop-filter: blur(6px); }
 .composer { display: flex; align-items: flex-end; gap: 10px; padding: 8px 8px 8px 13px; border: 1px solid #d6c9bb; border-radius: 13px; background: #fff; box-shadow: 0 5px 16px rgb(86 56 33 / 7%); }
 .composer textarea { min-height: 24px; max-height: 130px; flex: 1; resize: vertical; border: 0; outline: 0; padding: 5px 0; background: transparent; color: #342f29; font: inherit; font-size: 14px; line-height: 1.6; }
 .composer textarea::placeholder { color: #9b8d80; }
@@ -103,7 +118,9 @@ button.citation { width: 100%; cursor: pointer; }
 .composerHint { margin: 7px 2px 0; color: #a09488; font-size: 10px; }
 /* V1.0.5 高可用补丁：主模型降级到备用轻量模型时的脚注提示（可选展示，不影响回答内容）。 */
 .modelFallbackHint { margin: 7px 0 0; color: #9b8d80; font-size: 10px; line-height: 1.5; }
-.copilotPanel { min-width: 0; min-height: 0; flex: 1 1 65%; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #d9c9bb; border-radius: 16px 16px 0 0; background: #f8f5ee; box-shadow: 0 18px 46px rgb(87 56 31 / 10%); animation: copilotIn 220ms ease both; }
+/* 史引副驾驶（V1.0.5.1）：桌面端与对话列并排、固定在视口高度内，内部 iframe 独立滚动；
+   不再随长对话整体拉伸，避免出现「整页滚动 + iframe 内滚动」两层滚动条。 */
+.copilotPanel { position: sticky; top: 10px; min-width: 0; flex: 1 1 65%; align-self: flex-start; display: flex; flex-direction: column; overflow: hidden; height: min(calc(100dvh - 20px), 900px); border: 1px solid #d9c9bb; border-radius: 16px 16px 0 0; background: #f8f5ee; box-shadow: 0 18px 46px rgb(87 56 31 / 10%); animation: copilotIn 220ms ease both; }
 .copilotHeader { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 16px 9px; border-bottom: 1px solid #e4d9ce; background: #fffdf8; }
 .copilotTitle { min-width: 0; }
 .copilotKicker { display: block; margin-bottom: 2px; color: #9d7568; font-size: 9px; font-weight: 700; letter-spacing: .16em; }
@@ -126,6 +143,6 @@ button.citation { width: 100%; cursor: pointer; }
 @keyframes copilotIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes blink { 0%, 80%, 100% { opacity: .3; transform: scale(.8); } 40% { opacity: 1; transform: scale(1); } }
 @media (max-width: 1180px) { .chatCard { flex-basis: 42%; } .copilotPanel { flex-basis: 58%; } }
-@media (max-width: 900px) { .shell.copilotMode { width: min(100%, 800px); } .workspaceLayout { overflow: hidden; } .copilotPanel { flex-basis: 58%; } .copilotHeader { flex-wrap: wrap; } .copilotActions { flex-basis: 100%; justify-content: flex-start; } }
-@media (max-width: 720px) { .page { padding: 0 14px; } .topbar { flex-basis: 46px; } .brandMark { width: 32px; height: 32px; } .brand small { display: none; } .nav { gap: 10px; } .nav a { display: none; } .nav a:last-child { display: inline; } .suggestionBar { gap: 7px; padding: 8px 0 2px; } .suggestionChip { gap: 6px; padding: 6px 9px 6px 7px; font-size: 10px; } .suggestionMark { display: none; } .suggestionChip b { display: none; } .transcript { padding: 15px 14px; } .guideRail { flex-basis: 135px; padding: 22px 12px; } .guideRail p { margin-bottom: 10px; font-size: 10px; } .guideOpen { font-size: 10px; } .userTurn, .agentTurn { max-width: 94%; } .chatHeader { padding: 7px 16px 6px; } .syncNote { display: none; } .composerDock { padding: 10px 14px 12px; } .pending { margin-right: 0; margin-left: 0; } .copilotHeader { padding: 12px 14px; } .copilotHeader h2 { font-size: 17px; } .copilotExternal { font-size: 10px; padding: 6px 8px; } .shell.copilotMode .chatCard { display: none; } .shell.copilotMode .copilotPanel { flex: 1 1 100%; } }
+@media (max-width: 900px) { .shell.copilotMode { width: min(100%, 800px); } .workspaceLayout { overflow: visible; } .copilotPanel { flex-basis: 58%; } .copilotHeader { flex-wrap: wrap; } .copilotActions { flex-basis: 100%; justify-content: flex-start; } }
+@media (max-width: 720px) { .page { padding: 0 14px; } .topbar { flex-basis: 46px; } .brandMark { width: 32px; height: 32px; } .brand small { display: none; } .nav { gap: 10px; } .nav a { display: none; } .nav a:last-child { display: inline; } .suggestionBar { gap: 7px; padding: 8px 0 2px; } .suggestionChip { gap: 6px; padding: 6px 9px 6px 7px; font-size: 10px; } .suggestionMark { display: none; } .suggestionChip b { display: none; } .workspaceLayout { min-height: calc(100dvh - 70px); flex-direction: column; } .transcript { padding: 15px 14px; } .guideRail { flex-basis: auto; padding: 18px 14px; border-top: 1px solid #eee4d9; border-left: 0; } .guideRail p { margin-bottom: 10px; font-size: 10px; } .guideOpen { font-size: 10px; } .userTurn, .agentTurn { max-width: 94%; } .chatHeader { padding: 7px 16px 6px; } .syncNote { display: none; } .composerDock { padding: 10px 14px 12px; } .pending { margin-right: 0; margin-left: 0; } .copilotHeader { padding: 12px 14px; } .copilotHeader h2 { font-size: 17px; } .copilotExternal { font-size: 10px; padding: 6px 8px; } .shell.copilotMode .chatCard { display: none; } .shell.copilotMode .copilotPanel { flex: 1 1 100%; } .copilotPanel { position: static; height: calc(100dvh - 76px); } }
 @media (prefers-reduced-motion: reduce) { .shell, .userTurn, .agentTurn, .loading i, .copilotPanel { animation: none; transition: none; } }

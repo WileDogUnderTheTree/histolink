@@ -81,6 +81,14 @@ def tool_call_step(
     )
 
 
+def tool_batch_step(
+    calls: list[dict[str, Any]], thought: str = "并行调用工具"
+) -> str:
+    return json.dumps(
+        {"action": "tool_batch", "thought": thought, "calls": calls}, ensure_ascii=False
+    )
+
+
 def final_step(answer: dict[str, Any], thought: str = "结束") -> str:
     return json.dumps(
         {"action": "final", "thought": thought, "answer": answer}, ensure_ascii=False

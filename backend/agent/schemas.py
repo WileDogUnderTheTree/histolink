@@ -73,6 +73,14 @@ class ToolCallStep(AgentModel):
     arguments: dict[str, Any] = Field(default_factory=dict)
 
 
+class ToolBatchStep(AgentModel):
+    """模型单轮输出：并行调用彼此独立的只读工具。"""
+
+    action: Literal["tool_batch"] = "tool_batch"
+    thought: str | None = Field(default=None, max_length=1000)
+    calls: list[ToolCall] = Field(min_length=2, max_length=4)
+
+
 class Evidence(AgentModel):
     """一条证据：把最终回答绑定到工具真实返回过的实体上。
 
@@ -256,6 +264,7 @@ __all__ = [
     "ModelUIAction",
     "RefusalReason",
     "ToolCall",
+    "ToolBatchStep",
     "ToolCallRecord",
     "ToolCallStep",
     "UIAction",

@@ -62,6 +62,20 @@ def test_search_events_expands_alias(
     assert set(result["meta"]["terms"]) == {"唐太宗", "李世民"}
 
 
+def test_search_events_expands_embedded_person_name(
+    tool_context: Any, assert_tool_contract: Callable[[dict[str, Any], str], None]
+) -> None:
+    """V1.0.5.1：问「王安石变法」时补入人物名检索词，一次命中图谱标题「熙宁变法」。"""
+
+    result = search_events(tool_context, q="王安石变法", limit=5)
+    assert_tool_contract(result, "search_events")
+
+    assert result["ok"] is True
+    event_ids = {event["event_id"] for event in result["data"]["events"]}
+    assert "beisong-10" in event_ids
+    assert "王安石" in set(result["meta"]["terms"])
+
+
 def test_search_events_respects_limit_and_marks_truncated(
     tool_context: Any, assert_tool_contract: Callable[[dict[str, Any], str], None]
 ) -> None:

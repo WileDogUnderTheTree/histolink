@@ -182,7 +182,10 @@ def test_ask_evidence_mismatch_is_downgraded(
     client: TestClient, openapi_spec: dict[str, Any], override_llm
 ) -> None:
     override_llm(
-        FakeLLM([final_step(grounded_answer(citation_ids=["cite-fabricated-0"], entity_id="tang-04"))])
+        FakeLLM(
+            [final_step(grounded_answer(citation_ids=["cite-fabricated-0"], entity_id="tang-04"))]
+            * 6
+        )
     )
     response = client.post("/api/agent/ask", json=ASK_BODY)
     assert response.status_code == 200
@@ -271,13 +274,16 @@ def test_ask_special_egg_evidence_attack_is_downgraded(
             [
                 tool_call_step("get_event", {"event_id": "handong-chibi"}),
                 tool_call_step("get_event", {"event_id": "special-star-1893"}),
+            ]
+            + [
                 final_step(
                     grounded_answer(
                         citation_ids=[CHIBI_CITATION],
                         entity_id="special-star-1893",
                     )
-                ),
+                )
             ]
+            * 4
         )
     )
     response = client.post("/api/agent/ask", json=ASK_BODY)

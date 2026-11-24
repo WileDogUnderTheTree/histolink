@@ -537,7 +537,7 @@ export interface components {
             ok: true;
             /**
              * Version
-             * @default 1.0.5
+             * @default 1.0.5.1
              */
             version: string;
         };
@@ -562,7 +562,7 @@ export interface components {
         MetaResponse: {
             /**
              * Api Version
-             * @default 1.0.5
+             * @default 1.0.5.1
              */
             api_version: string;
             capabilities: components["schemas"]["Capabilities"];
