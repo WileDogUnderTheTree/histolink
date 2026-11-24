@@ -1,9 +1,5 @@
-"""只读 meta 接口测试（V1.0.1 / TC-06；V1.0.5.1 版本号统一）。
-
-验收：`/api/health` 返回 version=1.0.5.1；`/api/meta` 的 counts/hash 与
-`backend/data/snapshot.meta.json` 完全一致；capabilities 含 5 个 V1.0 动作类型；
-响应可被契约 JSON Schema 校验。
-"""
+﻿"""鍙 meta 鎺ュ彛娴嬭瘯锛圴1.0.1 / TC-06锛沄1.0.5.2 鐗堟湰鍙风粺涓€锛夈€?
+楠屾敹锛歚/api/health` 杩斿洖 version=1.0.5.2锛沗/api/meta` 鐨?counts/hash 涓?`backend/data/snapshot.meta.json` 瀹屽叏涓€鑷达紱capabilities 鍚?5 涓?V1.0 鍔ㄤ綔绫诲瀷锛?鍝嶅簲鍙濂戠害 JSON Schema 鏍￠獙銆?"""
 
 from __future__ import annotations
 
@@ -33,7 +29,7 @@ def test_health(client: TestClient) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["ok"] is True
-    assert payload["version"] == "1.0.5.1"
+    assert payload["version"] == "1.0.5.2"
 
 
 def test_meta_counts_and_hash_match_snapshot_meta(
@@ -46,7 +42,7 @@ def test_meta_counts_and_hash_match_snapshot_meta(
 
     assert payload["ok"] is True
     assert payload["schema_version"] == "1.0"
-    assert payload["api_version"] == "1.0.5.1"
+    assert payload["api_version"] == "1.0.5.2"
     assert payload["snapshot"]["version"] == meta["snapshot_version"]
     assert payload["snapshot"]["hash"] == f"sha256:{meta['content_hash']}"
     assert payload["snapshot"]["counts"] == meta["counts"]

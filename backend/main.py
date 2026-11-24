@@ -52,7 +52,7 @@ from snapshot_store import SnapshotLoadError, SnapshotStore
 
 logger = logging.getLogger("histolink.main")
 
-APP_VERSION = "1.0.5.1"
+APP_VERSION = "1.0.5.2"
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_SNAPSHOT_PATH = BASE_DIR / "data" / "snapshot.v1.json"

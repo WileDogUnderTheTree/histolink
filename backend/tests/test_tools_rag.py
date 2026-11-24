@@ -203,8 +203,9 @@ def test_mixed_answer_is_rendered_in_two_sections(
     assert outcome.downgraded is False
     assert outcome.answer.mode == "grounded"
     markdown = outcome.answer.markdown
-    assert "① 基础事实（来自图谱）" in markdown
-    assert "② 史料记载细节（来自 RAG）" in markdown
+    # V1.0.5.2：事件 + RAG 同属「时间轴·大事记」源，合并为一节；不虚构人物关系图节。
+    assert "**[时间轴·大事记]**" in markdown
+    assert "[人物关系图]" not in markdown
     assert "赤壁之战" in markdown
     assert "208年" in markdown
     # 图谱写 208、语料也写 208 → 不标注冲突。
@@ -243,8 +244,8 @@ def test_year_conflict_is_flagged_and_graph_wins(
     assert "史料记载有异" in markdown
     assert "以图谱为准" in markdown
     assert "208年" in markdown
-    # 分节标题顺序固定：① 在 ② 之前。
-    assert markdown.index("① 基础事实") < markdown.index("② 史料记载细节")
+    # V1.0.5.2：时间轴节内部顺序为「冲突提示 → 事件 claim → RAG 史料」。
+    assert markdown.index("史料记载有异") < markdown.index("208年")
 
 
 def test_legend_chunk_gets_tag_and_rag_only_answer(
@@ -281,8 +282,9 @@ def test_legend_chunk_gets_tag_and_rag_only_answer(
     assert outcome.downgraded is False
     assert outcome.answer.mode == "grounded"
     markdown = outcome.answer.markdown
-    assert markdown.startswith("① 基础事实（来自图谱）")
-    assert "本轮未获取到图谱基础事实" in markdown
+    # V1.0.5.2：RAG-only（传说）命中「时间轴·大事记」源，只输出该节。
+    assert "**[时间轴·大事记]**" in markdown
+    assert "[人物关系图]" not in markdown
     assert "[传说]" in markdown
     # 传说史料行必须紧跟在 [传说] 标签后，便于前端/用户识别。
     legend_line = next(line for line in markdown.splitlines() if "[传说]" in line)

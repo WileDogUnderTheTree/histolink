@@ -11,6 +11,47 @@
 
 ---
 
+## [1.0.5.2] - 2026-11-25
+
+> 补丁版本主题：**Agent 双数据源接入（人物关系图 × 时间轴·大事记）+ 模型切换窗口 + 历史对话侧边栏**。
+> 需求与开发说明唯一来源：`docs/V1.0.5.2-Agent系统提示词与前端功能开发说明.md`（v1.0.5.2 单一交付文档）。
+> 保留 V1.0.5.1 全部能力；外部 API 契约只新增可选字段（`AskRequest.model_id`、`Trace.model_requested` / `Trace.sources`、新增 `GET /api/agent/models`），`SCHEMA_VERSION` 仍为 `1.0`。
+
+### 新增
+
+- **P0 双数据源铁律**：`backend/agent/prompts.py` 系统提示词新增「双数据源与问题分类」「双源证据分配」「回答输出规范」；所有历史类提问必须同时检索「时间轴·大事记」（`search_events` / `get_event` / `timeline_span`）与「人物关系图」（`resolve_entity` / `get_person` / `get_person_events` / `get_relation` / `get_era_graph`）两源。
+- **P0 双源分节正文**：`backend/agent/validator.py` 新增 `detect_question_focus()`（人物 / 关系 / 事件 / 对比）、`check_dual_source_coverage()`（人物/关系类必须有 person/relation 证据、事件类必须有 event/rag 证据，违反即降级）、`source_coverage()`；grounded 正文按 `**[人物关系图]**` / `**[时间轴·大事记]**` 分节输出，人物/关系类关系图在前、事件类时间轴在前，单源时只输出命中节（不虚构另一节）；保留 `[传说]`、`史料记载有异` 标注。
+- **P0 trace 双源观测**：`AgentResult.source_coverage` → `Trace.sources={"timeline":bool,"graph":bool}`，供前端与自动化验收识别双源覆盖。
+- **P1 模型注册表与请求级选择**：`llm_client.list_model_options()` / `resolve_model_pair()`；新增 `GET /api/agent/models`（主模型 `Qwen/Qwen3.5-35B-A3B`、备用 `Qwen/Qwen3.5-8B-Instruct`，无需 API key 即可读取）；`AskRequest.model_id` 请求级选择模型（未知模型 400 `INVALID_REQUEST`）。
+- **P1 双向自动降级**：手动选择任意一款模型后，另一款仍作为自动降级目标——所选模型 429/502/504/超时自动切换重试一次；异常恢复后默认仍使用主模型。手动所选模型在上游不可用（400 / 404，如账号未开通该模型）时同样自动切到另一款模型完成回答（默认主模型路径不放开 400 降级，避免掩盖请求参数错误）。
+- **P1 前端模型切换窗口**：`components/agent/ModelSwitcher.tsx` —— 对话输入框左上角（输入框外部左侧）圆角下拉按钮（品牌图标 + 模型全称 + 下拉箭头），完整展示两款模型；切换立即生效、不清空对话历史；`/ask` 输入框右侧新增附件上传（V1.0.6 接入占位）与新建对话按钮（水平对齐）。
+- **P2 历史对话侧边栏**：`components/agent/ConversationSidebar.tsx` + `lib/conversation-store.ts` —— `/ask` 页面最左侧独立竖向侧边栏，「今天 / 过去 30 天」分组（浅灰小字左对齐）；「今天」组首项「新建对话」选中态浅灰背景；点击历史标题加载会话、点击新建对话清空当前对话；数据层为内存实现 + 演示数据（不接真实持久化）。
+- **P2 v1.0.6 占位**：`ConversationRepository` / `ConversationStorage` 接口预留持久化、跨会话上下文、重命名 / 删除 / 置顶；全部预留位置标注 `// TODO v1.0.6 多轮历史对话记忆模块 - 功能待实现`（数据层 + 侧边栏共 6+ 处）。
+
+### 变更
+
+- 版本号全仓库升级 `v1.0.5.2`：`backend/main.py`（`APP_VERSION`）、`backend/contracts/models.py`（`API_VERSION`）、`frontend/package.json`、首页 / 布局 metadata / 时间轴 / 人物图谱 / 抽屉状态栏、`README.md` / `SPEC.md` / `CHANGELOG.md` / `backend/.env.example` 头部；`SCHEMA_VERSION` 保持 `1.0`。
+- 契约再生成：`contracts/api-v1.openapi.json`（9 条路径 / 9 个关键模型，新增 `/api/agent/models`、`ModelsResponse`、`ModelOptionResponse`）与 `frontend/lib/api-types.ts` 同步；`scripts/validate-contract.mjs` / `backend/tests/test_contracts.py` 关键路径与模型断言同步。
+- `backend/agent/orchestrator.py`：`validate(..., question=...)` 传入用户问题；`_chat(..., model_id=...)` 透传请求级模型；`AgentResult` 新增 `model_requested` / `source_coverage`。
+- `frontend/lib/agent-client.ts`：`fetchAgentModels()` / `modelsStateFromPayload()`（后端不可达回退静态表，不阻塞提问）；`buildAskRequest` 携带 `model_id`；`answerViewFromEnvelope` 归一化 `modelRequested` / `sources`；降级提示按「实际模型 ≠ 所选模型」判断（双向降级）。
+- `frontend/contexts/AgentContext.tsx`：新增模型注册表 / 选中模型 / 历史对话仓库状态与 `selectModel()` / `newConversation()` / `loadConversation()`；v1.0.5.1 的会话恢复、ActionBus、史引联动保持不变。
+
+### 修复
+
+- 修复 v1.0.5.1「人物关系图数据接入了但回答里看不见」：人物/关系证据此前混在时间轴节，现按来源强制分节并加来源前缀。
+- 修复 RAG-only（传说）回答会出现「本轮未获取到图谱基础事实」空节的问题：单源时只输出命中节。
+- 修复 `enable_thinking` / 模型降级与手动选择冲突：手动选择备用模型时主模型作为降级目标，`model_used` 始终标明最终模型。
+
+### 文档
+
+- `docs/V1.0.5.2-Agent系统提示词与前端功能开发说明.md` 更新为最终实现态：修正 RAG 基线（90 篇 / 360 chunk）、文档归档文件名、补充「实现对照与验收结果」附录。
+
+### 验证
+
+- 后端 pytest **336 passed**（新增 `test_agent_dual_source.py` / `test_agent_models.py` / `test_llm_model_selection.py`，含手动选择模型 400 降级）；前端 vitest **141 passed**（新增 `conversation-store.test.ts` / `model-selection.test.ts`）；`tsc --noEmit` / `next build` 通过；`scripts/verify.ps1` 12 步门禁全绿；`validate-contract` 9 路径 / 9 模型通过。\n- 真实 LLM 冒烟（2026-11-25）：人物类「和孔子有关系的人有哪些？」→ grounded，`[人物关系图]` 在前 / `[时间轴·大事记]` 在后，`trace.sources={"timeline":true,"graph":true}`；事件类「赤壁之战发生在哪一年？」→ grounded；手动选择 `Qwen/Qwen3.5-8B-Instruct` 实测 ModelScope 返回 400「Invalid model id」，已自动降级 `Qwen/Qwen3.5-35B-A3B` 正常回答（`trace.model_requested` = 8B、`trace.model_used` = 35B）。\n- Edge headless 视觉验收：1600px 下 `/ask` 左侧历史对话侧边栏（今天 / 过去 30 天、新建对话选中态）与输入框左上角模型切换按钮正常；≤1080px 侧边栏按设计隐藏，主对话区布局不变。
+
+---
+
 ## [Unreleased] - 2026-11-25
 
 > 主题：**本机材料整合 + RAG 语料扩展**（v1.0.5.2 开发前的仓库基线；未改外部 API 契约）。

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * 全局 Agent 状态（V1.0.4）。
+ * 全局 Agent 状态（V1.0.4；V1.0.5.2 模型选择 + 历史对话侧边栏）。
  *
  * **单一会话事实源**：全局悬浮抽屉（AgentDrawer）与 `/ask` 独立页共享这一份 transcript，
  * 不允许各自 `useState`，否则会出现两个入口串消息的问题。
@@ -11,6 +11,12 @@
  * 2. 把回答里的 `ui_actions` 交给 ActionBus：同页自动执行，跨页进入待确认队列；
  * 3. 提供 `pendingActions` / `confirmAction` / `cancelAction` 给抽屉 UI（确认弹窗由 V1.0.4 UI 卡实现）；
  * 4. 错误 / 网络异常统一转成带 `isError` 的 assistant turn，不抛到 React 渲染层。
+ *
+ * V1.0.5.2 职责：
+ * 5. `models` / `selectedModelId` / `selectModel()`：输入框左上角模型切换窗口的数据源，
+ *    切换后立即生效（下一问带 `model_id`），不清空已有对话历史；
+ * 6. `conversations` / `newConversation()` / `loadConversation()`：历史对话侧边栏数据层，
+ *    v1.0.5.2 走内存仓库 + 演示数据（`lib/conversation-store.ts`），不接真实持久化。
  *
  * 安全：只展示服务端返回的 `answer.markdown`，前端不拼接、不改写回答文本。
  */
@@ -32,18 +38,28 @@ import type { AgentGuide } from "@/lib/agent-guide";
 import type { UIAction, UISurface } from "@/lib/action-policy";
 import {
   AgentClientError,
+  FALLBACK_MODEL_OPTIONS,
   WELCOME_TURN_ID,
   answerViewFromEnvelope,
   buildAskRequest,
   clarificationTextFromEnvelope,
   createSessionId,
   errorMessageFromEnvelope,
+  fetchAgentModels,
   isErrorEnvelope,
   namespaceUiActions,
   postAsk,
   type AgentAnswerView,
   type AgentTranscriptTurn,
+  type ModelOption,
 } from "@/lib/agent-client";
+import {
+  getDefaultConversationRepository,
+  groupConversationsByTime,
+  type ConversationGroup,
+  type ConversationSummary,
+  type StoredConversationTurn,
+} from "@/lib/conversation-store";
 import { surfaceFromPathname } from "@/lib/routes";
 
 export type { AgentAnswerView, AgentGuide };
@@ -86,6 +102,34 @@ export interface AgentSessionValue {
   /** 确认跨页动作（抽屉确认按钮 / 测试使用）。 */
   confirmAction: (actionId: string) => Promise<DispatchResult>;
   cancelAction: (actionId: string) => void;
+
+  // ---- V1.0.5.2 模型切换窗口 ----
+  /** 模型注册表（`GET /api/agent/models`；后端不可达时用内置静态表兜底）。 */
+  models: ModelOption[];
+  /** 后端默认主模型 id。 */
+  defaultModelId: string | null;
+  /** 当前选中的模型 id；null 表示使用后端默认主模型。 */
+  selectedModelId: string | null;
+  /** 切换当前会话使用的模型：立即生效，不清空已有对话历史。 */
+  selectModel: (modelId: string) => void;
+  /** 模型注册表是否已读取完成。 */
+  modelsReady: boolean;
+  /** 模型注册表是否来自静态兜底（后端未启动 / 接口异常）。 */
+  modelsFromFallback: boolean;
+
+  // ---- V1.0.5.2 历史对话侧边栏 ----
+  /** 按「今天 / 过去 30 天」分组后的历史对话（v1.0.5.2 为演示 + 内存数据）。 */
+  conversationGroups: ConversationGroup[];
+  /** 当前活动会话 id；null 表示尚未落库的新会话。 */
+  activeConversationId: string | null;
+  /** 侧边栏数据是否加载完成。 */
+  conversationsLoading: boolean;
+  /** 当前会话是否为空（只有欢迎语）→「新建对话」选中态。 */
+  isCurrentConversationEmpty: boolean;
+  /** 新建对话：保存当前会话、清空 transcript、开启新会话。 */
+  newConversation: () => Promise<void>;
+  /** 加载历史对话：保存当前会话后载入目标会话。 */
+  loadConversation: (id: string) => Promise<void>;
 }
 
 const AgentSessionContext = createContext<AgentSessionValue | null>(null);
@@ -101,6 +145,8 @@ const WELCOME_TURN: AgentTurn = {
 
 const GENERIC_ERROR = "史脉服务暂时不可用，请稍后重试。";
 const TRANSCRIPT_STORAGE_KEY = "histolink.agent.transcript.v1";
+/** 选中的模型只在本标签页内记忆（不清空会话，也不写入服务端）。 */
+const MODEL_STORAGE_KEY = "histolink.agent.model.v1";
 
 /**
  * 读取本次标签页保留的对话（V1.0.5.1）。
@@ -128,9 +174,25 @@ function loadStoredTranscript(): AgentTurn[] {
   }
 }
 
+/** 读取本标签页记忆的模型选择（V1.0.5.2）；非法值返回 null（使用默认主模型）。 */
+function loadStoredModelId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const value = window.sessionStorage.getItem(MODEL_STORAGE_KEY)?.trim();
+    return value ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 /** 每次请求独立 id：既做 transcript key，也用来给动作 id 加前缀（避免跨轮幂等冲突）。 */
 function createTurnRequestId(now: () => number = Date.now): string {
   return `req_${now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/** AgentTurn ⇄ 仓库轮次（结构兼容，只做一次浅拷贝保证不可变）。 */
+function toStoredTurns(turns: readonly AgentTurn[]): StoredConversationTurn[] {
+  return turns.map((turn) => ({ ...turn }));
 }
 
 export function AgentProvider({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -145,6 +207,22 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
   const [pendingActions, setPendingActions] = useState<UIAction[]>([]);
   const [lastAnswer, setLastAnswer] = useState<AgentAnswerView | null>(null);
 
+  // ---- V1.0.5.2 模型切换窗口状态 ----
+  const [models, setModels] = useState<ModelOption[]>(FALLBACK_MODEL_OPTIONS);
+  const [defaultModelId, setDefaultModelId] = useState<string | null>(
+    FALLBACK_MODEL_OPTIONS[0]?.id ?? null,
+  );
+  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
+  const [modelsReady, setModelsReady] = useState(false);
+  const [modelsFromFallback, setModelsFromFallback] = useState(true);
+
+  // ---- V1.0.5.2 历史对话侧边栏状态 ----
+  const repository = useRef(getDefaultConversationRepository()).current;
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [conversationsLoading, setConversationsLoading] = useState(true);
+  const activeConversationIdRef = useRef<string | null>(null);
+
   /**
    * 史引副驾驶联动目标（P2）：任何一轮回答落地后自动更新。
    * `/ask` 页面只消费这个值并展开面板，不再自己解析动作 / 深链接。
@@ -156,6 +234,49 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
   useEffect(() => {
     transcriptRef.current = transcript;
   }, [transcript]);
+
+  useEffect(() => {
+    activeConversationIdRef.current = activeConversationId;
+  }, [activeConversationId]);
+
+  const refreshConversations = useCallback(async () => {
+    const items = await repository.list();
+    setConversations(items);
+  }, [repository]);
+
+  // 模型注册表：首屏读取；失败回退静态表，绝不影响提问。
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetchAgentModels({ signal: controller.signal }).then((state) => {
+      if (controller.signal.aborted) return;
+      setModels(state.models);
+      setDefaultModelId(state.defaultModelId);
+      setModelsFromFallback(state.fromFallback);
+      setModelsReady(true);
+      const stored = loadStoredModelId();
+      const known = state.models.some((model) => model.id === stored);
+      setSelectedModelId((previous) => {
+        if (previous && state.models.some((model) => model.id === previous)) {
+          return previous;
+        }
+        return known ? stored : state.defaultModelId;
+      });
+    });
+    return () => controller.abort();
+  }, []);
+
+  // 历史对话列表：首屏读取内存仓库（含演示数据）。
+  useEffect(() => {
+    let cancelled = false;
+    void repository.list().then((items) => {
+      if (cancelled) return;
+      setConversations(items);
+      setConversationsLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [repository]);
 
   // 会话恢复（V1.0.5.1）：mount 后再读 sessionStorage，首帧服务端 / 客户端都渲染欢迎语，
   // 因此不会出现 hydration mismatch；恢复完成前也不写回，避免欢迎语覆盖已保存的会话。
@@ -172,6 +293,32 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
       // Storage may be disabled or full; the in-memory transcript remains authoritative.
     }
   }, [transcript, isRestored]);
+
+  /**
+   * 把 transcript 同步进历史对话仓库（V1.0.5.2）。
+   *
+   * 只有在出现用户轮次后才创建会话记录，避免「新建对话」立刻在列表里留下空标题；
+   * 有活动会话时持续更新其 turns / updatedAt，刷新侧边栏排序。
+   */
+  const hasUserTurn = transcript.some((turn) => turn.role === "user");
+  useEffect(() => {
+    if (!isRestored) return;
+    const activeId = activeConversationIdRef.current;
+    if (activeId) {
+      void repository
+        .save(activeId, toStoredTurns(transcript))
+        .then(() => refreshConversations());
+      return;
+    }
+    if (!hasUserTurn) return;
+    void repository
+      .create({ turns: toStoredTurns(transcript) })
+      .then((record) => {
+        activeConversationIdRef.current = record.id;
+        setActiveConversationId(record.id);
+        return refreshConversations();
+      });
+  }, [transcript, isRestored, hasUserTurn, repository, refreshConversations]);
 
   const surfaceRef = useRef<UISurface | null>(currentSurface);
   useEffect(() => {
@@ -233,6 +380,58 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
     [actionBus],
   );
 
+  /** 切换模型（V1.0.5.2）：只写本标签页记忆 + 下一次请求带 model_id，不动 transcript。 */
+  const selectModel = useCallback((modelId: string) => {
+    setSelectedModelId(modelId);
+    try {
+      window.sessionStorage.setItem(MODEL_STORAGE_KEY, modelId);
+    } catch {
+      // 存储不可用只影响「刷新后记忆」，不影响当前会话的选择。
+    }
+  }, []);
+
+  /** 新建对话（V1.0.5.2）：保存当前会话后清空对话区。 */
+  const newConversation = useCallback(async () => {
+    const activeId = activeConversationIdRef.current;
+    if (activeId) {
+      await repository.save(activeId, toStoredTurns(transcriptRef.current));
+    }
+    activeConversationIdRef.current = null;
+    setActiveConversationId(null);
+    setPendingActions([]);
+    setLastAnswer(null);
+    setTranscript([WELCOME_TURN]);
+    try {
+      window.sessionStorage.removeItem(TRANSCRIPT_STORAGE_KEY);
+    } catch {
+      // 忽略存储异常：内存中的新会话仍然生效。
+    }
+    await refreshConversations();
+  }, [repository, refreshConversations]);
+
+  /** 加载历史对话（V1.0.5.2）：保存当前会话后切换到目标会话。 */
+  const loadConversation = useCallback(
+    async (id: string) => {
+      const currentId = activeConversationIdRef.current;
+      if (currentId === id) return;
+      if (currentId) {
+        await repository.save(currentId, toStoredTurns(transcriptRef.current));
+      }
+      const record = await repository.get(id);
+      if (!record) return;
+      const turns: AgentTurn[] = record.turns.map((turn) => ({ ...turn }));
+      activeConversationIdRef.current = record.id;
+      setActiveConversationId(record.id);
+      setTranscript(turns.length > 0 ? turns : [WELCOME_TURN]);
+      setPendingActions([]);
+      setLastAnswer(
+        [...turns].reverse().find((turn) => turn.answer)?.answer ?? null,
+      );
+      await refreshConversations();
+    },
+    [repository, refreshConversations],
+  );
+
   const ask = useCallback(
     async (question: string) => {
       const trimmed = question.trim();
@@ -241,6 +440,7 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
       inFlightRef.current = true;
       setIsAsking(true);
       const requestId = createTurnRequestId();
+      const requestedModel = selectedModelId ?? defaultModelId;
       appendTurn({ id: `${requestId}-user`, role: "user", content: trimmed });
 
       try {
@@ -251,6 +451,7 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
           search: window.location.search,
           sessionId,
           history: transcriptRef.current,
+          modelId: selectedModelId,
         });
         const response = await postAsk(request);
 
@@ -266,7 +467,9 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
           return;
         }
 
-        const view = answerViewFromEnvelope(response);
+        const view = answerViewFromEnvelope(response, {
+          requestedModel,
+        });
         if (!view) {
           const clarification = clarificationTextFromEnvelope(response);
           appendTurn({
@@ -304,7 +507,7 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
         setIsAsking(false);
       }
     },
-    [appendTurn, dispatchAnswerActions],
+    [appendTurn, defaultModelId, dispatchAnswerActions, selectedModelId],
   );
 
   const confirmAction = useCallback(
@@ -324,6 +527,13 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
     [actionBus],
   );
 
+  /** 侧边栏分组（今天 / 过去 30 天）；每次列表变化时重算。 */
+  const conversationGroups = useMemo(
+    () => groupConversationsByTime(conversations),
+    [conversations],
+  );
+  const isCurrentConversationEmpty = !hasUserTurn;
+
   const value = useMemo<AgentSessionValue>(
     () => ({
       transcript,
@@ -341,6 +551,18 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
       ask,
       confirmAction,
       cancelAction,
+      models,
+      defaultModelId,
+      selectedModelId,
+      selectModel,
+      modelsReady,
+      modelsFromFallback,
+      conversationGroups,
+      activeConversationId,
+      conversationsLoading,
+      isCurrentConversationEmpty,
+      newConversation,
+      loadConversation,
     }),
     [
       transcript,
@@ -358,6 +580,18 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
       ask,
       confirmAction,
       cancelAction,
+      models,
+      defaultModelId,
+      selectedModelId,
+      selectModel,
+      modelsReady,
+      modelsFromFallback,
+      conversationGroups,
+      activeConversationId,
+      conversationsLoading,
+      isCurrentConversationEmpty,
+      newConversation,
+      loadConversation,
     ],
   );
 

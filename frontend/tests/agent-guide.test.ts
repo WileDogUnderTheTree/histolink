@@ -55,8 +55,10 @@ function makeAnswer(overrides: Partial<AgentAnswerView> = {}): AgentAnswerView {
     snapshotVersion: "v1-test",
     requestId: "req-1",
     modelUsed: null,
+    modelRequested: null,
+    sources: { timeline: true, graph: false },
     ...overrides,
-  };
+  } as AgentAnswerView;
 }
 
 function makeTurn(id: string, answer: AgentAnswerView | null): GuideSourceTurn {

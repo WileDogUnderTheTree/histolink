@@ -1,11 +1,13 @@
-"""LLM Client（V1.0.1 / TC-10 连通性探测；V1.0.5 高可用降级补丁）。
+"""LLM Client（V1.0.1 / TC-10 连通性探测；V1.0.5 高可用降级补丁；V1.0.5.2 请求级模型选择）。
 
 职责：
 - 从环境变量 / `backend/.env` 读取 ModelScope（OpenAI 兼容）推理服务的 key、base URL、
   主模型名与备用模型名（`MODELSCOPE_FALLBACK_MODEL`）；
+- 提供模型注册表（`list_model_options()`）供 `GET /api/agent/models` 与前端切换窗口使用；
 - 提供一个最小的同步 `ping()`：发送一句测试话（默认「请回复 OK」），返回模型真实回复与耗时；
-- 提供 Agent 循环使用的 `chat()`：**主模型优先，遇到 429 / 502 / 504 / 超时自动降级到备用
-  （轻量）模型重试一次**，并在结果里用 `model_used` 标明最终完成回答的模型；
+- 提供 Agent 循环使用的 `chat()`：支持**请求级手动选择模型**（`model_id`）；
+  不论手动选择哪一款，另一款都会作为自动降级目标——遇到 429 / 502 / 504 / 超时自动切换重试一次，
+  并在结果里用 `model_used` 标明最终完成回答的模型；
 - 统一把配置错误 / 超时 / 上游 HTTP 错误映射成可被 `errors.ApiError` 消费的异常。
 
 安全约定：
@@ -16,7 +18,7 @@
   非预期主机。
 
 本模块不依赖 FastAPI，可被 `backend/scripts/spike_llm.py` 单独调用。
-应用入口是 `routers/agent.py` 的 `GET /api/agent/ping_llm`。
+应用入口是 `routers/agent.py` 的 `GET /api/agent/ping_llm` 与 `GET /api/agent/models`。
 """
 
 from __future__ import annotations
@@ -38,13 +40,25 @@ PROJECT_ROOT = BACKEND_DIR.parent
 
 #: ModelScope 推理服务默认地址（OpenAI 兼容，实际请求 <base>/chat/completions）。
 DEFAULT_BASE_URL = "https://api-inference.modelscope.cn/v1"
-#: 默认模型（TC-10 实测可用：Qwen/Qwen3.5-35B-A3B）。
+#: 默认主模型（TC-10 实测可用：Qwen/Qwen3.5-35B-A3B；V1.0.5.2 正式主模型）。
 DEFAULT_MODEL = "Qwen/Qwen3.5-35B-A3B"
-#: 默认备用模型（V1.0.5 高可用补丁）：主模型被限流 / 网关错误 / 超时时自动降级重试。
+#: 默认备用降级模型（V1.0.5 高可用补丁；V1.0.5.2 正式备用模型）。
 DEFAULT_FALLBACK_MODEL = "Qwen/Qwen3.5-8B-Instruct"
-#: 触发「切换备用模型重试」的上游 HTTP 状态码：429 限流、502/504 网关错误。
+#: 模型角色（对外注册表 / 前端切换窗口使用）。
+MODEL_ROLE_PRIMARY = "primary"
+MODEL_ROLE_FALLBACK = "fallback"
+#: 模型注册表的静态说明（模型名可在 .env 覆盖，说明按默认名给出；未知模型给通用说明）。
+_MODEL_DESCRIPTIONS: dict[str, str] = {
+    DEFAULT_MODEL: "主模型：推理能力更强，默认用于回答所有历史问题。",
+    DEFAULT_FALLBACK_MODEL: "备用降级模型：更轻量、额度更宽松；主模型限流 / 超时 / 失败时自动接管。",
+}
+#: 触发「切换另一款模型重试」的上游 HTTP 状态码：429 限流、502/504 网关错误。
 #: 其余 4xx（鉴权 / 参数错误）与 500/503 不降级：换模型也不会好，直接按原错误抛给 API 层。
 FALLBACK_UPSTREAM_STATUSES = frozenset({429, 502, 504})
+#: 仅在「前端手动选择模型」时额外承认的降级状态码（V1.0.5.2）：
+#: 400 / 404 通常表示该模型名在当前账号不可用，切回另一款模型即可恢复；
+#: 默认主模型路径不使用这两个状态码降级，避免掩盖请求参数错误。
+MANUAL_SELECTION_FALLBACK_STATUSES = frozenset({400, 404})
 DEFAULT_TIMEOUT_SECONDS = 30.0
 DEFAULT_PING_MESSAGE = "请回复 OK"
 MAX_REPLY_LENGTH = 2000
@@ -145,6 +159,28 @@ class LLMChatResult:
 _dotenv_loaded = False
 
 
+@dataclass(frozen=True)
+class ModelOption:
+    """模型注册表条目（V1.0.5.2）：`GET /api/agent/models` 与前端模型切换窗口的数据源。
+
+    - ``id``：请求里回传的 `model_id`（与上游模型名逐字一致）；
+    - ``name``：前端展示的模型全称（当前与模型名相同）；
+    - ``role``：``primary``（默认主模型）/ ``fallback``（备用降级模型）；
+    - ``description``：一句话说明，用于下拉项副标题。
+    """
+
+    id: str
+    name: str
+    role: str
+    description: str | None = None
+
+    def to_dict(self) -> dict[str, str]:
+        payload = {"id": self.id, "name": self.name, "role": self.role}
+        if self.description:
+            payload["description"] = self.description
+        return payload
+
+
 def _load_env_files() -> None:
     """加载 `backend/.env` 与仓库根 `.env`（不覆盖进程已有环境变量）。"""
 
@@ -174,6 +210,80 @@ def _first_non_empty(source: Mapping[str, str], names: tuple[str, ...]) -> str |
     return None
 
 
+def _model_names(source: Mapping[str, str]) -> tuple[str, str]:
+    """读取主模型 / 备用模型名（只做名称解析，不校验 key，供注册表与配置共用）。"""
+
+    primary = _first_non_empty(source, _MODEL_ENV_NAMES) or DEFAULT_MODEL
+    fallback = _first_non_empty(source, _FALLBACK_MODEL_ENV_NAMES) or DEFAULT_FALLBACK_MODEL
+    return primary, fallback
+
+
+def list_model_options(
+    env: Mapping[str, str] | None = None,
+    *,
+    load_env_file: bool = True,
+) -> list[ModelOption]:
+    """模型注册表（V1.0.5.2）：始终返回 1 款主模型，主备不同名时再追加备用模型。
+
+    该函数**不要求配置 API key**，因此前端启动时即可渲染模型切换窗口；
+    实际调用模型仍由 `chat()` 在缺少 key 时抛 `LLMConfigError`（映射为 503）。
+    """
+
+    if load_env_file:
+        _load_env_files()
+    source: Mapping[str, str] = os.environ if env is None else env
+    primary, fallback = _model_names(source)
+    options = [
+        ModelOption(
+            id=primary,
+            name=primary,
+            role=MODEL_ROLE_PRIMARY,
+            description=_MODEL_DESCRIPTIONS.get(
+                primary, "主模型：默认用于回答所有历史问题。"
+            ),
+        )
+    ]
+    if fallback != primary:
+        options.append(
+            ModelOption(
+                id=fallback,
+                name=fallback,
+                role=MODEL_ROLE_FALLBACK,
+                description=_MODEL_DESCRIPTIONS.get(
+                    fallback,
+                    "备用降级模型：所选模型限流 / 超时 / 失败时自动接管。",
+                ),
+            )
+        )
+    return options
+
+
+def resolve_model_pair(
+    settings: LLMSettings, model_id: str | None = None
+) -> tuple[str, str | None]:
+    """解析请求级模型选择：返回 ``(所选模型, 另一款用于自动降级的模型)``。
+
+    - ``model_id`` 为空 → 默认主模型，备用模型作为降级目标；
+    - 选中主模型 → 备用模型降级；
+    - 选中备用模型 → 主模型降级（双向降级，满足「手动选择后降级规则仍生效」）；
+    - 未知 ``model_id`` → `LLMConfigError`（API 层映射为 400 / 503 前先做白名单校验）。
+    """
+
+    primary = settings.model
+    fallback = settings.fallback_model
+    if not model_id:
+        return primary, fallback
+    if model_id == primary:
+        return primary, fallback
+    if fallback is not None and model_id == fallback:
+        return fallback, primary
+    raise LLMConfigError(
+        f"未知模型：{model_id}（可选：{primary}"
+        + (f"、{fallback}" if fallback and fallback != primary else "")
+        + "）"
+    )
+
+
 def load_llm_settings(
     env: Mapping[str, str] | None = None,
     *,
@@ -196,12 +306,11 @@ def load_llm_settings(
     if not base_url.startswith(("http://", "https://")):
         raise LLMConfigError(f"MODELSCOPE_BASE_URL 必须以 http(s):// 开头，当前值不合法：{base_url!r}")
 
-    model = _first_non_empty(source, _MODEL_ENV_NAMES) or DEFAULT_MODEL
+    model, fallback_name = _model_names(source)
 
-    # V1.0.5 高可用补丁：备用模型默认 Qwen/Qwen3.5-8B-Instruct（轻量、额度更宽松）。
-    fallback_model: str | None = (
-        _first_non_empty(source, _FALLBACK_MODEL_ENV_NAMES) or DEFAULT_FALLBACK_MODEL
-    )
+    # V1.0.5 高可用补丁：备用模型默认 Qwen/Qwen3.5-8B-Instruct（轻量、额度更宽松）；
+    # V1.0.5.2：主备共同构成模型注册表，手动选择任意一款时另一款作为自动降级目标。
+    fallback_model: str | None = fallback_name
     if fallback_model == model:
         # 主备同名：没有可切换的模型，禁用降级，避免对同一个已限流模型重复请求。
         fallback_model = None
@@ -300,18 +409,21 @@ class LLMClient:
         response_format: dict[str, Any] | None = None,
         enable_thinking: bool = False,
         timeout_seconds: float | None = None,
+        model_id: str | None = None,
     ) -> LLMChatResult:
-        """OpenAI 兼容 chat completion（V1.0.3 Agent 使用；V1.0.5 高可用降级）。
+        """OpenAI 兼容 chat completion（V1.0.3 Agent 使用；V1.0.5 / V1.0.5.2 高可用降级）。
 
         - 默认 **`enable_thinking=False`**：spike 实测思考模式会消耗大量 reasoning tokens
           且 `max_tokens` 不约束它们，必须显式关闭以追求极速响应；
         - `response_format={"type":"json_object"}` 由 Orchestrator 按需传入；
-        - **自动降级**：主模型（`settings.model`）遇到 HTTP 429 / 502 / 504 或超时（含连接超时）
-          时记录 warning，并自动用备用模型（`settings.fallback_model`）重试**一次**；
-          备用模型仍失败则抛出带「已降级重试」上下文的 `LLM_TIMEOUT` / `LLM_UPSTREAM_ERROR`；
+        - **请求级模型选择（V1.0.5.2）**：`model_id` 为模型注册表里的 id；为空时使用主模型。
+          手动选择备用模型时，主模型会成为自动降级目标（双向降级）；
+        - **自动降级**：所选模型遇到 HTTP 429 / 502 / 504 或超时（含连接超时）时记录 warning，
+          并自动用另一款模型重试**一次**；另一款仍失败则抛出带「已降级重试」上下文的
+          `LLM_TIMEOUT` / `LLM_UPSTREAM_ERROR`；
         - 其它错误（401、400、302、500/503 等）不降级：换模型也不会修好，按原错误上抛；
         - 超时 / 上游错误沿用与 `ping()` 相同的异常映射；
-        - 结果里的 `model_used` 标明最终完成本次回答的模型（主模型或备用模型）。
+        - 结果里的 `model_used` 标明最终完成本次回答的模型（所选项或降级后的另一款）。
         """
 
         normalized = _normalize_messages(messages)
@@ -330,8 +442,9 @@ class LLMClient:
             raise LLMConfigError("timeout_seconds 必须在 1–300 秒之间")
 
         settings = self._settings
+        requested, fallback = resolve_model_pair(settings, model_id)
         payload: dict[str, Any] = {
-            "model": settings.model,
+            "model": requested,
             "messages": normalized,
             "temperature": temperature,
             "max_tokens": max_tokens,
@@ -343,7 +456,11 @@ class LLMClient:
             payload["response_format"] = response_format
 
         data, latency_ms, model_used = self._post_chat_with_fallback(
-            payload, timeout_seconds=timeout_seconds
+            payload,
+            timeout_seconds=timeout_seconds,
+            requested_model=requested,
+            fallback_model=fallback,
+            manual_selection=model_id is not None,
         )
         content = _extract_content(data)
         if len(content) > MAX_CHAT_CONTENT_CHARS:
@@ -357,24 +474,37 @@ class LLMClient:
         )
 
     def _post_chat_with_fallback(
-        self, payload: dict[str, Any], *, timeout_seconds: float | None = None
+        self,
+        payload: dict[str, Any],
+        *,
+        timeout_seconds: float | None = None,
+        requested_model: str | None = None,
+        fallback_model: str | None = None,
+        manual_selection: bool = False,
     ) -> tuple[dict[str, Any], int, str]:
-        """主模型优先；命中降级条件时切备用模型重试一次。返回 (data, latency_ms, model_used)。"""
+        """所请求模型优先；命中降级条件时切另一款模型重试一次。返回 (data, latency_ms, model_used)。
+
+        `manual_selection=True`（前端模型切换窗口手动选择）时，若所选模型在上游返回
+        「模型不存在 / 参数非法」（400/404，例如该账号未开通该模型），也自动降级到另一款模型，
+        满足「手动选择的模型异常时仍自动切换」的产品要求；默认主模型路径不放开这两类错误码。
+        """
 
         settings = self._settings
-        primary = settings.model
+        primary = requested_model or settings.model
+        fallback = fallback_model if requested_model is not None else settings.fallback_model
         try:
             data, latency_ms = self._post_chat(payload, timeout_seconds=timeout_seconds)
             return data, latency_ms, primary
         except (LLMTimeoutError, LLMUpstreamError) as exc:
-            fallback = settings.fallback_model
-            if fallback is None or not _should_fallback(exc):
+            if fallback is None or fallback == primary or not _should_fallback(
+                exc, manual_selection=manual_selection
+            ):
                 raise
             # 注意：except 块结束后 `exc` 会被删除，先把脱敏摘要存下来。
             primary_error_text = _safe_excerpt(str(exc), secret=settings.api_key)
 
         logger.warning(
-            "主模型 %s 调用失败（%s），自动切换备用模型 %s 重试一次",
+            "所选模型 %s 调用失败（%s），自动降级到另一款模型 %s 重试一次",
             primary,
             primary_error_text,
             fallback,
@@ -386,14 +516,14 @@ class LLMClient:
             )
         except (LLMTimeoutError, LLMUpstreamError) as fallback_exc:
             logger.warning(
-                "备用模型 %s 重试仍失败（%s）",
+                "降级模型 %s 重试仍失败（%s）",
                 fallback,
                 _safe_excerpt(str(fallback_exc), secret=settings.api_key),
             )
             raise _decorate_fallback_error(
                 fallback_exc, primary=primary, fallback=fallback
             ) from fallback_exc
-        logger.info("备用模型 %s 已接管本次回答（主模型降级）", fallback)
+        logger.info("降级模型 %s 已接管本次回答（所选模型 %s 降级）", fallback, primary)
         return data, latency_ms, fallback
 
     # ------------------------------------------------------------------
@@ -457,12 +587,21 @@ class LLMClient:
         return data, latency_ms
 
 
-def _should_fallback(exc: LLMTimeoutError | LLMUpstreamError) -> bool:
-    """判断异常是否属于「换备用模型可能成功」的瞬时故障。"""
+def _should_fallback(
+    exc: LLMTimeoutError | LLMUpstreamError, *, manual_selection: bool = False
+) -> bool:
+    """判断异常是否属于「换另一款模型可能成功」的故障。
+
+    - 超时 / 429 / 502 / 504：默认即降级；
+    - 手动选择模型时额外承认 400 / 404：「模型不存在 / 该账号未开通」属于所选模型不可用，
+      自动切回另一款模型即可恢复（默认主模型路径保持严格，不把参数错误当成降级理由）。
+    """
 
     if isinstance(exc, LLMTimeoutError):
         return True
-    return exc.upstream_status in FALLBACK_UPSTREAM_STATUSES
+    if exc.upstream_status in FALLBACK_UPSTREAM_STATUSES:
+        return True
+    return manual_selection and exc.upstream_status in MANUAL_SELECTION_FALLBACK_STATUSES
 
 
 def _decorate_fallback_error(
@@ -471,7 +610,7 @@ def _decorate_fallback_error(
     """给「备用模型也失败」的异常补上降级上下文，便于 API 层 / 日志定位。"""
 
     message = (
-        f"{exc}（主模型 {primary} 失败后已自动降级到备用模型 {fallback} 重试，仍失败）"
+        f"{exc}（所选模型 {primary} 失败后已自动降级到 {fallback} 重试，仍失败）"
     )
     if isinstance(exc, LLMTimeoutError):
         return LLMTimeoutError(message)

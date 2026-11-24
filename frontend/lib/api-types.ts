@@ -23,6 +23,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agent/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Models
+         * @description V1.0.5.2：模型注册表（主模型 / 备用降级模型）。
+         */
+        get: operations["list_models_api_agent_models_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/agent/ping_llm": {
         parameters: {
             query?: never;
@@ -297,6 +317,8 @@ export interface components {
             context: components["schemas"]["AskContext"];
             /** History */
             history?: components["schemas"]["ConversationTurn"][];
+            /** Model Id */
+            model_id?: string | null;
             /** Question */
             question: string;
             /** Selected Person Id */
@@ -537,7 +559,7 @@ export interface components {
             ok: true;
             /**
              * Version
-             * @default 1.0.5.1
+             * @default 1.0.5.2
              */
             version: string;
         };
@@ -562,7 +584,7 @@ export interface components {
         MetaResponse: {
             /**
              * Api Version
-             * @default 1.0.5.1
+             * @default 1.0.5.2
              */
             api_version: string;
             capabilities: components["schemas"]["Capabilities"];
@@ -587,6 +609,55 @@ export interface components {
             hash: string;
             /** Version */
             version: string;
+        };
+        /**
+         * ModelOptionResponse
+         * @description 模型注册表条目（V1.0.5.2 新增，只增可选接口）。
+         *
+         *     - `id`：前端切换后随 `AskRequest.model_id` 回传的模型标识（与上游模型名逐字一致）；
+         *     - `name`：展示用模型全称；
+         *     - `role`：`primary`（默认主模型）/ `fallback`（备用降级模型）；
+         *     - `description`：下拉项副标题说明。
+         */
+        ModelOptionResponse: {
+            /** Description */
+            description?: string | null;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "primary" | "fallback";
+        };
+        /**
+         * ModelsResponse
+         * @description `GET /api/agent/models`：供前端模型切换窗口渲染，无需配置 API key 即可读取。
+         */
+        ModelsResponse: {
+            /**
+             * Api Version
+             * @default 1.0.5.2
+             */
+            api_version: string;
+            /** Default Model Id */
+            default_model_id: string;
+            /** Models */
+            models: components["schemas"]["ModelOptionResponse"][];
+            /**
+             * Ok
+             * @default true
+             * @constant
+             */
+            ok: true;
+            /**
+             * Schema Version
+             * @default 1.0
+             * @constant
+             */
+            schema_version: "1.0";
         };
         /** PersonCandidate */
         PersonCandidate: {
@@ -726,8 +797,14 @@ export interface components {
             latency_ms?: number | null;
             /** Model */
             model?: string | null;
+            /** Model Requested */
+            model_requested?: string | null;
             /** Model Used */
             model_used?: string | null;
+            /** Sources */
+            sources?: {
+                [key: string]: boolean;
+            } | null;
             /** Tools */
             tools?: components["schemas"]["ToolTrace"][];
         };
@@ -850,6 +927,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_models_api_agent_models_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelsResponse"];
                 };
             };
         };

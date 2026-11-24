@@ -19,6 +19,7 @@ from contracts.models import (
     EventSearchResponse,
     HealthResponse,
     MetaResponse,
+    ModelsResponse,
     PersonCandidatesResponse,
     PersonResponse,
     PingLLMResponse,
@@ -94,6 +95,18 @@ def search_events(
     q: str = Query(min_length=1, max_length=200),
     limit: int = Query(default=20, ge=1, le=50),
 ) -> EventSearchResponse:
+    _not_implemented()
+    raise AssertionError("unreachable")
+
+
+@app.get(
+    "/api/agent/models",
+    response_model=ModelsResponse,
+    tags=["agent"],
+)
+def list_models() -> ModelsResponse:
+    """V1.0.5.2：模型注册表（主模型 / 备用降级模型）。"""
+
     _not_implemented()
     raise AssertionError("unreachable")
 

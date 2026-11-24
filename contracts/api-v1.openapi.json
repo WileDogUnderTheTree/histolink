@@ -477,6 +477,18 @@
             "title": "History",
             "type": "array"
           },
+          "model_id": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          },
           "question": {
             "maxLength": 2000,
             "minLength": 1,
@@ -1163,7 +1175,7 @@
             "type": "boolean"
           },
           "version": {
-            "default": "1.0.5.1",
+            "default": "1.0.5.2",
             "title": "Version",
             "type": "string"
           }
@@ -1226,7 +1238,7 @@
         "additionalProperties": false,
         "properties": {
           "api_version": {
-            "default": "1.0.5.1",
+            "default": "1.0.5.2",
             "title": "Api Version",
             "type": "string"
           },
@@ -1280,6 +1292,95 @@
           "counts"
         ],
         "title": "MetaSnapshot",
+        "type": "object"
+      },
+      "ModelOptionResponse": {
+        "additionalProperties": false,
+        "description": "模型注册表条目（V1.0.5.2 新增，只增可选接口）。\n\n- `id`：前端切换后随 `AskRequest.model_id` 回传的模型标识（与上游模型名逐字一致）；\n- `name`：展示用模型全称；\n- `role`：`primary`（默认主模型）/ `fallback`（备用降级模型）；\n- `description`：下拉项副标题说明。",
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "primary",
+              "fallback"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "role"
+        ],
+        "title": "ModelOptionResponse",
+        "type": "object"
+      },
+      "ModelsResponse": {
+        "additionalProperties": false,
+        "description": "`GET /api/agent/models`：供前端模型切换窗口渲染，无需配置 API key 即可读取。",
+        "properties": {
+          "api_version": {
+            "default": "1.0.5.2",
+            "title": "Api Version",
+            "type": "string"
+          },
+          "default_model_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Default Model Id",
+            "type": "string"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelOptionResponse"
+            },
+            "maxItems": 2,
+            "minItems": 1,
+            "title": "Models",
+            "type": "array"
+          },
+          "ok": {
+            "const": true,
+            "default": true,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "schema_version": {
+            "const": "1.0",
+            "default": "1.0",
+            "title": "Schema Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "default_model_id",
+          "models"
+        ],
+        "title": "ModelsResponse",
         "type": "object"
       },
       "PersonCandidate": {
@@ -1632,6 +1733,18 @@
             ],
             "title": "Model"
           },
+          "model_requested": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Requested"
+          },
           "model_used": {
             "anyOf": [
               {
@@ -1643,6 +1756,20 @@
               }
             ],
             "title": "Model Used"
+          },
+          "sources": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "boolean"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sources"
           },
           "tools": {
             "items": {
@@ -1896,6 +2023,28 @@
           }
         },
         "summary": "Ask",
+        "tags": [
+          "agent"
+        ]
+      }
+    },
+    "/api/agent/models": {
+      "get": {
+        "description": "V1.0.5.2：模型注册表（主模型 / 备用降级模型）。",
+        "operationId": "list_models_api_agent_models_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Models",
         "tags": [
           "agent"
         ]

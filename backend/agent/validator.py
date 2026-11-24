@@ -1,9 +1,13 @@
-"""证据校验器（V1.0.3 安全加固 / 审查报告 P0-1、P0-2、P0-3、P1-2）。
+"""证据校验器（V1.0.3 安全加固 / 审查报告 P0-1、P0-2、P0-3、P1-2；V1.0.5.2 双数据源分节）。
 
 职责：在模型给出最终回答后，回到**本轮工具真实返回的信封**做核对。
 V1.0.3 安全加固前的实现只把工具结果里的 ID 合并成 `set[str]`，无法区分
 「实体类型 / 来源字段 / 是否事实可用 / 是否与 citation 绑定」，因此
 「真实但无关的 ID + 真实 citation」可以骗过校验（P0-1）。
+
+V1.0.5.2 起，grounded 正文按**双数据源**分节输出：`**[人物关系图]**`（person / relation）与
+`**[时间轴·大事记]**`（event / RAG 史料细节），节序由问题类型决定；人物/关系类问题必须有
+关系图证据、事件类问题必须有时间轴证据（硬校验，违反即降级），并在 trace 里回填双源覆盖状态。
 
 现在的模型是**带类型、来源、可用性与绑定的证据图**：
 
@@ -147,14 +151,16 @@ _MAX_CITATIONS = 50
 _MAX_CLAIM_CITATIONS = 20
 _MAX_ACTIONS = 3
 _MAX_CLAIM_CHARS = 1000
-_MAX_MARKDOWN_CHARS = 10000
 
 _GROUNDED_LEAD = "根据本轮工具返回的可核验资料："
-#: V1.0.5 混合检索的分节标题（服务端写死，模型无法改写）。
-_GROUNDED_GRAPH_HEADING = "① 基础事实（来自图谱）"
-_GROUNDED_RAG_HEADING = "② 史料记载细节（来自 RAG）"
-_GROUNDED_GRAPH_EMPTY = "本轮未获取到图谱基础事实（图谱无对应条目或未查询到）。"
-_GROUNDED_RAG_EMPTY = "本轮未检索到可引用的 RAG 史料细节。"
+#: V1.0.5.2 双数据源的来源前缀（服务端写死，模型无法改写；所有引用内容都归属到对应前缀之下）。
+_SOURCE_GRAPH_LABEL = "[人物关系图]"
+_SOURCE_TIMELINE_LABEL = "[时间轴·大事记]"
+_SOURCE_GRAPH_HEADING = f"**{_SOURCE_GRAPH_LABEL}**"
+_SOURCE_TIMELINE_HEADING = f"**{_SOURCE_TIMELINE_LABEL}**"
+#: 双源覆盖观测的稳定键名（trace.sources 与内部 source_coverage 共用）。
+SOURCE_GRAPH = "graph"
+SOURCE_TIMELINE = "timeline"
 #: 传说 chunk 的句首标签（产品要求：神话传说必须显式标注）。
 _LEGEND_TAG = "[传说]"
 _LEGEND_RECORD_TYPE = "传说"
@@ -187,10 +193,108 @@ _INJECTION_PATTERN = re.compile(
 )
 _INJECTION_REDACTION = "［已忽略可疑指令文本］"
 
+# ---------------------------------------------------------------------------
+# V1.0.5.2 双数据源：问题类型判定 + 覆盖校验
+# ---------------------------------------------------------------------------
+
+QuestionFocus = Literal["person", "relation", "event", "comparison"]
+
+#: 问题类型线索（确定性关键词匹配，只决定分节顺序与双源覆盖校验，不影响证据门槛）。
+_RELATION_CUES = (
+    "关系",
+    "如何认识",
+    "怎么认识",
+    "朋友",
+    "师徒",
+    "兄弟",
+    "父子",
+    "夫妻",
+    "恩怨",
+    "交往",
+    "往来",
+    "共同",
+    "同现",
+    "关联",
+    "有谁",
+    "和谁",
+    "认识谁",
+    "有哪些人",
+)
+_PERSON_CUES = (
+    "是谁",
+    "人物",
+    "生平",
+    "介绍",
+    "哪个朝代",
+    "什么朝代",
+    "身份",
+    "字号",
+    "其人",
+    "经历",
+)
+_COMPARISON_CUES = ("对比", "区别", "异同", "有什么不同", "比较", "异同点")
+_EVENT_CUES = ("哪一年", "发生在", "经过", "经过与影响", "事件", "战役", "之变", "之乱", "变法")
+
+
+def detect_question_focus(
+    question: str, entities: Iterable[ObservedEntity] | None = None
+) -> QuestionFocus:
+    """确定性问题类型判定（V1.0.5.2）。
+
+    顺序：对比 > 关系 > 人物 > 事件；只有关键词都没有命中时，才用证据里是否有人物实体兜底。
+    该函数是纯函数、可单测，不读取任何外部状态。
+    """
+
+    text = (question or "").strip()
+    if any(cue in text for cue in _COMPARISON_CUES):
+        return "comparison"
+    if any(cue in text for cue in _RELATION_CUES):
+        return "relation"
+    if any(cue in text for cue in _PERSON_CUES):
+        return "person"
+    if any(cue in text for cue in _EVENT_CUES):
+        return "event"
+    observed_entities = list(entities or [])
+    if any(entity.kind == "person" for entity in observed_entities):
+        return "person"
+    if any(entity.kind == "relation" for entity in observed_entities):
+        return "relation"
+    return "event"
+
+
+def check_dual_source_coverage(
+    entities: Iterable[ObservedEntity], focus: QuestionFocus
+) -> str | None:
+    """双数据源覆盖校验（服务端硬校验，模型无法绕过）。
+
+    - 人物 / 关系类：必须有「人物关系图」证据（person / relation）；
+    - 事件类：必须有「时间轴·大事记」证据（event / rag）；
+    - 对比类：两边都可缺，但正文只输出命中节（不虚构另一源）。
+    """
+
+    observed_entities = list(entities)
+    has_graph = any(entity.kind in ("person", "relation") for entity in observed_entities)
+    has_timeline = any(entity.kind in ("event", "rag") for entity in observed_entities)
+    if focus in ("person", "relation") and not has_graph:
+        return "人物/关系类问题缺少人物关系图证据：必须提交 person 或 relation evidence"
+    if focus == "event" and not has_timeline:
+        return "事件类问题缺少时间轴证据：必须提交 event 或 rag evidence"
+    return None
+
+
+def source_coverage(entities: Iterable[ObservedEntity]) -> dict[str, bool]:
+    """计算双源覆盖观测值：``{"timeline": bool, "graph": bool}``。"""
+
+    observed_entities = list(entities)
+    return {
+        SOURCE_TIMELINE: any(entity.kind in ("event", "rag") for entity in observed_entities),
+        SOURCE_GRAPH: any(entity.kind in ("person", "relation") for entity in observed_entities),
+    }
+
 
 @dataclass(frozen=True)
 class ValidationOutcome:
-    """校验后的最终回答 + 可下发引用 + 降级原因。"""
+    """校验后的最终回答 + 可下发引用 + 降级原因 + 双源覆盖观测。"""
 
     answer: FinalAnswer
     citations: list[Citation]
@@ -198,6 +302,8 @@ class ValidationOutcome:
     reason: str | None
     observed_entity_count: int
     observed_citation_count: int
+    #: V1.0.5.2：``{"timeline": bool, "graph": bool}``，由最终证据类型计算，回填 trace.sources。
+    source_coverage: dict[str, bool] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -603,10 +709,16 @@ class EvidenceValidator:
     模型提供的 `markdown` 文本在任何模式下都不会进入最终回答。
     """
 
-    def validate(self, answer: ModelAnswer, observed: ObservedEvidence) -> ValidationOutcome:
+    def validate(
+        self,
+        answer: ModelAnswer,
+        observed: ObservedEvidence,
+        *,
+        question: str = "",
+    ) -> ValidationOutcome:
         related_event_ids = self._related_event_ids(answer.related_event_ids, observed)
         if answer.mode == "grounded":
-            return self._validate_grounded(answer, observed, related_event_ids)
+            return self._validate_grounded(answer, observed, related_event_ids, question)
         if answer.mode == "refusal":
             return self._refuse(answer, observed, related_event_ids)
         return self._insufficient(answer, observed, related_event_ids)
@@ -672,6 +784,7 @@ class EvidenceValidator:
         answer: ModelAnswer,
         observed: ObservedEvidence,
         related_event_ids: list[str],
+        question: str = "",
     ) -> ValidationOutcome:
         if not answer.evidence:
             return self._downgrade(related_event_ids, observed, "grounded 回答没有提供 evidence")
@@ -684,7 +797,13 @@ class EvidenceValidator:
         if reason is not None:
             return self._downgrade(related_event_ids, observed, reason)
 
-        composed = self._compose_grounded(observed, evidence_entities)
+        # V1.0.5.2：双数据源覆盖硬校验（人物/关系类必须有关系图证据，事件类必须有时间轴证据）。
+        focus = detect_question_focus(question, evidence_entities)
+        coverage_error = check_dual_source_coverage(evidence_entities, focus)
+        if coverage_error is not None:
+            return self._downgrade(related_event_ids, observed, coverage_error)
+
+        composed = self._compose_grounded(observed, evidence_entities, focus)
         if composed is None:
             return self._downgrade(
                 related_event_ids,
@@ -703,7 +822,13 @@ class EvidenceValidator:
             reason_code=None,
             ui_actions=self._filter_ui_actions(answer.ui_actions, observed),
         )
-        return self._outcome(final, observed, citations=citations, downgraded=False)
+        return self._outcome(
+            final,
+            observed,
+            citations=citations,
+            downgraded=False,
+            source_coverage=source_coverage(evidence_entities),
+        )
 
     def _outcome(
         self,
@@ -713,6 +838,7 @@ class EvidenceValidator:
         citations: list[Citation],
         downgraded: bool,
         reason: str | None = None,
+        source_coverage: dict[str, bool] | None = None,
     ) -> ValidationOutcome:
         return ValidationOutcome(
             answer=final,
@@ -721,6 +847,9 @@ class EvidenceValidator:
             reason=reason,
             observed_entity_count=len(observed.entities),
             observed_citation_count=len(observed.citations),
+            source_coverage=source_coverage
+            if source_coverage is not None
+            else {SOURCE_TIMELINE: False, SOURCE_GRAPH: False},
         )
 
     def _resolve_evidence(
@@ -810,68 +939,83 @@ class EvidenceValidator:
         self,
         observed: ObservedEvidence,
         evidence_entities: list[ObservedEntity],
+        focus: QuestionFocus = "event",
     ) -> tuple[list[Claim], list[Citation], str] | None:
         """用工具返回的真实数据重写 claims / markdown（不信任模型文本）。
 
-        V1.0.5 混合检索：把证据按「图谱实体 → RAG 史料 chunk」重排后分节输出——
-        - 有 RAG 证据时：``① 基础事实（来自图谱）`` + ``② 史料记载细节（来自 RAG）``；
-          传说 chunk 以 ``[传说]`` 开头；图谱与 RAG 年份冲突时在 ② 首行标注「史料记载有异」。
-        - 无 RAG 证据时：保持 V1.0.4 的单段正文（向后兼容）。
+        V1.0.5.2 双数据源：证据按来源拆成两节——
+        - ``**[人物关系图]**``：person / relation 证据（人物主数据、关系定性、共同事件）；
+        - ``**[时间轴·大事记]**``：event 证据 + RAG 史料 chunk（事件详情、史料细节、``[传说]``、
+          以及图谱与 RAG 的年份冲突提示）。
+
+        节序由问题类型决定（人物/关系类关系图在前，事件类时间轴在前）；只有单源证据时
+        只输出命中节，绝不虚构另一源。
         """
 
-        ordered_entities = _order_evidence_for_sections(evidence_entities)
-        claims: list[Claim] = []
+        graph_entities, timeline_entities = _split_evidence_by_source(evidence_entities)
+        graph_part = (
+            _claims_from_entities(graph_entities, observed) if graph_entities else None
+        )
+        timeline_part = (
+            _claims_from_entities(timeline_entities, observed)
+            if timeline_entities
+            else None
+        )
+        if graph_entities and graph_part is None:
+            return None
+        if timeline_entities and timeline_part is None:
+            return None
+        if graph_part is None and timeline_part is None:
+            return None
+
+        graph_claims = graph_part[0] if graph_part else []
+        timeline_claims = timeline_part[0] if timeline_part else []
+        if not graph_claims and not timeline_claims:
+            return None
+
+        rag_entities = (
+            [entity for entity in timeline_entities if entity.kind == "rag"]
+            if timeline_entities
+            else []
+        )
+        conflicts = _detect_year_conflicts(observed, rag_entities)
+        markdown = _compose_dual_source_markdown(
+            graph_claims,
+            timeline_claims,
+            conflicts=conflicts,
+            focus=focus,
+        )
+        if not markdown:
+            return None
+
+        # claims 顺序与正文分节顺序保持一致，并重新编号 c1..cN。
+        graph_first = focus in ("person", "relation")
+        ordered_claims = (
+            [*graph_claims, *timeline_claims]
+            if graph_first
+            else [*timeline_claims, *graph_claims]
+        )
+        claims = [
+            claim.model_copy(update={"id": f"c{index}"})
+            for index, claim in enumerate(ordered_claims, start=1)
+        ]
+
         used_citation_ids: list[str] = []
         seen_citations: set[str] = set()
-        seen_entities: set[tuple[str, str]] = set()
-        rag_entities: list[ObservedEntity] = []
-        for entity in ordered_entities:
-            key = (entity.kind, entity.entity_id)
-            if key in seen_entities:
+        for part in (graph_part, timeline_part):
+            if part is None:
                 continue
-            seen_entities.add(key)
-            citation_ids = [
-                citation_id
-                for citation_id, observed_citation in observed.citations.items()
-                if citation_id in entity.citation_ids and observed_citation.fact_usable
-            ][:_MAX_CLAIM_CITATIONS]
-            if not citation_ids:
-                return None
-            text = _compose_entity_text(entity, observed)
-            if not text:
-                return None
-            claims.append(
-                Claim(
-                    id=f"c{len(claims) + 1}",
-                    text=_neutralize_instruction_text(text)[:_MAX_CLAIM_CHARS],
-                    citation_ids=citation_ids,
-                )
-            )
-            if entity.kind == "rag":
-                rag_entities.append(entity)
-            for citation_id in citation_ids:
+            for citation_id in part[1]:
                 if citation_id not in seen_citations:
                     seen_citations.add(citation_id)
                     used_citation_ids.append(citation_id)
-            if len(claims) >= _MAX_CLAIMS:
-                break
-        if not claims or not used_citation_ids:
-            return None
         citations = [
             observed.citations[citation_id].citation
             for citation_id in used_citation_ids
             if citation_id in observed.citations
         ][:_MAX_CITATIONS]
-        if rag_entities:
-            graph_claim_count = len(claims) - len(rag_entities)
-            conflicts = _detect_year_conflicts(observed, rag_entities)
-            markdown = _compose_structured_markdown(
-                claims,
-                graph_claim_count=graph_claim_count,
-                conflicts=conflicts,
-            )
-        else:
-            markdown = _compose_markdown(claims)
+        if not citations:
+            return None
         return claims, citations, markdown
 
     # ------------------------------------------------------------------
@@ -1024,53 +1168,110 @@ def _action_targets_observed_entities(
     return True
 
 
-def _compose_markdown(claims: list[Claim]) -> str:
-    body = "\n\n".join(claim.text for claim in claims)
-    return f"{_GROUNDED_LEAD}\n\n{body}"[:_MAX_MARKDOWN_CHARS]
-
-
-def _order_evidence_for_sections(
+def _split_evidence_by_source(
     evidence_entities: Iterable[ObservedEntity],
-) -> list[ObservedEntity]:
-    """分节顺序固定为「图谱事实 → RAG 史料」，不信任模型给的 evidence 顺序。"""
+) -> tuple[list[ObservedEntity], list[ObservedEntity]]:
+    """按数据来源拆分证据：graph = person/relation；timeline = event 在前、RAG chunk 在后。"""
 
     entities = list(evidence_entities)
-    graph = [entity for entity in entities if entity.kind != "rag"]
+    graph = [entity for entity in entities if entity.kind in ("person", "relation")]
+    events = [entity for entity in entities if entity.kind == "event"]
     rag = [entity for entity in entities if entity.kind == "rag"]
-    return [*graph, *rag]
+    return graph, [*events, *rag]
 
 
-def _compose_structured_markdown(
-    claims: list[Claim],
-    *,
-    graph_claim_count: int,
-    conflicts: list[str],
-) -> str:
-    """① 基础事实（图谱）+ ② 史料记载细节（RAG）+ 冲突标注。
+def _claims_from_entities(
+    entities: list[ObservedEntity], observed: ObservedEvidence
+) -> tuple[list[Claim], list[str], list[ObservedEntity]] | None:
+    """把一组同源证据转成服务端 claim（沿用 V1.0.5.1 的 citation 收集规则）。
 
-    正文全部来自服务端从工具数据重组出的 claims；这里只负责分节与固定标记。
+    返回 ``(claims, citation_ids, rag_entities)``；任一实体拿不到可用 citation 或正文时返回 None，
+    由调用方按「该源不可合成」处理（不得跳过证据静默拼正文）。
     """
 
-    graph_texts = [claim.text for claim in claims[:graph_claim_count]]
-    rag_texts = [claim.text for claim in claims[graph_claim_count:]]
-    graph_body = "\n\n".join(graph_texts) if graph_texts else _GROUNDED_GRAPH_EMPTY
-    rag_lines: list[str] = []
+    claims: list[Claim] = []
+    citation_ids: list[str] = []
+    rag_entities: list[ObservedEntity] = []
+    seen_citations: set[str] = set()
+    seen_entities: set[tuple[str, str]] = set()
+    for entity in entities:
+        key = (entity.kind, entity.entity_id)
+        if key in seen_entities:
+            continue
+        seen_entities.add(key)
+        usable_citations = [
+            citation_id
+            for citation_id, observed_citation in observed.citations.items()
+            if citation_id in entity.citation_ids and observed_citation.fact_usable
+        ][:_MAX_CLAIM_CITATIONS]
+        if not usable_citations:
+            return None
+        text = _compose_entity_text(entity, observed)
+        if not text:
+            return None
+        claims.append(
+            Claim(
+                id=f"c{len(claims) + 1}",
+                text=_neutralize_instruction_text(text)[:_MAX_CLAIM_CHARS],
+                citation_ids=usable_citations,
+            )
+        )
+        if entity.kind == "rag":
+            rag_entities.append(entity)
+        for citation_id in usable_citations:
+            if citation_id not in seen_citations:
+                seen_citations.add(citation_id)
+                citation_ids.append(citation_id)
+        if len(claims) >= _MAX_CLAIMS:
+            break
+    return claims, citation_ids, rag_entities
+
+
+def _compose_timeline_body(claims: list[Claim], conflicts: list[str]) -> str:
+    """时间轴节正文：事件 / RAG claim + 年份冲突提示（``[传说]`` 已在 chunk 文本中标注）。"""
+
+    if not claims and not conflicts:
+        return ""
+    parts = [claim.text for claim in claims]
     if conflicts:
-        rag_lines.append(
+        parts.insert(
+            0,
             "史料记载有异："
             + "；".join(conflicts)
-            + "。年份存在出入时以图谱为准，上列史料细节仅供对照。"
+            + "。年份存在出入时以图谱为准，上列史料细节仅供对照。",
         )
-    if rag_texts:
-        rag_lines.append("\n\n".join(rag_texts))
-    elif not conflicts:
-        rag_lines.append(_GROUNDED_RAG_EMPTY)
-    rag_body = "\n".join(rag_lines)
-    markdown = (
-        f"{_GROUNDED_GRAPH_HEADING}\n{graph_body}\n\n"
-        f"{_GROUNDED_RAG_HEADING}\n{rag_body}"
+    return "\n\n".join(parts)
+
+
+def _compose_dual_source_markdown(
+    graph_claims: list[Claim],
+    timeline_claims: list[Claim],
+    *,
+    conflicts: list[str],
+    focus: QuestionFocus,
+) -> str:
+    """按问题类型输出双源分节；空节省略，绝不虚构另一源（V1.0.5.2）。"""
+
+    graph_body = "\n\n".join(claim.text for claim in graph_claims)
+    timeline_body = _compose_timeline_body(timeline_claims, conflicts)
+
+    graph_section = (
+        f"{_SOURCE_GRAPH_HEADING}\n{graph_body}" if graph_body else ""
     )
-    return markdown[:_MAX_MARKDOWN_CHARS]
+    timeline_section = (
+        f"{_SOURCE_TIMELINE_HEADING}\n{timeline_body}" if timeline_body else ""
+    )
+
+    sections: list[str] = []
+    if focus in ("person", "relation"):
+        # 人物 / 关系类：人物关系图在前，时间轴事件作背景补充。
+        sections = [section for section in (graph_section, timeline_section) if section]
+    else:
+        # 事件 / 对比类：时间轴在前，人物关系图补充。
+        sections = [section for section in (timeline_section, graph_section) if section]
+    if not sections:
+        return ""
+    return f"{_GROUNDED_LEAD}\n\n" + "\n\n".join(sections)
 
 
 def _compose_rag_chunk_text(entity: ObservedEntity) -> str:
@@ -1432,9 +1633,15 @@ def _relation_fact_texts(mapping: Mapping[str, Any]) -> set[str]:
 
 
 __all__ = [
+    "SOURCE_GRAPH",
+    "SOURCE_TIMELINE",
     "EvidenceValidator",
     "ObservedCitation",
     "ObservedEntity",
     "ObservedEvidence",
+    "QuestionFocus",
     "ValidationOutcome",
+    "check_dual_source_coverage",
+    "detect_question_focus",
+    "source_coverage",
 ]

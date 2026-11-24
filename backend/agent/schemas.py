@@ -241,6 +241,10 @@ class AgentResult(AgentModel):
     model: str | None = Field(default=None, max_length=200)
     #: V1.0.5 高可用补丁：最终完成回答的模型（主模型降级时为备用轻量模型）。
     model_used: str | None = Field(default=None, max_length=200)
+    #: V1.0.5.2：请求级手动选择的模型（None 表示使用后端默认主模型）。
+    model_requested: str | None = Field(default=None, max_length=200)
+    #: V1.0.5.2 双源覆盖观测：``{"timeline": bool, "graph": bool}``，映射到 `trace.sources`。
+    source_coverage: dict[str, bool] | None = None
     latency_ms: int | None = Field(default=None, ge=0)
     steps: int = Field(default=0, ge=0, le=10)
     downgraded: bool = False
@@ -263,8 +267,8 @@ __all__ = [
     "ModelClaim",
     "ModelUIAction",
     "RefusalReason",
-    "ToolCall",
     "ToolBatchStep",
+    "ToolCall",
     "ToolCallRecord",
     "ToolCallStep",
     "UIAction",

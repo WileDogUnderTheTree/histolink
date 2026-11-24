@@ -1,20 +1,22 @@
-"""Agent Orchestrator（V1.0.3 核心循环 / V1.0.5 RAG 混合路由）。
+"""Agent Orchestrator（V1.0.3 核心循环 / V1.0.5 RAG 混合路由 / V1.0.5.2 双数据源 + 模型选择）。
 
 流程（**硬上限 6 个工具轮 + 至多 1 次只收尾调用**，防死循环）：
 1. 组装 System Prompt（工具目录由 ToolRegistry 生成 + RAG 向量库状态）+ 历史 + 当前问题/页面上下文；
 2. 调 Qwen（`enable_thinking=False` + JSON 模式），拿到一个**完整且唯一**的 JSON 对象；
+   V1.0.5.2 起支持请求级 `model_id`：手动选择主模型 / 备用模型，异常时自动切到另一款；
 3. 解析为 `tool_call`：白名单 + 严格参数校验 → 执行工具 → 把统一信封回传模型；
    V1.0.5.1 增加受限的 `tool_batch`：同一轮最多并行执行 2–4 个**彼此独立的只读工具**，
    用于对比任务「双方图谱 / 双方 RAG」并行检索；总工具调用数仍有独立硬上限；
    - V1.0.5：图谱工具（search_events / get_event / get_person…）先给「基础事实」，
      模型再调 `search_historical_text`（query = 用户问题 + 图谱实体/年份）取「史料细节」；
-4. 解析为 `final`：交给 `EvidenceValidator` 核对 evidence / citation / UI 动作，
-   并由服务端用工具真实数据重写 grounded 正文（V1.0.5 按 ① 图谱事实 / ② RAG 史料分节，
-   RAG 与图谱年份冲突时标注「史料记载有异」，传说 chunk 句首加 `[传说]`）；
-5. 证据不可核验 → 强制降级 `insufficient`；轮次预算耗尽时额外做**一次**「只收尾」调用
-   （不允许执行工具），收尾仍失败 / JSON 始终非法 → 兜底 `insufficient`。
+   - V1.0.5.2：所有历史类提问必须同时覆盖「时间轴·大事记」与「人物关系图」两个数据源；
+4. 解析为 `final`：交给 `EvidenceValidator` 核对 evidence / citation / UI 动作 + 双源覆盖，
+   并由服务端用工具真实数据重写 grounded 正文（V1.0.5.2 按 **[人物关系图]** / **[时间轴·大事记]**
+   分节，节序由问题类型决定；RAG 与图谱年份冲突时标注「史料记载有异」，传说 chunk 句首加 `[传说]`）；
+5. 证据不可核验 / 双源覆盖不足 → 强制降级 `insufficient`；轮次预算耗尽时额外做**一次**「只收尾」
+   调用（不允许执行工具），收尾仍失败 / JSON 始终非法 → 兜底 `insufficient`。
 
-LLM 429/502/504/超时由 `LLMClient.chat()` 内部先自动降级到备用轻量模型重试一次；
+LLM 429/502/504/超时由 `LLMClient.chat()` 内部先自动降级到另一款模型重试一次；
 两次都失败才上抛，由 API 层映射成 502/503/504 envelope（`trace.model_used` 记录最终模型）。
 """
 
@@ -40,13 +42,18 @@ from agent.schemas import (
     AgentResult,
     FinalAnswer,
     FinalStep,
-    ToolCallRecord,
     ToolBatchStep,
+    ToolCallRecord,
     ToolCallStep,
 )
 from agent.tool_registry import ToolRegistry
 from agent.tools import Toolkit
-from agent.validator import EvidenceValidator, ObservedEvidence
+from agent.validator import (
+    SOURCE_GRAPH,
+    SOURCE_TIMELINE,
+    EvidenceValidator,
+    ObservedEvidence,
+)
 from contracts.action_types import V1_AVAILABLE_ACTIONS
 from contracts.models import AskRequest
 from llm_client import LLMChatResult, LLMClient
@@ -188,7 +195,7 @@ class AgentOrchestrator:
         last_error: str | None = None
 
         for step in range(1, self._max_steps + 1):
-            chat = self._chat(messages)
+            chat = self._chat(messages, request.model_id)
             usage = _merge_usage(usage, chat.usage)
             model_name = chat.model or model_name
             model_used = chat.model_used or chat.model or model_used
@@ -231,7 +238,9 @@ class AgentOrchestrator:
                 )
                 continue
 
-            outcome = self._validator.validate(parsed.answer, observed)
+            outcome = self._validator.validate(
+                parsed.answer, observed, question=request.question
+            )
             if outcome.downgraded and outcome.reason and step < self._max_steps:
                 # 证据校验修复轮（V1.0.5.1）：只重写 final，不执行新工具；
                 # 仍要求重新提交的 final 通过原校验，因此不降低任何证据门槛。
@@ -256,6 +265,8 @@ class AgentOrchestrator:
                 tools=records,
                 model=model_name,
                 model_used=model_used,
+                model_requested=request.model_id,
+                source_coverage=outcome.source_coverage,
                 latency_ms=_elapsed_ms(started),
                 steps=step,
                 downgraded=outcome.downgraded,
@@ -278,13 +289,14 @@ class AgentOrchestrator:
     # ------------------------------------------------------------------
     # 内部
     # ------------------------------------------------------------------
-    def _chat(self, messages: list[dict[str, str]]) -> LLMChatResult:
+    def _chat(self, messages: list[dict[str, str]], model_id: str | None = None) -> LLMChatResult:
         return self._llm.chat(
             messages,
             temperature=AGENT_TEMPERATURE,
             max_tokens=AGENT_MAX_TOKENS,
             response_format={"type": "json_object"},
             enable_thinking=False,
+            model_id=model_id,
         )
 
     def _finalize(
@@ -330,7 +342,7 @@ class AgentOrchestrator:
 
         for _attempt in range(max_attempts):
             rounds += 1
-            chat = self._chat(finalize_messages)
+            chat = self._chat(finalize_messages, request.model_id)
             usage = _merge_usage(usage, chat.usage)
             model_name = chat.model or model_name
             model_used = chat.model_used or chat.model or model_used
@@ -360,7 +372,9 @@ class AgentOrchestrator:
                 failure_reason = f"收尾轮仍尝试调用工具（{action}），已终止，避免无限循环"
                 break
 
-            outcome = self._validator.validate(parsed.answer, observed)
+            outcome = self._validator.validate(
+                parsed.answer, observed, question=request.question
+            )
             return AgentResult(
                 question=request.question,
                 answer=outcome.answer,
@@ -368,6 +382,8 @@ class AgentOrchestrator:
                 tools=records,
                 model=model_name,
                 model_used=model_used,
+                model_requested=request.model_id,
+                source_coverage=outcome.source_coverage,
                 latency_ms=_elapsed_ms(started),
                 steps=rounds,
                 downgraded=outcome.downgraded,
@@ -441,6 +457,8 @@ class AgentOrchestrator:
             tools=records,
             model=model_name,
             model_used=model_used,
+            model_requested=request.model_id,
+            source_coverage={SOURCE_TIMELINE: False, SOURCE_GRAPH: False},
             latency_ms=_elapsed_ms(started),
             steps=self._max_steps if steps is None else steps,
             downgraded=True,

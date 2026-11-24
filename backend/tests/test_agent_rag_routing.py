@@ -149,8 +149,9 @@ def test_hybrid_route_graph_then_rag(store: Any, toolkit: Any, fake_rag: Any) ->
     assert rag_store.queries and rag_store.queries[0][1] == 3
 
     markdown = result.answer.markdown
-    assert "① 基础事实（来自图谱）" in markdown
-    assert "② 史料记载细节（来自 RAG）" in markdown
+    # V1.0.5.2：事件类问题只命中「时间轴·大事记」源时只输出该节，不虚构人物关系图节。
+    assert "**[时间轴·大事记]**" in markdown
+    assert "[人物关系图]" not in markdown
     assert "商鞅变法" in markdown
     assert "史记" in markdown or "商君列传" in markdown
 
@@ -248,7 +249,10 @@ def test_system_prompt_advertises_rag_tool_and_status(
     system_prompt = fake.calls[0]["messages"][0]["content"]
     assert "search_historical_text" in system_prompt
     assert "RAG 史料库状态" in system_prompt
-    assert "① 基础事实（来自图谱）" in system_prompt
+    # V1.0.5.2：System Prompt 必须包含双数据源铁律与两个来源前缀。
+    assert "双数据源铁律" in system_prompt
+    assert "[人物关系图]" in system_prompt
+    assert "[时间轴·大事记]" in system_prompt
 
 
 def test_system_prompt_documents_comparison_batch_strategy(
@@ -262,10 +266,9 @@ def test_system_prompt_documents_comparison_batch_strategy(
 
     system_prompt = fake.calls[0]["messages"][0]["content"]
     assert "对比任务专项策略" in system_prompt
-    assert "第一轮并行定位" in system_prompt
-    assert "第二轮并行取证" in system_prompt
+    assert "第 1 轮 tool_batch" in system_prompt
     assert "action=tool_batch" in system_prompt
-    assert "第三轮生成回答" in system_prompt
+    assert "最后 final" in system_prompt
 
 
 def test_both_sources_miss_returns_insufficient(

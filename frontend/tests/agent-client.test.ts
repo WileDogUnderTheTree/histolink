@@ -283,14 +283,20 @@ describe("answerViewFromEnvelope", () => {
 });
 
 describe("shouldShowModelFallbackHint", () => {
-  it("备用轻量模型（非 35B）才提示，主模型 / 未上报不提示", () => {
+  it("未手动选模型时：非 35B（备用模型）才提示，主模型 / 未上报不提示", () => {
     expect(shouldShowModelFallbackHint("Qwen/Qwen3.5-8B-Instruct")).toBe(true);
     expect(shouldShowModelFallbackHint("Qwen/Qwen3.5-35B-A3B")).toBe(false);
     expect(shouldShowModelFallbackHint("qwen3.5-35b-a3b")).toBe(false);
     expect(shouldShowModelFallbackHint(null)).toBe(false);
     expect(shouldShowModelFallbackHint(undefined)).toBe(false);
     expect(shouldShowModelFallbackHint("   ")).toBe(false);
-    expect(MODEL_FALLBACK_HINT).toContain("轻量模型");
+    expect(MODEL_FALLBACK_HINT).toContain("模型");
+  });
+
+  it("V1.0.5.2：手动选择模型后按「实际模型 ≠ 所选模型」判断（双向降级）", () => {
+    expect(shouldShowModelFallbackHint("Qwen/Qwen3.5-35B-A3B", "Qwen/Qwen3.5-8B-Instruct")).toBe(true);
+    expect(shouldShowModelFallbackHint("Qwen/Qwen3.5-8B-Instruct", "Qwen/Qwen3.5-8B-Instruct")).toBe(false);
+    expect(shouldShowModelFallbackHint("Qwen/Qwen3.5-8B-Instruct", "Qwen/Qwen3.5-35B-A3B")).toBe(true);
   });
 });
 

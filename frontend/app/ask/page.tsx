@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { BrandMark } from "@/components/BrandMark";
+import { ConversationSidebar } from "@/components/agent/ConversationSidebar";
 import { MarkdownMessage } from "@/components/agent/MarkdownMessage";
+import { ModelSwitcher } from "@/components/agent/ModelSwitcher";
 import { useAgentSession, type AgentAnswerView, type AgentTurn } from "@/contexts/AgentContext";
 import {
   MODEL_FALLBACK_HINT,
@@ -69,6 +71,8 @@ function previewAnswer(mode: AgentAnswerView["mode"], citations: Citation[]): Ag
     snapshotVersion: "preview",
     requestId: "preview",
     modelUsed: null,
+    modelRequested: null,
+    sources: null,
   };
 }
 
@@ -177,7 +181,7 @@ function Message({ turn, guide, onOpenReference }: { turn: AgentTurn; guide: boo
         <span>{turn.answer.citations.length > 0 ? `${turn.answer.citations.length} 条可核验来源` : "证据待补充"}</span>
       </div> : null}
       {turn.role === "assistant" && turn.answer ? <Citations citations={turn.answer.citations} onOpenReference={onOpenReference} /> : null}
-      {turn.role === "assistant" && turn.answer && shouldShowModelFallbackHint(turn.answer.modelUsed) ? <p className={styles.modelFallbackHint}>{MODEL_FALLBACK_HINT}</p> : null}
+      {turn.role === "assistant" && turn.answer && shouldShowModelFallbackHint(turn.answer.modelUsed, turn.answer.modelRequested) ? <p className={styles.modelFallbackHint}>{MODEL_FALLBACK_HINT}</p> : null}
     </li>
   );
 }
@@ -186,7 +190,10 @@ function AskWorkspace() {
   const searchParams = useSearchParams();
   const question = searchParams.get("q")?.trim() ?? "";
   const isPreviewMode = searchParams.get("preview") === "multiturn";
-  const { transcript, isRestored, isAsking, pendingActions, ask, cancelAction, openDrawer, guide } = useAgentSession();
+  const { transcript, isRestored, isAsking, pendingActions, ask, cancelAction, openDrawer, guide,
+    models, defaultModelId, selectedModelId, selectModel, modelsReady, modelsFromFallback,
+    conversationGroups, activeConversationId, conversationsLoading, isCurrentConversationEmpty,
+    newConversation, loadConversation } = useAgentSession();
   const visibleTranscript = isPreviewMode ? PREVIEW_TRANSCRIPT : transcript;
   // 预览模式不消费真实会话的联动目标，避免静态布局被上一次真实回答的副驾驶面板干扰。
   const activeGuide = isPreviewMode ? null : guide;
@@ -336,9 +343,21 @@ function AskWorkspace() {
   const userTurnCount = visibleTranscript.filter((turn) => turn.role === "user").length;
 
   return (
-    <main className={styles.page}>
-      <h1 className={styles.srOnly}>史脉问答</h1>
-      <div className={`${styles.shell} ${copilotPreview ? styles.copilotMode : ""}`}>
+    <div className={styles.appFrame}>
+      {isPreviewMode ? null : (
+        <ConversationSidebar
+          groups={conversationGroups}
+          activeConversationId={activeConversationId}
+          isCurrentConversationEmpty={isCurrentConversationEmpty}
+          onNewConversation={() => void newConversation()}
+          onSelectConversation={(id) => void loadConversation(id)}
+          loading={conversationsLoading}
+          disabled={isAsking}
+        />
+      )}
+      <main className={styles.page}>
+        <h1 className={styles.srOnly}>史脉问答</h1>
+        <div className={`${styles.shell} ${copilotPreview ? styles.copilotMode : ""}`}>
         {/* 顶部导航：品牌「史脉问答」+ 流线型 S/史 图标常驻左侧，右侧是统一文字样式控制台导航。 */}
         <header className={styles.topbar}>
           <Link className={styles.brand} href="/" aria-label="返回史脉首页">
@@ -363,7 +382,7 @@ function AskWorkspace() {
           <section className={styles.chatCard} aria-labelledby="conversation-title">
             <div className={styles.chatHeader}>
               <div>
-                <span className={styles.workspaceKicker}>CONVERSATION WORKSPACE</span>
+                <span className={styles.workspaceKicker}>CONVERSATION WORKSPACE · V1.0.5.2</span>
                 <h2 id="conversation-title">{isPreviewMode ? "多轮对话布局预览" : "你的历史对话"}</h2>
               </div>
               <div className={styles.chatHeaderMeta}>
@@ -390,14 +409,39 @@ function AskWorkspace() {
             </div>
 
             <div className={styles.composerDock}>
-              <form className={styles.composer} onSubmit={submit}><label className={styles.srOnly} htmlFor="ask-composer">输入问题</label><textarea id="ask-composer" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={isPreviewMode ? "V1.0.6 追问输入区预留" : "输入一个历史问题，例如：赤壁之战发生在哪一年"} rows={1} disabled={isAsking || isPreviewMode} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} /><button type="submit" disabled={isPreviewMode || isAsking || !draft.trim()} aria-label="发送问题"><span>{isAsking ? "检索中" : "发送"}</span><b aria-hidden="true">↗</b></button></form>
-              <p className={styles.composerHint}>Enter 发送 · Shift + Enter 换行 · 回答将附带可核验出处{isPreviewMode ? "" : " · 连续追问将在 V1.0.6 接入"}</p>
+              {/* V1.0.5.2：模型切换窗口位于输入框左上角（输入框外部左侧区域）。 */}
+              <div className={styles.composerTop}>
+                <ModelSwitcher
+                  models={models}
+                  value={selectedModelId ?? defaultModelId}
+                  onChange={selectModel}
+                  loading={!modelsReady}
+                  fallback={modelsFromFallback}
+                  disabled={isPreviewMode}
+                />
+                <span className={styles.composerTopNote}>切换模型立即生效 · 不清空已有对话历史</span>
+              </div>
+              <form className={styles.composer} onSubmit={submit}>
+                <label className={styles.srOnly} htmlFor="ask-composer">输入问题</label>
+                <textarea id="ask-composer" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={isPreviewMode ? "V1.0.6 追问输入区预留" : "输入一个历史问题，例如：赤壁之战发生在哪一年"} rows={1} disabled={isAsking || isPreviewMode} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />
+                <div className={styles.composerActions}>
+                  <button type="button" className={styles.composerIconButton} title="附件上传（V1.0.6 接入）" aria-label="附件上传（V1.0.6 接入）" disabled>
+                    <span aria-hidden="true">📎</span>
+                  </button>
+                  <button type="button" className={styles.composerIconButton} title="新建对话" aria-label="新建对话" disabled={isPreviewMode || isAsking} onClick={() => void newConversation()}>
+                    <span aria-hidden="true">＋</span>
+                  </button>
+                  <button type="submit" disabled={isPreviewMode || isAsking || !draft.trim()} aria-label="发送问题"><span>{isAsking ? "检索中" : "发送"}</span><b aria-hidden="true">↗</b></button>
+                </div>
+              </form>
+              <p className={styles.composerHint}>Enter 发送 · Shift + Enter 换行 · 回答将附带可核验出处{isPreviewMode ? "" : " · 历史对话演示数据将在 V1.0.6 接入持久化"}</p>
             </div>
           </section>
           {copilotPreview ? <CopilotPanel href={copilotPreview.href} target={copilotPreview.target} onClose={() => setCopilotPreview(null)} /> : null}
         </div>
       </div>
-    </main>
+      </main>
+    </div>
   );
 }
 

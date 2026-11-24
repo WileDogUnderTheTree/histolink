@@ -1,14 +1,17 @@
-"""Agent 路由（V1.0.1 连通性探测 + V1.0.3 问答入口）。
+"""Agent 路由（V1.0.1 连通性探测 + V1.0.3 问答入口 + V1.0.5.2 模型注册表）。
 
+- `GET  /api/agent/models`：V1.0.5.2 新增，返回主模型 / 备用模型注册表（前端切换窗口数据源）；
 - `GET  /api/agent/ping_llm`：TC-10 连通性探测（不进入问答链路）；
 - `POST /api/agent/ask`：V1.0.3 问答入口，交给 `AgentOrchestrator` 执行
-  「规划 → 工具 → 证据校验 → 回答」，返回冻结的 `AnswerEnvelope`。
+  「规划 → 工具 → 证据校验 → 回答」，返回冻结的 `AnswerEnvelope`；
+  V1.0.5.2 支持可选 `model_id` 请求级模型选择。
 
 安全：
 - 密钥只经环境变量 / `.env` 注入，本接口不回显、不落日志；
 - `ENABLE_LLM_PROBE=0` 可关闭连通性探测（公网分享时建议关闭）；
-- 问答循环有最大轮次（默认 4），工具参数经严格 Pydantic 白名单校验，
-  模型 evidence / citation 不可核验时强制降级 `insufficient`。
+- 问答循环有最大轮次（默认 6），工具参数经严格 Pydantic 白名单校验，
+  模型 evidence / citation 不可核验时强制降级 `insufficient`；
+- `model_id` 必须在模型注册表白名单内，未知模型返回 400 `INVALID_REQUEST`。
 """
 
 from __future__ import annotations
@@ -31,6 +34,8 @@ from contracts.models import (
     Entity,
     ErrorCode,
     ErrorEnvelope,
+    ModelOptionResponse,
+    ModelsResponse,
     PingLLMResponse,
     ToolTrace,
     Trace,
@@ -42,6 +47,7 @@ from llm_client import (
     LLMConfigError,
     LLMTimeoutError,
     LLMUpstreamError,
+    list_model_options,
 )
 from routers.deps import get_llm_client, get_store
 from snapshot_store import SnapshotStore
@@ -56,6 +62,32 @@ _ERROR_RESPONSES = {
     503: {"model": ErrorEnvelope},
     504: {"model": ErrorEnvelope},
 }
+
+
+@router.get("/api/agent/models", response_model=ModelsResponse)
+def list_models() -> ModelsResponse:
+    """V1.0.5.2：模型注册表（主模型 / 备用降级模型），供前端切换窗口渲染。
+
+    只读取环境变量 / `.env` 中的模型名，不要求配置 API key，也不发起任何模型调用；
+    因此前端首屏即可渲染切换按钮，即使后端尚未配置密钥（真正问答仍会返回 503）。
+    """
+
+    options = list_model_options()
+    default_model_id = next(
+        option.id for option in options if option.role == "primary"
+    )
+    return ModelsResponse(
+        default_model_id=default_model_id,
+        models=[
+            ModelOptionResponse(
+                id=option.id,
+                name=option.name,
+                role=option.role,
+                description=option.description,
+            )
+            for option in options
+        ],
+    )
 
 
 @router.get(
@@ -128,7 +160,21 @@ def ask(
     store: Annotated[SnapshotStore, Depends(get_store)],
     client: Annotated[LLMClient, Depends(get_llm_client)],
 ) -> AnswerEnvelope:
-    """V1.0.3 问答：规划器 + 工具 + 证据校验，返回 `AnswerEnvelope`。"""
+    """V1.0.3 问答：规划器 + 工具 + 证据校验，返回 `AnswerEnvelope`。
+
+    V1.0.5.2：请求可选 `model_id`（主模型 / 备用模型）。未知模型一律 400，不进入问答链路，
+    避免把任意模型名透传给上游。
+    """
+
+    if body.model_id is not None:
+        allowed_models = {option.id for option in list_model_options()}
+        if body.model_id not in allowed_models:
+            raise ApiError(
+                status_code=400,
+                code=ErrorCode.INVALID_REQUEST,
+                message=f"未知模型：{body.model_id}（可选：{'、'.join(sorted(allowed_models))}）",
+                retryable=False,
+            )
 
     try:
         result = AgentOrchestrator(store, client).run(body)
@@ -196,6 +242,8 @@ def build_answer_envelope(
         ],
         model=result.model,
         model_used=result.model_used,
+        model_requested=result.model_requested,
+        sources=result.source_coverage,
         latency_ms=result.latency_ms,
     )
     return AnswerEnvelope(

@@ -461,7 +461,7 @@ function TimelinePageContent() {
             ← 返回首页
           </Link>
           <div className={styles.topbarRight}>
-            <p className={styles.eyebrow}>中国历史探索 · 时间轴 · V1.0.5.1</p>
+            <p className={styles.eyebrow}>中国历史探索 · 时间轴 · V1.0.5.2</p>
             {agentReturn ? (
               <button type="button" className={styles.returnChat} onClick={returnToChat}>
                 <span aria-hidden="true">💬</span> 返回聊天

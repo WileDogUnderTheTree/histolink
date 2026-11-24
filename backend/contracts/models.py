@@ -24,7 +24,7 @@ from contracts.action_types import UIActionType, UISurface
 #: 当前 API 契约版本；`AskRequest.client_schema_version` 必须与之一致。
 SCHEMA_VERSION = "1.0"
 #: API 版本（与 backend/main.py 的 APP_VERSION 对应关系见 contracts/README.md）。
-API_VERSION = "1.0.5.1"
+API_VERSION = "1.0.5.2"
 
 #: 引用许可（Q6）：非商用，沿用 shiji-kb 的 CC BY-NC-SA。
 ATTRIBUTION_TEXT = "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）"
@@ -85,6 +85,9 @@ class AskRequest(StrictModel):
     #: Q5：用户从候选列表选择后回传，服务端无需缓存澄清会话（无状态）。
     clarification_id: str | None = Field(default=None, max_length=128)
     selected_person_id: str | None = Field(default=None, max_length=128)
+    #: V1.0.5.2：请求级模型选择（`GET /api/agent/models` 返回的 id）；为空时使用主模型。
+    #: 手动选择后自动降级仍生效（所选模型异常时切换到另一款模型）。
+    model_id: str | None = Field(default=None, max_length=200)
 
     @model_validator(mode="after")
     def validate_clarification_reply(self) -> AskRequest:
@@ -266,6 +269,12 @@ class Trace(StrictModel):
     #: 主模型（Qwen3.5-35B-A3B）遇到 429/502/504/超时会自动切换备用轻量模型，
     #: 前端据此在回答下方提示「已切换至轻量模型」；正常情况等于主模型名。
     model_used: str | None = Field(default=None, max_length=200)
+    #: V1.0.5.2 请求级模型选择（只增可选）：用户手动选择的模型 id；null 表示使用默认主模型。
+    model_requested: str | None = Field(default=None, max_length=200)
+    #: V1.0.5.2 双数据源覆盖（只增可选）：`{"timeline": bool, "graph": bool}`。
+    #: grounded 回答据此证明「时间轴·大事记」与「人物关系图」两源各覆盖到哪些；
+    #: insufficient / refusal / 兜底降级时为 false。
+    sources: dict[str, bool] | None = None
     latency_ms: int | None = Field(default=None, ge=0)
 
 
@@ -364,6 +373,31 @@ class PingLLMResponse(StrictModel):
     model: str = Field(min_length=1, max_length=200, description="实际使用的模型名")
     latency_ms: int = Field(ge=0, description="端到端耗时（毫秒）")
     usage: dict[str, int] | None = Field(default=None, description="上游返回的 token 用量（若有）")
+
+
+class ModelOptionResponse(StrictModel):
+    """模型注册表条目（V1.0.5.2 新增，只增可选接口）。
+
+    - `id`：前端切换后随 `AskRequest.model_id` 回传的模型标识（与上游模型名逐字一致）；
+    - `name`：展示用模型全称；
+    - `role`：`primary`（默认主模型）/ `fallback`（备用降级模型）；
+    - `description`：下拉项副标题说明。
+    """
+
+    id: str = Field(min_length=1, max_length=200)
+    name: str = Field(min_length=1, max_length=200)
+    role: Literal["primary", "fallback"]
+    description: str | None = Field(default=None, max_length=300)
+
+
+class ModelsResponse(StrictModel):
+    """`GET /api/agent/models`：供前端模型切换窗口渲染，无需配置 API key 即可读取。"""
+
+    ok: Literal[True] = True
+    schema_version: Literal["1.0"] = SCHEMA_VERSION
+    api_version: str = API_VERSION
+    default_model_id: str = Field(min_length=1, max_length=200)
+    models: list[ModelOptionResponse] = Field(min_length=1, max_length=2)
 
 
 class MetaCounts(StrictModel):

@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { BrandMark } from "@/components/BrandMark";
 import { MarkdownMessage } from "@/components/agent/MarkdownMessage";
+import { ModelSwitcher } from "@/components/agent/ModelSwitcher";
 import { useAgentSession } from "@/contexts/AgentContext";
 import {
   MODEL_FALLBACK_HINT,
@@ -83,7 +84,8 @@ function ActionPrompt({
 }
 
 export function AgentDrawer() {
-  const { isOpen, openDrawer, closeDrawer, transcript, isAsking, pendingActions, ask, cancelAction } = useAgentSession();
+  const { isOpen, openDrawer, closeDrawer, transcript, isAsking, pendingActions, ask, cancelAction,
+    models, defaultModelId, selectedModelId, selectModel, modelsReady, modelsFromFallback } = useAgentSession();
   const router = useRouter();
   const pathname = usePathname();
   const [draft, setDraft] = useState("");
@@ -153,7 +155,7 @@ export function AgentDrawer() {
               </div>
             </header>
 
-            <div className={styles.statusLine}><span className={styles.statusDot} aria-hidden="true" /><span>史脉数据已连接</span><span className={styles.statusVersion}>V1.0.5.1</span></div>
+            <div className={styles.statusLine}><span className={styles.statusDot} aria-hidden="true" /><span>史脉数据已连接</span><span className={styles.statusVersion}>V1.0.5.2</span></div>
 
             <ol className={styles.transcript} aria-live="polite" aria-busy={isAsking} ref={transcriptRef}>
               {transcript.map((turn) => (
@@ -161,7 +163,7 @@ export function AgentDrawer() {
                   {turn.role === "user" ? <span className={styles.role}>你</span> : <Persona guide={Boolean(turn.answer?.uiActions.length || (pendingActions.length > 0 && turn.id === actionAnchorId))} />}
                   <div className={styles.content}>{turn.role === "assistant" ? <MarkdownMessage content={turn.content} /> : turn.content}</div>
                   {turn.role === "assistant" && turn.answer ? <CitationCards citations={turn.answer.citations} onNavigate={closeDrawer} /> : null}
-                  {turn.role === "assistant" && turn.answer && shouldShowModelFallbackHint(turn.answer.modelUsed) ? <p className={styles.modelFallbackHint}>{MODEL_FALLBACK_HINT}</p> : null}
+                  {turn.role === "assistant" && turn.answer && shouldShowModelFallbackHint(turn.answer.modelUsed, turn.answer.modelRequested) ? <p className={styles.modelFallbackHint}>{MODEL_FALLBACK_HINT}</p> : null}
                   {turn.role === "assistant" && turn.id === actionAnchorId && pendingActions.length > 0 ? <ActionPrompt onOpenCopilot={openFullChat} /> : null}
                 </li>
               ))}
@@ -178,6 +180,10 @@ export function AgentDrawer() {
               <input id="shimai-agent-input" className={styles.input} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="问一个历史问题…" autoComplete="off" disabled={isAsking} />
               <button type="submit" className={styles.send} disabled={isAsking || !draft.trim()}><span>{isAsking ? "检索中" : "发送"}</span><span aria-hidden="true">↗</span></button>
             </form>
+            {/* V1.0.5.2：抽屉与完整对话页共用同一模型选择（切换立即生效、不清空历史）。 */}
+            <div className={styles.modelRow}>
+              <ModelSwitcher models={models} value={selectedModelId ?? defaultModelId} onChange={selectModel} loading={!modelsReady} fallback={modelsFromFallback} disabled={isAsking} />
+            </div>
             <footer className={styles.footer}><button type="button" className={styles.fullChatLink} onClick={openFullChat}>进入完整对话页 <span aria-hidden="true">→</span></button><span className={styles.hint}>ESC 关闭</span></footer>
           </section>
         </div>

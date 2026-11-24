@@ -48,6 +48,7 @@ const EXPECTED_PATHS = [
   "/api/entities/persons",
   "/api/search/events",
   "/api/agent/ask",
+  "/api/agent/models",
   "/api/agent/ping_llm",
 ];
 const EXPECTED_MODELS = [
@@ -57,6 +58,8 @@ const EXPECTED_MODELS = [
   "UIAction",
   "Clarification",
   "MetaResponse",
+  "ModelsResponse",
+  "ModelOptionResponse",
   "PingLLMResponse",
 ];
 const EXPECTED_TOOLS = [

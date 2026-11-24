@@ -240,10 +240,20 @@ def test_openapi_has_required_paths_and_models(contracts_dir: Path) -> None:
         "/api/entities/persons",
         "/api/search/events",
         "/api/agent/ask",
+        "/api/agent/models",
         "/api/agent/ping_llm",
     ]:
         assert api_path in spec["paths"], api_path
-    for model in ["AskRequest", "AnswerEnvelope", "ErrorEnvelope", "UIAction", "Clarification", "PingLLMResponse"]:
+    for model in [
+        "AskRequest",
+        "AnswerEnvelope",
+        "ErrorEnvelope",
+        "UIAction",
+        "Clarification",
+        "PingLLMResponse",
+        "ModelsResponse",
+        "ModelOptionResponse",
+    ]:
         assert model in spec["components"]["schemas"], model
 
 

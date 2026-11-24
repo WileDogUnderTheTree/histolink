@@ -1,9 +1,10 @@
 /**
- * Agent 数据层（V1.0.4）。
+ * Agent 数据层（V1.0.4；V1.0.5.2 模型注册表 + 请求级模型选择）。
  *
  * 只做「纯函数 + 一次 fetch」，不依赖 React：
- * - 把页面上下文 / transcript 组装成 `POST /api/agent/ask` 请求体；
+ * - 把页面上下文 / transcript / 选中模型组装成 `POST /api/agent/ask` 请求体；
  * - 调用同源代理（`next.config.ts` 已把 `/api/*` 转发到 FastAPI）；
+ * - 读取 `GET /api/agent/models` 模型注册表，供输入框左上角的模型切换窗口使用；
  * - 把 `AnswerEnvelope` 归一化成抽屉可直接渲染的 `AgentAnswerView`。
  *
  * 安全约定：前端只展示服务端返回的 `answer.markdown` / 结构化字段；
@@ -19,6 +20,9 @@ export type Answer = components["schemas"]["Answer"];
 export type Citation = components["schemas"]["Citation"];
 export type Entity = components["schemas"]["Entity"];
 export type UIAction = components["schemas"]["UIAction"];
+/** V1.0.5.2：模型注册表条目（`GET /api/agent/models`）。 */
+export type ModelOption = components["schemas"]["ModelOptionResponse"];
+export type ModelsResponse = components["schemas"]["ModelsResponse"];
 
 /** 生成物把 `const true` 误生成为字符串字面量，这里按运行时真实形状重新声明。 */
 export type AnswerEnvelope = Omit<components["schemas"]["AnswerEnvelope"], "ok"> & {
@@ -28,6 +32,12 @@ export type ErrorEnvelope = Omit<components["schemas"]["ErrorEnvelope"], "ok"> &
   ok: false;
 };
 export type AgentResponse = AnswerEnvelope | ErrorEnvelope;
+
+/** 双数据源覆盖观测（V1.0.5.2，来自 `trace.sources`）。 */
+export interface AnswerSources {
+  timeline: boolean;
+  graph: boolean;
+}
 
 /** 抽屉渲染所需的回答视图（已从信封中归一化）。 */
 export interface AgentAnswerView {
@@ -43,6 +53,10 @@ export interface AgentAnswerView {
   requestId: string;
   /** V1.0.5 高可用补丁：最终完成回答的模型名（null 表示后端未上报）。 */
   modelUsed: string | null;
+  /** V1.0.5.2：本次请求手动选择的模型 id（null 表示使用默认主模型）。 */
+  modelRequested: string | null;
+  /** V1.0.5.2：双数据源覆盖观测（null 表示后端未上报）。 */
+  sources: AnswerSources | null;
 }
 
 /** transcript 里可参与历史的最小结构（与 React 状态解耦）。 */
@@ -60,22 +74,57 @@ export const MAX_QUESTION_LENGTH = 2000;
 export const RATE_LIMIT_MESSAGE = "史令查阅太频繁啦，请稍等几秒再问哦～";
 
 /**
- * V1.0.5 高可用补丁：主模型（Qwen3.5-35B-A3B）被限流 / 网关错误 / 超时后，
- * 后端会自动切换备用轻量模型（默认 Qwen3.5-8B-Instruct）完成回答，并在 `trace.model_used`
- * 里标明最终模型。前端识别到「不是 35B」时，在回答下方补一行轻提示，避免用户误以为
- * 回答质量下降是数据问题。
+ * V1.0.5 高可用补丁 / V1.0.5.2 双向降级：所选模型被限流 / 网关错误 / 超时后，
+ * 后端会自动切换另一款模型完成回答，并在 `trace.model_used` 里标明最终模型。
+ * 前端识别到「实际模型 ≠ 所选模型」时，在回答下方补一行轻提示。
  */
-export const MODEL_FALLBACK_HINT = "当前网络繁忙，史令已切换至轻量模型回答";
-/** 主模型名（Qwen3.5-35B-A3B）的特征标记；不含它即视为备用轻量模型。 */
+export const MODEL_FALLBACK_HINT = "当前网络繁忙，史令已切换至另一款模型回答";
+/** 主模型名（Qwen3.5-35B-A3B）的特征标记；未手动选择模型时用它判断是否降级。 */
 const PRIMARY_MODEL_MARKER = /35B/i;
 
-/** 是否需要展示「已切换轻量模型」提示；未上报模型名时不提示。 */
+/**
+ * 是否需要展示「已切换模型」提示（V1.0.5.2）。
+ *
+ * - 传了 `requestedModel`（用户手动选择的模型）：实际模型与之不同即提示；
+ * - 未传（默认主模型）：沿用 V1.0.5 的 35B 特征标记判断。
+ */
 export function shouldShowModelFallbackHint(
   modelUsed: string | null | undefined,
+  requestedModel?: string | null,
 ): boolean {
   const name = modelUsed?.trim();
   if (!name) return false;
+  const requested = requestedModel?.trim();
+  if (requested) return name !== requested;
   return !PRIMARY_MODEL_MARKER.test(name);
+}
+
+/**
+ * 服务端不可达时的静态模型注册表（V1.0.5.2 兜底）。
+ *
+ * 只用于「后端未启动 / 接口暂时失败」时仍能渲染切换按钮，不改变任何降级逻辑；
+ * 与 `backend/llm_client.py` 的 `DEFAULT_MODEL` / `DEFAULT_FALLBACK_MODEL` 保持一致。
+ */
+export const FALLBACK_MODEL_OPTIONS: ModelOption[] = [
+  {
+    id: "Qwen/Qwen3.5-35B-A3B",
+    name: "Qwen/Qwen3.5-35B-A3B",
+    role: "primary",
+    description: "主模型：推理能力更强，默认使用",
+  },
+  {
+    id: "Qwen/Qwen3.5-8B-Instruct",
+    name: "Qwen/Qwen3.5-8B-Instruct",
+    role: "fallback",
+    description: "备用降级模型：限流 / 超时时自动接管",
+  },
+];
+
+/** 模型注册表读取结果（`fromFallback=true` 表示后端不可达，用了静态兜底表）。 */
+export interface AgentModelsState {
+  models: ModelOption[];
+  defaultModelId: string;
+  fromFallback: boolean;
 }
 
 const MAX_CONTEXT_ID_LENGTH = 128;
@@ -152,6 +201,8 @@ export function buildAskRequest(params: {
   search: string;
   sessionId: string;
   history: readonly AgentTranscriptTurn[];
+  /** V1.0.5.2：当前选中的模型 id；为空 / undefined 时由后端使用默认主模型。 */
+  modelId?: string | null;
 }): AskRequest {
   const question = params.question.trim();
   if (!question) {
@@ -163,19 +214,98 @@ export function buildAskRequest(params: {
   if (!params.sessionId.trim()) {
     throw new AgentClientError("sessionId 不能为空");
   }
-  return {
+  const request: AskRequest = {
     question,
     session_id: params.sessionId,
     history: historyFromTranscript(params.history),
     context: readPageContext(params.pathname, params.search),
     client_schema_version: "1.0",
   };
+  const modelId = params.modelId?.trim();
+  if (modelId) request.model_id = modelId;
+  return request;
 }
 
 /** 同源代理地址；允许用 `NEXT_PUBLIC_API_BASE` 覆盖（例如直连 8000 端口）。 */
 export function agentAskEndpoint(): string {
   const base = (process.env.NEXT_PUBLIC_API_BASE ?? "").replace(/\/$/, "");
   return `${base}/api/agent/ask`;
+}
+
+/** V1.0.5.2：模型注册表端点（同源代理，无需 API key 即可访问）。 */
+export function agentModelsEndpoint(): string {
+  const base = (process.env.NEXT_PUBLIC_API_BASE ?? "").replace(/\/$/, "");
+  return `${base}/api/agent/models`;
+}
+
+function isModelOption(value: unknown): value is ModelOption {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    value.id.trim().length > 0 &&
+    typeof value.name === "string" &&
+    (value.role === "primary" || value.role === "fallback")
+  );
+}
+
+/**
+ * 解析 `GET /api/agent/models` 响应（V1.0.5.2）。
+ *
+ * 形状不符返回 `null`，由调用方决定是否回退静态注册表；不抛异常。
+ */
+export function modelsStateFromPayload(payload: unknown): AgentModelsState | null {
+  if (!isRecord(payload) || payload.ok !== true) return null;
+  const models = Array.isArray(payload.models) ? payload.models.filter(isModelOption) : [];
+  if (models.length === 0) return null;
+  const defaultModelId =
+    typeof payload.default_model_id === "string" && payload.default_model_id
+      ? payload.default_model_id
+      : (models.find((model) => model.role === "primary") ?? models[0]).id;
+  return { models, defaultModelId, fromFallback: false };
+}
+
+export interface FetchModelsOptions {
+  fetchImpl?: typeof fetch;
+  signal?: AbortSignal;
+  endpoint?: string;
+}
+
+/**
+ * 读取模型注册表；后端不可达 / 响应异常时回退到 `FALLBACK_MODEL_OPTIONS`。
+ *
+ * 设计原则：模型切换窗口属于「锦上添花」的输入区控件，任何读取失败都不能阻塞提问。
+ */
+export async function fetchAgentModels(
+  options: FetchModelsOptions = {},
+): Promise<AgentModelsState> {
+  const fetchImpl = options.fetchImpl ?? fetch;
+  try {
+    const response = await fetchImpl(options.endpoint ?? agentModelsEndpoint(), {
+      method: "GET",
+      signal: options.signal,
+      cache: "no-store",
+    });
+    if (!response.ok) throw new AgentClientError(`模型注册表 HTTP ${response.status}`);
+    const payload: unknown = await response.json();
+    const parsed = modelsStateFromPayload(payload);
+    if (parsed) return parsed;
+    throw new AgentClientError("模型注册表响应结构异常");
+  } catch {
+    return {
+      models: FALLBACK_MODEL_OPTIONS,
+      defaultModelId: FALLBACK_MODEL_OPTIONS[0].id,
+      fromFallback: true,
+    };
+  }
+}
+
+/** 按 id 找模型全称；找不到返回 null（调用方显示原始 id 或默认文案）。 */
+export function findModelName(
+  models: readonly ModelOption[],
+  modelId: string | null | undefined,
+): string | null {
+  if (!modelId) return null;
+  return models.find((model) => model.id === modelId)?.name ?? null;
 }
 
 export function isErrorEnvelope(payload: unknown): payload is ErrorEnvelope {
@@ -261,9 +391,13 @@ export async function postAsk(
 }
 
 /** 把成功信封里的 answer 归一化为抽屉可直接渲染的视图；澄清场景返回 null。 */
-export function answerViewFromEnvelope(envelope: AnswerEnvelope): AgentAnswerView | null {
+export function answerViewFromEnvelope(
+  envelope: AnswerEnvelope,
+  options: { requestedModel?: string | null } = {},
+): AgentAnswerView | null {
   const answer = envelope.answer;
   if (!answer) return null;
+  const sources = envelope.trace?.sources;
   return {
     mode: answer.mode,
     markdown: answer.markdown,
@@ -276,6 +410,11 @@ export function answerViewFromEnvelope(envelope: AnswerEnvelope): AgentAnswerVie
     snapshotVersion: envelope.snapshot.version,
     requestId: envelope.request_id,
     modelUsed: envelope.trace?.model_used ?? null,
+    modelRequested: envelope.trace?.model_requested ?? options.requestedModel ?? null,
+    sources:
+      sources && typeof sources.timeline === "boolean" && typeof sources.graph === "boolean"
+        ? { timeline: sources.timeline, graph: sources.graph }
+        : null,
   };
 }
 
