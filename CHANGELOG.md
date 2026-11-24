@@ -11,6 +11,37 @@
 
 ---
 
+## [Unreleased] - 2026-11-25
+
+> 主题：**本机材料整合 + RAG 语料扩展**（v1.0.5.2 开发前的仓库基线；未改外部 API 契约）。
+
+### 新增
+
+- **本机材料整合**：v1.0.5.2 交付文档 `docs/V1.0.5.2-Agent系统提示词与前端功能开发说明.md`（134 KB）入库；WorkBuddy《史脉_历史事件与人物参与表》入库 `docs/sources/`；新增 `docs/README.md` 文档总索引、`docs/开发历程-DSH会话索引.md`（22 个开发会话、2026-11-17 → 2026-11-25）、`docs/整合记录-本机材料归并-20261125.md` 整合记录；历史开发脚本 / 日志 / UI 原型归档 `archive/dev-history/`。
+- **RAG 语料第三批 / 第四批**：`docs/史脉_RAG语料库_第三批20篇.md`（19 篇）、`docs/史脉_RAG语料库_第四批20篇.md`（20 篇）；`EXPECTED_DOCUMENT_COUNT` 51 → **90**，入库 chunk 186 → **360**。
+- `backend/tests/test_rag_store.py`：RAG store 单测（manifest 校验 / HTTP 客户端 / 检索边界）。
+
+### 变更
+
+- `backend/requirements.txt`：`chromadb` 由 `>=1.5` 固定为 `0.4.24`，新增 `numpy>=1.22.5,<2`（Chroma 1.5.9 在 Windows 触发 SQLite code 14）。
+- `backend/rag/store.py`：新增 `create_chroma_client()`，支持 `RAG_CHROMA_HTTP_HOST` / `RAG_CHROMA_HTTP_PORT` 连接 HTTP 服务端。
+- `backend/rag/corpus.py`、`backend/scripts/ingest_rag.py`：语料清单与完整性校验同步到 4 份语料 / 90 篇。
+
+### 数据
+
+- RAG 向量库重建：**90 篇 / 360 chunk**，provider `local:BAAI/bge-small-zh-v1.5`（chromadb 0.4.24，持久化目录 `backend/data/chroma_db/`，gitignore 产物）。
+
+### 清理
+
+- 仓库 `.tmp/`（约 2 GB、1.1 万个文件，含 6 份 Edge 浏览器 profile、历史截图与临时脚本）清理；可复用内容归档 `archive/dev-history/`；整合前完整备份（git bundle + 散落材料副本）在 `C:\Users\wiledog\Backup\histolink-20261125\`。
+- 桌面「史脉」残留目录（仅余 v1.0.5.2 文档与旧 `.env.example`）在迁入仓库后删除；WorkBuddy 会话目录保留迁移说明文件。
+
+### 验证
+
+- 后端 pytest **318 passed**；`scripts/verify.ps1` 12 步门禁全绿（结果详见整合记录文档）。
+
+---
+
 ## [1.0.5.1] - 2026-11-24
 
 > 补丁版本主题：**Agent 对比任务优化 + 对话工作区（Conversation Workspace）UI 重构**。

@@ -1,0 +1,7 @@
+person keys: ['person_id', 'display_name', 'romanized', 'disambiguator', 'aliases', 'primary_dynasty', 'dynasties', 'era_ids', 'scope_ids', 'event_ids', 'first_year', 'last_year', 'status']
+event keys: ['event_id', 'title', 'dynasty', 'year', 'description', 'importance', 'is_special', 'participants', 'person_ids', 'source_refs', 'source_status', 'surface']
+relation keys: ['pair_key', 'person_id_a', 'person_id_b', 'label', 'description', 'event_summaries', 'basis_event_ids', 'attribution']
+era keys: ['era_id', 'label', 'dynasties', 'default_center_person_id', 'graph']
+scope keys: ['scope_id', 'label', 'default_center_person_id', 'graph']
+group keys: ['group_id', 'label', 'dynasties', 'start_year']
+alias sample: [{"alias": "元世祖", "person_id": "p-hubilie-cf00"}, {"alias": "元太祖", "person_id": "p-chengjisihan-7567"}, {"alias": "元宏", "person_id": "p-xiaowendi-dbe8"}]

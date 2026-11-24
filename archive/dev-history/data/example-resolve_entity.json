@@ -1,0 +1,117 @@
+{
+  "ok": true,
+  "tool": "resolve_entity",
+  "data": {
+    "candidates": [
+      {
+        "person_id": "p-liangtaihou-handong-90be",
+        "name": "梁太后",
+        "disambiguator": "东汉·梁冀妹·顺烈皇后",
+        "era_ids": [
+          "qinhan"
+        ]
+      },
+      {
+        "person_id": "p-liangtaihou-xixia-0d0f",
+        "name": "梁太后",
+        "disambiguator": "西夏·毅宗后",
+        "era_ids": [
+          "beisong",
+          "xixia"
+        ]
+      }
+    ],
+    "ambiguous": true
+  },
+  "error": null,
+  "meta": {
+    "returned": 2,
+    "citation_count": 3,
+    "candidate_count": 2,
+    "ambiguous": true,
+    "period_id": null
+  },
+  "items": [
+    {
+      "person_id": "p-liangtaihou-handong-90be",
+      "name": "梁太后",
+      "disambiguator": "东汉·梁冀妹·顺烈皇后",
+      "era_ids": [
+        "qinhan"
+      ]
+    },
+    {
+      "person_id": "p-liangtaihou-xixia-0d0f",
+      "name": "梁太后",
+      "disambiguator": "西夏·毅宗后",
+      "era_ids": [
+        "beisong",
+        "xixia"
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "id": "cite-handong-zhidi-0",
+      "kind": "event",
+      "event_id": "handong-zhidi",
+      "person_id": null,
+      "relation_id": null,
+      "title": "梁冀毒杀质帝",
+      "year": 146,
+      "dynasty": "东汉",
+      "quote": "冲帝崩，梁太后与大将军梁冀立八岁刘缵为质帝。帝目冀为“跋扈将军”，梁冀忌之，遂置毒于煮饼，质帝暴崩，梁氏专权如故。（据《后汉书·梁冀传》）",
+      "source_label": "后汉书·梁冀传",
+      "source_ref": {
+        "label": "后汉书·梁冀传",
+        "book": "后汉书",
+        "chapter": "梁冀传",
+        "raw": "（据《后汉书·梁冀传》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-beisong-25-0",
+      "kind": "event",
+      "event_id": "beisong-25",
+      "person_id": null,
+      "relation_id": null,
+      "title": "五路伐夏",
+      "year": 1081,
+      "dynasty": "北宋",
+      "quote": "神宗采种谔等议五路伐夏，高遵裕、李宪诸军乏粮溃退，灵州城下宋军大败，死者甚众。（据《宋史》《宋史·夏国传》）",
+      "source_label": "宋史",
+      "source_ref": {
+        "label": "宋史",
+        "book": "宋史",
+        "chapter": null,
+        "raw": "（据《宋史》《宋史·夏国传》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-beisong-25-1",
+      "kind": "event",
+      "event_id": "beisong-25",
+      "person_id": null,
+      "relation_id": null,
+      "title": "五路伐夏",
+      "year": 1081,
+      "dynasty": "北宋",
+      "quote": "神宗采种谔等议五路伐夏，高遵裕、李宪诸军乏粮溃退，灵州城下宋军大败，死者甚众。（据《宋史》《宋史·夏国传》）",
+      "source_label": "宋史·夏国传",
+      "source_ref": {
+        "label": "宋史·夏国传",
+        "book": "宋史",
+        "chapter": "夏国传",
+        "raw": "（据《宋史》《宋史·夏国传》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    }
+  ],
+  "truncated": false,
+  "snapshot_version": "v1-2978ceda7d15"
+}

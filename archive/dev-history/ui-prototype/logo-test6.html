@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<style>
+  body { margin: 0; padding: 24px; background: #fffdf8; font-family: "Microsoft YaHei", sans-serif; display: flex; flex-wrap: wrap; gap: 18px; }
+  .cell { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px; border: 1px solid #eee3d4; border-radius: 10px; }
+  .cell b { font-size: 11px; color: #8b0000; }
+</style>
+</head>
+<body>
+
+<!-- V1 原 -->
+<div class="cell"><b>V1</b>
+<svg width="260" height="260" viewBox="0 0 48 48" fill="none"><path d="M38.8 13.6C34.6 7.8 24.4 6 18 10c-5.9 3.7-5.3 9.8 1.1 12.9 6 2.9 13.2 4.9 14 9.8.7 4.6-5.3 8-11.4 7.8-4.5-.2-8.4-1.9-10.9-5" stroke="#8b0000" stroke-width="4.6" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M21 14.6h7.8"/><path d="M24.9 11.6v10.8"/><path d="M21.8 16.6h6.2v4.6h-6.2z"/><path d="M24.9 21.2c.2 1.7 1.7 3 4 3.5"/></g></svg>
+</div>
+
+<!-- V2 下移放大 -->
+<div class="cell"><b>V2</b>
+<svg width="260" height="260" viewBox="0 0 48 48" fill="none"><path d="M38.8 13.6C34.6 7.8 24.4 6 18 10c-5.9 3.7-5.3 9.8 1.1 12.9 6 2.9 13.2 4.9 14 9.8.7 4.6-5.3 8-11.4 7.8-4.5-.2-8.4-1.9-10.9-5" stroke="#8b0000" stroke-width="4.6" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M20.4 15.8h9.2"/><path d="M25 12.4v12"/><path d="M21.2 18.2h7.6v5.4h-7.6z"/><path d="M25 23.6c.2 2 1.9 3.5 4.7 4.1"/></g></svg>
+</div>
+
+<!-- V3 右移 -->
+<div class="cell"><b>V3</b>
+<svg width="260" height="260" viewBox="0 0 48 48" fill="none"><path d="M38.8 13.6C34.6 7.8 24.4 6 18 10c-5.9 3.7-5.3 9.8 1.1 12.9 6 2.9 13.2 4.9 14 9.8.7 4.6-5.3 8-11.4 7.8-4.5-.2-8.4-1.9-10.9-5" stroke="#8b0000" stroke-width="4.6" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M21.8 15.2h8.8"/><path d="M26.2 11.8v11.8"/><path d="M22.6 17.6h7.2v5.2h-7.2z"/><path d="M26.2 22.8c.2 2 1.8 3.4 4.5 4"/></g></svg>
+</div>
+
+<!-- V4 底部并入水流 -->
+<div class="cell"><b>V4</b>
+<svg width="260" height="260" viewBox="0 0 48 48" fill="none"><path d="M38.8 13.6C34.6 7.8 24.4 6 18 10c-5.9 3.7-5.3 9.8 1.1 12.9 6 2.9 13.2 4.9 14 9.8.7 4.6-5.3 8-11.4 7.8-4.5-.2-8.4-1.9-10.9-5" stroke="#8b0000" stroke-width="4.6" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M20.4 15.4h9"/><path d="M24.9 12v11.6"/><path d="M21.3 17.8h7.2v5h-7.2z"/><path d="M24.9 22.8l-3.6 3.4"/><path d="M24.9 22.8c2.7 1.2 5.6 2.4 7.2 3.6"/></g></svg>
+</div>
+
+<!-- V5 无顶横（S 顶代顶横） -->
+<div class="cell"><b>V5</b>
+<svg width="260" height="260" viewBox="0 0 48 48" fill="none"><path d="M38.8 13.6C34.6 7.8 24.4 6 18 10c-5.9 3.7-5.3 9.8 1.1 12.9 6 2.9 13.2 4.9 14 9.8.7 4.6-5.3 8-11.4 7.8-4.5-.2-8.4-1.9-10.9-5" stroke="#8b0000" stroke-width="4.6" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M24.9 11.8v12.2"/><path d="M21.6 16.8h6.6v5h-6.6z"/><path d="M24.9 21.8c.2 1.9 1.8 3.3 4.4 3.9"/></g></svg>
+</div>
+
+<!-- V6 中宫 + 水隙 -->
+<div class="cell"><b>V6</b>
+<svg width="260" height="260" viewBox="0 0 48 48" fill="none"><defs><mask id="mv6" maskUnits="userSpaceOnUse" x="0" y="0" width="48" height="48"><rect width="48" height="48" fill="#fff"/><g stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M20.4 15.8h9.2"/><path d="M25 12.4v12"/><path d="M21.2 18.2h7.6v5.4h-7.6z"/><path d="M25 23.6c.2 2 1.9 3.5 4.7 4.1"/></g></mask></defs><path mask="url(#mv6)" d="M38.8 13.6C34.6 7.8 24.4 6 18 10c-5.9 3.7-5.3 9.8 1.1 12.9 6 2.9 13.2 4.9 14 9.8.7 4.6-5.3 8-11.4 7.8-4.5-.2-8.4-1.9-10.9-5" stroke="#8b0000" stroke-width="4.6" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M20.4 15.8h9.2"/><path d="M25 12.4v12"/><path d="M21.2 18.2h7.6v5.4h-7.6z"/><path d="M25 23.6c.2 2 1.9 3.5 4.7 4.1"/></g></svg>
+</div>
+
+</body></html>

@@ -4,9 +4,11 @@
 
 **中国历史探索 · 以结构化数据为核心的可视化历史探索 Web 应用**
 
-当前版本 **V1.0.5.1（Agent 对比任务优化 + 对话工作区 UI 重构补丁）**；**V1.0.2 工具层已发布**（tag `v1.0.2`；8 个只读工具 + 统一信封契约 + 62 条单测）；**V1.0.3 Agent Core 已发布**（规划器 / 执行器 / 证据校验与安全加固）；**V1.0.4 UI 联动已完成**（AgentContext / ActionBus、史令 / 史引双人格、抽屉与 `/ask` 共享会话、同页自动 / 跨页确认与 URL 深链接闭环）；**V1.0.5 已完成 RAG 混合检索 + LLM 自动降级**（51 篇语料 → 186 条 chunk 本地向量库 + 第 9 个工具 `search_historical_text` + 图谱/RAG 分节回答与冲突标注；主模型 429/502/504/超时自动切换备用轻量模型并回填 `trace.model_used`）；**V1.0.5.1 已完成对比任务优化与对话工作区重构**（内部 `tool_batch` 并行只读工具 + 对比 Prompt 三阶段策略 + 有界收尾轮 / 校验修复轮；`/ask` 改为单一滚动的对话时间线 + 底部输入区，修复长回答裁切与「返回聊天」丢问题；后端全量 **318 条测试通过**，前端无头验收 **39/39**） ｜ 数据快照 **705 条事件（时间轴 671 + 图谱补足 34）· 23 个朝代/时期 · 1,058 人物 · 639 对人物关系 · 18 期 / 7 组人物关系图数据**
+当前版本 **V1.0.5.1（Agent 对比任务优化 + 对话工作区 UI 重构补丁）**；**V1.0.2 工具层已发布**（tag `v1.0.2`；8 个只读工具 + 统一信封契约 + 62 条单测）；**V1.0.3 Agent Core 已发布**（规划器 / 执行器 / 证据校验与安全加固）；**V1.0.4 UI 联动已完成**（AgentContext / ActionBus、史令 / 史引双人格、抽屉与 `/ask` 共享会话、同页自动 / 跨页确认与 URL 深链接闭环）；**V1.0.5 已完成 RAG 混合检索 + LLM 自动降级**（90 篇语料 → 360 条 chunk 本地向量库 + 第 9 个工具 `search_historical_text` + 图谱/RAG 分节回答与冲突标注；主模型 429/502/504/超时自动切换备用轻量模型并回填 `trace.model_used`）；**V1.0.5.1 已完成对比任务优化与对话工作区重构**（内部 `tool_batch` 并行只读工具 + 对比 Prompt 三阶段策略 + 有界收尾轮 / 校验修复轮；`/ask` 改为单一滚动的对话时间线 + 底部输入区，修复长回答裁切与「返回聊天」丢问题；后端全量 **318 条测试通过**，前端无头验收 **39/39**） ｜ 数据快照 **705 条事件（时间轴 671 + 图谱补足 34）· 23 个朝代/时期 · 1,058 人物 · 639 对人物关系 · 18 期 / 7 组人物关系图数据**
 
 </div>
+
+> **2026-11-25 本地整合**：桌面「史脉」目录的 v1.0.5.2 交付文档、WorkBuddy 历史事件人物表、22 个 DSH 开发会话索引与本机临时脚本归档已全部并入本仓库；RAG 语料同时由 51 篇扩至 **90 篇（360 条 chunk）**。整合记录见 [docs/整合记录-本机材料归并-20261125.md](docs/整合记录-本机材料归并-20261125.md)，文档总索引见 [docs/README.md](docs/README.md)。
 
 ---
 
@@ -40,7 +42,7 @@
 | 人物主数据（V1.0.1） | `frontend/data/persons.ts` | 1,058 条 person 记录 = 1,059 个姓名 − 3 条异名同一人合并 + 2 条同名拆分（梁太后 / 刘崇）；稳定 `person_id` + ID 锁文件 + 66 条全局别名 + 同名报告 + `--check` 门禁 |
 | 数据快照与只读 API（V1.0.1） | `backend/data/` · `/api/meta` · `/api/entities/*` | 前后端同源快照（705 事件 / 1,058 人物 / 639 关系 / 18 期 / 7 断代，约 2.7MB，内容寻址 hash）；FastAPI 启动校验快照，提供 meta / person / event / 姓名候选只读接口与统一错误 envelope |
 | 只读工具层（V1.0.2） | `backend/agent/tools/` | 8 个只读工具（实体消歧 / 事件检索 / 事件 / 人物 / 人物事件 / 关系 / 时期图谱 / 时间区间）直接读内存快照；统一信封 `ok/items/citations/truncated/snapshot_version/data/error/meta` 已写入 `tools-v1.schema.json` 的 `output`；62 条单测覆盖正常 / 空结果 / 歧义 / 非法参数 |
-| RAG 史料检索（V1.0.5） | `backend/rag/` · `backend/scripts/ingest_rag.py` · `search_historical_text` | 51 篇 WorkBuddy 语料 → 186 条 ≤500 字 chunk 的本地 chromadb 向量库（ModelScope API 未开放 embedding 时自动降级本地 fastembed `bge-small-zh-v1.5`，manifest 记录 provider）；第 9 个只读工具 `search_historical_text(query, top_k≤3)` 单次最多 3 条 × 每条 ≤300 字；Agent 混合路由按 ① 图谱基础事实 / ② RAG 史料细节分节回答，年份冲突标注「史料记载有异」，传说句首 `[传说]`，双空则 `insufficient` |
+| RAG 史料检索（V1.0.5） | `backend/rag/` · `backend/scripts/ingest_rag.py` · `search_historical_text` | 90 篇语料（核心 21 + 第二批 30 + 第三批 19 + 第四批 20）→ 360 条 ≤500 字 chunk 的本地 chromadb 向量库（ModelScope API 未开放 embedding 时自动降级本地 fastembed `bge-small-zh-v1.5`，manifest 记录 provider）；第 9 个只读工具 `search_historical_text(query, top_k≤3)` 单次最多 3 条 × 每条 ≤300 字；Agent 混合路由按 ① 图谱基础事实 / ② RAG 史料细节分节回答，年份冲突标注「史料记载有异」，传说句首 `[传说]`，双空则 `insufficient` |
 | LLM 自动降级（V1.0.5） | `backend/llm_client.py` · `trace.model_used` | 主模型 `MODELSCOPE_MODEL`（35B）遇到 HTTP 429 限流 / 502、504 网关错误 / 超时 → warning 日志 + 自动切换 `MODELSCOPE_FALLBACK_MODEL`（默认 `Qwen/Qwen3.5-8B-Instruct`）重试一次；备用也失败才返回 `LLM_UPSTREAM_ERROR` / `LLM_TIMEOUT`；`trace.model_used` 标明最终完成回答的模型，前端在非 35B 时于回答下方追加灰字提示 |
 
 ### 规划中（尚未实现）
@@ -66,7 +68,7 @@
 | 包管理与构建 | pnpm + Next.js Turbopack | 锁文件 `frontend/pnpm-lock.yaml` |
 | 后端 | [FastAPI](https://fastapi.tiangolo.com/) + Uvicorn + Pydantic v2 | `fastapi>=0.115`、`uvicorn[standard]>=0.34`、`pydantic>=2.9,<3`（Python 3.11 虚拟环境） |
 | 契约与门禁 | Pydantic → OpenAPI 3.1 → `openapi-typescript` | 后端 `backend/contracts` 为唯一事实源；三份契约 + 动作策略 + 32 条后端契约测试 |
-| 测试 | pytest / vitest / evals | 后端 269 条（契约 + 只读 API + 工具层 + Agent Core + 安全加固 + LLM 客户端 + fail-fast）；前端 110 条（动作策略 / ActionBus / 深链接 / 受控选中 / 能力映射 / Agent 数据层 / 动作导航 / 史引联动派发）；评测 30 条 golden（contract 模式） |
+| 测试 | pytest / vitest / evals | 后端 318 条（契约 + 只读 API + 工具层 + Agent Core + 安全加固 + LLM 客户端 + RAG 检索 + fail-fast）；前端 119 条（动作策略 / ActionBus / 深链接 / 受控选中 / 能力映射 / Agent 数据层 / 动作导航 / 史引联动派发）；评测 30 条 golden（contract 模式） |
 | 运行形态 | 前后端分离 | 前端渲染与交互；后端为只读数据服务（快照 + `/api/entities/*`），不接数据库、无写接口 |
 
 浏览器支持：桌面 Chrome / Edge 最近两个大版本，Safari 16+ 可浏览；桌面优先，移动端保证可浏览与降级。
@@ -136,7 +138,13 @@
 │  ├─ validate-data.mjs             全量数据 + 人物主数据 + 引用 + 快照一致性校验
 │  └─ lib/                          共享 TS 数据加载器 / 引用解析器
 ├─ .github/workflows/ci.yml         CI（前端 + 后端 + 评测）
-├─ docs/                            需求审核报告、任务卡、验收记录、数据文档、spike 报告
+├─ docs/                            设计 / 验收 / 数据 / 语料 / 开发历程文档（索引见 docs/README.md）
+│  ├─ README.md                     文档总索引（本目录全部文档的分组说明）
+│  ├─ V1.0.5.2-Agent系统提示词与前端功能开发说明.md  V1.0.5.2 交付文档（代码待开发）
+│  ├─ 开发历程-DSH会话索引.md         22 个开发会话的时间线 / 里程碑 / 文件对照
+│  ├─ sources/                      外源素材（WorkBuddy 历史事件人物参与表等）
+│  └─ 整合记录-本机材料归并-20261125.md  2026-11-25 整合记录
+├─ archive/                         历史开发脚本 / 日志 / UI 原型归档（archive/README.md）
 ├─ 启动史脉.cmd / 停止史脉.cmd       Windows 双击入口
 ├─ SPEC.md                          需求与验收标准（唯一需求来源）
 ├─ CHANGELOG.md                     版本更新日志
@@ -556,6 +564,7 @@ interface PersonGraphEdge {
 | V1.0.4 | 动作联动：同页自动 / 跨页确认、全量 URL 状态化、时间轴与图谱高亮、对话 UI | 已完成（准备发布 tag `v1.0.4`） |
 | V1.0.5 | 检索与引用校验：RAG 史料向量库（chromadb + bge-small-zh-v1.5）+ `search_historical_text` 工具 + 图谱/RAG 混合路由与「史料记载有异」冲突标注 + LLM 自动降级（429/502/504/超时 → 备用轻量模型，`trace.model_used`） | 已完成（tag `v1.0.5`） |
 | V1.0.5.1 | Agent 对比任务优化（`tool_batch` 并行只读工具 + 对比 Prompt 三阶段 + 有界收尾轮 / 校验修复轮 + 检索词扩展）与 `/ask` 对话工作区 UI 重构（单一滚动、长回答完整显示、返回聊天状态保留、V1.0.6 多轮布局预留） | 已完成（tag `v1.0.5.1`） |
+| V1.0.5.2 | 人物关系图双数据源接入（系统提示词 + 服务端硬校验）、模型切换窗口、历史对话侧边栏 | 交付文档已入库（2026-11-25），代码待开发 |
 | V1.0.6 | 多轮记忆与实体承接 | 计划中 |
 | V1.1 | 终极 UI 重构（3D 视图、滑块交互） | 计划中 |
 | V1.1.1 | 时间轴尽头彩蛋节点（1893-12-26） | 计划中 |
@@ -598,6 +607,12 @@ interface PersonGraphEdge {
 
 | 文档 | 说明 |
 |---|---|
+| [docs/README.md](docs/README.md) | **文档总索引**：全部文档的分组说明（设计与交付 / 验收 / 数据 / 语料 / 开发历程） |
+| [docs/V1.0.5.2-Agent系统提示词与前端功能开发说明.md](docs/V1.0.5.2-Agent系统提示词与前端功能开发说明.md) | **V1.0.5.2 交付文档（待开发）**：完整可执行 Agent 系统提示词 + 前端功能开发说明（双数据源 / 模型切换窗口 / 历史对话侧边栏 / 验收门禁） |
+| [docs/开发历程-DSH会话索引.md](docs/开发历程-DSH会话索引.md) | 22 个 DSH 开发会话索引：时间线、首条需求摘要、版本里程碑与会话文件对照 |
+| [docs/整合记录-本机材料归并-20261125.md](docs/整合记录-本机材料归并-20261125.md) | 2026-11-25 本机材料整合记录：迁入清单 / 清理项 / 备份位置 / 验收结果 |
+| [docs/sources/README.md](docs/sources/README.md) | 外源素材说明（WorkBuddy 历史事件人物参与表等） |
+| [archive/README.md](archive/README.md) | 历史开发脚本 / 日志 / UI 原型归档说明 |
 | [SPEC.md](SPEC.md) | 需求与验收标准的**唯一来源**；实现中出现未覆盖行为时先补 SPEC 再写代码 |
 | [CHANGELOG.md](CHANGELOG.md) | 按版本记录新增 / 变更 / 修复与数据快照 |
 | [docs/V1.0-项目现状与开发前置审核报告.md](docs/V1.0-项目现状与开发前置审核报告.md) | V1.0 架构审核：P0 缺口、契约草案、Q1–Q6 决策与开工清单 |
@@ -633,6 +648,7 @@ interface PersonGraphEdge {
 - 本地 RAG 向量库为 gitignore 构建产物，需在 `backend` 下执行
   `backend\.venv\Scripts\python backend\scripts\ingest_rag.py` 重建；未构建时 RAG 工具返回失败信封，
   Agent 会退回图谱证据或如实说明资料不足。
+- V1.0.5.2 的交付文档已入库但**代码尚未开发**：人物关系图双数据源接入 / 模型切换窗口 / 历史对话侧边栏仍按当前版本行为运行。
 - 本版歧义实体（如「梁太后」）不返回 `clarification` 候选列表，由模型输出 `insufficient` 提示用户指定；澄清状态机属多轮记忆版本。
 - ActionBus 已在时间轴 / 图谱页注册**同页**动作，但跨页动作只有待确认队列、**没有确认按钮 UI**；完整动作联动属 V1.0.4。
 - 深链接只做「打开链接恢复视图 + 动作执行后回写 URL」，**不做全量 URL 状态化**（每次点击同步 query、浏览器前进后退恢复属 V1.0.4）。
@@ -661,6 +677,12 @@ interface PersonGraphEdge {
 ## 十二、更新日志（近期）
 
 > 完整版本记录见 [CHANGELOG.md](CHANGELOG.md)。
+
+### 本地整合 + RAG 语料扩展 — 2026-11-25
+
+- **本机材料整合**：桌面「史脉」目录的 v1.0.5.2 交付文档并入 `docs/`；WorkBuddy 的《史脉_历史事件与人物参与表》并入 `docs/sources/`；22 个 DSH 开发会话汇总为 [docs/开发历程-DSH会话索引.md](docs/开发历程-DSH会话索引.md)；`.tmp/` 中约 2 GB 临时文件清理，有价值的开发脚本 / 日志 / UI 原型归档到 `archive/`。整合前完整备份在 `C:\Users\wiledog\Backup\histolink-20261125\`（含 git bundle）。
+- **RAG 语料扩至 90 篇**：新增 RAG 语料第三批（19 篇）/ 第四批（20 篇），入库 chunk 由 186 条增至 **360 条**；`chromadb` 固定 `0.4.24` + `numpy<2`（1.5.9 在 Windows 触发 SQLite code 14），`rag/store.py` 支持 `RAG_CHROMA_HTTP_*` 切换 HTTP 服务端。
+- **文档**：新增 [docs/README.md](docs/README.md) 文档总索引与 [docs/整合记录-本机材料归并-20261125.md](docs/整合记录-本机材料归并-20261125.md)。
 
 ### V1.0.5.1（Agent 对比任务优化 + 对话工作区重构） — 2026-11-24
 

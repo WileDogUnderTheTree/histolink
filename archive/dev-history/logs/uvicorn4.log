@@ -1,0 +1,2 @@
+INFO:     127.0.0.1:61526 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63676 - "POST /api/agent/ask HTTP/1.1" 200 OK

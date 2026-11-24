@@ -1,0 +1,23 @@
+{
+  "route": "/graph?person=%E6%9B%B9%E6%93%8D&era=sanguo&selected=%E5%88%98%E5%A4%87",
+  "svgLabel": "以曹操为中心的人物关系图，共 26 位直接关系人",
+  "hasRelationPanel": true,
+  "panelExcerpt": [
+    "阵营快捷",
+    "魏 · 曹操",
+    "蜀 · 刘备",
+    "吴 · 孙权",
+    "搜索人物",
+    "名人堂 · 三国",
+    "曹操",
+    "刘备",
+    "孙权",
+    "孙策",
+    "孙坚",
+    "诸葛亮",
+    "关羽",
+    "司马懿"
+  ],
+  "selectedNodeLabel": "刘备；与曹操共同参与 2 件事件。按 Enter 查看详情，长按切换中心人物。（已选中）",
+  "selectedCount": 1
+}

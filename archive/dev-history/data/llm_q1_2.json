@@ -1,0 +1,3 @@
+{
+  "content": "{\"action\":\"tool_call\",\"thought\":\"搜索事件未找到结果，需进一步检索人物信息以确认秦始皇的生卒年份，从而判断西红柿传入中国的时间是否在其生前。\",\"tool\":\"resolve_entity\",\"arguments\":{\"query\":\"秦始皇\"}}"
+}

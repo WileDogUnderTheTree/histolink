@@ -1,0 +1,3 @@
+{
+  "content": "{\"action\":\"tool_call\",\"thought\":\"用户询问秦始皇是否吃过西红柿，需先检索相关事件或人物信息以确认时间线是否匹配。\",\"tool\":\"search_events\",\"arguments\":{\"q\":\"秦始皇 西红柿\",\"dynasty\":\"秦\",\"limit\":10}}"
+}

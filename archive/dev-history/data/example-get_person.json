@@ -1,0 +1,149 @@
+{
+  "ok": true,
+  "tool": "get_person",
+  "data": {
+    "person_id": "p-liangtaihou-xixia-0d0f",
+    "display_name": "梁太后",
+    "romanized": "liangtaihou",
+    "disambiguator": "西夏·毅宗后",
+    "aliases": [],
+    "primary_dynasty": "西夏",
+    "dynasties": [
+      "北宋",
+      "西夏"
+    ],
+    "era_ids": [
+      "beisong",
+      "xixia"
+    ],
+    "scope_ids": [
+      "songliaojinxia"
+    ],
+    "first_year": 1081,
+    "last_year": 1082,
+    "event_ids": [
+      "beisong-25",
+      "xixia-09",
+      "beisong-26"
+    ]
+  },
+  "error": null,
+  "meta": {
+    "returned": 1,
+    "citation_count": 4,
+    "event_total": 3,
+    "event_ids_truncated": false
+  },
+  "items": [
+    {
+      "person_id": "p-liangtaihou-xixia-0d0f",
+      "display_name": "梁太后",
+      "romanized": "liangtaihou",
+      "disambiguator": "西夏·毅宗后",
+      "aliases": [],
+      "primary_dynasty": "西夏",
+      "dynasties": [
+        "北宋",
+        "西夏"
+      ],
+      "era_ids": [
+        "beisong",
+        "xixia"
+      ],
+      "scope_ids": [
+        "songliaojinxia"
+      ],
+      "first_year": 1081,
+      "last_year": 1082,
+      "event_ids": [
+        "beisong-25",
+        "xixia-09",
+        "beisong-26"
+      ]
+    }
+  ],
+  "citations": [
+    {
+      "id": "cite-beisong-25-0",
+      "kind": "event",
+      "event_id": "beisong-25",
+      "person_id": null,
+      "relation_id": null,
+      "title": "五路伐夏",
+      "year": 1081,
+      "dynasty": "北宋",
+      "quote": "神宗采种谔等议五路伐夏，高遵裕、李宪诸军乏粮溃退，灵州城下宋军大败，死者甚众。（据《宋史》《宋史·夏国传》）",
+      "source_label": "宋史",
+      "source_ref": {
+        "label": "宋史",
+        "book": "宋史",
+        "chapter": null,
+        "raw": "（据《宋史》《宋史·夏国传》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-beisong-25-1",
+      "kind": "event",
+      "event_id": "beisong-25",
+      "person_id": null,
+      "relation_id": null,
+      "title": "五路伐夏",
+      "year": 1081,
+      "dynasty": "北宋",
+      "quote": "神宗采种谔等议五路伐夏，高遵裕、李宪诸军乏粮溃退，灵州城下宋军大败，死者甚众。（据《宋史》《宋史·夏国传》）",
+      "source_label": "宋史·夏国传",
+      "source_ref": {
+        "label": "宋史·夏国传",
+        "book": "宋史",
+        "chapter": "夏国传",
+        "raw": "（据《宋史》《宋史·夏国传》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-xixia-09-0",
+      "kind": "event",
+      "event_id": "xixia-09",
+      "person_id": null,
+      "relation_id": null,
+      "title": "灵州之战",
+      "year": 1081,
+      "dynasty": "西夏",
+      "quote": "宋五路伐夏，西夏梁太后坚壁清野，宋军围灵州十八日不克，粮尽溃败，死者十余万。（据《宋史·夏国传》）",
+      "source_label": "宋史·夏国传",
+      "source_ref": {
+        "label": "宋史·夏国传",
+        "book": "宋史",
+        "chapter": "夏国传",
+        "raw": "（据《宋史·夏国传》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-beisong-26-0",
+      "kind": "event",
+      "event_id": "beisong-26",
+      "person_id": null,
+      "relation_id": null,
+      "title": "永乐城之战",
+      "year": 1082,
+      "dynasty": "北宋",
+      "quote": "徐禧筑永乐城逼夏，西夏梁太后倾国之兵来攻，城破，徐禧战死，宋军丧师数万，神宗为之不食。（据《宋史》）",
+      "source_label": "宋史",
+      "source_ref": {
+        "label": "宋史",
+        "book": "宋史",
+        "chapter": null,
+        "raw": "（据《宋史》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    }
+  ],
+  "truncated": false,
+  "snapshot_version": "v1-2978ceda7d15"
+}

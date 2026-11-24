@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<style>
+  body { margin: 0; padding: 30px; background: #f7f3ea; font-family: "Microsoft YaHei", sans-serif; color: #2e2a24; }
+  h2 { font-size: 13px; font-weight: 600; color: #8b0000; letter-spacing: .08em; margin: 0 0 16px; }
+  .row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 26px; }
+  .cell { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px 18px 12px; border: 1px solid #e5dccd; border-radius: 12px; background: #fffdf8; }
+  .cell small { font-size: 11px; color: #8a7f72; }
+  .sizes { display: flex; align-items: end; gap: 14px; }
+  .navmock { display: flex; align-items: center; gap: 10px; font-size: 15px; color: #332923; letter-spacing: .06em; }
+  .navmock small { display: block; font-size: 8px; letter-spacing: .2em; color: #a07e6e; font-weight: 700; }
+</style>
+</head>
+<body>
+<h2>精修对比 · 大图 150px + 导航实际 38px/34px</h2>
+<div class="row">
+
+  <!-- a: 中等 S + 浅史 0.75 -->
+  <div class="cell">
+    <div class="sizes">
+      <svg width="150" height="150" viewBox="0 0 48 48" fill="none">
+        <defs><linearGradient id="ga" x1="8" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse"><stop stop-color="#a8322a"/><stop offset=".55" stop-color="#8b0000"/><stop offset="1" stop-color="#5a0704"/></linearGradient></defs>
+        <path d="M38.8 13.6C34.6 7.8 24.4 6 18 10c-5.9 3.7-5.3 9.8 1.1 12.9 6 2.9 13.2 4.9 14 9.8.7 4.6-5.3 8-11.4 7.8-4.5-.2-8.4-1.9-10.9-5" stroke="url(#ga)" stroke-width="5.4" stroke-linecap="round"/>
+        <g stroke="#dda189" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".85"><path d="M18.8 17.6h10.4"/><path d="M24 13.8v14.6"/><path d="M20.6 21.6h6.8v5.4h-6.8z"/><path d="M24 27c.2 2.1 1.9 3.7 4.6 4.3"/></g>
+      </svg>
+      <div class="navmock"><svg width="38" height="38" viewBox="0 0 48 48" fill="none"><path d="M38.8 13.6C34.6 7.8 24.4 6 18 10c-5.9 3.7-5.3 9.8 1.1 12.9 6 2.9 13.2 4.9 14 9.8.7 4.6-5.3 8-11.4 7.8-4.5-.2-8.4-1.9-10.9-5" stroke="#8b0000" stroke-width="5.4" stroke-linecap="round"/><g stroke="#dda189" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".85"><path d="M18.8 17.6h10.4"/><path d="M24 13.8v14.6"/><path d="M20.6 21.6h6.8v5.4h-6.8z"/><path d="M24 27c.2 2.1 1.9 3.7 4.6 4.3"/></g></svg><span><small>SHIMAI · CONSOLE</small>史脉问答</span></div>
+    </div>
+    <small>a · S5.4 + 浅史</small>
+  </div>
+
+  <!-- b: 粗 S + 更亮史 -->
+  <div class="cell">
+    <div class="sizes">
+      <svg width="150" height="150" viewBox="0 0 48 48" fill="none">
+        <defs><linearGradient id="gb" x1="8" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse"><stop stop-color="#a8322a"/><stop offset=".55" stop-color="#8b0000"/><stop offset="1" stop-color="#5a0704"/></linearGradient></defs>
+        <path d="M38.8 13.6C34.6 7.8 24.4 6 18 10c-5.9 3.7-5.3 9.8 1.1 12.9 6 2.9 13.2 4.9 14 9.8.7 4.6-5.3 8-11.4 7.8-4.5-.2-8.4-1.9-10.9-5" stroke="url(#gb)" stroke-width="6.3" stroke-linecap="round"/>
+        <g stroke="#eab9a4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M18.8 17.6h10.4"/><path d="M24 13.8v14.6"/><path d="M20.6 21.6h6.8v5.4h-6.8z"/><path d="M24 27c.2 2.1 1.9 3.7 4.6 4.3"/></g>
+      </svg>
+      <div class="navmock"><svg width="38" height="38" viewBox="0 0 48 48" fill="none"><path d="M38.8 13.6C34.6 7.8 24.4 6 18 10c-5.9 3.7-5.3 9.8 1.1 12.9 6 2.9 13.2 4.9 14 9.8.7 4.6-5.3 8-11.4 7.8-4.5-.2-8.4-1.9-10.9-5" stroke="#8b0000" stroke-width="6.3" stroke-linecap="round"/><g stroke="#eab9a4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M18.8 17.6h10.4"/><path d="M24 13.8v14.6"/><path d="M20.6 21.6h6.8v5.4h-6.8z"/><path d="M24 27c.2 2.1 1.9 3.7 4.6 4.3"/></g></svg><span><small>SHIMAI · CONSOLE</small>史脉问答</span></div>
+    </div>
+    <small>b · S6.3 + 亮史</small>
+  </div>
+
+  <!-- c: 中 S + 同色史 0.5 水印 -->
+  <div class="cell">
+    <div class="sizes">
+      <svg width="150" height="150" viewBox="0 0 48 48" fill="none">
+        <defs><linearGradient id="gc" x1="8" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse"><stop stop-color="#a8322a"/><stop offset=".55" stop-color="#8b0000"/><stop offset="1" stop-color="#5a0704"/></linearGradient></defs>
+        <path d="M38.8 13.6C34.6 7.8 24.4 6 18 10c-5.9 3.7-5.3 9.8 1.1 12.9 6 2.9 13.2 4.9 14 9.8.7 4.6-5.3 8-11.4 7.8-4.5-.2-8.4-1.9-10.9-5" stroke="url(#gc)" stroke-width="5.4" stroke-linecap="round"/>
+        <g stroke="#8b0000" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".55"><path d="M18.8 17.6h10.4"/><path d="M24 13.8v14.6"/><path d="M20.6 21.6h6.8v5.4h-6.8z"/><path d="M24 27c.2 2.1 1.9 3.7 4.6 4.3"/></g>
+      </svg>
+      <div class="navmock"><svg width="38" height="38" viewBox="0 0 48 48" fill="none"><path d="M38.8 13.6C34.6 7.8 24.4 6 18 10c-5.9 3.7-5.3 9.8 1.1 12.9 6 2.9 13.2 4.9 14 9.8.7 4.6-5.3 8-11.4 7.8-4.5-.2-8.4-1.9-10.9-5" stroke="#8b0000" stroke-width="5.4" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity=".55"><path d="M18.8 17.6h10.4"/><path d="M24 13.8v14.6"/><path d="M20.6 21.6h6.8v5.4h-6.8z"/><path d="M24 27c.2 2.1 1.9 3.7 4.6 4.3"/></g></svg><span><small>SHIMAI · CONSOLE</small>史脉问答</span></div>
+    </div>
+    <small>c · S + 同色水印史</small>
+  </div>
+
+  <!-- e: 史 + S 尾（细尾） -->
+  <div class="cell">
+    <div class="sizes">
+      <svg width="150" height="150" viewBox="0 0 48 48" fill="none">
+        <defs><linearGradient id="ge" x1="8" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse"><stop stop-color="#a8322a"/><stop offset=".55" stop-color="#8b0000"/><stop offset="1" stop-color="#5a0704"/></linearGradient></defs>
+        <g stroke="url(#ge)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M17.6 15.6h12.8"/><path d="M24 11.8v12.6"/><path d="M20.1 19.8h7.8v6h-7.8z"/><path d="M24 25.8l-5.2 5.2"/></g>
+        <path d="M24 25.8c3.3 1.6 7.2 3.3 8.3 6.2 1.2 3.1-1.8 6.1-5.6 6.9-4.4.9-9.3-.2-13-2.7" stroke="url(#ge)" stroke-width="2.9" stroke-linecap="round"/>
+      </svg>
+      <div class="navmock"><svg width="38" height="38" viewBox="0 0 48 48" fill="none"><g stroke="#8b0000" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M17.6 15.6h12.8"/><path d="M24 11.8v12.6"/><path d="M20.1 19.8h7.8v6h-7.8z"/><path d="M24 25.8l-5.2 5.2"/></g><path d="M24 25.8c3.3 1.6 7.2 3.3 8.3 6.2 1.2 3.1-1.8 6.1-5.6 6.9-4.4.9-9.3-.2-13-2.7" stroke="#8b0000" stroke-width="2.9" stroke-linecap="round"/></svg><span><small>SHIMAI · CONSOLE</small>史脉问答</span></div>
+    </div>
+    <small>e · 史 + 流水尾</small>
+  </div>
+
+  <!-- f: 史 + S 尾 + 顶部上扬 -->
+  <div class="cell">
+    <div class="sizes">
+      <svg width="150" height="150" viewBox="0 0 48 48" fill="none">
+        <defs><linearGradient id="gf" x1="8" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse"><stop stop-color="#a8322a"/><stop offset=".55" stop-color="#8b0000"/><stop offset="1" stop-color="#5a0704"/></linearGradient></defs>
+        <g stroke="url(#gf)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M18 16.4h11.4c2.9 0 4.2-2.1 3-4.2"/><path d="M24 12.6v12.4"/><path d="M20.1 19.8h7.8v6h-7.8z"/><path d="M24 25.8l-5.2 5.2"/></g>
+        <path d="M24 25.8c3.3 1.6 7.2 3.3 8.3 6.2 1.2 3.1-1.8 6.1-5.6 6.9-4.4.9-9.3-.2-13-2.7" stroke="url(#gf)" stroke-width="2.9" stroke-linecap="round"/>
+      </svg>
+      <div class="navmock"><svg width="38" height="38" viewBox="0 0 48 48" fill="none"><g stroke="#8b0000" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M18 16.4h11.4c2.9 0 4.2-2.1 3-4.2"/><path d="M24 12.6v12.4"/><path d="M20.1 19.8h7.8v6h-7.8z"/><path d="M24 25.8l-5.2 5.2"/></g><path d="M24 25.8c3.3 1.6 7.2 3.3 8.3 6.2 1.2 3.1-1.8 6.1-5.6 6.9-4.4.9-9.3-.2-13-2.7" stroke="#8b0000" stroke-width="2.9" stroke-linecap="round"/></svg><span><small>SHIMAI · CONSOLE</small>史脉问答</span></div>
+    </div>
+    <small>f · 史 + 首尾上翘</small>
+  </div>
+
+</div>
+</body>
+</html>

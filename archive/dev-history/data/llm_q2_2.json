@@ -1,0 +1,3 @@
+{
+  "content": "{\"action\":\"final\",\"thought\":\"工具返回了关于黄帝战蚩尤传说的RAG史料，包含白话详述和古文原典摘录，足以回答用户问题。根据规则，传说类史料需作为evidence提交，且record_type=传说会自动加标签。选取两条最相关的chunk（rag-00-00和rag-00-01）作为证据，第三条周武王伐纣与问题无关，不选。\",\"answer\":{\"mode\":\"grounded\",\"claims\":[{\"id\":\"c1\",\"citation_ids\":[\"rag-00-00\"]},{\"id\":\"c2\",\"citation_ids\":[\"rag-00-01\"]}],\"evidence\":[{\"entity_type\":\"rag\",\"entity_id\":\"rag-00-00\",\"note\":null},{\"entity_type\":\"rag\",\"entity_id\":\"rag-00-01\",\"note\":null}],\"related_event_ids\":[],\"missing_reasons\":[],\"reason_code\":null,\"ui_actions\":[]}}"
+}

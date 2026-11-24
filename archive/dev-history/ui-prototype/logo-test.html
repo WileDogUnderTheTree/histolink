@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<style>
+  body { margin: 0; padding: 40px; background: #f5f1e8; font-family: "Microsoft YaHei", sans-serif; color: #2e2a24; }
+  h2 { font-size: 13px; font-weight: 600; color: #8b0000; letter-spacing: .08em; margin: 0 0 14px; }
+  .row { display: flex; gap: 34px; flex-wrap: wrap; margin-bottom: 40px; }
+  .cell { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 20px 14px; border: 1px solid #e5dccd; border-radius: 12px; background: #fffdf7; }
+  .cell small { font-size: 11px; color: #8a7f72; }
+  .sizes { display: flex; align-items: end; gap: 12px; }
+  svg { color: #8b0000; }
+</style>
+</head>
+<body>
+<h2>候选（从左到右 A–F），每个候选展示 160px / 48px / 34px</h2>
+<div class="row">
+
+  <!-- A: 同色 S + 中央细史 -->
+  <div class="cell">
+    <div class="sizes">
+      <svg width="160" height="160" viewBox="0 0 48 48" fill="none">
+        <defs><linearGradient id="gA" x1="8" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse"><stop stop-color="#a5322a"/><stop offset=".5" stop-color="#8b0000"/><stop offset="1" stop-color="#5d0805"/></linearGradient></defs>
+        <path d="M37.4 12.2C33.4 7.6 24.6 6.6 18.8 9.8c-5 2.7-5.4 7.8-1.2 10.6 3.6 2.4 9.2 3.6 10.6 7.2 1.5 3.9-2.6 7.5-7.2 7.9-4.1.4-7.8-1-10.2-3.2" stroke="url(#gA)" stroke-width="3.9" stroke-linecap="round"/>
+        <g stroke="url(#gA)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22.2 19.6h7.2"/><path d="M25.8 17.2v9.6"/><rect x="22.8" y="21.9" width="6" height="4.6" rx="1"/><path d="M25.8 26.8c.3 1.6 1.8 2.9 3.9 3.4"/>
+        </g>
+      </svg>
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><use href="#none"/><path d="M37.4 12.2C33.4 7.6 24.6 6.6 18.8 9.8c-5 2.7-5.4 7.8-1.2 10.6 3.6 2.4 9.2 3.6 10.6 7.2 1.5 3.9-2.6 7.5-7.2 7.9-4.1.4-7.8-1-10.2-3.2" stroke="#8b0000" stroke-width="3.9" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.2 19.6h7.2"/><path d="M25.8 17.2v9.6"/><rect x="22.8" y="21.9" width="6" height="4.6" rx="1"/><path d="M25.8 26.8c.3 1.6 1.8 2.9 3.9 3.4"/></g></svg>
+      <svg width="34" height="34" viewBox="0 0 48 48" fill="none"><path d="M37.4 12.2C33.4 7.6 24.6 6.6 18.8 9.8c-5 2.7-5.4 7.8-1.2 10.6 3.6 2.4 9.2 3.6 10.6 7.2 1.5 3.9-2.6 7.5-7.2 7.9-4.1.4-7.8-1-10.2-3.2" stroke="#8b0000" stroke-width="3.9" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.2 19.6h7.2"/><path d="M25.8 17.2v9.6"/><rect x="22.8" y="21.9" width="6" height="4.6" rx="1"/><path d="M25.8 26.8c.3 1.6 1.8 2.9 3.9 3.4"/></g></svg>
+    </div>
+    <small>A · S + 中央细史</small>
+  </div>
+
+  <!-- B: S 中间留缺口，史在缺口里 -->
+  <div class="cell">
+    <div class="sizes">
+      <svg width="160" height="160" viewBox="0 0 48 48" fill="none">
+        <defs>
+          <linearGradient id="gB" x1="8" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse"><stop stop-color="#a5322a"/><stop offset=".5" stop-color="#8b0000"/><stop offset="1" stop-color="#5d0805"/></linearGradient>
+          <mask id="mB"><rect width="48" height="48" fill="#fff"/><g stroke="#000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17.5h11"/><path d="M25 13.5v14"/><rect x="20" y="22" width="10" height="7" rx="1.4"/><path d="M25 29c.4 2.6 2.6 4.4 5.8 5"/></g></mask>
+        </defs>
+        <path mask="url(#mB)" d="M37.4 12.2C33.4 7.6 24.6 6.6 18.8 9.8c-5 2.7-5.4 7.8-1.2 10.6 3.6 2.4 9.2 3.6 10.6 7.2 1.5 3.9-2.6 7.5-7.2 7.9-4.1.4-7.8-1-10.2-3.2" stroke="url(#gB)" stroke-width="4.2" stroke-linecap="round"/>
+        <g stroke="url(#gB)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17.5h11"/><path d="M25 13.5v14"/><rect x="20" y="22" width="10" height="7" rx="1.4"/><path d="M25 29c.4 2.6 2.6 4.4 5.8 5"/></g>
+      </svg>
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><path d="M27 21c-2-2.6-6-3.4-8.9-2.2-2.9 1.2-3.1 3.7-.8 5.1 2 1.3 5 1.9 5.7 3.8.8 2-1.5 3.7-4 3.9-2.2.2-4.2-.5-5.5-1.7" stroke="#8b0000" stroke-width="4.2" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17.5h11"/><path d="M25 13.5v14"/><rect x="20" y="22" width="10" height="7" rx="1.4"/><path d="M25 29c.4 2.6 2.6 4.4 5.8 5"/></g></svg>
+      <svg width="34" height="34" viewBox="0 0 48 48" fill="none"><path d="M27 21c-2-2.6-6-3.4-8.9-2.2-2.9 1.2-3.1 3.7-.8 5.1 2 1.3 5 1.9 5.7 3.8.8 2-1.5 3.7-4 3.9-2.2.2-4.2-.5-5.5-1.7" stroke="#8b0000" stroke-width="4.2" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17.5h11"/><path d="M25 13.5v14"/><rect x="20" y="22" width="10" height="7" rx="1.4"/><path d="M25 29c.4 2.6 2.6 4.4 5.8 5"/></g></svg>
+    </div>
+    <small>B · S 让位于史（svg写缩小版，不完整）</small>
+  </div>
+
+  <!-- C: 双波 + 中间史 -->
+  <div class="cell">
+    <div class="sizes">
+      <svg width="160" height="160" viewBox="0 0 48 48" fill="none">
+        <defs><linearGradient id="gC" x1="8" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse"><stop stop-color="#a5322a"/><stop offset=".5" stop-color="#8b0000"/><stop offset="1" stop-color="#5d0805"/></linearGradient></defs>
+        <path d="M39 15.5C34.5 9.4 24.4 7.4 18.3 11.4c-5.3 3.5-4.6 9.1.9 11.6" stroke="url(#gC)" stroke-width="3.6" stroke-linecap="round"/>
+        <path d="M8.6 33.2c4.7 5.4 14.6 6.6 20.3 2.1 4.4-3.5 3.5-8.4-1.5-10.6" stroke="url(#gC)" stroke-width="3.6" stroke-linecap="round"/>
+        <g stroke="url(#gC)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 20.8h11"/><path d="M24.7 17v13.4"/><rect x="20" y="22.6" width="9.4" height="6.6" rx="1.3"/><path d="M24.7 29.2c.4 2.4 2.5 4.1 5.5 4.7"/></g>
+      </svg>
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><path d="M39 15.5C34.5 9.4 24.4 7.4 18.3 11.4c-5.3 3.5-4.6 9.1.9 11.6" stroke="#8b0000" stroke-width="3.6" stroke-linecap="round"/><path d="M8.6 33.2c4.7 5.4 14.6 6.6 20.3 2.1 4.4-3.5 3.5-8.4-1.5-10.6" stroke="#8b0000" stroke-width="3.6" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 20.8h11"/><path d="M24.7 17v13.4"/><rect x="20" y="22.6" width="9.4" height="6.6" rx="1.3"/><path d="M24.7 29.2c.4 2.4 2.5 4.1 5.5 4.7"/></g></svg>
+      <svg width="34" height="34" viewBox="0 0 48 48" fill="none"><path d="M39 15.5C34.5 9.4 24.4 7.4 18.3 11.4c-5.3 3.5-4.6 9.1.9 11.6" stroke="#8b0000" stroke-width="3.6" stroke-linecap="round"/><path d="M8.6 33.2c4.7 5.4 14.6 6.6 20.3 2.1 4.4-3.5 3.5-8.4-1.5-10.6" stroke="#8b0000" stroke-width="3.6" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 20.8h11"/><path d="M24.7 17v13.4"/><rect x="20" y="22.6" width="9.4" height="6.6" rx="1.3"/><path d="M24.7 29.2c.4 2.4 2.5 4.1 5.5 4.7"/></g></svg>
+    </div>
+    <small>C · 上下双流 + 中央史</small>
+  </div>
+
+  <!-- D: 篆书感单线 S，史藏在弯折处 -->
+  <div class="cell">
+    <div class="sizes">
+      <svg width="160" height="160" viewBox="0 0 48 48" fill="none">
+        <defs><linearGradient id="gD" x1="8" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse"><stop stop-color="#b03a2e"/><stop offset=".55" stop-color="#8b0000"/><stop offset="1" stop-color="#590604"/></linearGradient></defs>
+        <path d="M36.6 13.4c-3.2-4.6-10.6-6.4-16-3.9-5.7 2.6-6.2 8.2-1.7 11.4 4.6 3.2 11.7 4.6 12.9 8.9 1.3 4.6-4.1 8.6-9.7 8.7-4.4.1-8.3-1.4-10.8-4" stroke="url(#gD)" stroke-width="3.2" stroke-linecap="round"/>
+        <g stroke="url(#gD)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22.4 20.4h8.4"/><path d="M25.8 17.4v9.2"/><path d="M22.4 22.6h6.8v5.4h-6.8z"/><path d="M25.8 28c.3 1.8 1.9 3.2 4.2 3.8"/>
+        </g>
+      </svg>
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><path d="M36.6 13.4c-3.2-4.6-10.6-6.4-16-3.9-5.7 2.6-6.2 8.2-1.7 11.4 4.6 3.2 11.7 4.6 12.9 8.9 1.3 4.6-4.1 8.6-9.7 8.7-4.4.1-8.3-1.4-10.8-4" stroke="#8b0000" stroke-width="3.2" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22.4 20.4h8.4"/><path d="M25.8 17.4v9.2"/><path d="M22.4 22.6h6.8v5.4h-6.8z"/><path d="M25.8 28c.3 1.8 1.9 3.2 4.2 3.8"/></g></svg>
+      <svg width="34" height="34" viewBox="0 0 48 48" fill="none"><path d="M36.6 13.4c-3.2-4.6-10.6-6.4-16-3.9-5.7 2.6-6.2 8.2-1.7 11.4 4.6 3.2 11.7 4.6 12.9 8.9 1.3 4.6-4.1 8.6-9.7 8.7-4.4.1-8.3-1.4-10.8-4" stroke="#8b0000" stroke-width="3.2" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22.4 20.4h8.4"/><path d="M25.8 17.4v9.2"/><path d="M22.4 22.6h6.8v5.4h-6.8z"/><path d="M25.8 28c.3 1.8 1.9 3.2 4.2 3.8"/></g></svg>
+    </div>
+    <small>D · 细长 S + 史（小尺寸）</small>
+  </div>
+
+  <!-- E: 一笔水流 S，负空间刻史 -->
+  <div class="cell">
+    <div class="sizes">
+      <svg width="160" height="160" viewBox="0 0 48 48" fill="none">
+        <defs>
+          <linearGradient id="gE" x1="10" y1="4" x2="38" y2="44" gradientUnits="userSpaceOnUse"><stop stop-color="#b23b2e"/><stop offset=".5" stop-color="#8b0000"/><stop offset="1" stop-color="#5d0805"/></linearGradient>
+          <mask id="mE"><rect width="48" height="48" fill="#fff"/><g stroke="#000" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16h12"/><path d="M24 12.6v15.8"/><path d="M19.9 21.6h8.2v7.2h-8.2z"/><path d="M24 28.8c.3 2.6 2.4 4.4 5.4 5"/></g></mask>
+        </defs>
+        <path mask="url(#mE)" d="M39.8 14.2C35 7.4 23.6 5.4 16.9 9.9c-6.1 4.1-5.2 10.4 1.3 13.6 6.2 3 13.6 5 14.4 10.1.7 4.8-5.6 8.4-11.9 8.1-4.6-.2-8.6-2-11-5.1" stroke="url(#gE)" stroke-width="4.6" stroke-linecap="round"/>
+        <g stroke="url(#gE)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16h12"/><path d="M24 12.6v15.8"/><path d="M19.9 21.6h8.2v7.2h-8.2z"/><path d="M24 28.8c.3 2.6 2.4 4.4 5.4 5"/></g>
+      </svg>
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><path d="M40 14.2C35.2 7.6 24 5.7 17.4 10.1c-6 4-5.1 10.2 1.3 13.3 6.1 3 13.3 4.9 14.1 9.9.7 4.7-5.5 8.2-11.7 7.9-4.5-.2-8.4-1.9-10.8-5" stroke="#8b0000" stroke-width="4.6" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16h12"/><path d="M24 12.6v15.8"/><path d="M19.9 21.6h8.2v7.2h-8.2z"/><path d="M24 28.8c.3 2.6 2.4 4.4 5.4 5"/></g></svg>
+      <svg width="34" height="34" viewBox="0 0 48 48" fill="none"><path d="M40 14.2C35.2 7.6 24 5.7 17.4 10.1c-6 4-5.1 10.2 1.3 13.3 6.1 3 13.3 4.9 14.1 9.9.7 4.7-5.5 8.2-11.7 7.9-4.5-.2-8.4-1.9-10.8-5" stroke="#8b0000" stroke-width="4.6" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16h12"/><path d="M24 12.6v15.8"/><path d="M19.9 21.6h8.2v7.2h-8.2z"/><path d="M24 28.8c.3 2.6 2.4 4.4 5.4 5"/></g></svg>
+    </div>
+    <small>E · 负空间刻史（无 mask 版看轮廓）</small>
+  </div>
+
+  <!-- F: S 用渐变粗笔，史渐隐在水流里 -->
+  <div class="cell">
+    <div class="sizes">
+      <svg width="160" height="160" viewBox="0 0 48 48" fill="none">
+        <defs>
+          <linearGradient id="gF" x1="9" y1="5" x2="40" y2="43" gradientUnits="userSpaceOnUse"><stop stop-color="#b23b2e"/><stop offset=".5" stop-color="#8b0000"/><stop offset="1" stop-color="#5d0805"/></linearGradient>
+          <mask id="mF"><rect width="48" height="48" fill="#fff"/><g stroke="#000" stroke-width="5.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h10"/><path d="M24.4 13.2v14.6"/><path d="M20.5 21.8h7.8v6.4h-7.8z"/><path d="M24.4 28.2c.3 2.4 2.2 4.1 5 4.7"/></g></mask>
+        </defs>
+        <path mask="url(#mF)" d="M38.6 12.8C34.4 7 23.8 5.8 17.6 9.9c-5.8 3.9-5 10 1.2 13.1 6 3 13.2 5 14 10 .7 4.7-5.4 8.2-11.6 8-4.6-.2-8.6-2-11-5.2" stroke="url(#gF)" stroke-width="4.4" stroke-linecap="round"/>
+        <g stroke="url(#gF)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h10"/><path d="M24.4 13.2v14.6"/><path d="M20.5 21.8h7.8v6.4h-7.8z"/><path d="M24.4 28.2c.3 2.4 2.2 4.1 5 4.7"/></g>
+      </svg>
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><path d="M38.6 12.8C34.4 7 23.8 5.8 17.6 9.9c-5.8 3.9-5 10 1.2 13.1 6 3 13.2 5 14 10 .7 4.7-5.4 8.2-11.6 8-4.6-.2-8.6-2-11-5.2" stroke="#8b0000" stroke-width="4.4" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h10"/><path d="M24.4 13.2v14.6"/><path d="M20.5 21.8h7.8v6.4h-7.8z"/><path d="M24.4 28.2c.3 2.4 2.2 4.1 5 4.7"/></g></svg>
+      <svg width="34" height="34" viewBox="0 0 48 48" fill="none"><path d="M38.6 12.8C34.4 7 23.8 5.8 17.6 9.9c-5.8 3.9-5 10 1.2 13.1 6 3 13.2 5 14 10 .7 4.7-5.4 8.2-11.6 8-4.6-.2-8.6-2-11-5.2" stroke="#8b0000" stroke-width="4.4" stroke-linecap="round"/><g stroke="#8b0000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h10"/><path d="M24.4 13.2v14.6"/><path d="M20.5 21.8h7.8v6.4h-7.8z"/><path d="M24.4 28.2c.3 2.4 2.2 4.1 5 4.7"/></g></svg>
+    </div>
+    <small>F · 粗水流 S + 刻痕史</small>
+  </div>
+
+</div>
+</body>
+</html>

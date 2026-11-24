@@ -1,0 +1,156 @@
+{
+  "base_url": "https://api-inference.modelscope.cn/v1",
+  "model": "Qwen/Qwen3.5-35B-A3B",
+  "ping_runs": [
+    {
+      "run": 1,
+      "status": 200,
+      "reply": "OK",
+      "latency_ms": 2728,
+      "usage": {
+        "prompt_tokens": 13,
+        "completion_tokens": 171,
+        "total_tokens": 184,
+        "completion_tokens_details": {
+          "reasoning_tokens": 165,
+          "text_tokens": 171
+        },
+        "prompt_tokens_details": {
+          "text_tokens": 13
+        }
+      },
+      "model": "Qwen/Qwen3.5-35B-A3B"
+    },
+    {
+      "run": 2,
+      "status": 200,
+      "reply": "OK",
+      "latency_ms": 2764,
+      "usage": {
+        "prompt_tokens": 13,
+        "completion_tokens": 165,
+        "total_tokens": 178,
+        "completion_tokens_details": {
+          "reasoning_tokens": 159,
+          "text_tokens": 165
+        },
+        "prompt_tokens_details": {
+          "text_tokens": 13
+        }
+      },
+      "model": "Qwen/Qwen3.5-35B-A3B"
+    },
+    {
+      "run": 3,
+      "status": 200,
+      "reply": "OK",
+      "latency_ms": 2543,
+      "usage": {
+        "prompt_tokens": 13,
+        "completion_tokens": 166,
+        "total_tokens": 179,
+        "completion_tokens_details": {
+          "reasoning_tokens": 160,
+          "text_tokens": 166
+        },
+        "prompt_tokens_details": {
+          "text_tokens": 13
+        }
+      },
+      "model": "Qwen/Qwen3.5-35B-A3B"
+    },
+    {
+      "run": 4,
+      "status": 200,
+      "reply": "OK",
+      "latency_ms": 2335,
+      "usage": {
+        "prompt_tokens": 13,
+        "completion_tokens": 161,
+        "total_tokens": 174,
+        "completion_tokens_details": {
+          "reasoning_tokens": 156,
+          "text_tokens": 161
+        },
+        "prompt_tokens_details": {
+          "text_tokens": 13
+        }
+      },
+      "model": "Qwen/Qwen3.5-35B-A3B"
+    }
+  ],
+  "json_mode": {
+    "status": 200,
+    "latency_ms": 3345,
+    "reply": "{\"answer\":\"OK\",\"score\":1}",
+    "parsed_json": true,
+    "usage": {
+      "prompt_tokens": 41,
+      "completion_tokens": 177,
+      "total_tokens": 218,
+      "completion_tokens_details": {
+        "reasoning_tokens": 164,
+        "text_tokens": 177
+      },
+      "prompt_tokens_details": {
+        "text_tokens": 41
+      }
+    },
+    "error": null
+  },
+  "tool_calling": {
+    "status": 200,
+    "latency_ms": 1348,
+    "tool_calls": [
+      {
+        "function": {
+          "arguments": "{\"event_id\": \"qin-unify\"}",
+          "name": "get_event"
+        },
+        "id": "call_31b7f3e103ef428998822031",
+        "index": 0,
+        "type": "function"
+      }
+    ],
+    "reply": "",
+    "usage": {
+      "prompt_tokens": 291,
+      "completion_tokens": 69,
+      "total_tokens": 360,
+      "completion_tokens_details": {
+        "reasoning_tokens": 36,
+        "text_tokens": 69
+      },
+      "prompt_tokens_details": {
+        "text_tokens": 291
+      }
+    },
+    "error": null
+  },
+  "streaming": {
+    "status": 200,
+    "first_chunk_ms": 515,
+    "total_ms": 9354,
+    "chunk_count": 250,
+    "reply": "赤壁之战发生在公元 208 年。",
+    "finish_reason": "stop"
+  },
+  "chinese_answer": {
+    "status": 200,
+    "latency_ms": 68682,
+    "reply": "秦始皇统一六国结束了春秋战国以来长达数百年的诸侯割据混战局面，建立了中国历史上第一个统一的、多民族的中央集权国家。这一壮举奠定了中国两千多年政治制度的基本格局，推行郡县制取代分封制，加强了中央对地方的控制。同时，秦朝统一文字、货币、度量衡，促进了各地经济文化交流与民族融合。尽管秦朝二世而亡，但其开创的大一统体制被后世历代王朝所继承和发展，深刻影响了中华文明的历史进程，使“大一统”观念深入人心。\n依据：《史记·秦始皇本纪》",
+    "chars": 212,
+    "usage": {
+      "prompt_tokens": 60,
+      "completion_tokens": 6281,
+      "total_tokens": 6341,
+      "completion_tokens_details": {
+        "reasoning_tokens": 6152,
+        "text_tokens": 6281
+      },
+      "prompt_tokens_details": {
+        "text_tokens": 60
+      }
+    }
+  }
+}

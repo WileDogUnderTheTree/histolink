@@ -1,0 +1,17 @@
+{
+  "status": 200,
+  "latency_ms": 2363,
+  "chars": 184,
+  "usage": {
+    "prompt_tokens": 62,
+    "completion_tokens": 103,
+    "total_tokens": 165,
+    "completion_tokens_details": {
+      "text_tokens": 103
+    },
+    "prompt_tokens_details": {
+      "text_tokens": 62
+    }
+  },
+  "reply": "秦始皇统一六国结束了春秋战国以来长达数百年的诸侯割据与战乱局面，建立了中国历史上第一个统一的、多民族的中央集权国家。这一壮举奠定了中国两千多年政治制度的基本格局，推行郡县制取代分封制，有效加强了中央对地方的控制。同时，秦朝统一文字、货币、度量衡及车轨，极大促进了各地经济文化交流与民族融合，为中华文明的延续与发展提供了坚实的政治与经济基础。\n\n依据《史记·秦始皇本纪》"
+}

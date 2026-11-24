@@ -1,0 +1,191 @@
+snapshot_version v1-2978ceda7d15
+meta {"schema_version": "snapshot.v1", "snapshot_version": "v1-2978ceda7d15", "generated_at": "2026-11-23T11:38:14.634Z", "content_hash": "5b89c7e0b9aee85aff06eabc5d0642e29e147d038da2e24856956768c449d06b", "counts": {"events": 705, "persons": 1058, "relations": 639, "eras": 18, "scopes": 7, "groups": 7, "aliases": 66}, "license": "CC BY-NC-SA 4.0", "attribution": "数据依据 shiji-kb（CC BY-NC-SA 4.0）与史脉人工校订；非商用。", "files": {"snapshot": "snapshot.v1.json", "size_bytes": 2862384}}
+=== persons ===
+{"person_id": "p-caocao-b012", "display_name": "曹操", "disambiguator": {"period": "三国", "role": null}, "aliases": [], "primary_dynasty": "三国", "era_ids": ["sanguo"], "scope_ids": ["sanguo"], "first_year": 190, "last_year": 220}
+{"person_id": "p-guanyu-9007", "display_name": "关羽", "disambiguator": {"period": "东汉", "role": null}, "aliases": [], "primary_dynasty": "东汉", "era_ids": ["sanguo"], "scope_ids": ["sanguo"], "first_year": 200, "last_year": 219}
+{"person_id": "p-hanwudi-be67", "display_name": "汉武帝", "disambiguator": {"period": "西汉", "role": null}, "aliases": [], "primary_dynasty": "西汉", "era_ids": ["qinhan"], "scope_ids": ["qinhan"], "first_year": -141, "last_year": -87}
+{"person_id": "p-hubilie-cf00", "display_name": "忽必烈", "disambiguator": {"period": "元", "role": null}, "aliases": ["元世祖"], "primary_dynasty": "元", "era_ids": ["yuan"], "scope_ids": ["yuanmingqing"], "first_year": 1251, "last_year": 1294}
+{"person_id": "p-kangxidi-aaa3", "display_name": "康熙帝", "disambiguator": {"period": "清", "role": null}, "aliases": ["清圣祖", "玄烨"], "primary_dynasty": "清", "era_ids": ["qing"], "scope_ids": ["yuanmingqing"], "first_year": 1661, "last_year": 1722}
+{"person_id": "p-kongzi-e89c", "display_name": "孔子", "disambiguator": {"period": "春秋", "role": null}, "aliases": [], "primary_dynasty": "春秋", "era_ids": ["chunqiu"], "scope_ids": ["xianqin"], "first_year": -551, "last_year": -479}
+{"person_id": "p-liangtaihou-handong-90be", "display_name": "梁太后", "disambiguator": {"period": "东汉", "role": "梁冀妹·顺烈皇后"}, "aliases": [], "primary_dynasty": "东汉", "era_ids": ["qinhan"], "scope_ids": ["qinhan"], "first_year": 146, "last_year": 146}
+{"person_id": "p-liangtaihou-xixia-0d0f", "display_name": "梁太后", "disambiguator": {"period": "西夏", "role": "毅宗后"}, "aliases": [], "primary_dynasty": "西夏", "era_ids": ["beisong", "xixia"], "scope_ids": ["songliaojinxia"], "first_year": 1081, "last_year": 1082}
+{"person_id": "p-liubang-f5be", "display_name": "刘邦", "disambiguator": {"period": "西汉", "role": null}, "aliases": [], "primary_dynasty": "西汉", "era_ids": ["qinhan"], "scope_ids": ["qinhan"], "first_year": -209, "last_year": -195}
+{"person_id": "p-liubei-0c86", "display_name": "刘备", "disambiguator": {"period": "三国", "role": null}, "aliases": [], "primary_dynasty": "三国", "era_ids": ["sanguo"], "scope_ids": ["sanguo"], "first_year": 191, "last_year": 223}
+{"person_id": "p-liuchong-wudai-f904", "display_name": "刘崇", "disambiguator": {"period": "五代十国", "role": "北汉世祖"}, "aliases": [], "primary_dynasty": "五代十国", "era_ids": ["wudai"], "scope_ids": ["songliaojinxia"], "first_year": 954, "last_year": 954}
+{"person_id": "p-liuchong-xihan-800c", "display_name": "刘崇", "disambiguator": {"period": "西汉", "role": "安众侯"}, "aliases": [], "primary_dynasty": "西汉", "era_ids": ["qinhan"], "scope_ids": ["qinhan"], "first_year": 6, "last_year": 6}
+{"person_id": "p-lvbu-6e8a", "display_name": "吕布", "disambiguator": {"period": "东汉", "role": null}, "aliases": [], "primary_dynasty": "东汉", "era_ids": ["sanguo"], "scope_ids": ["sanguo"], "first_year": 192, "last_year": 198}
+{"person_id": "p-qinshihuang-f6c7", "display_name": "秦始皇", "disambiguator": {"period": "秦", "role": null}, "aliases": [], "primary_dynasty": "秦", "era_ids": ["qinhan", "zhanguo"], "scope_ids": ["qinhan", "xianqin"], "first_year": -246, "last_year": -209}
+{"person_id": "p-sunquan-19a7", "display_name": "孙权", "disambiguator": {"period": "三国", "role": null}, "aliases": [], "primary_dynasty": "三国", "era_ids": ["sanguo"], "scope_ids": ["sanguo"], "first_year": 200, "last_year": 229}
+{"person_id": "p-wangyangming-7a98", "display_name": "王阳明", "disambiguator": {"period": "明", "role": null}, "aliases": [], "primary_dynasty": "明", "era_ids": ["ming"], "scope_ids": ["yuanmingqing"], "first_year": 1519, "last_year": 1527}
+{"person_id": "p-xiangyu-3d47", "display_name": "项羽", "disambiguator": {"period": "西汉", "role": null}, "aliases": [], "primary_dynasty": "西汉", "era_ids": ["qinhan"], "scope_ids": ["qinhan"], "first_year": -209, "last_year": -202}
+{"person_id": "p-yangjian-fbec", "display_name": "杨坚", "disambiguator": {"period": "隋", "role": null}, "aliases": ["隋文帝"], "primary_dynasty": "隋", "era_ids": ["nanbeichao", "sui"], "scope_ids": ["suitang", "weijin"], "first_year": 578, "last_year": 604}
+{"person_id": "p-yuefei-9308", "display_name": "岳飞", "disambiguator": {"period": "南宋", "role": null}, "aliases": [], "primary_dynasty": "南宋", "era_ids": ["jin", "nansong"], "scope_ids": ["songliaojinxia"], "first_year": 1128, "last_year": 1142}
+{"person_id": "p-zhaokuangyin-9bfb", "display_name": "赵匡胤", "disambiguator": {"period": "北宋", "role": null}, "aliases": ["宋太祖"], "primary_dynasty": "北宋", "era_ids": ["beisong", "wudai"], "scope_ids": ["songliaojinxia"], "first_year": 954, "last_year": 976}
+{"person_id": "p-zhugeliang-b65a", "display_name": "诸葛亮", "disambiguator": {"period": "三国", "role": null}, "aliases": [], "primary_dynasty": "三国", "era_ids": ["sanguo"], "scope_ids": ["sanguo"], "first_year": 219, "last_year": 234}
+{"person_id": "p-zhuxi-74b0", "display_name": "朱熹", "disambiguator": {"period": "明", "role": null}, "aliases": [], "primary_dynasty": "明", "era_ids": ["jin", "ming", "nansong"], "scope_ids": ["songliaojinxia", "yuanmingqing"], "first_year": 1175, "last_year": 1527}
+=== events key ===
+{"event_id": "beisong-06", "title": "澶渊之盟", "dynasty": "北宋", "year": 1005, "importance": 3, "is_special": false, "person_ids": ["p-kouzhun-deae", "p-liaoshengzong-8eaf", "p-xiaotaihou-698e", "p-xiaotalin-6aec", "p-zhaoheng-ce40"], "source_status": "cited"}
+{"event_id": "beisong-34", "title": "靖康之变", "dynasty": "北宋", "year": 1127, "importance": 3, "is_special": false, "person_ids": ["p-wanyanzonghan-5ffb", "p-wanyanzongwang-907e", "p-zhaohuan-4764", "p-zhaoji-6736"], "source_status": "cited"}
+{"event_id": "chunqiu-37", "title": "孔子作《春秋》", "dynasty": "春秋", "year": -481, "importance": null, "is_special": false, "person_ids": ["p-kongzi-e89c"], "source_status": "cited"}
+{"event_id": "chunqiu-38", "title": "孔子卒，楚灭陈", "dynasty": "春秋", "year": -479, "importance": null, "is_special": false, "person_ids": ["p-kongzi-e89c"], "source_status": "cited"}
+{"event_id": "chunqiu-40", "title": "孔子诞生于鲁", "dynasty": "春秋", "year": -551, "importance": 3, "is_special": false, "person_ids": ["p-kongzi-e89c", "p-shulianghe-9d15"], "source_status": "cited"}
+{"event_id": "chunqiu-44", "title": "孔子问礼于老子", "dynasty": "春秋", "year": -518, "importance": null, "is_special": false, "person_ids": ["p-kongzi-e89c", "p-laozi-9215"], "source_status": "cited"}
+{"event_id": "chunqiu-45", "title": "孔子归鲁，删述六经", "dynasty": "春秋", "year": -484, "importance": null, "is_special": false, "person_ids": ["p-cengzi-f3b8", "p-kongzi-e89c", "p-yanhui-2790", "p-zigong-a241", "p-zilu-9562"], "source_status": "cited"}
+{"event_id": "dongjin-07", "title": "淝水之战", "dynasty": "东晋十六国", "year": 383, "importance": 3, "is_special": false, "person_ids": ["p-fujian-ee34", "p-furong-fb22", "p-xiean-c06b", "p-xiexuan-e223"], "source_status": "cited"}
+{"event_id": "handong-chibi", "title": "赤壁之战", "dynasty": "东汉", "year": 208, "importance": 3, "is_special": false, "person_ids": ["p-caocao-b012", "p-ganning-9f3d", "p-huanggai-19ba", "p-liubei-0c86", "p-sunquan-19a7", "p-zhouyu-b475"], "source_status": "cited"}
+{"event_id": "handong-gongsunshu", "title": "灭公孙述，光武统一", "dynasty": "东汉", "year": 36, "importance": null, "is_special": false, "person_ids": ["p-gongsunshu-1073", "p-liuxiu-cd62", "p-wuhan-c750"], "source_status": "cited"}
+{"event_id": "handong-guandu", "title": "官渡之战", "dynasty": "东汉", "year": 200, "importance": 3, "is_special": false, "person_ids": ["p-caocao-b012", "p-guanyu-9007", "p-guojia-49c7", "p-xuhuang-33e3", "p-xunyu-b3dc", "p-yuanshao-882d", "p-zhangliao-a420"], "source_status": "cited"}
+{"event_id": "nanbeichao-02", "title": "北魏统一北方", "dynasty": "南北朝", "year": 439, "importance": null, "is_special": false, "person_ids": ["p-juqumujian-aeed", "p-tuobatao-63df"], "source_status": "cited"}
+{"event_id": "nanbeichao-11", "title": "杨坚代周，隋朝建立", "dynasty": "南北朝", "year": 581, "importance": null, "is_special": false, "person_ids": ["p-yangjian-fbec", "p-yuwenchan-4964"], "source_status": "cited"}
+{"event_id": "nanbeichao-12", "title": "隋灭陈，南北统一", "dynasty": "南北朝", "year": 589, "importance": 3, "is_special": false, "person_ids": ["p-chenshubao-6e88", "p-hanqinhu-a6c7", "p-heruobi-aa49", "p-yangjian-fbec"], "source_status": "cited"}
+{"event_id": "qin-standardization", "title": "书同文，统一度量衡与货币", "dynasty": "秦", "year": -221, "importance": null, "is_special": false, "person_ids": ["p-qinshihuang-f6c7"], "source_status": "cited"}
+{"event_id": "qin-unify", "title": "秦始皇统一六国", "dynasty": "秦", "year": -221, "importance": 3, "is_special": false, "person_ids": ["p-qinshihuang-f6c7"], "source_status": "cited"}
+{"event_id": "special-star-1893", "title": "教员诞辰", "dynasty": "清", "year": 1893, "importance": null, "is_special": true, "person_ids": [], "source_status": "easter_egg"}
+{"event_id": "sui-10", "title": "隋朝建立（杨坚代周）", "dynasty": "隋", "year": 581, "importance": null, "is_special": false, "person_ids": ["p-dugujialuo-7bd7", "p-yangjian-fbec", "p-zhoujingdi-f828"], "source_status": "cited"}
+{"event_id": "sui-12", "title": "科举制创立（始设进士科）", "dynasty": "隋", "year": 605, "importance": 3, "is_special": false, "person_ids": ["p-yangguang-8d16"], "source_status": "cited"}
+{"event_id": "sui-13", "title": "开凿大运河", "dynasty": "隋", "year": 605, "importance": 3, "is_special": false, "person_ids": ["p-yangguang-8d16", "p-yuwenkai-e00f"], "source_status": "cited"}
+{"event_id": "sui-14", "title": "三征高句丽", "dynasty": "隋", "year": 612, "importance": 3, "is_special": false, "person_ids": ["p-yangguang-8d16"], "source_status": "cited"}
+{"event_id": "tang-04", "title": "玄武门之变", "dynasty": "唐", "year": 626, "importance": 3, "is_special": false, "person_ids": ["p-duruhui-655f", "p-lijiancheng-0274", "p-lishimin-7efd", "p-liyuan-1546", "p-liyuanji-5169", "p-weizhi-8b5d", "p-zhangsunwuji-f890"], "source_status": "cited"}
+{"event_id": "tang-13", "title": "开元盛世", "dynasty": "唐", "year": 713, "importance": 3, "is_special": false, "person_ids": ["p-lilongji-7182", "p-songjing-9021", "p-yaochong-aa0c"], "source_status": "cited"}
+{"event_id": "tang-17", "title": "安史之乱", "dynasty": "唐", "year": 755, "importance": 3, "is_special": false, "person_ids": ["p-anlushan-ac25", "p-liheng-36c6", "p-lilongji-7182", "p-shisiming-e1a1", "p-yangguozhong-db3a", "p-yanzhenqing-81da"], "source_status": "cited"}
+{"event_id": "tang-23", "title": "平定安史之乱", "dynasty": "唐", "year": 763, "importance": null, "is_special": false, "person_ids": ["p-guoziyi-3c6e", "p-liguangbi-eb0a"], "source_status": "cited"}
+{"event_id": "weijin-baipao", "title": "白袍北伐", "dynasty": "南北朝", "year": 529, "importance": null, "is_special": false, "person_ids": ["p-chenqingzhi-7547", "p-xiaoyan-6f1b"], "source_status": "cited"}
+{"event_id": "weijin-beifu", "title": "谢玄组建北府兵", "dynasty": "东晋十六国", "year": 377, "importance": null, "is_special": false, "person_ids": ["p-xiean-c06b", "p-xiexuan-e223"], "source_status": "cited"}
+{"event_id": "weijin-beizhou-guanzhi", "title": "西魏六官制", "dynasty": "南北朝", "year": 556, "importance": null, "is_special": false, "person_ids": ["p-lubian-b8d9", "p-suchuo-c558", "p-yuwentai-ee99"], "source_status": "cited"}
+{"event_id": "weijin-beizhou-waiqi", "title": "杨坚以外戚辅政", "dynasty": "南北朝", "year": 578, "importance": null, "is_special": false, "person_ids": ["p-yangjian-fbec", "p-yuwenyong-a1bb"], "source_status": "cited"}
+{"event_id": "weijin-bohaiwang", "title": "高欢封渤海王", "dynasty": "南北朝", "year": 546, "importance": null, "is_special": false, "person_ids": ["p-gaocheng-1700", "p-gaohuan-dbca"], "source_status": "cited"}
+{"event_id": "weijin-canhebei", "title": "参合陂之战", "dynasty": "东晋十六国", "year": 395, "importance": null, "is_special": false, "person_ids": ["p-murongbao-a42a", "p-murongchui-e66d", "p-tuobagui-eb0e"], "source_status": "cited"}
+{"event_id": "weijin-dazui", "title": "阮籍大醉拒婚", "dynasty": "三国", "year": 258, "importance": null, "is_special": false, "person_ids": ["p-ruanji-9407", "p-simazhao-85d2"], "source_status": "cited"}
+{"event_id": "weijin-doufu", "title": "石崇王恺斗富", "dynasty": "西晋", "year": 285, "importance": null, "is_special": false, "person_ids": ["p-shichong-d25f", "p-simayan-4336", "p-wangkai-65c7"], "source_status": "cited"}
+{"event_id": "weijin-erlu", "title": "二陆入洛", "dynasty": "西晋", "year": 289, "importance": null, "is_special": false, "person_ids": ["p-luji-5c30", "p-luyun-a45e"], "source_status": "cited"}
+{"event_id": "weijin-erwang", "title": "二王书法并称", "dynasty": "东晋十六国", "year": 350, "importance": null, "is_special": false, "person_ids": ["p-wangxianzhi-8bce", "p-wangxizhi-0cfa"], "source_status": "cited"}
+{"event_id": "weijin-feicaofang", "title": "司马师废曹芳", "dynasty": "三国", "year": 254, "importance": null, "is_special": false, "person_ids": ["p-caofang-20fc", "p-simashi-04c9"], "source_status": "cited"}
+{"event_id": "weijin-feiyinhao", "title": "桓温逼废殷浩", "dynasty": "东晋十六国", "year": 354, "importance": null, "is_special": false, "person_ids": ["p-huanwen-f1db", "p-yinhao-9d92"], "source_status": "cited"}
+{"event_id": "weijin-fengjinwang", "title": "司马昭封晋王", "dynasty": "三国", "year": 264, "importance": null, "is_special": false, "person_ids": ["p-simayan-4336", "p-simazhao-85d2"], "source_status": "cited"}
+{"event_id": "weijin-guiyin", "title": "陶渊明归隐终老", "dynasty": "南北朝", "year": 420, "importance": null, "is_special": false, "person_ids": ["p-liuyu-eb5e", "p-taoyuanming-28b4"], "source_status": "cited"}
+{"event_id": "weijin-houjing-pan", "title": "侯景叛东魏奔梁", "dynasty": "南北朝", "year": 547, "importance": null, "is_special": false, "person_ids": ["p-gaocheng-1700", "p-houjing-8bef"], "source_status": "cited"}
+{"event_id": "weijin-jingu", "title": "金谷二十四友之游", "dynasty": "西晋", "year": 296, "importance": null, "is_special": false, "person_ids": ["p-panyue-6204", "p-shichong-d25f"], "source_status": "cited"}
+{"event_id": "weijin-jingzhou", "title": "羊祜经营荆州", "dynasty": "西晋", "year": 269, "importance": null, "is_special": false, "person_ids": ["p-simayan-4336", "p-yanghu-a0b4"], "source_status": "cited"}
+{"event_id": "weijin-linchao", "title": "冯太后临朝称制", "dynasty": "南北朝", "year": 476, "importance": null, "is_special": false, "person_ids": ["p-fengtaihou-2c1a", "p-xianwendi-5c4b"], "source_status": "cited"}
+{"event_id": "weijin-liutiao", "title": "苏绰六条诏书", "dynasty": "南北朝", "year": 541, "importance": null, "is_special": false, "person_ids": ["p-suchuo-c558", "p-yuwentai-ee99"], "source_status": "cited"}
+{"event_id": "weijin-luoyang", "title": "陈庆之败归南梁", "dynasty": "南北朝", "year": 529, "importance": null, "is_special": false, "person_ids": ["p-chenqingzhi-7547", "p-erzhurong-18c2"], "source_status": "cited"}
+{"event_id": "weijin-menshi", "title": "桓温王猛扪虱而谈", "dynasty": "东晋十六国", "year": 354, "importance": null, "is_special": false, "person_ids": ["p-huanwen-f1db", "p-wangmeng-c57c"], "source_status": "cited"}
+{"event_id": "weijin-shayuan", "title": "沙苑之战", "dynasty": "南北朝", "year": 537, "importance": null, "is_special": false, "person_ids": ["p-gaohuan-dbca", "p-yuwentai-ee99"], "source_status": "cited"}
+{"event_id": "weijin-shmaohuan", "title": "成济弑曹髦，立曹奂", "dynasty": "三国", "year": 260, "importance": null, "is_special": false, "person_ids": ["p-caohuan-0365", "p-simazhao-85d2"], "source_status": "cited"}
+{"event_id": "weijin-simashi-zhuanquan", "title": "司马师继掌魏政", "dynasty": "三国", "year": 254, "importance": null, "is_special": false, "person_ids": ["p-simashi-04c9", "p-simazhao-85d2"], "source_status": "cited"}
+{"event_id": "weijin-taizifei", "title": "立司马衷为太子，贾南风为妃", "dynasty": "西晋", "year": 272, "importance": null, "is_special": false, "person_ids": ["p-jiananfeng-1708", "p-simayan-4336", "p-simazhong-e1fc"], "source_status": "cited"}
+{"event_id": "weijin-wenji", "title": "祖逖刘琨闻鸡起舞", "dynasty": "西晋", "year": 289, "importance": null, "is_special": false, "person_ids": ["p-liukun-435e", "p-zuti-a3a6"], "source_status": "cited"}
+{"event_id": "weijin-wudoumi", "title": "陶渊明不为五斗米折腰", "dynasty": "东晋十六国", "year": 405, "importance": null, "is_special": false, "person_ids": ["p-tandaoji-dd2f", "p-taoyuanming-28b4"], "source_status": "cited"}
+{"event_id": "weijin-xiean-huanwen", "title": "桓温辟谢安为司马", "dynasty": "东晋十六国", "year": 360, "importance": null, "is_special": false, "person_ids": ["p-huanwen-f1db", "p-xiean-c06b"], "source_status": "cited"}
+{"event_id": "weijin-xiexuan-beifa", "title": "谢玄北伐中原", "dynasty": "东晋十六国", "year": 384, "importance": null, "is_special": false, "person_ids": ["p-liulaozhi-24a6", "p-xiexuan-e223"], "source_status": "cited"}
+{"event_id": "weijin-yanglu", "title": "羊祜陆抗荆州对峙", "dynasty": "西晋", "year": 272, "importance": null, "is_special": false, "person_ids": ["p-lukang-f52b", "p-yanghu-a0b4"], "source_status": "cited"}
+{"event_id": "weijin-yuanjia", "title": "元嘉之治", "dynasty": "南北朝", "year": 424, "importance": null, "is_special": false, "person_ids": ["p-liuyilong-858b", "p-liuyu-eb5e"], "source_status": "cited"}
+{"event_id": "weijin-zhiguo", "title": "王猛辅秦治国", "dynasty": "东晋十六国", "year": 360, "importance": null, "is_special": false, "person_ids": ["p-fujian-ee34", "p-wangmeng-c57c"], "source_status": "cited"}
+{"event_id": "weijin-zhongliu", "title": "祖逖中流击楫", "dynasty": "东晋十六国", "year": 313, "importance": null, "is_special": false, "person_ids": ["p-simarui-d796", "p-zuti-a3a6"], "source_status": "cited"}
+{"event_id": "weijin-zhulin", "title": "竹林之游", "dynasty": "三国", "year": 247, "importance": null, "is_special": false, "person_ids": ["p-jikang-d47c", "p-ruanji-9407"], "source_status": "cited"}
+{"event_id": "xihan-gaixia", "title": "垓下之围，项羽自刎乌江", "dynasty": "西汉", "year": -202, "importance": 3, "is_special": false, "person_ids": ["p-hanxin-55b2", "p-liubang-f5be", "p-pengyue-58a0", "p-xiangyu-3d47", "p-yingbu-ba66"], "source_status": "cited"}
+{"event_id": "xihan-wudi-enthroned", "title": "汉武帝即位", "dynasty": "西汉", "year": -141, "importance": null, "is_special": false, "person_ids": ["p-hanjingdi-b175", "p-hanwudi-be67"], "source_status": "cited"}
+{"event_id": "xihan-wuzhu", "title": "铸五铢钱，统一币制", "dynasty": "西汉", "year": -118, "importance": null, "is_special": false, "person_ids": ["p-hanwudi-be67", "p-sanghongyang-6f91"], "source_status": "cited"}
+{"event_id": "zhanguo-31", "title": "长平之战，白起坑赵卒", "dynasty": "战国", "year": -260, "importance": 3, "is_special": false, "person_ids": ["p-baiqi-f74d", "p-lianpo-8900", "p-qinzhaowang-1721", "p-zhaokuo-4558", "p-zhaoxiaochengwang-b6d9"], "source_status": "cited"}
+=== eras ===
+era {"era_id": "chunqiu", "label": "春秋", "default_center_person_id": "p-kongzi-e89c", "dynasties": ["春秋"]}
+era {"era_id": "zhanguo", "label": "战国", "default_center_person_id": "p-shangyang-0dca", "dynasties": ["战国"]}
+era {"era_id": "qinhan", "label": "秦汉", "default_center_person_id": "p-liubang-f5be", "dynasties": ["秦", "西汉", "东汉"]}
+era {"era_id": "sanguo", "label": "三国", "default_center_person_id": "p-caocao-b012", "dynasties": ["东汉", "三国"]}
+era {"era_id": "xijin", "label": "西晋", "default_center_person_id": "p-simayan-4336", "dynasties": ["三国", "西晋"]}
+era {"era_id": "dongjin", "label": "东晋十六国", "default_center_person_id": "p-xiean-c06b", "dynasties": ["东晋十六国"]}
+era {"era_id": "nanbeichao", "label": "南北朝", "default_center_person_id": "p-xiaowendi-dbe8", "dynasties": ["东晋十六国", "南北朝"]}
+era {"era_id": "sui", "label": "隋", "default_center_person_id": "p-yangjian-fbec", "dynasties": ["隋"]}
+era {"era_id": "tang", "label": "唐", "default_center_person_id": "p-lishimin-7efd", "dynasties": ["唐"]}
+era {"era_id": "wudai", "label": "五代十国", "default_center_person_id": "p-zhaokuangyin-9bfb", "dynasties": ["五代十国"]}
+era {"era_id": "beisong", "label": "北宋", "default_center_person_id": "p-zhaokuangyin-9bfb", "dynasties": ["北宋"]}
+era {"era_id": "nansong", "label": "南宋", "default_center_person_id": "p-yuefei-9308", "dynasties": ["南宋", "金", "北宋"]}
+era {"era_id": "liao", "label": "辽", "default_center_person_id": "p-yelvabaoji-2a4a", "dynasties": ["辽", "五代十国", "北宋", "金"]}
+era {"era_id": "xixia", "label": "西夏", "default_center_person_id": "p-liyuanhao-f692", "dynasties": ["西夏", "北宋"]}
+era {"era_id": "jin", "label": "金", "default_center_person_id": "p-wanyanaguda-6eef", "dynasties": ["金", "南宋", "北宋"]}
+era {"era_id": "yuan", "label": "元", "default_center_person_id": "p-hubilie-cf00", "dynasties": ["元", "金", "南宋"]}
+era {"era_id": "ming", "label": "明", "default_center_person_id": "p-zhuyuanzhang-b188", "dynasties": ["明"]}
+era {"era_id": "qing", "label": "清", "default_center_person_id": "p-kangxidi-aaa3", "dynasties": ["明", "清"]}
+=== scopes ===
+scope {"scope_id": "xianqin", "label": "先秦", "default_center_person_id": "p-zhougongdan-1d7a"}
+scope {"scope_id": "qinhan", "label": "秦汉", "default_center_person_id": "p-liubang-f5be"}
+scope {"scope_id": "sanguo", "label": "三国", "default_center_person_id": "p-caocao-b012"}
+scope {"scope_id": "weijin", "label": "魏晋南北朝", "default_center_person_id": "p-liuyu-eb5e"}
+scope {"scope_id": "suitang", "label": "隋唐", "default_center_person_id": "p-lishimin-7efd"}
+scope {"scope_id": "songliaojinxia", "label": "宋辽金夏", "default_center_person_id": "p-zhaokuangyin-9bfb"}
+scope {"scope_id": "yuanmingqing", "label": "元明清", "default_center_person_id": "p-zhuyuanzhang-b188"}
+=== groups ===
+group {"group_id": "xianqin", "label": "先秦", "dynasties": ["夏", "商", "西周", "春秋", "战国"], "start_year": -2070}
+group {"group_id": "qinhan", "label": "秦汉", "dynasties": ["秦", "西汉", "东汉"], "start_year": -221}
+group {"group_id": "sanguo", "label": "三国", "dynasties": ["三国"], "start_year": 220}
+group {"group_id": "weijin", "label": "魏晋南北朝", "dynasties": ["西晋", "东晋十六国", "南北朝"], "start_year": 265}
+group {"group_id": "suitang", "label": "隋唐", "dynasties": ["隋", "唐"], "start_year": 581}
+group {"group_id": "wudaisong", "label": "五代辽宋夏金", "dynasties": ["五代十国", "辽", "北宋", "西夏", "金", "南宋"], "start_year": 907}
+group {"group_id": "yuanmingqing", "label": "元明清", "dynasties": ["元", "明", "清"], "start_year": 1271}
+=== aliases ===
+{"alias": "元世祖", "person_id": "p-hubilie-cf00"}
+{"alias": "元太祖", "person_id": "p-chengjisihan-7567"}
+{"alias": "元宏", "person_id": "p-xiaowendi-dbe8"}
+{"alias": "则天皇后", "person_id": "p-wuzetian-2920"}
+{"alias": "卫绍王", "person_id": "p-wanyanyongji-73f8"}
+{"alias": "唐太宗", "person_id": "p-lishimin-7efd"}
+{"alias": "唐宣宗", "person_id": "p-lichen-620e"}
+{"alias": "唐宪宗", "person_id": "p-lichun-911e"}
+{"alias": "唐德宗", "person_id": "p-lishi-b7f7"}
+{"alias": "唐武宗", "person_id": "p-liyan-8f57"}
+{"alias": "唐玄宗", "person_id": "p-lilongji-7182"}
+{"alias": "唐高宗", "person_id": "p-lizhi-d96c"}
+{"alias": "唐高祖", "person_id": "p-liyuan-1546"}
+{"alias": "宋哲宗", "person_id": "p-zhaoxu-b423"}
+{"alias": "宋太宗", "person_id": "p-zhaoguangyi-cfda"}
+{"alias": "宋太祖", "person_id": "p-zhaokuangyin-9bfb"}
+{"alias": "宋孝宗", "person_id": "p-zhaoshen-abe1"}
+{"alias": "宋宁宗", "person_id": "p-zhaokuo-0b0e"}
+{"alias": "宋徽宗", "person_id": "p-zhaoji-6736"}
+{"alias": "宋恭帝", "person_id": "p-zhaoxian-f5e8"}
+{"alias": "宋武帝", "person_id": "p-liuyu-eb5e"}
+{"alias": "宋理宗", "person_id": "p-zhaoyun-b8ce"}
+{"alias": "宋真宗", "person_id": "p-zhaoheng-ce40"}
+{"alias": "宋神宗", "person_id": "p-zhaoxu-32a9"}
+{"alias": "宋英宗", "person_id": "p-zhaoshu-334b"}
+{"alias": "宋钦宗", "person_id": "p-zhaohuan-4764"}
+{"alias": "宋高宗", "person_id": "p-zhaogou-757a"}
+{"alias": "完颜兀术", "person_id": "p-wanyanzongbi-4951"}
+{"alias": "完颜守绪", "person_id": "p-jinaizong-d983"}
+{"alias": "弘历", "person_id": "p-qianlongdi-5757"}
+{"alias": "拓跋宏", "person_id": "p-xiaowendi-dbe8"}
+{"alias": "明世宗", "person_id": "p-jiajingdi-9dd2"}
+{"alias": "明太祖", "person_id": "p-zhuyuanzhang-b188"}
+{"alias": "明思宗", "person_id": "p-chongzhendi-d5f7"}
+{"alias": "明成祖", "person_id": "p-zhudi-e93d"}
+{"alias": "明武宗", "person_id": "p-zhuhouzhao-58a2"}
+{"alias": "明神宗", "person_id": "p-wanlidi-e6da"}
+{"alias": "晋武帝", "person_id": "p-simayan-4336"}
+{"alias": "朱允炆", "person_id": "p-jianwendi-6d48"}
+{"alias": "朱祁镇", "person_id": "p-mingyingzong-9548"}
+{"alias": "梁武帝", "person_id": "p-xiaoyan-6f1b"}
+{"alias": "武后", "person_id": "p-wuzetian-2920"}
+{"alias": "永乐帝", "person_id": "p-zhudi-e93d"}
+{"alias": "泰定帝", "person_id": "p-yesuntiemuer-a805"}
+{"alias": "洪武", "person_id": "p-zhuyuanzhang-b188"}
+{"alias": "清世宗", "person_id": "p-yongzhengdi-7908"}
+{"alias": "清世祖", "person_id": "p-shunzhidi-6764"}
+{"alias": "清圣祖", "person_id": "p-kangxidi-aaa3"}
+{"alias": "清太宗", "person_id": "p-huangtaiji-e3a2"}
+{"alias": "清太祖", "person_id": "p-nuerhachi-d577"}
+{"alias": "清宣宗", "person_id": "p-daoguangdi-a6db"}
+{"alias": "清德宗", "person_id": "p-guangxudi-7a1d"}
+{"alias": "清文宗", "person_id": "p-xianfengdi-0e92"}
+{"alias": "清高宗", "person_id": "p-qianlongdi-5757"}
+{"alias": "溥仪", "person_id": "p-xuantongdi-33bd"}
+{"alias": "玄烨", "person_id": "p-kangxidi-aaa3"}
+{"alias": "辽太祖", "person_id": "p-yelvabaoji-2a4a"}
+{"alias": "金世宗", "person_id": "p-wanyanyong-9026"}
+{"alias": "金太祖", "person_id": "p-wanyanaguda-6eef"}
+{"alias": "金宣宗", "person_id": "p-wanyanxun-9b94"}
+{"alias": "金章宗", "person_id": "p-wanyanjing-c1be"}
+{"alias": "铁木真", "person_id": "p-chengjisihan-7567"}
+{"alias": "隋文帝", "person_id": "p-yangjian-fbec"}
+{"alias": "隋炀帝", "person_id": "p-yangguang-8d16"}
+{"alias": "魏孝文帝", "person_id": "p-xiaowendi-dbe8"}
+{"alias": "魏道武帝", "person_id": "p-tuobagui-eb0e"}

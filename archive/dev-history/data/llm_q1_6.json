@@ -1,0 +1,3 @@
+{
+  "content": "{\"action\":\"final\",\"thought\":\"已确认秦始皇生卒年份（前246-前209），且RAG史料库中关于西红柿传入中国的记载均指向明朝（15世纪后），两者时间跨度巨大，无证据表明秦始皇接触过西红柿。根据工具返回数据，无法支持“吃过”的结论，故输出insufficient，说明缺乏直接证据但基于时间线可推断不可能。\",\"answer\":{\"mode\":\"insufficient\",\"claims\":[],\"evidence\":[{\"entity_type\":\"person\",\"entity_id\":\"p-qinshihuang-f6c7\",\"note\":\"秦始皇生卒年为前246年至前209年\"}],\"related_event_ids\":[],\"missing_reasons\":[\"INSUFFICIENT_DATA\"],\"reason_code\":null,\"ui_actions\":[]}}"
+}

@@ -1,0 +1,91 @@
+{
+  "ok": true,
+  "tool": "get_event",
+  "data": {
+    "event_id": "xixia-09",
+    "title": "灵州之战",
+    "dynasty": "西夏",
+    "year": 1081,
+    "description": "宋五路伐夏，西夏梁太后坚壁清野，宋军围灵州十八日不克，粮尽溃败，死者十余万。（据《宋史·夏国传》）",
+    "importance": 2,
+    "is_special": false,
+    "person_ids": [
+      "p-gaozunyu-82de",
+      "p-liangtaihou-xixia-0d0f",
+      "p-liuchangzuo-bb63"
+    ],
+    "source_refs": [
+      {
+        "label": "宋史·夏国传",
+        "book": "宋史",
+        "raw": "（据《宋史·夏国传》）",
+        "chapter": "夏国传"
+      }
+    ],
+    "source_status": "cited",
+    "surface": {
+      "timeline": true,
+      "graph": true
+    }
+  },
+  "error": null,
+  "meta": {
+    "returned": 1,
+    "citation_count": 1,
+    "fact_usable": true,
+    "source_ref_total": 1
+  },
+  "items": [
+    {
+      "event_id": "xixia-09",
+      "title": "灵州之战",
+      "dynasty": "西夏",
+      "year": 1081,
+      "description": "宋五路伐夏，西夏梁太后坚壁清野，宋军围灵州十八日不克，粮尽溃败，死者十余万。（据《宋史·夏国传》）",
+      "importance": 2,
+      "is_special": false,
+      "person_ids": [
+        "p-gaozunyu-82de",
+        "p-liangtaihou-xixia-0d0f",
+        "p-liuchangzuo-bb63"
+      ],
+      "source_refs": [
+        {
+          "label": "宋史·夏国传",
+          "book": "宋史",
+          "raw": "（据《宋史·夏国传》）",
+          "chapter": "夏国传"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    }
+  ],
+  "citations": [
+    {
+      "id": "cite-xixia-09-0",
+      "kind": "event",
+      "event_id": "xixia-09",
+      "person_id": null,
+      "relation_id": null,
+      "title": "灵州之战",
+      "year": 1081,
+      "dynasty": "西夏",
+      "quote": "宋五路伐夏，西夏梁太后坚壁清野，宋军围灵州十八日不克，粮尽溃败，死者十余万。（据《宋史·夏国传》）",
+      "source_label": "宋史·夏国传",
+      "source_ref": {
+        "label": "宋史·夏国传",
+        "book": "宋史",
+        "chapter": "夏国传",
+        "raw": "（据《宋史·夏国传》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    }
+  ],
+  "truncated": false,
+  "snapshot_version": "v1-2978ceda7d15"
+}

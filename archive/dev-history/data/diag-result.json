@@ -1,0 +1,87 @@
+{
+  "html": {
+    "tag": "HTML",
+    "id": null,
+    "className": "",
+    "overflowX": "visible",
+    "overflowY": "visible",
+    "scrollHeight": 4281,
+    "clientHeight": 900,
+    "rectTop": -3381,
+    "rectHeight": 4281
+  },
+  "body": {
+    "tag": "BODY",
+    "id": null,
+    "className": "",
+    "overflowX": "visible",
+    "overflowY": "visible",
+    "scrollHeight": 4281,
+    "clientHeight": 4281,
+    "rectTop": -3381,
+    "rectHeight": 4281
+  },
+  "scrollers": [
+    {
+      "tag": "TEXTAREA",
+      "id": "ask-composer",
+      "className": "",
+      "overflowX": "auto",
+      "overflowY": "auto",
+      "scrollHeight": 32,
+      "clientHeight": 32,
+      "rectTop": 823,
+      "rectHeight": 32
+    }
+  ],
+  "overflowing": [
+    {
+      "tag": "HTML",
+      "id": null,
+      "className": "",
+      "overflowX": "visible",
+      "overflowY": "visible",
+      "scrollHeight": 4281,
+      "clientHeight": 900,
+      "rectTop": -3381,
+      "rectHeight": 4281
+    },
+    {
+      "tag": "H1",
+      "id": null,
+      "className": "rajaCW_srOnly",
+      "overflowX": "hidden",
+      "overflowY": "hidden",
+      "scrollHeight": 42,
+      "clientHeight": 1,
+      "rectTop": -3382,
+      "rectHeight": 1
+    },
+    {
+      "tag": "LABEL",
+      "id": null,
+      "className": "rajaCW_srOnly",
+      "overflowX": "hidden",
+      "overflowY": "hidden",
+      "scrollHeight": 21,
+      "clientHeight": 1,
+      "rectTop": 855,
+      "rectHeight": 1
+    }
+  ],
+  "transcript": [
+    {
+      "cls": "rajaCW_userTurn",
+      "scrollHeight": 79,
+      "clientHeight": 79
+    },
+    {
+      "cls": "rajaCW_agentTurn",
+      "scrollHeight": 3883,
+      "clientHeight": 3883
+    }
+  ],
+  "copilot": false,
+  "url": "http://127.0.0.1:3000/ask",
+  "scrollY": 3381
+}

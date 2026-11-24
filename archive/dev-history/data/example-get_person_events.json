@@ -1,0 +1,131 @@
+{
+  "ok": true,
+  "tool": "get_person_events",
+  "data": {
+    "events": [
+      {
+        "event_id": "sui-09",
+        "title": "晋阳起兵",
+        "dynasty": "隋",
+        "year": 617,
+        "importance": 3
+      },
+      {
+        "event_id": "tang-01",
+        "title": "建立唐朝",
+        "dynasty": "唐",
+        "year": 618,
+        "importance": 3
+      }
+    ],
+    "total": 10,
+    "co_occurring_person_ids": [
+      "p-liyuan-1546",
+      "p-duruhui-655f",
+      "p-fangxuanling-c38f",
+      "p-weizhi-8b5d",
+      "p-houjunji-57ab",
+      "p-jielikehan-2778",
+      "p-lijiancheng-0274",
+      "p-lijing-cc24",
+      "p-liyuanji-5169",
+      "p-quwentai-6097",
+      "p-quzhisheng-2bf0",
+      "p-songzanganbu-cb66",
+      "p-wenchenggongzhu-d850",
+      "p-wuzetian-2920",
+      "p-xuanzang-27d1",
+      "p-yangguang-8d16",
+      "p-zhangsunwuji-f890"
+    ]
+  },
+  "error": null,
+  "meta": {
+    "returned": 2,
+    "citation_count": 3,
+    "person_name": "李世民",
+    "total": 10,
+    "limit": 2,
+    "co_occurring_total": 17
+  },
+  "items": [
+    {
+      "event_id": "sui-09",
+      "title": "晋阳起兵",
+      "dynasty": "隋",
+      "year": 617,
+      "importance": 3
+    },
+    {
+      "event_id": "tang-01",
+      "title": "建立唐朝",
+      "dynasty": "唐",
+      "year": 618,
+      "importance": 3
+    }
+  ],
+  "citations": [
+    {
+      "id": "cite-sui-09-0",
+      "kind": "event",
+      "event_id": "sui-09",
+      "person_id": null,
+      "relation_id": null,
+      "title": "晋阳起兵",
+      "year": 617,
+      "dynasty": "隋",
+      "quote": "李渊为太原留守，李世民与刘文静等劝其起兵，杀王威、高君雅，传檄尊隋，为建唐奠基。（据《隋书》）",
+      "source_label": "隋书",
+      "source_ref": {
+        "label": "隋书",
+        "book": "隋书",
+        "chapter": null,
+        "raw": "（据《隋书》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-tang-01-0",
+      "kind": "event",
+      "event_id": "tang-01",
+      "person_id": null,
+      "relation_id": null,
+      "title": "建立唐朝",
+      "year": 618,
+      "dynasty": "唐",
+      "quote": "李渊受隋恭帝禅让即皇帝位，国号唐，改元武德；李世民南征北战，先后平定薛举、刘武周、王世充、窦建德等群雄。（据《旧唐书》《新唐书》）",
+      "source_label": "旧唐书",
+      "source_ref": {
+        "label": "旧唐书",
+        "book": "旧唐书",
+        "chapter": null,
+        "raw": "（据《旧唐书》《新唐书》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-tang-01-1",
+      "kind": "event",
+      "event_id": "tang-01",
+      "person_id": null,
+      "relation_id": null,
+      "title": "建立唐朝",
+      "year": 618,
+      "dynasty": "唐",
+      "quote": "李渊受隋恭帝禅让即皇帝位，国号唐，改元武德；李世民南征北战，先后平定薛举、刘武周、王世充、窦建德等群雄。（据《旧唐书》《新唐书》）",
+      "source_label": "新唐书",
+      "source_ref": {
+        "label": "新唐书",
+        "book": "新唐书",
+        "chapter": null,
+        "raw": "（据《旧唐书》《新唐书》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    }
+  ],
+  "truncated": true,
+  "snapshot_version": "v1-2978ceda7d15"
+}

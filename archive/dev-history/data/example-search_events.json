@@ -1,0 +1,59 @@
+{
+  "ok": true,
+  "tool": "search_events",
+  "data": {
+    "events": [
+      {
+        "event_id": "handong-chibi",
+        "title": "赤壁之战",
+        "dynasty": "东汉",
+        "year": 208,
+        "importance": 3
+      }
+    ],
+    "total": 1
+  },
+  "error": null,
+  "meta": {
+    "returned": 1,
+    "citation_count": 1,
+    "total": 1,
+    "limit": 20,
+    "terms": [
+      "赤壁"
+    ]
+  },
+  "items": [
+    {
+      "event_id": "handong-chibi",
+      "title": "赤壁之战",
+      "dynasty": "东汉",
+      "year": 208,
+      "importance": 3
+    }
+  ],
+  "citations": [
+    {
+      "id": "cite-handong-chibi-0",
+      "kind": "event",
+      "event_id": "handong-chibi",
+      "person_id": null,
+      "relation_id": null,
+      "title": "赤壁之战",
+      "year": 208,
+      "dynasty": "东汉",
+      "quote": "曹操南下荆州，孙权、刘备联军迎击于赤壁。周瑜用黄盖诈降火攻，焚曹军战船，曹操北还，三分天下之势自此奠定。（据《三国志·吴书·周瑜传》）",
+      "source_label": "三国志·吴书·周瑜传",
+      "source_ref": {
+        "label": "三国志·吴书·周瑜传",
+        "book": "三国志",
+        "chapter": "吴书·周瑜传",
+        "raw": "（据《三国志·吴书·周瑜传》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    }
+  ],
+  "truncated": false,
+  "snapshot_version": "v1-2978ceda7d15"
+}

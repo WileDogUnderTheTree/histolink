@@ -1,0 +1,100 @@
+==================== 1. chinese-history events/ 文件与事件数 ====================
+events/chen/event.chen.0.json                           1  bytes=1258
+events/chen/event.chen.1.json                           1  bytes=1085
+events/five-dynasties/event.five-dynasties.0.json       3  bytes=3701
+events/han/event.han.0.json                            20  bytes=22842
+events/jin-jurchen/event.jin-jurchen.0.json             4  bytes=4565
+events/jin/event.jin.0.json                             4  bytes=4816
+events/jin/event.jin.1.json                             3  bytes=3196
+events/later-liang/event.later-liang.0.json             1  bytes=1228
+events/liang/event.liang.0.json                         1  bytes=1340
+events/liang/event.liang.1.json                         1  bytes=1092
+events/liao/event.liao.0.json                           3  bytes=3480
+events/liusong/event.liusong.0.json                     2  bytes=2206
+events/ming/event.ming.0.json                           9  bytes=11187
+events/ming/event.ming.1.json                           7  bytes=8487
+events/nsong/event.nsong.0.json                         7  bytes=8617
+events/nsong/event.nsong.1.json                         5  bytes=5877
+events/nwei/event.nwei.0.json                           1  bytes=1314
+events/nwei/event.nwei.1.json                           4  bytes=4530
+events/nzhou/event.nzhou.0.json                         1  bytes=1243
+events/qin/event.qin.0.json                            23  bytes=31215
+events/qing/event.qing.0.json                           5  bytes=6517
+events/qing/event.qing.1.json                           8  bytes=10263
+events/shuhan/event.shuhan.0.json                       1  bytes=1236
+events/shuhan/event.shuhan.1.json                       2  bytes=2072
+events/sixteen/event.sixteen.0.json                     2  bytes=2094
+events/sqi/event.sqi.0.json                             1  bytes=1092
+events/ssong/event.ssong.0.json                         5  bytes=6348
+events/ssong/event.ssong.1.json                         2  bytes=2201
+events/sui/event.sui.0.json                             3  bytes=3596
+events/sui/event.sui.1.json                             1  bytes=1110
+events/tang/event.tang.0.json                          12  bytes=14317
+events/tang/event.tang.1.json                           5  bytes=5626
+events/wei/event.wei.0.json                             3  bytes=3503
+events/wu/event.wu.0.json                               3  bytes=3001
+events/wwei/event.wwei.0.json                           2  bytes=1999
+events/yuan/event.yuan.0.json                           4  bytes=5050
+events/yuan/event.yuan.1.json                           2  bytes=2460
+TOTAL chinese-history events: 162
+per dynasty: {'chen': 2, 'five-dynasties': 3, 'han': 20, 'jin-jurchen': 4, 'jin': 7, 'later-liang': 1, 'liang': 2, 'liao': 3, 'liusong': 2, 'ming': 16, 'nsong': 12, 'nwei': 5, 'nzhou': 1, 'qin': 23, 'qing': 13, 'shuhan': 3, 'sixteen': 2, 'sqi': 1, 'ssong': 7, 'sui': 4, 'tang': 17, 'wei': 3, 'wu': 3, 'wwei': 2, 'yuan': 6}
+是否存在 events/xia|shang|zhou 目录: []
+
+==================== 2. shiji-kb 史记编年表 分区事件数 ====================
+  [H2] 使用说明
+  [H2] 一、上古时期（约前2700年-前2100年）
+  [H2] 二、夏朝（约前2100年-前1600年）
+  [H2] 三、商朝（约前1600年-前1046年）
+  [H2] 四、西周时期（约前1046年-前771年）
+  [H2] 五、春秋时期（前770年-前476年）
+  [H2] 六、战国时期（前475年-前221年）
+  [H2] 七、秦朝（前221年-前206年）
+  [H2] 八、楚汉相争（前206年-前202年）
+  [H2] 九、西汉时期（前202年-公元8年）
+  [H2] 十、待补充章节（处理完成后填充）
+  [H2] 附录
+  [H2] 附录：主要人物生卒年
+  黄帝时期（约前2700年-前2600年）                         4
+  颛顼时期（约前2600年-前2500年）                         1
+  帝喾时期（约前2500年-前2400年）                         1
+  帝尧时期（约前2400年-前2300年）                         1
+  帝舜时期（约前2300年-前2200年）                         1
+  大禹时期（约前2100年-前2070年）                         2
+  启至太康（约前2070年-前1950年）                         1
+  少康中兴至夏末（约前1950年-前1600年）                      2
+  商汤至盘庚（约前1600年-前1300年）                        3
+  武丁至帝辛（约前1250年-前1046年）                        4
+  文王、武王时期（约前1100年-前1043年）                      5
+  成王、康王时期（约前1042年-前976年）                       3
+  周室衰微（约前841年-前771年）                           5
+  平王东迁（前770年）                                  2
+  春秋五霸时期                                       10
+  春秋晚期                                         7
+  战国初期（前475年-前400年）                            3
+  战国中期（前400年-前300年）                            5
+  战国后期（前300年-前221年）                            15
+  秦始皇统一天下（前221年-前210年）                         7
+  秦朝灭亡（前209年-前206年）                            6
+  八、楚汉相争（前206年-前202年）                          6
+  汉高祖时期（前202年-前195年）                           6
+  惠帝、吕后时期（前195年-前180年）                         5
+  文帝、景帝时期（前180年-前141年）                         6
+  武帝时期（前141年-前87年）                             11
+  B. 纪年对照表                                     12
+  前7世纪（15 人）                                   16
+  前6世纪（13 人）                                   14
+  前5世纪（6 人）                                    7
+  前4世纪（6 人）                                    7
+  前3世纪（17 人）                                   18
+  前2世纪（18 人）                                   19
+  前1世纪（2 人）                                    3
+编年表总行数: 218
+
+==================== 3. shiji-kb 事件时间索引 时期分布 ====================
+  | 远古至夏（约前2700—前1600年） | 136 | 8 | 128 | 001, 002, 003, 004, 013, 025…等12章 |
+  | 商（约前1600—前1046年） | 101 | 11 | 90 | 003, 004, 013, 014, 017, 023…等19章 |
+  | 西周（前1046—前771年） | 107 | 32 | 75 | 003, 004, 005, 013, 014, 015…等24章 |
+  | 春秋（前770—前476年） | 385 | 169 | 216 | 004, 005, 013, 014, 015, 023…等44章 |
+  | 战国（前475—前221年） | 687 | 348 | 339 | 004, 005, 006, 007, 008, 014…等70章 |
+  | 秦（前221—前207年） | 276 | 165 | 111 | 005, 006, 007, 008, 009, 015…等42章 |
+  | 西汉（前206—前87年） | 1394 | 814 | 580 | 004, 005, 006, 007, 008, 009…等84章 |

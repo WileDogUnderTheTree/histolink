@@ -1,0 +1,161 @@
+{
+  "ok": true,
+  "tool": "timeline_span",
+  "data": {
+    "events": [
+      {
+        "event_id": "qin-unify",
+        "title": "秦始皇统一六国",
+        "dynasty": "秦",
+        "year": -221,
+        "importance": 3
+      },
+      {
+        "event_id": "qin-arms-treasure",
+        "title": "收天下兵铸十二金人",
+        "dynasty": "秦",
+        "year": -221,
+        "importance": 2
+      }
+    ],
+    "total": 5,
+    "representative_event_ids": [
+      "qin-unify",
+      "qin-arms-treasure",
+      "qin-commandery",
+      "qin-emperor-title",
+      "qin-standardization"
+    ]
+  },
+  "error": null,
+  "meta": {
+    "returned": 2,
+    "citation_count": 5,
+    "start_year": -221,
+    "end_year": -221,
+    "start_label": "前221年",
+    "end_label": "前221年",
+    "total": 5,
+    "limit": 2
+  },
+  "items": [
+    {
+      "event_id": "qin-unify",
+      "title": "秦始皇统一六国",
+      "dynasty": "秦",
+      "year": -221,
+      "importance": 3
+    },
+    {
+      "event_id": "qin-arms-treasure",
+      "title": "收天下兵铸十二金人",
+      "dynasty": "秦",
+      "year": -221,
+      "importance": 2
+    }
+  ],
+  "citations": [
+    {
+      "id": "cite-qin-unify-0",
+      "kind": "event",
+      "event_id": "qin-unify",
+      "person_id": null,
+      "relation_id": null,
+      "title": "秦始皇统一六国",
+      "year": -221,
+      "dynasty": "秦",
+      "quote": "秦王政先后灭韩、赵、魏、楚、燕、齐，结束战国分裂局面，建立中国第一个中央集权王朝，自称始皇帝。（据《史记·秦始皇本纪》）",
+      "source_label": "史记·秦始皇本纪",
+      "source_ref": {
+        "label": "史记·秦始皇本纪",
+        "book": "史记",
+        "chapter": "秦始皇本纪",
+        "raw": "（据《史记·秦始皇本纪》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-qin-arms-treasure-0",
+      "kind": "event",
+      "event_id": "qin-arms-treasure",
+      "person_id": null,
+      "relation_id": null,
+      "title": "收天下兵铸十二金人",
+      "year": -221,
+      "dynasty": "秦",
+      "quote": "秦收缴天下兵器聚于咸阳，销铸为钟鐻与十二金人，各重千石，置宫廷中；又徙天下豪富十二万户于咸阳，以弱地方而强京师。（据《史记·秦始皇本纪》）",
+      "source_label": "史记·秦始皇本纪",
+      "source_ref": {
+        "label": "史记·秦始皇本纪",
+        "book": "史记",
+        "chapter": "秦始皇本纪",
+        "raw": "（据《史记·秦始皇本纪》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-qin-commandery-0",
+      "kind": "event",
+      "event_id": "qin-commandery",
+      "person_id": null,
+      "relation_id": null,
+      "title": "废分封，行郡县",
+      "year": -221,
+      "dynasty": "秦",
+      "quote": "丞相王绾请封诸子为王以镇远方，廷尉李斯以周室分封致诸侯相攻为鉴，力主郡县。始皇从之，分天下为三十六郡，郡置守、尉、监，更名民曰“黔首”。（据《史记·秦始皇本纪》）",
+      "source_label": "史记·秦始皇本纪",
+      "source_ref": {
+        "label": "史记·秦始皇本纪",
+        "book": "史记",
+        "chapter": "秦始皇本纪",
+        "raw": "（据《史记·秦始皇本纪》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-qin-emperor-title-0",
+      "kind": "event",
+      "event_id": "qin-emperor-title",
+      "person_id": null,
+      "relation_id": null,
+      "title": "议帝号，称“始皇帝”",
+      "year": -221,
+      "dynasty": "秦",
+      "quote": "秦王政并天下后令群臣议帝号。丞相王绾等请称“泰皇”，秦王采上古“帝”位号，去“泰”著“皇”，号曰皇帝；又废谥法，自称始皇帝，欲以二世、三世计数传之无穷。皇帝制度自此确立。（据《史记·秦始皇本纪》）",
+      "source_label": "史记·秦始皇本纪",
+      "source_ref": {
+        "label": "史记·秦始皇本纪",
+        "book": "史记",
+        "chapter": "秦始皇本纪",
+        "raw": "（据《史记·秦始皇本纪》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-qin-standardization-0",
+      "kind": "event",
+      "event_id": "qin-standardization",
+      "person_id": null,
+      "relation_id": null,
+      "title": "书同文，统一度量衡与货币",
+      "year": -221,
+      "dynasty": "秦",
+      "quote": "秦统一后以秦篆（小篆）为正体，统一法度、衡石丈尺，车同轨，书同文字；货币统一为方孔圆钱半两，文字、度量与币制首次在全国范围内标准化。（据《史记·秦始皇本纪》）",
+      "source_label": "史记·秦始皇本纪",
+      "source_ref": {
+        "label": "史记·秦始皇本纪",
+        "book": "史记",
+        "chapter": "秦始皇本纪",
+        "raw": "（据《史记·秦始皇本纪》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    }
+  ],
+  "truncated": true,
+  "snapshot_version": "v1-2978ceda7d15"
+}

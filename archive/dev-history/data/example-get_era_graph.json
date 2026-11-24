@@ -1,0 +1,132 @@
+{
+  "ok": true,
+  "tool": "get_era_graph",
+  "data": {
+    "era_id": "xixia",
+    "nodes": [
+      {
+        "person_id": "p-liyuanhao-f692",
+        "name": "李元昊"
+      },
+      {
+        "person_id": "p-fanzhongyan-060a",
+        "name": "范仲淹"
+      },
+      {
+        "person_id": "p-hanqi-fd58",
+        "name": "韩琦"
+      }
+    ],
+    "edges": [
+      {
+        "person_id_a": "p-fanzhongyan-060a",
+        "person_id_b": "p-hanqi-fd58",
+        "weight": 3,
+        "relation_label": "同僚（边防）"
+      },
+      {
+        "person_id_a": "p-fanzhongyan-060a",
+        "person_id_b": "p-liyuanhao-f692",
+        "weight": 2,
+        "relation_label": "对手（边争）"
+      },
+      {
+        "person_id_a": "p-hanqi-fd58",
+        "person_id_b": "p-liyuanhao-f692",
+        "weight": 2
+      }
+    ],
+    "truncated": true,
+    "center_person_id": "p-liyuanhao-f692"
+  },
+  "error": null,
+  "meta": {
+    "returned": 3,
+    "citation_count": 3,
+    "era_id": "xixia",
+    "node_total": 29,
+    "edge_total": 46,
+    "node_returned": 3,
+    "edge_returned": 3,
+    "limit": 3,
+    "center_person_id": "p-liyuanhao-f692"
+  },
+  "items": [
+    {
+      "person_id": "p-liyuanhao-f692",
+      "name": "李元昊"
+    },
+    {
+      "person_id": "p-fanzhongyan-060a",
+      "name": "范仲淹"
+    },
+    {
+      "person_id": "p-hanqi-fd58",
+      "name": "韩琦"
+    }
+  ],
+  "citations": [
+    {
+      "id": "cite-beisong-08-0",
+      "kind": "event",
+      "event_id": "beisong-08",
+      "person_id": null,
+      "relation_id": null,
+      "title": "西北御夏",
+      "year": 1040,
+      "dynasty": "北宋",
+      "quote": "范仲淹与韩琦共防西夏于陕西，整顿边防，并称\"韩范\"。（据《宋史》）",
+      "source_label": "宋史",
+      "source_ref": {
+        "label": "宋史",
+        "book": "宋史",
+        "chapter": null,
+        "raw": "（据《宋史》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-xixia-02-0",
+      "kind": "event",
+      "event_id": "xixia-02",
+      "person_id": null,
+      "relation_id": null,
+      "title": "宋夏战争",
+      "year": 1041,
+      "dynasty": "西夏",
+      "quote": "李元昊率西夏军屡犯宋境，范仲淹在陕西防御应对，互有胜负。（据《宋史·夏国传》）",
+      "source_label": "宋史·夏国传",
+      "source_ref": {
+        "label": "宋史·夏国传",
+        "book": "宋史",
+        "chapter": "夏国传",
+        "raw": "（据《宋史·夏国传》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-xixia-07-0",
+      "kind": "event",
+      "event_id": "xixia-07",
+      "person_id": null,
+      "relation_id": null,
+      "title": "好水川之战",
+      "year": 1041,
+      "dynasty": "西夏",
+      "quote": "元昊诱宋军入好水川，任福中伏战死，宋军大败，范仲淹、韩琦主守，宋夏战局渐成相持。（据《宋史·夏国传》）",
+      "source_label": "宋史·夏国传",
+      "source_ref": {
+        "label": "宋史·夏国传",
+        "book": "宋史",
+        "chapter": "夏国传",
+        "raw": "（据《宋史·夏国传》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    }
+  ],
+  "truncated": true,
+  "snapshot_version": "v1-2978ceda7d15"
+}

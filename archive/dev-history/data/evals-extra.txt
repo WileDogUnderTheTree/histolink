@@ -1,0 +1,27 @@
+=== events ===
+{"event_id": "beisong-01", "title": "陈桥兵变", "dynasty": "北宋", "year": 960, "importance": 3, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "beisong-02", "title": "杯酒释兵权", "dynasty": "北宋", "year": 961, "importance": 3, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "chunqiu-38", "title": "孔子卒，楚灭陈", "dynasty": "春秋", "year": -479, "importance": null, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "handong-chibi", "title": "赤壁之战", "dynasty": "东汉", "year": 208, "importance": 3, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "ming-04", "title": "靖难之役", "dynasty": "明", "year": 1399, "importance": 3, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "qin-unify", "title": "秦始皇统一六国", "dynasty": "秦", "year": -221, "importance": 3, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "qing-08", "title": "康乾盛世", "dynasty": "清", "year": 1700, "importance": 3, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "qing-28", "title": "雅克萨之战", "dynasty": "清", "year": 1685, "importance": null, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "qing-29", "title": "尼布楚条约", "dynasty": "清", "year": 1689, "importance": null, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "sui-12", "title": "科举制创立（始设进士科）", "dynasty": "隋", "year": 605, "importance": 3, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "tang-04", "title": "玄武门之变", "dynasty": "唐", "year": 626, "importance": 3, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "tang-05", "title": "贞观之治", "dynasty": "唐", "year": 627, "importance": 3, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "tang-13", "title": "开元盛世", "dynasty": "唐", "year": 713, "importance": 3, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "weijin-baipao", "title": "白袍北伐", "dynasty": "南北朝", "year": 529, "importance": null, "surface": {"timeline": false, "graph": true}, "source_status": "cited"}
+{"event_id": "xihan-tuien", "title": "推恩令", "dynasty": "西汉", "year": -127, "importance": null, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+{"event_id": "zhanguo-31", "title": "长平之战，白起坑赵卒", "dynasty": "战国", "year": -260, "importance": 3, "surface": {"timeline": true, "graph": true}, "source_status": "cited"}
+=== persons event ids ===
+p-baiqi-f74d 白起 ['zhanguo-23', 'zhanguo-31', 'zhanguo-33']
+p-kangxidi-aaa3 康熙帝 ['qing-26', 'qing-06', 'qing-07', 'qing-27', 'qing-28', 'qing-29', 'qing-30', 'qing-31', 'qing-08', 'qing-32', 'qing-09']
+p-liangtaihou-xixia-0d0f 梁太后 ['beisong-25', 'xixia-09', 'beisong-26']
+p-lishimin-7efd 李世民 ['sui-09', 'tang-01', 'tang-02', 'tang-04', 'tang-05', 'tang-28', 'tang-06', 'tang-07', 'tang-46', 'tang-29']
+p-liuchong-wudai-f904 刘崇 ['wudai-17']
+p-qianlongdi-5757 乾隆帝 ['qing-08', 'qing-10', 'qing-35', 'qing-36', 'qing-11', 'qing-37']
+p-yangjian-fbec 杨坚 ['weijin-beizhou-waiqi', 'nanbeichao-11', 'sui-01', 'sui-10', 'sui-11', 'sui-17', 'sui-18', 'sui-19', 'sui-02', 'nanbeichao-12', 'sui-21', 'sui-20', 'sui-03', 'sui-04']
+p-zhaokuangyin-9bfb 赵匡胤 ['wudai-17', 'wudai-19', 'beisong-01', 'beisong-02', 'wudai-12', 'beisong-03']
+p-zhugeliang-b65a 诸葛亮 ['hanmo-19', 'sanguo-01', 'sanguo-03', 'sanguo-04', 'sanguo-05', 'sanguo-07']

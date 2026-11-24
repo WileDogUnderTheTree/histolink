@@ -1,0 +1,48 @@
+{
+  "timelineEvent": {
+    "route": "/timeline?event=qin-unify",
+    "h1": "秦 · 大事记",
+    "hasQinUnify": true,
+    "hasBc221": false,
+    "pressedLabels": [
+      null,
+      "公元前221年，秦始皇统一六国"
+    ],
+    "cardTitle": [
+      "秦始皇统一六国"
+    ]
+  },
+  "timelineEgg": {
+    "route": "/timeline?event=special-star-1893",
+    "eggVisible": true,
+    "hasCouplet": true
+  },
+  "graphPersonId": {
+    "route": "/graph?person=p-kangxidi-aaa3&era=qing",
+    "h1": "人物关系图",
+    "hasKangxi": true,
+    "svgLabel": "以康熙帝为中心的人物关系图，共 19 位直接关系人",
+    "panel": "搜索人物\n名人堂 · 清\n努尔哈赤\n皇太极\n多尔衮\n康熙帝\n雍正帝\n乾隆帝\n曾国藩\n李鸿章\n左宗棠\n慈禧太后\n\n点击名人堂标签或搜索结果，直接以该人物为中心重绘关系网；深处的节点也无需再逐层长按。"
+  },
+  "graphAlias": {
+    "route": "/graph?person=%E6%B8%85%E5%9C%A3%E7%A5%96&era=qing",
+    "svgLabel": "以康熙帝为中心的人物关系图，共 19 位直接关系人",
+    "hasKangxi": true
+  },
+  "graphInvalidFallback": {
+    "route": "/graph?person=not-exist&era=qing",
+    "svgLabel": "以康熙帝为中心的人物关系图，共 19 位直接关系人",
+    "hasKangxi": true
+  },
+  "timelineDefault": {
+    "route": "/timeline",
+    "h1": "夏 · 大事记",
+    "hasXiaTab": true
+  },
+  "graphDefault": {
+    "route": "/graph",
+    "h1": "人物关系图",
+    "svgLabel": "以孔子为中心的人物关系图，共 6 位直接关系人",
+    "hasKongzi": true
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "lead": {
+    "text": "史脉 HistoLink · V0.8.0",
+    "visibleTextLength": 21,
+    "hasHelpButton": true
+  },
+  "helpBefore": "hidden/0",
+  "helpAfterFocus": {
+    "visibility": "visible",
+    "opacity": "1",
+    "text": "边的粗细表示两人共同参与的历史事件数量；三国分期左栏顶部另有魏 · 蜀 · 吴阵营快捷入口，点击即以该阵营君主为中心；搜索支持本名与庙号别名（如「清圣祖」→ 康熙帝、「明太祖」→ 朱元璋）。"
+  },
+  "tabSwitch": {
+    "ok": true,
+    "meta": "清 · 24 位人物 · 27 条关系 · 当前中心 康熙帝",
+    "centerLabels": [
+      "鳌拜",
+      "康熙帝",
+      "乾隆帝",
+      "吴三桂",
+      "雍正帝"
+    ]
+  },
+  "search": {
+    "ok": true,
+    "options": [
+      "康熙帝"
+    ],
+    "emptyText": null,
+    "placeholder": "在清 24 位人物中搜索"
+  },
+  "applySearch": {
+    "ok": true,
+    "meta": "清 · 24 位人物 · 27 条关系 · 当前中心 康熙帝",
+    "svgLabel": "以康熙帝为中心的人物关系图，共 4 位直接关系人"
+  },
+  "consoleErrors": []
+}

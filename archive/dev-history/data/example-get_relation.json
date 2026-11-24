@@ -1,0 +1,81 @@
+{
+  "ok": true,
+  "tool": "get_relation",
+  "data": {
+    "person_id_a": "p-dingruchang-4ff9",
+    "person_id_b": "p-yidongyouheng-37bf",
+    "label": "敌手",
+    "shared_event_ids": [
+      "qing-42"
+    ],
+    "basis_event_ids": [
+      "qing-42"
+    ],
+    "attribution": "史脉关系库（人工校订）",
+    "description": "黄海海战丁汝昌率北洋舰队迎战伊东祐亨，威海卫被围，丁汝昌拒降自尽。"
+  },
+  "error": null,
+  "meta": {
+    "returned": 1,
+    "citation_count": 2,
+    "relation_found": true,
+    "person_a_name": "丁汝昌",
+    "person_b_name": "伊东祐亨",
+    "shared_event_total": 1,
+    "basis_event_total": 1
+  },
+  "items": [
+    {
+      "person_id_a": "p-dingruchang-4ff9",
+      "person_id_b": "p-yidongyouheng-37bf",
+      "label": "敌手",
+      "shared_event_ids": [
+        "qing-42"
+      ],
+      "basis_event_ids": [
+        "qing-42"
+      ],
+      "attribution": "史脉关系库（人工校订）",
+      "description": "黄海海战丁汝昌率北洋舰队迎战伊东祐亨，威海卫被围，丁汝昌拒降自尽。"
+    }
+  ],
+  "citations": [
+    {
+      "id": "cite-relation-丁汝昌__伊东祐亨",
+      "kind": "relation",
+      "event_id": null,
+      "person_id": null,
+      "relation_id": "丁汝昌__伊东祐亨",
+      "title": "丁汝昌·伊东祐亨·敌手",
+      "year": null,
+      "dynasty": null,
+      "quote": "黄海海战丁汝昌率北洋舰队迎战伊东祐亨，威海卫被围，丁汝昌拒降自尽。",
+      "source_label": null,
+      "source_ref": null,
+      "attribution": "史脉关系库（人工校订）",
+      "license": "CC BY-NC-SA 4.0"
+    },
+    {
+      "id": "cite-qing-42-0",
+      "kind": "event",
+      "event_id": "qing-42",
+      "person_id": null,
+      "relation_id": null,
+      "title": "甲午战争",
+      "year": 1894,
+      "dynasty": "清",
+      "quote": "中日因朝鲜事开战，黄海海战北洋水师失利，威海卫之役全军覆没，丁汝昌自尽，清廷震动。（据《清史稿》）",
+      "source_label": "清史稿",
+      "source_ref": {
+        "label": "清史稿",
+        "book": "清史稿",
+        "chapter": null,
+        "raw": "（据《清史稿》）"
+      },
+      "attribution": "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）",
+      "license": "CC BY-NC-SA 4.0"
+    }
+  ],
+  "truncated": false,
+  "snapshot_version": "v1-2978ceda7d15"
+}

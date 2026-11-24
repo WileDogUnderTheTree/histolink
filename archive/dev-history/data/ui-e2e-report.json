@@ -1,0 +1,427 @@
+{
+  "steps": [
+    {
+      "name": "真实提问后问题出现在对话中",
+      "ok": true,
+      "detail": [
+        "你 提问 王安石变法和商鞅变法的区别"
+      ]
+    },
+    {
+      "name": "真实提问拿到 AI 回答（非错误态）",
+      "ok": true,
+      "detail": {
+        "length": 1008,
+        "preview": "引 史引 联动向导 ① 基础事实（来自图谱） 熙宁变法（北宋，1069年）：宋神宗以王安石为参知政事，行青苗、免役、均输、市易、保甲诸法，力求富国强兵，新旧党争由是激烈。（据《宋史》） 商鞅变法（战国，前359年）：孝公三年，卫鞅说服孝公变法修刑，内务耕稼，外劝战死之赏罚。甘龙、杜挚等人反对，但孝公最终采用鞅法。百姓初"
+      }
+    },
+    {
+      "name": "页面级滚动承载长回答（无嵌套滚动条）",
+      "ok": true,
+      "detail": {
+        "nestedScrollers": 0
+      }
+    },
+    {
+      "name": "回答容器未裁切内容",
+      "ok": true,
+      "detail": {
+        "clippedTurns": 0,
+        "hiddenTurns": 0
+      }
+    },
+    {
+      "name": "无横向溢出",
+      "ok": true,
+      "detail": {
+        "scrollHeight": 2104,
+        "scrollWidth": 1425,
+        "scrollTop": 1204
+      }
+    },
+    {
+      "name": "回答气泡不超出对话卡片",
+      "ok": true,
+      "detail": {
+        "answerOverflowsCard": false,
+        "chatCard": {
+          "left": 33,
+          "right": 503,
+          "width": 470
+        }
+      }
+    },
+    {
+      "name": "对话卡片不被副驾驶面板遮挡",
+      "ok": true,
+      "detail": {
+        "cardOverlapsPanel": false,
+        "chatCard": {
+          "left": 33,
+          "right": 503,
+          "width": 470
+        },
+        "copilotPanel": {
+          "left": 519,
+          "right": 1393,
+          "width": 874
+        }
+      }
+    },
+    {
+      "name": "回答无横向裁切",
+      "ok": true,
+      "detail": {
+        "horizontalClippedTurns": 0
+      }
+    },
+    {
+      "name": "底部输入区可见且未遮挡正文",
+      "ok": true,
+      "detail": {
+        "top": 822,
+        "bottom": 855,
+        "visible": true
+      }
+    },
+    {
+      "name": "滚动到底部最后一段回答完整可见",
+      "ok": true,
+      "detail": {
+        "scrollTop": 1204,
+        "scrollHeight": 2104,
+        "lastBlockBottom": 493,
+        "composerTop": 822,
+        "composerVisible": true
+      }
+    },
+    {
+      "name": "滚到底部时输入区仍在视口内",
+      "ok": true,
+      "detail": {
+        "scrollTop": 1204,
+        "scrollHeight": 2104,
+        "lastBlockBottom": 493,
+        "composerTop": 822,
+        "composerVisible": true
+      }
+    },
+    {
+      "name": "刷新后用户问题仍在对话中",
+      "ok": true,
+      "detail": [
+        "你 提问 王安石变法和商鞅变法的区别"
+      ]
+    },
+    {
+      "name": "刷新后 AI 回答仍在对话中",
+      "ok": true,
+      "detail": 1008
+    },
+    {
+      "name": "离开聊天前滚动位置已保存",
+      "ok": true,
+      "detail": {
+        "savedScroll": "240"
+      }
+    },
+    {
+      "name": "回答引用可点击",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "引用打开史引副驾驶面板",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "时间轴页出现「返回聊天」入口",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "返回聊天后原问题仍在",
+      "ok": true,
+      "detail": [
+        "你 提问 王安石变法和商鞅变法的区别"
+      ]
+    },
+    {
+      "name": "返回聊天后回答上下文仍在",
+      "ok": true,
+      "detail": 1008
+    },
+    {
+      "name": "返回聊天后未被旧副驾驶面板遮挡",
+      "ok": true,
+      "detail": {
+        "copilotOpen": false
+      }
+    },
+    {
+      "name": "返回聊天后恢复滚动位置（不在页顶）",
+      "ok": true,
+      "detail": {
+        "scrollHeight": 1793,
+        "scrollWidth": 1425,
+        "scrollTop": 240
+      }
+    },
+    {
+      "name": "超长回答渲染为完整 DOM 文本（> 4000 字）",
+      "ok": true,
+      "detail": {
+        "answerLength": 5911,
+        "seeded": 6069
+      }
+    },
+    {
+      "name": "超长回答容器无固定高度裁切",
+      "ok": true,
+      "detail": {
+        "answerLength": 5911,
+        "markdownScrollHeight": 5896,
+        "markdownClientHeight": 5896,
+        "clippedTurns": 0,
+        "hiddenTurns": 0,
+        "documentScrollHeight": 6353,
+        "viewportHeight": 900,
+        "horizontalOverflow": false,
+        "composerVisible": true
+      }
+    },
+    {
+      "name": "超长回答页面可自然滚动（远超一屏）",
+      "ok": true,
+      "detail": {
+        "scrollHeight": 6353,
+        "viewportHeight": 900
+      }
+    },
+    {
+      "name": "超长回答无横向溢出",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "超长回答时输入区仍在视口内",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "超长回答文末可完整读到且不被输入区遮挡",
+      "ok": true,
+      "detail": {
+        "text": "文末标记：LONG_ANSWER_END",
+        "blockBottom": 759,
+        "composerTop": 822,
+        "blockVisible": true
+      }
+    },
+    {
+      "name": "预览展示 2 轮问答（4 条消息）",
+      "ok": true,
+      "detail": {
+        "turnCount": 4,
+        "userTurns": [
+          "你 提问 商鞅变法和王安石变法分别发生在什么时代？",
+          "你 提问 它们在主要措施和历史影响上有什么不同？"
+        ]
+      }
+    },
+    {
+      "name": "预览包含 Markdown 表格 / 代码块 / 标题",
+      "ok": true,
+      "detail": {
+        "tables": 1,
+        "codeBlocks": 1,
+        "headings": 4
+      }
+    },
+    {
+      "name": "每轮回答独立状态徽标（已核验 / 资料不足）",
+      "ok": true,
+      "detail": [
+        "已核验",
+        "资料不足"
+      ]
+    },
+    {
+      "name": "每轮回答独立引用区",
+      "ok": true,
+      "detail": 1
+    },
+    {
+      "name": "预览无裁切 / 无嵌套滚动 / 无横向溢出",
+      "ok": true,
+      "detail": {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "document": {
+          "scrollHeight": 1441,
+          "scrollWidth": 1425,
+          "scrollTop": 0
+        },
+        "horizontalOverflow": false,
+        "transcriptItems": 5,
+        "turnCount": 4,
+        "userTurns": [
+          "你 提问 商鞅变法和王安石变法分别发生在什么时代？",
+          "你 提问 它们在主要措施和历史影响上有什么不同？"
+        ],
+        "assistantReplyLength": 274,
+        "assistantReplyText": "令 史令 日常问答 主要维度对照 维度 商鞅变法 王安石变法 核心目标 富国强兵、建立耕战秩序 理财、强兵、缓解北宋积弊 推行时代 战国秦孝公时期 北宋熙宁年间 历史影响 奠定秦国制度基础 改革理念影响深远，但执行与党争加剧阻力 后续回答可以继续沿着某一个维度展开； 每一轮回答都可以独立挂载证据、状态与引用； 输入区固",
+        "clippedTurns": 0,
+        "hiddenTurns": 0,
+        "nestedScrollers": 0,
+        "nestedScrollerInfo": [],
+        "horizontalClippedTurns": 0,
+        "chatCard": {
+          "left": 313,
+          "right": 1113,
+          "width": 800
+        },
+        "copilotPanel": null,
+        "answerOverflowsCard": false,
+        "cardOverlapsPanel": null,
+        "composer": {
+          "top": 824,
+          "bottom": 856,
+          "visible": true
+        },
+        "statusBadges": [
+          "已核验",
+          "资料不足"
+        ],
+        "citationGroups": 1,
+        "tables": 1,
+        "codeBlocks": 1,
+        "headings": 4,
+        "copilotOpen": false,
+        "lastMarkdown": {
+          "scrollHeight": 400,
+          "clientHeight": 400,
+          "overflowY": "visible"
+        }
+      }
+    },
+    {
+      "name": "预览输入区可见（V1.0.6 预留）",
+      "ok": true,
+      "detail": {
+        "top": 824,
+        "bottom": 856,
+        "visible": true
+      }
+    },
+    {
+      "name": "窄屏无横向溢出",
+      "ok": true,
+      "detail": {
+        "cardWidth": 362,
+        "viewportWidth": 390,
+        "composerVisible": true,
+        "documentScrollWidth": 390
+      }
+    },
+    {
+      "name": "窄屏对话区单列铺满可用宽度",
+      "ok": true,
+      "detail": {
+        "cardWidth": 362,
+        "viewportWidth": 390,
+        "composerVisible": true,
+        "documentScrollWidth": 390
+      }
+    },
+    {
+      "name": "窄屏无嵌套滚动 / 无裁切",
+      "ok": true,
+      "detail": {
+        "nestedScrollers": 0,
+        "clippedTurns": 0
+      }
+    },
+    {
+      "name": "窄屏输入区可见",
+      "ok": true,
+      "detail": {
+        "cardWidth": 362,
+        "viewportWidth": 390,
+        "composerVisible": true,
+        "documentScrollWidth": 390
+      }
+    },
+    {
+      "name": "窄屏超长回答无横向溢出 / 无裁切",
+      "ok": true,
+      "detail": {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "document": {
+          "scrollHeight": 10477,
+          "scrollWidth": 390,
+          "scrollTop": 5453
+        },
+        "horizontalOverflow": false,
+        "transcriptItems": 2,
+        "turnCount": 2,
+        "userTurns": [
+          "你 提问 请验证超长回答能否完整显示"
+        ],
+        "assistantReplyLength": 5911,
+        "assistantReplyText": "令 史令 日常问答 超长回答完整性验证 小节 1 史脉长回答完整性验证：这一段用于确认长文本不会被固定高度容器裁切，页面滚动可以完整读到文末。史脉长回答完整性验证：这一段用于确认长文本不会被固定高度容器裁切，页面滚动可以完整读到文末。史脉长回答完整性验证：这一段用于确认长文本不会被固定高度容器裁切，页面滚动可以完整读到",
+        "clippedTurns": 0,
+        "hiddenTurns": 0,
+        "nestedScrollers": 0,
+        "nestedScrollerInfo": [],
+        "horizontalClippedTurns": 0,
+        "chatCard": {
+          "left": 14,
+          "right": 376,
+          "width": 362
+        },
+        "copilotPanel": null,
+        "answerOverflowsCard": false,
+        "cardOverlapsPanel": null,
+        "composer": {
+          "top": 756,
+          "bottom": 788,
+          "visible": true
+        },
+        "statusBadges": [],
+        "citationGroups": 0,
+        "tables": 0,
+        "codeBlocks": 0,
+        "headings": 43,
+        "copilotOpen": false,
+        "lastMarkdown": {
+          "scrollHeight": 10038,
+          "clientHeight": 10038,
+          "overflowY": "visible"
+        }
+      }
+    },
+    {
+      "name": "窄屏超长回答输入区可见",
+      "ok": true,
+      "detail": {
+        "top": 756,
+        "bottom": 788,
+        "visible": true
+      }
+    }
+  ],
+  "consoleErrors": [],
+  "summary": {
+    "total": 39,
+    "passed": 39,
+    "failed": 0,
+    "consoleErrors": []
+  }
+}
