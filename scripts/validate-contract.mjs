@@ -5,7 +5,7 @@
  * 覆盖内容：
  * 1. 三份生成物可解析，OpenAPI 为 3.1、info.version=1.0，必备路径/模型齐全；
  * 2. 动作 schema 的枚举 / surface / 可用性与 `contracts/action-policy.json` 完全一致；
- * 3. tools schema 恰好 8 个工具，入参/出参均为合法 JSON Schema；
+ * 3. tools schema 恰好 9 个工具（V1.0.5 起含 search_historical_text），入参/出参均为合法 JSON Schema；
  * 4. `contracts/samples/*.json` 全部通过对应 schema 校验（请求 / 回答 / 错误 / 澄清 / 动作）。
  *
  * 用法：node scripts/validate-contract.mjs
@@ -68,6 +68,7 @@ const EXPECTED_TOOLS = [
   "get_relation",
   "get_era_graph",
   "timeline_span",
+  "search_historical_text",
 ];
 
 // ---------------------------------------------------------------------------

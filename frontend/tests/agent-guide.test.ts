@@ -54,6 +54,7 @@ function makeAnswer(overrides: Partial<AgentAnswerView> = {}): AgentAnswerView {
     uiActions: [],
     snapshotVersion: "v1-test",
     requestId: "req-1",
+    modelUsed: null,
     ...overrides,
   };
 }

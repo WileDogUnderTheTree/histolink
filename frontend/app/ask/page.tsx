@@ -2,11 +2,16 @@
 
 import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
+import { BrandMark } from "@/components/BrandMark";
 import { useAgentSession, type AgentTurn } from "@/contexts/AgentContext";
-import type { Citation } from "@/lib/agent-client";
-import { graphHref, timelineHref } from "@/lib/routes";
+import {
+  MODEL_FALLBACK_HINT,
+  shouldShowModelFallbackHint,
+  type Citation,
+} from "@/lib/agent-client";
+import { graphHref, surfaceLinksFromHref, timelineHref } from "@/lib/routes";
 
 import styles from "./ask.module.css";
 
@@ -115,11 +120,33 @@ function Persona({ guide }: { guide: boolean }) {
 }
 
 function CopilotPanel({ href, target, onClose }: { href: string; target: string; onClose: () => void }) {
+  const router = useRouter();
+  const links = surfaceLinksFromHref(href);
   return (
     <aside className={styles.copilotPanel} role="dialog" aria-label="史引副驾驶">
       <header className={styles.copilotHeader}>
-        <div><span className={styles.copilotKicker}>史引 · 副驾驶</span><h2>{target}</h2></div>
-        <button type="button" className={styles.closeCopilot} onClick={onClose}>× 返回聊天</button>
+        <div className={styles.copilotTitle}><span className={styles.copilotKicker}>史引 · 副驾驶</span><h2>{target}</h2></div>
+        <div className={styles.copilotActions}>
+          <button
+            type="button"
+            className={styles.copilotExternal}
+            data-active={links.focus === "timeline" ? "true" : undefined}
+            onClick={() => router.push(links.timeline)}
+            title={links.focus === "timeline" ? "带当前焦点事件打开完整时间轴" : "打开完整时间轴"}
+          >
+            展开完整时间轴<span aria-hidden="true">↗</span>
+          </button>
+          <button
+            type="button"
+            className={styles.copilotExternal}
+            data-active={links.focus === "graph" ? "true" : undefined}
+            onClick={() => router.push(links.graph)}
+            title={links.focus === "graph" ? "带当前焦点人物打开完整人物图" : "打开完整人物图"}
+          >
+            展开完整人物图<span aria-hidden="true">↗</span>
+          </button>
+          <button type="button" className={styles.closeCopilot} onClick={onClose}>× 返回聊天</button>
+        </div>
       </header>
       <div className={styles.copilotFrameWrap}><iframe className={styles.copilotFrame} title={`史引 · ${target}`} src={href} /></div>
     </aside>
@@ -132,6 +159,7 @@ function Message({ turn, guide, onOpenReference }: { turn: AgentTurn; guide: boo
       <div className={styles.messageMeta}>{turn.role === "user" ? <span>你</span> : <Persona guide={guide} />}<span>{turn.role === "user" ? "提问" : guide ? "联动向导" : "日常问答"}</span></div>
       <div className={styles.messageText}>{turn.role === "assistant" ? <MarkdownMessage content={turn.content} /> : turn.content}</div>
       {turn.role === "assistant" && turn.answer ? <Citations citations={turn.answer.citations} onOpenReference={onOpenReference} /> : null}
+      {turn.role === "assistant" && turn.answer && shouldShowModelFallbackHint(turn.answer.modelUsed) ? <p className={styles.modelFallbackHint}>{MODEL_FALLBACK_HINT}</p> : null}
     </li>
   );
 }
@@ -189,20 +217,22 @@ function AskWorkspace() {
     <main className={styles.page}>
       <h1 className={styles.srOnly}>史脉问答</h1>
       <div className={`${styles.shell} ${copilotPreview ? styles.copilotMode : ""}`}>
-        {/* 顶部导航：品牌「史脉问答」+ 印章图标常驻左侧（替代默认站名），右侧是控制台导航。 */}
+        {/* 顶部导航：品牌「史脉问答」+ 流线型 S/史 图标常驻左侧，右侧是统一文字样式控制台导航。 */}
         <header className={styles.topbar}>
           <Link className={styles.brand} href="/" aria-label="返回史脉首页">
-            <span className={styles.brandSeal} aria-hidden="true">史</span>
-            <span><small>SHIMAI · CONSOLE</small><strong>史脉问答</strong></span>
+            <BrandMark className={styles.brandMark} size={40} />
+            <span className={styles.brandText}><small>SHIMAI · CONSOLE</small><strong>史脉问答</strong></span>
           </Link>
-          <nav className={styles.nav} aria-label="主要导航"><Link href="/timeline">时间轴</Link><Link href="/graph">人物图谱</Link><button type="button" onClick={openDrawer}>悬浮问答</button><Link className={styles.homeLink} href="/">返回首页</Link></nav>
+          <nav className={styles.nav} aria-label="主要导航"><Link href="/timeline">时间轴</Link><Link href="/graph">人物图谱</Link><button type="button" onClick={openDrawer}>悬浮问答</button><Link href="/">返回首页</Link></nav>
         </header>
 
-        {/* 推荐问题：单跳简单事实，一行 chip，不再占用大块垂直空间。 */}
+        {/* 推荐问题：单跳简单事实，浅米色渐变胶囊，一行排布，不再占用大块垂直空间。 */}
         <div className={styles.suggestionBar} role="group" aria-label="推荐问题">
-          {SUGGESTIONS.map((suggestion) => (
+          {SUGGESTIONS.map((suggestion, index) => (
             <button type="button" key={suggestion} className={styles.suggestionChip} onClick={() => chooseSuggestion(suggestion)}>
-              <span>{suggestion}</span><b aria-hidden="true">→</b>
+              <span className={styles.suggestionMark} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+              <span className={styles.suggestionText}>{suggestion}</span>
+              <b aria-hidden="true">→</b>
             </button>
           ))}
         </div>

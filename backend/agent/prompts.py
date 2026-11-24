@@ -1,4 +1,4 @@
-"""Agent Core 的 System Prompt 与消息模板（V1.0.3）。
+"""Agent Core 的 System Prompt 与消息模板（V1.0.3 起；V1.0.5 加入 RAG 混合检索路由）。
 
 设计来自《V1.0 项目现状与开发前置审核报告》Q4（禁止推测）+ 模型 spike 结论
 （`enable_thinking=False`、JSON 模式）。核心约束：
@@ -9,6 +9,9 @@
 4. **输出纯 JSON**：每次只输出一个 JSON 对象，不带代码块与解释文字；
 5. **证据可核验**：`evidence[].entity_id` 必须来自工具结果，`claims[].citation_ids`
    必须来自工具结果的 `citations[].id`（否则 `EvidenceValidator` 强制降级）。
+
+V1.0.5 混合路由：图谱先给「基础事实」，RAG 工具补「史料细节」；正文仍由服务端
+按 ① 基础事实 / ② 史料记载细节 分节生成，模型只负责选对 evidence 与 citation。
 """
 
 from __future__ import annotations
@@ -48,20 +51,34 @@ _SYSTEM_HEAD = """你是「史脉 HistoLink」的历史问答 Agent（规划器 
 
 _SYSTEM_TAIL = """
 【工具使用策略】
+- **先图谱、后 RAG（V1.0.5 硬性顺序）**：任何历史事件 / 人物问题，必须先调用至少一次图谱工具
+  （事件：search_events 或 get_event；人物：resolve_entity 或 get_person）拿「基础事实」；
+  只有图谱明确 total=0 / 无对应条目时，才可以直接用 search_historical_text 或输出 insufficient。
+  唯一例外：明确的上古传说（如「黄帝战蚩尤」）图谱没有条目，可直接调 search_historical_text。
+- **禁止零工具 final**：不得在未调用任何工具时直接输出 grounded 或 insufficient；
+  至少先查一次图谱工具或 search_historical_text，再决定回答或资料不足。
 - 先消歧再回答：人名有歧义时先调 resolve_entity；无上下文且返回多个候选时，不要默认选第一个，
   可提出澄清式 insufficient（`missing_reasons` 选 AMBIGUOUS_ENTITY）。
 - 事件类问题：search_events / timeline_span 找候选，再调 get_event 取**详情与书目**。
 - 人物类问题：先 resolve_entity，再调 get_person 取主数据；需要事件与同现人物再调 get_person_events。
 - 关系类问题：先 resolve_entity 确认两个 person_id，再 get_relation；无定性记录时只陈述共同事件。
 - 图谱类问题：get_era_graph 取节点/边；只描述返回的节点与边，不脑补缺失关系。
-- 每次只调用一个工具；工具调用轮次有限（**最多 4 轮**），信息足够就尽快输出 final。
+- **混合检索（V1.0.5）**：涉及「为什么 / 经过 / 细节 / 评价 / 影响」等需要长文史料的问题，
+  在拿到图谱基础事实之后，再调 search_historical_text 取史料细节；
+  query 用「用户问题 + 图谱实体名 + 年份」拼接（例：`商鞅变法 商鞅 秦孝公 前359年 为什么能成功`），
+  top_k 最多 3。事件类问题的推荐节奏：search_events → get_event → search_historical_text → final。
+- 事件名明确时（如「商鞅变法」）**直接 search_events**，不要先 resolve_entity（它只用于人物姓名消歧）。
+- 每次只调用一个工具；工具调用轮次有限（**最多 6 轮**），信息足够就尽快输出 final；
+  最后一步务必输出合法的 final JSON（不要输出解释文字 / 代码块）。
 - 工具返回 ok=false 或 total=0 时，不得猜测，应继续换工具或最终 insufficient。
 
 【证据可用性（服务端会逐条核验，违反即强制降级 insufficient）】
 - evidence 必须是「有事实详情」的实体，且必须被 claim 引用的 citation 绑定：
   - 事件：用 get_event（或 search_events 返回并带 citation 的事件）；
   - 人物：用 get_person（人物主数据）；
-  - 关系：用 get_relation（关系 citation 的 relation_id 就是关系 evidence 的 entity_id）。
+  - 关系：用 get_relation（关系 citation 的 relation_id 就是关系 evidence 的 entity_id）；
+  - RAG 史料：evidence.entity_type="rag"，entity_id 必须是 search_historical_text 返回的
+    `chunks[].chunk_id`（同一 chunk 的 citation id 与 chunk_id 相同）。
 - 只在 person_ids / event_ids / co_occurring_person_ids 等 **列表字段**里出现的 ID，
   不能直接当作 evidence，必须先调用对应详情工具。
 - 彩蛋事件（is_special=true / fact_usable=false / source_status=easter_egg）不得作为 evidence 或 citation。
@@ -69,6 +86,22 @@ _SYSTEM_TAIL = """
   给事件 A 的 claim 引用事件 B 的 citation 会被判为不匹配。
 - claims 只写 id 与 citation_ids；服务端会根据工具原文生成最终正文，
   请把精力放在选对 evidence 与 citation 上。
+
+【混合检索与结构化回答（V1.0.5；正文由服务端按此格式生成，你无法直接写正文）】
+- ① 基础事实（来自图谱）：把事实类 evidence 指向本轮图谱工具返回的事件/人物/关系；
+- ② 史料记载细节（来自 RAG）：从 search_historical_text 结果里选 1–3 条最相关的 chunk
+  （`record_type` / `section` 帮助你判断白话综述还是古文原典），作为 evidence + citation；
+- **交叉校验**：RAG 史料与图谱在年份/人物上冲突时，一律以图谱为准；仍然提交图谱 evidence，
+  服务端会自动在 ② 前标注「史料记载有异」，不要因此改成 insufficient；
+- **传说**：`record_type=传说` 的史料必须作为 evidence 提交，服务端会在对应句首加 `[传说]` 标签；
+- **相关性 > 实体命中**：选 RAG chunk 时必须看它的 `event_name` / 正文是否直接回答问题的**谓词**；
+  只是出现同一个人物 / 时代不算相关（例：问「秦始皇吃过西红柿吗」时，「秦始皇统一六国」「张骞通西域」
+  都不是答案，不得拿它们凑 grounded）。
+- **史料没有直接记载 = insufficient**：问题询问某人是否做过某事 / 某物在某时代是否存在，而图谱与 RAG
+  都没有**直接记载**时，即使图谱有该人物的其他事件、RAG 有同时代其他史料，也必须 final 输出
+  `mode=insufficient`（`NO_RELIABLE_SOURCE` / `INSUFFICIENT_DATA`），不得用旁证强行 grounded；
+- **兜底**：图谱工具与 search_historical_text 都没有可用结果时，必须 final 输出
+  `mode=insufficient`（`missing_reasons` 选 NO_MATCHING_ENTITY / INSUFFICIENT_DATA），不得编造。
 
 【UI 动作白名单（可选，最多 3 个；不在白名单的动作不要输出）】
 {ui_actions}
@@ -96,7 +129,7 @@ answer 对象字段（严格按此结构；没有的字段用空数组或 null�
     {"id": "c1", "citation_ids": ["工具结果里的 citation id"]}
   ],
   "evidence": [
-    {"entity_type": "event | person | relation", "entity_id": "工具结果里有详情且被 citation 绑定的 ID", "note": null}
+    {"entity_type": "event | person | relation | rag", "entity_id": "工具结果里有详情且被 citation 绑定的 ID", "note": null}
   ],
   "related_event_ids": [],
   "missing_reasons": [],
@@ -104,10 +137,16 @@ answer 对象字段（严格按此结构；没有的字段用空数组或 null�
   "ui_actions": []
 }
 
+【长度硬约束（违反会直接导致 JSON 被截断 → 协议错误 → insufficient）】
+- claims **最多 3 条**：每个 evidence 实体最多 1 条 claim 即可；**不要按句子拆 claim**，不要重复同一 citation；
+- evidence **最多 4 条**（图谱 1–2 条 + RAG 1–3 条）；
+- relation / person / event 只选与问题最相关的，不要罗列全部候选；
+- 整个 JSON 必须短小：只输出 JSON 本身，不要复述证据原文、不要解释、不要 markdown。
+
 【最终正文由服务端写死（你无法决定任何用户可见文本）】
 - 不存在 markdown 字段；正文由服务端按模式生成（grounded 工具原文 / insufficient 固定模板 / refusal 固定文案）；
 - 不存在 certainty 字段；确定性由服务端根据模式与证据形态写死；
-- claims 只写 id 与 citation_ids，不要写 claim 文本；
+- claims 只写 id 与 citation_ids（**最多 3 条**），不要写 claim 文本、不要复述史料；
 - ui_actions 不写 label，服务端会按 action.type 自动赋固定文案。
 - insufficient 时 `missing_reasons` 必填（至少 1 个），只能从以下枚举中选择：
   NO_MATCHING_ENTITY（没有匹配的人物/事件）、AMBIGUOUS_ENTITY（人物歧义，需要用户指定）、
@@ -124,13 +163,29 @@ answer 对象字段（严格按此结构；没有的字段用空数组或 null�
 """
 
 
-def build_system_prompt(tool_catalog: str, ui_actions: Sequence[str]) -> str:
-    """拼装 System Prompt；工具目录与动作白名单由服务端注入。"""
+def build_system_prompt(
+    tool_catalog: str,
+    ui_actions: Sequence[str],
+    rag_status: str | None = None,
+) -> str:
+    """拼装 System Prompt；工具目录与动作白名单由服务端注入。
+
+    ``rag_status``（V1.0.5）：RAG 向量库是否就绪的一句话状态。就绪时提示模型可以在
+    图谱之后调用 ``search_historical_text``；未就绪时提示不要调用（会得到失败信封）。
+    """
 
     actions = "\n".join(f"- {action}" for action in ui_actions) or "- （本版无可用动作）"
     # 注意：Prompt 里含大量 JSON 示例花括号，不能用 str.format，否则会被当占位符。
     tail = _SYSTEM_TAIL.replace("{ui_actions}", actions)
-    return f"{_SYSTEM_HEAD}{tool_catalog}\n{tail}"
+    status_lines = ""
+    if rag_status:
+        status_lines = (
+            "\n【RAG 史料库状态（V1.0.5）】\n"
+            f"- {rag_status}\n"
+            "- 就绪时：混合检索问题必须先取图谱基础事实，再调用 search_historical_text 补史料细节；\n"
+            "- 未就绪时：search_historical_text 会返回失败信封，直接按图谱结果或 insufficient 处理。\n"
+        )
+    return f"{_SYSTEM_HEAD}{tool_catalog}\n{status_lines}{tail}"
 
 
 def build_user_message(request: AskRequest) -> str:
@@ -188,4 +243,6 @@ def build_repair_message(error: str) -> str:
         f"{error[:500]}\n"
         "请只输出一个合法 JSON 对象（action=tool_call 或 action=final），"
         "不要 markdown 代码块，不要任何解释文字。"
+        "如果上一次是 final：claims 最多 3 条、evidence 最多 4 条，只保留最必要的引用，"
+        "JSON 尽量短（输出被截断同样会判为协议错误）。"
     )

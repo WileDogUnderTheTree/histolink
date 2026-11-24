@@ -1,4 +1,8 @@
-"""8 个只读工具的入参 / 出参契约（冻结于 V1.0.1 / TC-04，V1.0.2 更新统一返回信封）。
+"""9 个只读工具的入参 / 出参契约（冻结于 V1.0.1 / TC-04，V1.0.2 更新统一返回信封）。
+
+V1.0.5 新增第 9 个工具 ``search_historical_text``（RAG 史料检索），并给
+``Citation`` 增加可选 ``kind="rag"`` 与 ``record_type``（正史 / 传说），均为**新增可选值**，
+不破坏既有调用方。
 
 来源：审核报告 §9.1。工具原则：
 - **只读**：不提供任何写操作；
@@ -92,7 +96,7 @@ CITATION_SOURCE_REF = _object(
 CITATION = _object(
     {
         "id": STRING,
-        "kind": {"enum": ["event", "relation", "person"]},
+        "kind": {"enum": ["event", "relation", "person", "rag"]},
         "event_id": _nullable_string(128),
         "person_id": _nullable_string(128),
         "relation_id": _nullable_string(256),
@@ -104,8 +108,31 @@ CITATION = _object(
         "source_ref": {"anyOf": [CITATION_SOURCE_REF, {"type": "null"}]},
         "attribution": {"type": "string", "minLength": 1, "maxLength": 300},
         "license": {"const": "CC BY-NC-SA 4.0"},
+        "record_type": {"enum": ["正史", "传说", None]},
     },
     ["id", "kind", "title", "attribution", "license"],
+)
+
+#: RAG 史料 chunk（`search_historical_text` 的 data.chunks[] / items[]）。
+RAG_CHUNK = _object(
+    {
+        "chunk_id": STRING,
+        "event_name": {"type": "string"},
+        "title": {"type": "string"},
+        "text": {"type": "string", "maxLength": 300},
+        "type": {"enum": ["正史", "传说"]},
+        "record_type": {"enum": ["正史", "传说"]},
+        "section": {"type": "string"},
+        "source": {"type": "string"},
+        "score": {"type": "number"},
+        "source_label": {"type": "string"},
+        "book": {"type": "string"},
+        "chapter": {"type": "string"},
+        "event_id": EVENT_ID,
+        "year_min": YEAR,
+        "year_max": YEAR,
+    },
+    ["chunk_id", "event_name", "text", "record_type", "section", "score"],
 )
 
 #: 工具失败信封的 error（`contracts.models.ToolError`）。
@@ -362,6 +389,32 @@ TOOLS: list[dict[str, Any]] = [
             EVENT_SUMMARY,
         ),
     },
+    {
+        "name": "search_historical_text",
+        "description": (
+            "按语义检索史脉 RAG 史料库（51 篇长文语料），返回史料 chunk 正文、元数据与统一 citations；"
+            "查询词应为「用户问题 + 图谱实体/年份」；单次最多 3 条、每条正文最多 300 字。"
+        ),
+        "input": _object(
+            {
+                "query": {"type": "string", "minLength": 1, "maxLength": 200},
+                "top_k": {"type": "integer", "minimum": 1, "maximum": 3, "default": 3},
+            },
+            ["query"],
+        ),
+        "output": _tool_output(
+            "search_historical_text",
+            _object(
+                {
+                    "chunks": _array(RAG_CHUNK, 3),
+                    "total": {"type": "integer", "minimum": 0},
+                    "query": {"type": "string"},
+                },
+                ["chunks", "total"],
+            ),
+            RAG_CHUNK,
+        ),
+    },
 ]
 
 #: 工具契约 JSON Schema（导出为 contracts/tools-v1.schema.json）。
@@ -370,7 +423,7 @@ TOOLS_SCHEMA: dict[str, Any] = {
     "$id": "https://histolink.local/contracts/tools-v1.schema.json",
     "title": "史脉 V1.0 只读工具契约",
     "description": (
-        "8 个只读工具的入参 / **统一返回信封** JSON Schema（V1.0.2）。"
+        "9 个只读工具的入参 / **统一返回信封** JSON Schema（V1.0.5）。"
         "每个 tool.output 为 oneOf(成功信封, 失败信封)：信封含 ok/tool/items/citations/"
         "truncated/snapshot_version/data/error/meta；工具专属出参在 data 内。"
     ),

@@ -23,6 +23,7 @@ from llm_client import LLMConfigError, LLMTimeoutError, LLMUpstreamError
 from routers.deps import get_llm_client
 
 CHIBI_CITATION = "cite-handong-chibi-0"
+FALLBACK_MODEL = "Qwen/Qwen3.5-8B-Instruct"
 ASK_BODY = {
     "question": "赤壁之战发生在哪一年？",
     "session_id": "test-session",
@@ -75,9 +76,36 @@ def test_ask_grounded_returns_answer_envelope(
     assert payload["entities"][0]["event_id"] == "handong-chibi"
     assert payload["trace"]["tools"][0]["name"] == "get_event"
     assert payload["trace"]["tools"][0]["hits"] == 1
+    assert payload["trace"]["model_used"] == "fake-qwen"
     assert payload["snapshot"]["version"] == "v1-2978ceda7d15"
     assert payload["schema_version"] == "1.0"
     assert payload["request_id"].startswith("req_")
+
+
+def test_ask_trace_model_used_reports_fallback_model(
+    client: TestClient, openapi_spec: dict[str, Any], override_llm
+) -> None:
+    """V1.0.5 高可用补丁：主模型降级后，trace.model_used 标明备用（轻量）模型。"""
+
+    override_llm(
+        FakeLLM(
+            [
+                tool_call_step("get_event", {"event_id": "handong-chibi"}),
+                final_step(grounded_answer(citation_ids=[CHIBI_CITATION])),
+            ],
+            model="Qwen/Qwen3.5-35B-A3B",
+            model_used=FALLBACK_MODEL,
+        )
+    )
+    response = client.post("/api/agent/ask", json=ASK_BODY)
+    assert response.status_code == 200
+    payload = response.json()
+    _validate_envelope(payload, openapi_spec)
+
+    assert payload["answer"]["mode"] == "grounded"
+    assert payload["trace"]["model_used"] == FALLBACK_MODEL
+    # trace.model 仍是上游响应回显的主模型名；前端只依据 model_used 判断是否降级。
+    assert payload["trace"]["model"] == "Qwen/Qwen3.5-35B-A3B"
 
 
 def test_ask_insufficient_returns_200_with_missing(

@@ -39,6 +39,43 @@
   color: var(--ink-soft);
 }
 
+/* 从史引副驾驶跳入时的「返回聊天」入口（?from=agent 才渲染）。 */
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.returnChat {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #8b0000;
+  border-radius: 999px;
+  padding: 8px 16px;
+  background: #8b0000;
+  color: #fff8f2;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgb(139 0 0 / 18%);
+  transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.returnChat:hover {
+  transform: translateY(-1px);
+  background: #6f0000;
+  box-shadow: 0 9px 20px rgb(139 0 0 / 24%);
+}
+
+.returnChat:focus-visible {
+  outline: 2px solid #8b0000;
+  outline-offset: 3px;
+}
+
 .title {
   margin: 36px 0 0;
   font-size: clamp(26px, 3.6vw, 36px);

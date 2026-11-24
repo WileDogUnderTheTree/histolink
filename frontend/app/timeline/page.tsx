@@ -216,6 +216,13 @@ function TimelinePageContent() {
   const router = useRouter();
   const { actionBus, currentSurface } = useAgentSession();
 
+  /**
+   * 是否从史引副驾驶跳入（`?from=agent`）。挂载时读一次并记住：
+   * 页面内切朝代 / ActionBus 回写 URL 时会保留它，刷新后仍可回到聊天。
+   */
+  const [agentReturn] = useState(() => searchParams.get("from") === "agent");
+  const returnToChat = () => router.push("/ask");
+
   /** 首次渲染时从 URL 推导初始状态；后续交互不再反向读取 URL（V1.0.4 做全量状态化）。 */
   const [deepLink] = useState(() => resolveTimelineDeepLink(searchParams.toString()));
 
@@ -280,7 +287,12 @@ function TimelinePageContent() {
       setSelectedId(event.id);
       if (event.isSpecial) setShowEgg(true);
       router.replace(
-        timelineHref({ event: event.id, dynasty: event.dynasty, mode: nextMode }),
+        timelineHref({
+          event: event.id,
+          dynasty: event.dynasty,
+          mode: nextMode,
+          from: agentReturn ? "agent" : undefined,
+        }),
       );
     });
 
@@ -298,7 +310,11 @@ function TimelinePageContent() {
           nextGroup.dynasties.find((candidate) => DYNASTIES.includes(candidate)) ?? DYNASTIES[0];
         setDynasty(groupDynasty);
         router.replace(
-          timelineHref({ dynasty: groupDynasty, mode: requestedMode ?? "brief" }),
+          timelineHref({
+            dynasty: groupDynasty,
+            mode: requestedMode ?? "brief",
+            from: agentReturn ? "agent" : undefined,
+          }),
         );
         return;
       }
@@ -317,7 +333,11 @@ function TimelinePageContent() {
       lastDynastyByGroup.current[nextDynastyGroup.id] = dynastyParam;
       setSelectedId(null);
       router.replace(
-        timelineHref({ dynasty: dynastyParam, mode: requestedMode ?? "detail" }),
+        timelineHref({
+          dynasty: dynastyParam,
+          mode: requestedMode ?? "detail",
+          from: agentReturn ? "agent" : undefined,
+        }),
       );
     });
 
@@ -325,7 +345,7 @@ function TimelinePageContent() {
       unregisterFocusEvent();
       unregisterFocusDynasty();
     };
-  }, [actionBus, currentSurface, router]);
+  }, [actionBus, currentSurface, router, agentReturn]);
 
   const group = useMemo(
     () => DYNASTY_GROUPS.find((option) => option.id === groupId) ?? DYNASTY_GROUPS[0],
@@ -440,7 +460,14 @@ function TimelinePageContent() {
           <Link className={styles.back} href="/">
             ← 返回首页
           </Link>
-          <p className={styles.eyebrow}>中国历史探索 · 时间轴 · V1.0.4</p>
+          <div className={styles.topbarRight}>
+            <p className={styles.eyebrow}>中国历史探索 · 时间轴 · V1.0.5</p>
+            {agentReturn ? (
+              <button type="button" className={styles.returnChat} onClick={returnToChat}>
+                <span aria-hidden="true">💬</span> 返回聊天
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <h1 className={styles.title}>{heading}</h1>

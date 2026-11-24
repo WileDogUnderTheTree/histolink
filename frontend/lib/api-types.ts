@@ -317,6 +317,12 @@ export interface components {
         /**
          * Citation
          * @description 引用条目；Q6 要求每条都带 attribution 与 license。
+         *
+         *     V1.0.5 起新增可选 ``kind="rag"``（RAG 史料 chunk）与 ``record_type``：
+         *     - ``id`` 即 RAG chunk_id；``event_id`` 为对齐到的图谱事件（可能为空）；
+         *     - ``quote`` 为 chunk 正文（工具层已截断到 ≤300 字）；
+         *     - ``record_type`` 区分「正史 / 传说」，供前端与 Agent 标注 ``[传说]``；
+         *     - 对既有 event / relation / person 引用完全向后兼容（新增字段均可选）。
          */
         Citation: {
             /** Attribution */
@@ -331,7 +337,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "event" | "relation" | "person";
+            kind: "event" | "relation" | "person" | "rag";
             /**
              * License
              * @default CC BY-NC-SA 4.0
@@ -342,6 +348,8 @@ export interface components {
             person_id?: string | null;
             /** Quote */
             quote?: string | null;
+            /** Record Type */
+            record_type?: ("正史" | "传说") | null;
             /** Relation Id */
             relation_id?: string | null;
             /** Source Label */
@@ -529,7 +537,7 @@ export interface components {
             ok: true;
             /**
              * Version
-             * @default 1.0.1
+             * @default 1.0.5
              */
             version: string;
         };
@@ -554,7 +562,7 @@ export interface components {
         MetaResponse: {
             /**
              * Api Version
-             * @default 1.0.1
+             * @default 1.0.5
              */
             api_version: string;
             capabilities: components["schemas"]["Capabilities"];
@@ -718,6 +726,8 @@ export interface components {
             latency_ms?: number | null;
             /** Model */
             model?: string | null;
+            /** Model Used */
+            model_used?: string | null;
             /** Tools */
             tools?: components["schemas"]["ToolTrace"][];
         };

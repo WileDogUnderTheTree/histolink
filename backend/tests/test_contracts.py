@@ -260,7 +260,7 @@ def test_tools_schema_is_valid_jsonschema(contracts_dir: Path) -> None:
     schema = json.loads((contracts_dir / "tools-v1.schema.json").read_text(encoding="utf-8"))
     assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
     tools = schema["tools"]
-    assert len(tools) == 8
+    assert len(tools) == 9
     assert {tool["name"] for tool in tools} == {
         "resolve_entity",
         "search_events",
@@ -270,6 +270,7 @@ def test_tools_schema_is_valid_jsonschema(contracts_dir: Path) -> None:
         "get_relation",
         "get_era_graph",
         "timeline_span",
+        "search_historical_text",
     }
     for tool in tools:
         Draft202012Validator.check_schema(tool["input"])

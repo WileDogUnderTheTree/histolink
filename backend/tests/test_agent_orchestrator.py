@@ -238,12 +238,14 @@ def test_selected_person_is_injected(store: Any) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_max_steps_hard_limit_is_four(store: Any) -> None:
+def test_max_steps_hard_limit_is_six(store: Any) -> None:
+    """V1.0.5：混合路由 + JSON 修复轮需要更多余量，硬上限从 4 调整为 6。"""
+
     fake = FakeLLM([final_step(insufficient_answer())])
-    for allowed in (1, 2, 3, 4):
+    for allowed in (1, 4, 6):
         assert AgentOrchestrator(store, fake, max_steps=allowed).max_steps == allowed
 
-    for rejected in (0, 5, 8):
+    for rejected in (0, 7, 99):
         with pytest.raises(ValueError, match="max_steps"):
             AgentOrchestrator(store, fake, max_steps=rejected)
 

@@ -531,7 +531,7 @@
       },
       "Citation": {
         "additionalProperties": false,
-        "description": "引用条目；Q6 要求每条都带 attribution 与 license。",
+        "description": "引用条目；Q6 要求每条都带 attribution 与 license。\n\nV1.0.5 起新增可选 ``kind=\"rag\"``（RAG 史料 chunk）与 ``record_type``：\n- ``id`` 即 RAG chunk_id；``event_id`` 为对齐到的图谱事件（可能为空）；\n- ``quote`` 为 chunk 正文（工具层已截断到 ≤300 字）；\n- ``record_type`` 区分「正史 / 传说」，供前端与 Agent 标注 ``[传说]``；\n- 对既有 event / relation / person 引用完全向后兼容（新增字段均可选）。",
         "properties": {
           "attribution": {
             "maxLength": 300,
@@ -573,7 +573,8 @@
             "enum": [
               "event",
               "relation",
-              "person"
+              "person",
+              "rag"
             ],
             "title": "Kind",
             "type": "string"
@@ -607,6 +608,21 @@
               }
             ],
             "title": "Quote"
+          },
+          "record_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "正史",
+                  "传说"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record Type"
           },
           "relation_id": {
             "anyOf": [
@@ -1147,7 +1163,7 @@
             "type": "boolean"
           },
           "version": {
-            "default": "1.0.1",
+            "default": "1.0.5",
             "title": "Version",
             "type": "string"
           }
@@ -1210,7 +1226,7 @@
         "additionalProperties": false,
         "properties": {
           "api_version": {
-            "default": "1.0.1",
+            "default": "1.0.5",
             "title": "Api Version",
             "type": "string"
           },
@@ -1615,6 +1631,18 @@
               }
             ],
             "title": "Model"
+          },
+          "model_used": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Used"
           },
           "tools": {
             "items": {

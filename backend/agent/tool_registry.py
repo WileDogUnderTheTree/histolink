@@ -117,6 +117,13 @@ class TimelineSpanArgs(StrictArguments):
         return self
 
 
+class SearchHistoricalTextArgs(StrictArguments):
+    """RAG 史料检索参数（V1.0.5）：Token 控制是产品硬约束，top_k 上限 3。"""
+
+    query: str = Field(min_length=1, max_length=200)
+    top_k: int = Field(default=3, ge=1, le=3)
+
+
 @dataclass(frozen=True)
 class ToolSpec:
     """一个工具的静态定义：契约名 + 描述 + 严格参数模型。"""
@@ -158,6 +165,11 @@ SPECS: dict[str, ToolSpec] = {
     "get_relation": ToolSpec("get_relation", _DESCRIPTIONS["get_relation"], GetRelationArgs),
     "get_era_graph": ToolSpec("get_era_graph", _DESCRIPTIONS["get_era_graph"], GetEraGraphArgs),
     "timeline_span": ToolSpec("timeline_span", _DESCRIPTIONS["timeline_span"], TimelineSpanArgs),
+    "search_historical_text": ToolSpec(
+        "search_historical_text",
+        _DESCRIPTIONS["search_historical_text"],
+        SearchHistoricalTextArgs,
+    ),
 }
 
 if set(SPECS) != set(TOOL_NAMES):  # pragma: no cover - 导入期自检

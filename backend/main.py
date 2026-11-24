@@ -35,7 +35,9 @@ CORS 说明（内测分享的关键）：
 
 from __future__ import annotations
 
+import logging
 import os
+import threading
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -48,7 +50,9 @@ from errors import install_error_handlers, read_only_violation_response
 from routers import register_routes
 from snapshot_store import SnapshotLoadError, SnapshotStore
 
-APP_VERSION = "1.0.3"
+logger = logging.getLogger("histolink.main")
+
+APP_VERSION = "1.0.5"
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_SNAPSHOT_PATH = BASE_DIR / "data" / "snapshot.v1.json"
@@ -97,10 +101,30 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     app.state.store = store
     app.state.snapshot_path = snapshot_path
+    _warm_up_rag()
     try:
         yield
     finally:
         app.state.store = None
+
+
+def _warm_up_rag() -> None:
+    """V1.0.5：后台预热 RAG 向量库（chromadb + ONNX embedding 首次加载约 10s）。
+
+    放在守护线程里，不阻塞服务启动 / 健康检查；首个 RAG 问题不必再等冷启动。
+    向量库未入库 / 依赖缺失时静默跳过（工具层会返回明确的失败信封）。
+    """
+
+    def _load() -> None:
+        try:
+            from rag.store import get_rag_store, rag_status_text
+
+            get_rag_store()
+            logger.info("RAG 向量库预热完成：%s", rag_status_text())
+        except Exception as exc:  # noqa: BLE001 - 预热失败不影响主服务，工具层会提示
+            logger.info("RAG 向量库未预热（%s）；search_historical_text 将返回失败信封", exc)
+
+    threading.Thread(target=_load, name="rag-warmup", daemon=True).start()
 
 
 def create_app() -> FastAPI:

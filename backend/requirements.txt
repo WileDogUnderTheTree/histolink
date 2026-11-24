@@ -5,3 +5,7 @@ pydantic>=2.9,<3
 # V1.0.1 / TC-10：LLM 连通性探测（/api/agent/ping_llm 与 scripts/spike_llm.py）
 httpx>=0.27,<1
 python-dotenv>=1.0,<2
+
+# V1.0.5 RAG 混合检索：本地持久化向量库 + bge-small-zh-v1.5（ONNX，CPU 推理，无需 torch）
+chromadb>=1.5,<2
+fastembed>=0.9,<1

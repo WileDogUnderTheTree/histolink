@@ -24,7 +24,7 @@ from contracts.action_types import UIActionType, UISurface
 #: 当前 API 契约版本；`AskRequest.client_schema_version` 必须与之一致。
 SCHEMA_VERSION = "1.0"
 #: API 版本（与 backend/main.py 的 APP_VERSION 对应关系见 contracts/README.md）。
-API_VERSION = "1.0.1"
+API_VERSION = "1.0.5"
 
 #: 引用许可（Q6）：非商用，沿用 shiji-kb 的 CC BY-NC-SA。
 ATTRIBUTION_TEXT = "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）"
@@ -117,10 +117,17 @@ class SourceRefModel(StrictModel):
 
 
 class Citation(StrictModel):
-    """引用条目；Q6 要求每条都带 attribution 与 license。"""
+    """引用条目；Q6 要求每条都带 attribution 与 license。
+
+    V1.0.5 起新增可选 ``kind="rag"``（RAG 史料 chunk）与 ``record_type``：
+    - ``id`` 即 RAG chunk_id；``event_id`` 为对齐到的图谱事件（可能为空）；
+    - ``quote`` 为 chunk 正文（工具层已截断到 ≤300 字）；
+    - ``record_type`` 区分「正史 / 传说」，供前端与 Agent 标注 ``[传说]``；
+    - 对既有 event / relation / person 引用完全向后兼容（新增字段均可选）。
+    """
 
     id: str = Field(min_length=1, max_length=64)
-    kind: Literal["event", "relation", "person"]
+    kind: Literal["event", "relation", "person", "rag"]
     event_id: str | None = Field(default=None, max_length=128)
     person_id: str | None = Field(default=None, max_length=128)
     relation_id: str | None = Field(default=None, max_length=256)
@@ -132,6 +139,8 @@ class Citation(StrictModel):
     source_ref: SourceRefModel | None = None
     attribution: str = Field(min_length=1, max_length=300)
     license: Literal["CC BY-NC-SA 4.0"] = "CC BY-NC-SA 4.0"
+    #: RAG 史料专用（V1.0.5 新增可选）：正史 / 传说；其它引用为 null。
+    record_type: Literal["正史", "传说"] | None = None
 
 
 class Claim(StrictModel):
@@ -253,6 +262,10 @@ class ToolTrace(StrictModel):
 class Trace(StrictModel):
     tools: list[ToolTrace] = Field(default_factory=list, max_length=20)
     model: str | None = Field(default=None, max_length=100)
+    #: V1.0.5 高可用补丁（只增可选）：最终完成回答的模型名。
+    #: 主模型（Qwen3.5-35B-A3B）遇到 429/502/504/超时会自动切换备用轻量模型，
+    #: 前端据此在回答下方提示「已切换至轻量模型」；正常情况等于主模型名。
+    model_used: str | None = Field(default=None, max_length=200)
     latency_ms: int | None = Field(default=None, ge=0)
 
 

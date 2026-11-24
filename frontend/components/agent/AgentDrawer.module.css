@@ -20,7 +20,7 @@
 .panel::before { position: absolute; top: 0; right: 0; left: 0; height: 2px; background: linear-gradient(90deg, transparent, #8b0000, transparent); content: ""; opacity: .8; }
 .header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .brand { display: flex; align-items: center; gap: 12px; }
-.brandIcon { display: grid; width: 42px; height: 42px; place-items: center; border: 1px solid #b8897a; border-radius: 13px; background: #fffaf1; color: #8b0000; font-family: "Songti SC", "STSong", serif; font-size: 21px; box-shadow: 0 5px 13px rgb(84 45 25 / 9%); }
+.brandIcon { flex: 0 0 auto; }
 .kicker { margin-bottom: 3px; color: #a07d6b; font-size: 9px; font-weight: 700; letter-spacing: .2em; }
 .title { margin: 0; color: #2d2923; font-size: 20px; font-weight: 650; letter-spacing: .08em; }
 .note { margin: 5px 0 0; color: #786e62; font-size: 12px; line-height: 1.5; }
@@ -85,6 +85,8 @@
 .expandCitations { margin-top: 8px; border: 0; padding: 0; background: transparent; color: #8b0000; font: inherit; font-size: 10px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .expandCitations:hover { color: #650000; }
 .attribution { margin: 8px 0 0; color: #9b8d80; font-size: 9px; }
+/* V1.0.5 高可用补丁：主模型降级到备用轻量模型时的脚注提示（可选展示，不影响回答内容）。 */
+.modelFallbackHint { margin: 7px 0 0; color: #9b8d80; font-size: 10px; line-height: 1.5; }
 
 .pending { flex: 0 0 auto; padding: 12px; border: 1px solid #dec1b8; border-radius: 13px; background: #fff8f3; box-shadow: 0 6px 18px rgb(92 48 30 / 6%); animation: messageIn 220ms ease-out both; }
 .pendingHeader { display: flex; align-items: flex-start; gap: 9px; }

@@ -18,11 +18,14 @@ class FakeLLM:
         responses: list[str | BaseException],
         *,
         model: str = "fake-qwen",
+        model_used: str | None = None,
         latency_ms: int = 7,
         usage: dict[str, int] | None = None,
     ) -> None:
         self._responses = list(responses)
         self.model = model
+        #: 模拟「主模型降级后由备用模型完成回答」：默认与 model 一致。
+        self.model_used = model_used or model
         self.latency_ms = latency_ms
         self.usage = usage if usage is not None else {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}
         self.calls: list[dict[str, Any]] = []
@@ -45,6 +48,7 @@ class FakeLLM:
             model=self.model,
             latency_ms=self.latency_ms,
             usage=dict(self.usage),
+            model_used=self.model_used,
         )
 
 

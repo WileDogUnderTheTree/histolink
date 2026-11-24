@@ -195,6 +195,7 @@ def build_answer_envelope(
             for record in result.tools
         ],
         model=result.model,
+        model_used=result.model_used,
         latency_ms=result.latency_ms,
     )
     return AnswerEnvelope(

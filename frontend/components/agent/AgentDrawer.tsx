@@ -5,8 +5,13 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+import { BrandMark } from "@/components/BrandMark";
 import { useAgentSession } from "@/contexts/AgentContext";
-import type { Citation } from "@/lib/agent-client";
+import {
+  MODEL_FALLBACK_HINT,
+  shouldShowModelFallbackHint,
+  type Citation,
+} from "@/lib/agent-client";
 import { graphHref, timelineHref } from "@/lib/routes";
 
 import styles from "./AgentDrawer.module.css";
@@ -226,7 +231,7 @@ export function AgentDrawer() {
           <section className={styles.panel} role="dialog" aria-modal="true" aria-labelledby="shimai-agent-title" aria-describedby="shimai-agent-note" onClick={(event) => event.stopPropagation()}>
             <header className={styles.header}>
               <div className={styles.brand}>
-                <div className={styles.brandIcon} aria-hidden="true">史</div>
+                <BrandMark className={styles.brandIcon} size={42} />
                 <div><div className={styles.kicker}>SHIMAI · AGENT</div><h2 id="shimai-agent-title" className={styles.title}>史脉问答</h2><p id="shimai-agent-note" className={styles.note}>从史料出发，给每个答案留下出处。</p></div>
               </div>
               <div className={styles.headerActions}>
@@ -237,7 +242,7 @@ export function AgentDrawer() {
               </div>
             </header>
 
-            <div className={styles.statusLine}><span className={styles.statusDot} aria-hidden="true" /><span>史脉数据已连接</span><span className={styles.statusVersion}>V1.0.4</span></div>
+            <div className={styles.statusLine}><span className={styles.statusDot} aria-hidden="true" /><span>史脉数据已连接</span><span className={styles.statusVersion}>V1.0.5</span></div>
 
             <ol className={styles.transcript} aria-live="polite" aria-busy={isAsking} ref={transcriptRef}>
               {transcript.map((turn) => (
@@ -245,6 +250,7 @@ export function AgentDrawer() {
                   {turn.role === "user" ? <span className={styles.role}>你</span> : <Persona guide={Boolean(turn.answer?.uiActions.length || (pendingActions.length > 0 && turn.id === actionAnchorId))} />}
                   <div className={styles.content}>{turn.role === "assistant" ? <MarkdownMessage content={turn.content} /> : turn.content}</div>
                   {turn.role === "assistant" && turn.answer ? <CitationCards citations={turn.answer.citations} onNavigate={closeDrawer} /> : null}
+                  {turn.role === "assistant" && turn.answer && shouldShowModelFallbackHint(turn.answer.modelUsed) ? <p className={styles.modelFallbackHint}>{MODEL_FALLBACK_HINT}</p> : null}
                   {turn.role === "assistant" && turn.id === actionAnchorId && pendingActions.length > 0 ? <ActionPrompt onOpenCopilot={openFullChat} /> : null}
                 </li>
               ))}

@@ -1,7 +1,7 @@
 {
   "$id": "https://histolink.local/contracts/tools-v1.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "8 个只读工具的入参 / **统一返回信封** JSON Schema（V1.0.2）。每个 tool.output 为 oneOf(成功信封, 失败信封)：信封含 ok/tool/items/citations/truncated/snapshot_version/data/error/meta；工具专属出参在 data 内。",
+  "description": "9 个只读工具的入参 / **统一返回信封** JSON Schema（V1.0.5）。每个 tool.output 为 oneOf(成功信封, 失败信封)：信封含 ok/tool/items/citations/truncated/snapshot_version/data/error/meta；工具专属出参在 data 内。",
   "title": "史脉 V1.0 只读工具契约",
   "tools": [
     {
@@ -60,7 +60,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -78,6 +79,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -304,7 +312,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -322,6 +331,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -584,7 +600,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -602,6 +619,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -827,7 +851,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -845,6 +870,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -1074,7 +1106,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -1092,6 +1125,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -1431,7 +1471,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -1449,6 +1490,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -1744,7 +1792,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -1762,6 +1811,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -2057,7 +2113,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -2075,6 +2132,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -2354,7 +2418,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -2372,6 +2437,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -2606,7 +2678,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -2624,6 +2697,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -2858,7 +2938,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -2876,6 +2957,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -3115,7 +3203,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -3133,6 +3222,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -3390,7 +3486,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -3408,6 +3505,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -3647,7 +3751,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -3665,6 +3770,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -3891,7 +4003,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -3909,6 +4022,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -4143,7 +4263,8 @@
                       "enum": [
                         "event",
                         "relation",
-                        "person"
+                        "person",
+                        "rag"
                       ]
                     },
                     "license": {
@@ -4161,6 +4282,13 @@
                       "type": [
                         "string",
                         "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
                       ]
                     },
                     "relation_id": {
@@ -4317,6 +4445,639 @@
               },
               "tool": {
                 "const": "timeline_span"
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "ok",
+              "tool",
+              "items",
+              "citations",
+              "truncated",
+              "snapshot_version",
+              "data",
+              "error",
+              "meta"
+            ],
+            "type": "object"
+          }
+        ]
+      }
+    },
+    {
+      "description": "按语义检索史脉 RAG 史料库（51 篇长文语料），返回史料 chunk 正文、元数据与统一 citations；查询词应为「用户问题 + 图谱实体/年份」；单次最多 3 条、每条正文最多 300 字。",
+      "input": {
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "top_k": {
+            "default": 3,
+            "maximum": 3,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "name": "search_historical_text",
+      "output": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "citations": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "attribution": {
+                      "maxLength": 300,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "dynasty": {
+                      "maxLength": 50,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "event_id": {
+                      "maxLength": 128,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "id": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "kind": {
+                      "enum": [
+                        "event",
+                        "relation",
+                        "person",
+                        "rag"
+                      ]
+                    },
+                    "license": {
+                      "const": "CC BY-NC-SA 4.0"
+                    },
+                    "person_id": {
+                      "maxLength": 128,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "quote": {
+                      "maxLength": 2000,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
+                      ]
+                    },
+                    "relation_id": {
+                      "maxLength": 256,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "source_label": {
+                      "maxLength": 200,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "source_ref": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "book": {
+                              "type": "string"
+                            },
+                            "chapter": {
+                              "maxLength": 200,
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "raw": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "label",
+                            "book",
+                            "raw"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "title": {
+                      "maxLength": 300,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "year": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "kind",
+                    "title",
+                    "attribution",
+                    "license"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 50,
+                "type": "array"
+              },
+              "data": {
+                "additionalProperties": false,
+                "properties": {
+                  "chunks": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "book": {
+                          "type": "string"
+                        },
+                        "chapter": {
+                          "type": "string"
+                        },
+                        "chunk_id": {
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "event_id": {
+                          "pattern": "^[a-z0-9][a-z0-9-]*$",
+                          "type": "string"
+                        },
+                        "event_name": {
+                          "type": "string"
+                        },
+                        "record_type": {
+                          "enum": [
+                            "正史",
+                            "传说"
+                          ]
+                        },
+                        "score": {
+                          "type": "number"
+                        },
+                        "section": {
+                          "type": "string"
+                        },
+                        "source": {
+                          "type": "string"
+                        },
+                        "source_label": {
+                          "type": "string"
+                        },
+                        "text": {
+                          "maxLength": 300,
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "enum": [
+                            "正史",
+                            "传说"
+                          ]
+                        },
+                        "year_max": {
+                          "description": "史书纪年：公元前为负，不允许 0",
+                          "type": "integer"
+                        },
+                        "year_min": {
+                          "description": "史书纪年：公元前为负，不允许 0",
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "chunk_id",
+                        "event_name",
+                        "text",
+                        "record_type",
+                        "section",
+                        "score"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 3,
+                    "type": "array"
+                  },
+                  "query": {
+                    "type": "string"
+                  },
+                  "total": {
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "chunks",
+                  "total"
+                ],
+                "type": "object"
+              },
+              "error": {
+                "type": "null"
+              },
+              "items": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "book": {
+                      "type": "string"
+                    },
+                    "chapter": {
+                      "type": "string"
+                    },
+                    "chunk_id": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "event_id": {
+                      "pattern": "^[a-z0-9][a-z0-9-]*$",
+                      "type": "string"
+                    },
+                    "event_name": {
+                      "type": "string"
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说"
+                      ]
+                    },
+                    "score": {
+                      "type": "number"
+                    },
+                    "section": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "source_label": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "maxLength": 300,
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "正史",
+                        "传说"
+                      ]
+                    },
+                    "year_max": {
+                      "description": "史书纪年：公元前为负，不允许 0",
+                      "type": "integer"
+                    },
+                    "year_min": {
+                      "description": "史书纪年：公元前为负，不允许 0",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "chunk_id",
+                    "event_name",
+                    "text",
+                    "record_type",
+                    "section",
+                    "score"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 80,
+                "type": "array"
+              },
+              "meta": {
+                "type": "object"
+              },
+              "ok": {
+                "const": true
+              },
+              "snapshot_version": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "tool": {
+                "const": "search_historical_text"
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "ok",
+              "tool",
+              "items",
+              "citations",
+              "truncated",
+              "snapshot_version",
+              "data",
+              "error",
+              "meta"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "citations": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "attribution": {
+                      "maxLength": 300,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "dynasty": {
+                      "maxLength": 50,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "event_id": {
+                      "maxLength": 128,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "id": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "kind": {
+                      "enum": [
+                        "event",
+                        "relation",
+                        "person",
+                        "rag"
+                      ]
+                    },
+                    "license": {
+                      "const": "CC BY-NC-SA 4.0"
+                    },
+                    "person_id": {
+                      "maxLength": 128,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "quote": {
+                      "maxLength": 2000,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说",
+                        null
+                      ]
+                    },
+                    "relation_id": {
+                      "maxLength": 256,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "source_label": {
+                      "maxLength": 200,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "source_ref": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "book": {
+                              "type": "string"
+                            },
+                            "chapter": {
+                              "maxLength": 200,
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "raw": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "label",
+                            "book",
+                            "raw"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "title": {
+                      "maxLength": 300,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "year": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "kind",
+                    "title",
+                    "attribution",
+                    "license"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 50,
+                "type": "array"
+              },
+              "data": {
+                "type": "null"
+              },
+              "error": {
+                "additionalProperties": false,
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "ENTITY_NOT_FOUND",
+                      "AMBIGUOUS_ENTITY",
+                      "INSUFFICIENT_EVIDENCE",
+                      "OUT_OF_SCOPE",
+                      "LLM_TIMEOUT",
+                      "SNAPSHOT_MISMATCH",
+                      "INTERNAL",
+                      "INVALID_REQUEST",
+                      "METHOD_NOT_ALLOWED",
+                      "ROUTE_NOT_FOUND",
+                      "SNAPSHOT_NOT_LOADED",
+                      "LLM_NOT_CONFIGURED",
+                      "LLM_UPSTREAM_ERROR"
+                    ]
+                  },
+                  "message": {
+                    "maxLength": 500,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "message"
+                ],
+                "type": "object"
+              },
+              "items": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "book": {
+                      "type": "string"
+                    },
+                    "chapter": {
+                      "type": "string"
+                    },
+                    "chunk_id": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "event_id": {
+                      "pattern": "^[a-z0-9][a-z0-9-]*$",
+                      "type": "string"
+                    },
+                    "event_name": {
+                      "type": "string"
+                    },
+                    "record_type": {
+                      "enum": [
+                        "正史",
+                        "传说"
+                      ]
+                    },
+                    "score": {
+                      "type": "number"
+                    },
+                    "section": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string"
+                    },
+                    "source_label": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "maxLength": 300,
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "enum": [
+                        "正史",
+                        "传说"
+                      ]
+                    },
+                    "year_max": {
+                      "description": "史书纪年：公元前为负，不允许 0",
+                      "type": "integer"
+                    },
+                    "year_min": {
+                      "description": "史书纪年：公元前为负，不允许 0",
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "chunk_id",
+                    "event_name",
+                    "text",
+                    "record_type",
+                    "section",
+                    "score"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 80,
+                "type": "array"
+              },
+              "meta": {
+                "type": "object"
+              },
+              "ok": {
+                "const": false
+              },
+              "snapshot_version": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "tool": {
+                "const": "search_historical_text"
               },
               "truncated": {
                 "type": "boolean"

@@ -49,6 +49,13 @@ function GraphPageContent() {
   const router = useRouter();
   const { actionBus, currentSurface } = useAgentSession();
 
+  /**
+   * 是否从史引副驾驶跳入（`?from=agent`）。挂载时读一次并记住：
+   * 页面内切分期 / ActionBus 回写 URL 时会保留它，刷新后仍可回到聊天。
+   */
+  const [agentReturn] = useState(() => searchParams.get("from") === "agent");
+  const returnToChat = () => router.push("/ask");
+
   /** 首次渲染时从 URL 推导初始状态；后续交互不再反向读取 URL（V1.0.4 做全量状态化）。 */
   const [deepLink] = useState(() => resolveGraphDeepLink(searchParams.toString()));
 
@@ -174,6 +181,7 @@ function GraphPageContent() {
           person: nextCenter,
           era: nextEra?.id ?? nextScope?.id ?? eraId,
           mode: targetMode,
+          from: agentReturn ? "agent" : undefined,
         }),
       );
     });
@@ -190,7 +198,15 @@ function GraphPageContent() {
       setCenterPersonId(center);
       setControlledSelection(related);
       resetSearch();
-      router.replace(graphHref({ person: center, era: eraId, mode, selected: related }));
+      router.replace(
+        graphHref({
+          person: center,
+          era: eraId,
+          mode,
+          selected: related,
+          from: agentReturn ? "agent" : undefined,
+        }),
+      );
     });
 
     return () => {
@@ -199,6 +215,7 @@ function GraphPageContent() {
     };
   }, [
     actionBus,
+    agentReturn,
     currentSurface,
     era,
     eraId,
@@ -333,7 +350,14 @@ function GraphPageContent() {
           <Link className={styles.back} href="/">
             ← 返回首页
           </Link>
-          <p className={styles.eyebrow}>史脉 HistoLink · V1.0.4</p>
+          <div className={styles.topbarRight}>
+            <p className={styles.eyebrow}>史脉 HistoLink · V1.0.5</p>
+            {agentReturn ? (
+              <button type="button" className={styles.returnChat} onClick={returnToChat}>
+                <span aria-hidden="true">💬</span> 返回聊天
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <h1 className={styles.title}>人物关系图</h1>

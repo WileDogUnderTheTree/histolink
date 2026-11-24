@@ -3,7 +3,13 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { askHref, graphHref, surfaceFromPathname, timelineHref } from "@/lib/routes";
+import {
+  askHref,
+  graphHref,
+  surfaceFromPathname,
+  surfaceLinksFromHref,
+  timelineHref,
+} from "@/lib/routes";
 
 describe("timelineHref", () => {
   it("无参数时就是 /timeline", () => {
@@ -26,6 +32,12 @@ describe("timelineHref", () => {
       "/timeline?group=qinhan&mode=brief",
     );
   });
+
+  it("V1.0.4：from 来源标记参与构造（史引「返回聊天」闭环）", () => {
+    expect(timelineHref({ event: "handong-chibi", from: "agent" })).toBe(
+      "/timeline?event=handong-chibi&from=agent",
+    );
+  });
 });
 
 describe("graphHref", () => {
@@ -38,6 +50,12 @@ describe("graphHref", () => {
   it("受控选中参数参与构造（TC-08 受控关系面板）", () => {
     expect(graphHref({ person: "曹操", era: "sanguo", selected: "刘备" })).toBe(
       "/graph?person=%E6%9B%B9%E6%93%8D&era=sanguo&selected=%E5%88%98%E5%A4%87",
+    );
+  });
+
+  it("V1.0.4：from 来源标记参与构造（史引「返回聊天」闭环）", () => {
+    expect(graphHref({ person: "p-zhouyu-b475", from: "agent" })).toBe(
+      "/graph?person=p-zhouyu-b475&from=agent",
     );
   });
 });
@@ -70,5 +88,49 @@ describe("surfaceFromPathname", () => {
     expect(surfaceFromPathname("/people")).toBeNull();
     expect(surfaceFromPathname(null)).toBeNull();
     expect(surfaceFromPathname(undefined)).toBeNull();
+  });
+});
+
+describe("surfaceLinksFromHref（史引副驾驶 · 展开完整页面）", () => {
+  it("时间轴面板：两个入口都带 from=agent，时间轴入口保留焦点事件", () => {
+    expect(surfaceLinksFromHref("/timeline?event=handong-chibi")).toEqual({
+      focus: "timeline",
+      timeline: "/timeline?event=handong-chibi&from=agent",
+      graph: "/graph?from=agent",
+    });
+  });
+
+  it("时间轴面板：dynasty / group / mode 也原样带上", () => {
+    expect(surfaceLinksFromHref("/timeline?dynasty=%E7%A7%A6&mode=detail")).toEqual({
+      focus: "timeline",
+      timeline: "/timeline?dynasty=%E7%A7%A6&mode=detail&from=agent",
+      graph: "/graph?from=agent",
+    });
+    expect(surfaceLinksFromHref("/timeline?group=qinhan&mode=brief").timeline).toBe(
+      "/timeline?group=qinhan&mode=brief&from=agent",
+    );
+  });
+
+  it("人物图面板：两个入口都带 from=agent，人物图入口保留焦点人物 / 分期 / 受控选中", () => {
+    expect(
+      surfaceLinksFromHref("/graph?person=p-zhouyu-b475&era=sanguo&selected=p-sunquan-182"),
+    ).toEqual({
+      focus: "graph",
+      timeline: "/timeline?from=agent",
+      graph: "/graph?person=p-zhouyu-b475&era=sanguo&selected=p-sunquan-182&from=agent",
+    });
+  });
+
+  it("非法 / 空链接：两个入口都回退裸路径 + from=agent，focus 为 null", () => {
+    expect(surfaceLinksFromHref("/timeline")).toEqual({
+      focus: "timeline",
+      timeline: "/timeline?from=agent",
+      graph: "/graph?from=agent",
+    });
+    expect(surfaceLinksFromHref("/unknown?event=x")).toEqual({
+      focus: null,
+      timeline: "/timeline?from=agent",
+      graph: "/graph?from=agent",
+    });
   });
 });

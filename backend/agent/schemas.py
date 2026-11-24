@@ -29,7 +29,8 @@ from contracts.models import (
 AnswerMode = Literal["grounded", "insufficient", "refusal"]
 Certainty = Literal["high", "medium", "low"]
 RefusalReason = Literal["OUT_OF_SCOPE", "UNSAFE_REQUEST", "NO_RELIABLE_BASIS"]
-EvidenceKind = Literal["event", "person", "relation"]
+#: V1.0.5：新增 `rag` —— RAG 史料 chunk（entity_id = chunk_id / citation id）。
+EvidenceKind = Literal["event", "person", "relation", "rag"]
 #: insufficient 的结构化缺失原因：模型只能从枚举里选，展示文案由服务端映射（P0-3）。
 MissingReason = Literal[
     "NO_MATCHING_ENTITY",
@@ -76,7 +77,8 @@ class Evidence(AgentModel):
     """一条证据：把最终回答绑定到工具真实返回过的实体上。
 
     `entity_id` 可以是 `person_id` / `event_id` / 关系 `relation_id`（工具 citation 里的
-    `relation_id` 即关系 pair_key）。V1.0.3 安全加固后，`EvidenceValidator` 不只看 ID 是否
+    `relation_id` 即关系 pair_key），V1.0.5 起也可以是 **RAG chunk_id**（`entity_type="rag"`，
+    chunk_id 即 citation id）。V1.0.3 安全加固后，`EvidenceValidator` 不只看 ID 是否
     出现过，还会校验：类型一致、有事实详情（不能只在 *_ids 列表里出现）、`fact_usable`
     为真（彩蛋事件不可用）、且被 claim 引用的 citation 绑定到同一实体。
     """
@@ -229,6 +231,8 @@ class AgentResult(AgentModel):
     citations: list[Citation] = Field(default_factory=list, max_length=50)
     tools: list[ToolCallRecord] = Field(default_factory=list, max_length=10)
     model: str | None = Field(default=None, max_length=200)
+    #: V1.0.5 高可用补丁：最终完成回答的模型（主模型降级时为备用轻量模型）。
+    model_used: str | None = Field(default=None, max_length=200)
     latency_ms: int | None = Field(default=None, ge=0)
     steps: int = Field(default=0, ge=0, le=10)
     downgraded: bool = False

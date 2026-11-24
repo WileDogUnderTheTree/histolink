@@ -42,3 +42,21 @@ node scripts/validate-data.mjs            # 校验快照内部一致性
 - 快照是**同一批 TS 数据模块**的投影，前后端同源；页面渲染在 V1.0 仍读 TS；
 - 预算：< 5MB、Node 加载 < 300ms（当前约 2.9MB）；
 - 数据许可：沿用 shiji-kb 的 CC BY-NC-SA 4.0，非商用；`meta.license` / `meta.attribution` 随快照下发。
+
+## V1.0.5 · RAG 向量库（`chroma_db/`）
+
+`backend/data/chroma_db/` 是 **RAG 语料入库产物**（chromadb 持久化目录 + `manifest.json`），
+**已 gitignore**，不入库；新环境需要重建：
+
+```bash
+# 仓库根目录（使用 backend/.venv）
+backend\.venv\Scripts\python backend\scripts\ingest_rag.py
+# 只解析 / 切分不写库：
+backend\.venv\Scripts\python backend\scripts\ingest_rag.py --dry-run --stats
+```
+
+- 语料：`docs/史脉_RAG语料库_核心历史事件.md` + `docs/史脉_RAG语料库_第二批30篇.md`（51 篇）；
+- chunk：≤500 字（目标 300–500 字），chunk_id = citation id；
+- embedding：`BAAI/bge-small-zh-v1.5`（首选 ModelScope API，当前账号未开放 embedding 模型，
+  自动降级到本地 fastembed ONNX，512 维；`manifest.json` 记录实际 provider / model / dim）；
+- 运行期 `search_historical_text` 首次调用才加载 chromadb + 模型（约 10s，之后进程内复用）。

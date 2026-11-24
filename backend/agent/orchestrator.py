@@ -1,14 +1,18 @@
-"""Agent Orchestrator（V1.0.3 核心循环 / 安全加固 P1-1、P1-4）。
+"""Agent Orchestrator（V1.0.3 核心循环 / V1.0.5 RAG 混合路由）。
 
-流程（**硬上限 4 轮**，防死循环）：
-1. 组装 System Prompt（工具目录由 ToolRegistry 生成）+ 历史 + 当前问题/页面上下文；
+流程（**硬上限 6 轮**，防死循环）：
+1. 组装 System Prompt（工具目录由 ToolRegistry 生成 + RAG 向量库状态）+ 历史 + 当前问题/页面上下文；
 2. 调 Qwen（`enable_thinking=False` + JSON 模式），拿到一个**完整且唯一**的 JSON 对象；
 3. 解析为 `tool_call`：白名单 + 严格参数校验 → 执行工具 → 把统一信封回传模型；
+   - V1.0.5：图谱工具（search_events / get_event / get_person…）先给「基础事实」，
+     模型再调 `search_historical_text`（query = 用户问题 + 图谱实体/年份）取「史料细节」；
 4. 解析为 `final`：交给 `EvidenceValidator` 核对 evidence / citation / UI 动作，
-   并由服务端用工具真实数据重写 grounded 正文；
+   并由服务端用工具真实数据重写 grounded 正文（V1.0.5 按 ① 图谱事实 / ② RAG 史料分节，
+   RAG 与图谱年份冲突时标注「史料记载有异」，传说 chunk 句首加 `[传说]`）；
 5. 证据不可核验 → 强制降级 `insufficient`；轮次耗尽 / JSON 始终非法 → 兜底 `insufficient`。
 
-LLM 超时 / 上游错误不在这里吞掉，交给 API 层映射成 502/503/504 envelope。
+LLM 429/502/504/超时由 `LLMClient.chat()` 内部先自动降级到备用轻量模型重试一次；
+两次都失败才上抛，由 API 层映射成 502/503/504 envelope（`trace.model_used` 记录最终模型）。
 """
 
 from __future__ import annotations
@@ -42,10 +46,11 @@ from contracts.models import AskRequest
 from llm_client import LLMChatResult, LLMClient
 from snapshot_store import SnapshotStore
 
-#: 最大模型轮次：4 轮足够「消歧 → 检索 → 详情 → 回答」，又能防止死循环。
-#: P1-1：这是**硬上限**，外部调用方不允许配置到 4 以上。
-DEFAULT_MAX_STEPS = 4
-MAX_STEPS_HARD_LIMIT = 4
+#: 最大模型轮次：V1.0.5 混合路由需要「消歧 → 检索 → RAG → 回答」，
+#: 4 轮经常被 JSON 修复轮挤爆，因此放宽到 6 轮（仍是**硬上限**，外部不允许配置更高）。
+#: 事件类问题典型 3–4 轮；多出的 2 轮留给协议修复，避免一次坏 JSON 直接掉到 insufficient。
+DEFAULT_MAX_STEPS = 6
+MAX_STEPS_HARD_LIMIT = 6
 #: 规划 / 回答都用 temperature=0，追求稳定与可复现。
 AGENT_TEMPERATURE = 0.0
 #: 可见输出上限（关闭思考后 2048 足够中文 150–400 字回答 + JSON 结构）。
@@ -161,12 +166,15 @@ class AgentOrchestrator:
         records: list[ToolCallRecord] = []
         usage: dict[str, int] | None = None
         model_name: str | None = None
+        #: V1.0.5 高可用补丁：最终完成回答的模型（主模型被限流时由备用模型接管）。
+        model_used: str | None = None
         last_error: str | None = None
 
         for step in range(1, self._max_steps + 1):
             chat = self._chat(messages)
             usage = _merge_usage(usage, chat.usage)
             model_name = chat.model or model_name
+            model_used = chat.model_used or chat.model or model_used
             messages.append({"role": "assistant", "content": chat.content})
 
             try:
@@ -201,6 +209,7 @@ class AgentOrchestrator:
                 citations=outcome.citations,
                 tools=records,
                 model=model_name,
+                model_used=model_used,
                 latency_ms=_elapsed_ms(started),
                 steps=step,
                 downgraded=outcome.downgraded,
@@ -212,6 +221,7 @@ class AgentOrchestrator:
             request=request,
             records=records,
             model_name=model_name,
+            model_used=model_used,
             usage=usage,
             started=started,
             reason=last_error
@@ -231,9 +241,12 @@ class AgentOrchestrator:
         )
 
     def _initial_messages(self, request: AskRequest) -> list[dict[str, str]]:
+        from rag.store import rag_status_text
+
         system_prompt = build_system_prompt(
             self._registry.tool_catalog_json(),
             [action.value for action in V1_AVAILABLE_ACTIONS],
+            rag_status=rag_status_text(),
         )
         messages: list[dict[str, str]] = [{"role": "system", "content": system_prompt}]
         for turn in request.history:
@@ -247,6 +260,7 @@ class AgentOrchestrator:
         request: AskRequest,
         records: list[ToolCallRecord],
         model_name: str | None,
+        model_used: str | None,
         usage: dict[str, int] | None,
         started: float,
         reason: str,
@@ -268,6 +282,7 @@ class AgentOrchestrator:
             citations=[],
             tools=records,
             model=model_name,
+            model_used=model_used,
             latency_ms=_elapsed_ms(started),
             steps=self._max_steps,
             downgraded=True,

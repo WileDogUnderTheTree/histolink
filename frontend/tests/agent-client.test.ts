@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   AgentClientError,
   MAX_HISTORY_TURNS,
+  MODEL_FALLBACK_HINT,
   agentAskEndpoint,
   answerViewFromEnvelope,
   buildAskRequest,
@@ -22,6 +23,7 @@ import {
   postAsk,
   RATE_LIMIT_MESSAGE,
   readPageContext,
+  shouldShowModelFallbackHint,
   type AgentResponse,
   type AnswerEnvelope,
   type ErrorEnvelope,
@@ -240,6 +242,23 @@ describe("answerViewFromEnvelope", () => {
     expect(view?.entities).toHaveLength(1);
     expect(view?.uiActions).toHaveLength(1);
     expect(view?.snapshotVersion).toBe("v1-test");
+    // 信封没有 trace → 未上报最终模型，不展示降级提示。
+    expect(view?.modelUsed).toBeNull();
+  });
+
+  it("把 trace.model_used 归一化为 modelUsed（V1.0.5 自动降级）", () => {
+    const fallbackEnvelope = {
+      ...ANSWER_ENVELOPE,
+      trace: {
+        tools: [],
+        model: "Qwen/Qwen3.5-35B-A3B",
+        model_used: "Qwen/Qwen3.5-8B-Instruct",
+        latency_ms: 1200,
+      },
+    } as unknown as AnswerEnvelope;
+    const view = answerViewFromEnvelope(fallbackEnvelope);
+    expect(view?.modelUsed).toBe("Qwen/Qwen3.5-8B-Instruct");
+    expect(shouldShowModelFallbackHint(view?.modelUsed)).toBe(true);
   });
 
   it("澄清信封没有 answer → null，并给出来源文案", () => {
@@ -260,6 +279,18 @@ describe("answerViewFromEnvelope", () => {
     const text = clarificationTextFromEnvelope(clarificationEnvelope);
     expect(text).toContain("哪一位梁太后");
     expect(text).toContain("西夏·毅宗后");
+  });
+});
+
+describe("shouldShowModelFallbackHint", () => {
+  it("备用轻量模型（非 35B）才提示，主模型 / 未上报不提示", () => {
+    expect(shouldShowModelFallbackHint("Qwen/Qwen3.5-8B-Instruct")).toBe(true);
+    expect(shouldShowModelFallbackHint("Qwen/Qwen3.5-35B-A3B")).toBe(false);
+    expect(shouldShowModelFallbackHint("qwen3.5-35b-a3b")).toBe(false);
+    expect(shouldShowModelFallbackHint(null)).toBe(false);
+    expect(shouldShowModelFallbackHint(undefined)).toBe(false);
+    expect(shouldShowModelFallbackHint("   ")).toBe(false);
+    expect(MODEL_FALLBACK_HINT).toContain("轻量模型");
   });
 });
 

@@ -1,11 +1,15 @@
 """LLM chat() 单测（V1.0.3）：enable_thinking=False + JSON 模式 + 参数校验。
 
+V1.0.5 高可用补丁追加：主模型 429 / 502 / 504 / 超时 → 自动切换备用模型重试一次，
+`model_used` 记录最终模型；备用模型也失败时才上抛。
+
 全部离线（httpx.MockTransport），不访问网络。
 """
 
 from __future__ import annotations
 
 import json
+import logging
 
 import httpx
 import pytest
@@ -19,11 +23,14 @@ from llm_client import (
 )
 
 API_KEY = "sk-test-secret-value"
+PRIMARY_MODEL = "Qwen/Qwen3.5-35B-A3B"
+FALLBACK_MODEL = "Qwen/Qwen3.5-8B-Instruct"
 SETTINGS = LLMSettings(
     api_key=API_KEY,
     base_url="https://example.test/v1",
-    model="Qwen/Qwen3.5-35B-A3B",
+    model=PRIMARY_MODEL,
     timeout_seconds=5.0,
+    fallback_model=FALLBACK_MODEL,
 )
 MESSAGES = [
     {"role": "system", "content": "system prompt"},
@@ -62,6 +69,7 @@ def test_chat_sends_enable_thinking_false_and_json_mode() -> None:
     )
     assert result.content == '{"action":"final"}'
     assert result.model == "Qwen/Qwen3.5-35B-A3B"
+    assert result.model_used == PRIMARY_MODEL
     assert result.latency_ms >= 0
     assert result.usage == {"prompt_tokens": 20, "completion_tokens": 8, "total_tokens": 28}
     assert captured["enable_thinking"] is False
@@ -176,3 +184,133 @@ def test_chat_does_not_follow_redirects() -> None:
     assert "重定向" in str(exc_info.value)
     # 只发出一次请求，没有跟随到 Location。
     assert seen == ["https://example.test/v1/chat/completions"]
+
+
+# ---------------------------------------------------------------------------
+# V1.0.5 高可用补丁：自动降级到备用模型
+# ---------------------------------------------------------------------------
+
+
+def _fallback_success(model: str = FALLBACK_MODEL, content: str = '{"action":"final"}') -> httpx.Response:
+    return httpx.Response(
+        200,
+        json={"model": model, "choices": [{"message": {"content": content}}]},
+    )
+
+
+@pytest.mark.parametrize("status", [429, 502, 504])
+def test_chat_falls_back_on_transient_upstream_status(status: int, caplog) -> None:
+    """429 限流 / 502、504 网关错误：首次请求用主模型，自动重试换成备用模型。"""
+
+    models: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        models.append(json.loads(request.content)["model"])
+        if len(models) == 1:
+            return httpx.Response(status, text="overloaded", request=request)
+        return _fallback_success()
+
+    with caplog.at_level(logging.WARNING, logger="histolink.llm"):
+        result = make_client(handler).chat(
+            MESSAGES, response_format={"type": "json_object"}
+        )
+
+    assert models == [PRIMARY_MODEL, FALLBACK_MODEL]
+    assert result.model_used == FALLBACK_MODEL
+    assert result.model == FALLBACK_MODEL
+    assert result.content == '{"action":"final"}'
+    assert any(
+        "降级" in record.message or "备用模型" in record.message
+        for record in caplog.records
+    )
+
+
+def test_chat_falls_back_on_timeout(caplog) -> None:
+    models: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        models.append(json.loads(request.content)["model"])
+        if len(models) == 1:
+            raise httpx.TimeoutException("timed out")
+        return _fallback_success()
+
+    with caplog.at_level(logging.WARNING, logger="histolink.llm"):
+        result = make_client(handler).chat(MESSAGES)
+
+    assert models == [PRIMARY_MODEL, FALLBACK_MODEL]
+    assert result.model_used == FALLBACK_MODEL
+    assert any("超时" in record.message for record in caplog.records)
+
+
+@pytest.mark.parametrize("status", [400, 401, 500, 503])
+def test_chat_does_not_fall_back_on_non_transient_errors(status: int) -> None:
+    """鉴权 / 参数错误 / 500 / 503 不降级：换模型也不会修好，保持原有错误语义。"""
+
+    models: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        models.append(json.loads(request.content)["model"])
+        return httpx.Response(status, text="boom", request=request)
+
+    with pytest.raises(LLMUpstreamError) as exc_info:
+        make_client(handler).chat(MESSAGES)
+
+    assert models == [PRIMARY_MODEL]
+    assert exc_info.value.upstream_status == status
+
+
+def test_chat_raises_when_fallback_also_fails(caplog) -> None:
+    """备用模型也失败 → 抛出 LLM_UPSTREAM_ERROR，并带上降级上下文（只重试一次）。"""
+
+    models: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        models.append(json.loads(request.content)["model"])
+        status = 429 if len(models) == 1 else 502
+        return httpx.Response(status, text="overloaded", request=request)
+
+    with (
+        caplog.at_level(logging.WARNING, logger="histolink.llm"),
+        pytest.raises(LLMUpstreamError) as exc_info,
+    ):
+        make_client(handler).chat(MESSAGES)
+    assert models == [PRIMARY_MODEL, FALLBACK_MODEL]
+    error = exc_info.value
+    assert error.upstream_status == 502
+    assert FALLBACK_MODEL in str(error)
+    assert "仍失败" in str(error)
+    assert len(caplog.records) >= 2
+
+
+def test_chat_raises_timeout_when_fallback_also_times_out() -> None:
+    def handler(_request: httpx.Request) -> httpx.Response:
+        raise httpx.TimeoutException("timed out")
+
+    with pytest.raises(LLMTimeoutError) as exc_info:
+        make_client(handler).chat(MESSAGES)
+
+    assert FALLBACK_MODEL in str(exc_info.value)
+    assert "仍失败" in str(exc_info.value)
+
+
+def test_chat_without_fallback_model_reraises_primary_error() -> None:
+    """未配置备用模型（fallback_model=None）时保持 V1.0.3 行为：不重试、原样上抛。"""
+
+    settings = LLMSettings(
+        api_key=API_KEY,
+        base_url="https://example.test/v1",
+        model=PRIMARY_MODEL,
+        timeout_seconds=5.0,
+    )
+    models: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        models.append(json.loads(request.content)["model"])
+        return httpx.Response(429, text="busy", request=request)
+
+    with pytest.raises(LLMUpstreamError) as exc_info:
+        LLMClient(settings, transport=httpx.MockTransport(handler)).chat(MESSAGES)
+
+    assert models == [PRIMARY_MODEL]
+    assert exc_info.value.upstream_status == 429
+    assert "备用模型" not in str(exc_info.value)

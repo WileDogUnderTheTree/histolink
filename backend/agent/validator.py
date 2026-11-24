@@ -48,7 +48,7 @@ from agent.schemas import (
 from contracts.action_types import ACTION_LABEL, ACTION_SURFACE, V1_AVAILABLE_ACTIONS
 from contracts.models import Citation, Claim
 
-EntityKind = Literal["event", "person", "relation"]
+EntityKind = Literal["event", "person", "relation", "rag"]
 
 #: 实体出现形态（决定能否作为证据）：detail > structured > citation > list。
 _EXPOSURE_RANK: dict[str, int] = {
@@ -57,7 +57,7 @@ _EXPOSURE_RANK: dict[str, int] = {
     "citation": 1,
     "list": 0,
 }
-_ENTITY_KIND_LABEL = {"event": "事件", "person": "人物", "relation": "关系"}
+_ENTITY_KIND_LABEL = {"event": "事件", "person": "人物", "relation": "关系", "rag": "史料"}
 
 #: ID 列表字段 → 实体类型。只有「在列表中顺带出现」的实体，不能直接作为证据。
 _LIST_ID_FIELDS: dict[str, str] = {
@@ -123,6 +123,23 @@ _RELATION_DETAIL_FIELDS = (
     "basis_event_ids",
     "attribution",
 )
+#: V1.0.5：RAG 史料 chunk 的详情字段（工具 items / citations 双写，合并吸收）。
+_RAG_DETAIL_FIELDS = (
+    "chunk_id",
+    "event_name",
+    "title",
+    "text",
+    "record_type",
+    "section",
+    "source",
+    "source_label",
+    "book",
+    "chapter",
+    "event_id",
+    "year_min",
+    "year_max",
+    "score",
+)
 
 _MAX_EVIDENCE = 50
 _MAX_CLAIMS = 50
@@ -133,6 +150,14 @@ _MAX_CLAIM_CHARS = 1000
 _MAX_MARKDOWN_CHARS = 10000
 
 _GROUNDED_LEAD = "根据本轮工具返回的可核验资料："
+#: V1.0.5 混合检索的分节标题（服务端写死，模型无法改写）。
+_GROUNDED_GRAPH_HEADING = "① 基础事实（来自图谱）"
+_GROUNDED_RAG_HEADING = "② 史料记载细节（来自 RAG）"
+_GROUNDED_GRAPH_EMPTY = "本轮未获取到图谱基础事实（图谱无对应条目或未查询到）。"
+_GROUNDED_RAG_EMPTY = "本轮未检索到可引用的 RAG 史料细节。"
+#: 传说 chunk 的句首标签（产品要求：神话传说必须显式标注）。
+_LEGEND_TAG = "[传说]"
+_LEGEND_RECORD_TYPE = "传说"
 
 _DOWNGRADE_MARKDOWN = (
     "资料不足：模型给出的回答无法在当前工具结果中找到可核验的证据，"
@@ -302,6 +327,31 @@ class ObservedEvidence:
                     # citation 天然绑定它自己指向的实体；这是「真实 citation」的基线。
                     citation_ids=(citation.id,),
                 )
+        # V1.0.5：RAG 史料引用本身就是一条「可作证据的 chunk」，
+        # entity_id = citation.id（chunk_id），证据与引用一一对应。
+        if citation.kind == "rag":
+            related_event_ids = (
+                (citation.event_id,) if isinstance(citation.event_id, str) and citation.event_id else ()
+            )
+            self._touch(
+                "rag",
+                citation.id,
+                observed.source_tool,
+                "citation",
+                observed.fact_usable,
+                detail={
+                    "chunk_id": citation.id,
+                    "event_name": citation.title,
+                    "title": citation.title,
+                    "text": citation.quote or "",
+                    "record_type": citation.record_type,
+                    "source_label": citation.source_label,
+                    "event_id": citation.event_id,
+                },
+                fact_texts=texts,
+                related_event_ids=related_event_ids,
+                citation_ids=(citation.id,),
+            )
 
     # -- 内部：工具专属详情 -------------------------------------------
     def _absorb_detail(
@@ -469,6 +519,30 @@ class ObservedEvidence:
             value = mapping.get(key)
             if isinstance(value, str) and value:
                 self._touch("person", value, tool, "list", usable)
+
+        # V1.0.5：RAG 工具 items / data.chunks 的单条 chunk（结构化详情，优先于 citation 形态）。
+        chunk_id = mapping.get("chunk_id")
+        if isinstance(chunk_id, str) and chunk_id:
+            facts = {
+                value
+                for key in ("text", "event_name", "title", "source_label", "record_type", "source")
+                if isinstance((value := mapping.get(key)), str) and value
+            }
+            event_id = mapping.get("event_id")
+            related_event_ids = (
+                (event_id,) if isinstance(event_id, str) and event_id else ()
+            )
+            self._touch(
+                "rag",
+                chunk_id,
+                tool,
+                "structured",
+                usable,
+                detail=_pick(mapping, _RAG_DETAIL_FIELDS),
+                fact_texts=facts,
+                related_event_ids=related_event_ids,
+                citation_ids=[item.id for item in citations if item.id == chunk_id],
+            )
 
     # -- 内部：合并 ---------------------------------------------------
     def _touch(
@@ -737,13 +811,21 @@ class EvidenceValidator:
         observed: ObservedEvidence,
         evidence_entities: list[ObservedEntity],
     ) -> tuple[list[Claim], list[Citation], str] | None:
-        """用工具返回的真实数据重写 claims / markdown（不信任模型文本）。"""
+        """用工具返回的真实数据重写 claims / markdown（不信任模型文本）。
 
+        V1.0.5 混合检索：把证据按「图谱实体 → RAG 史料 chunk」重排后分节输出——
+        - 有 RAG 证据时：``① 基础事实（来自图谱）`` + ``② 史料记载细节（来自 RAG）``；
+          传说 chunk 以 ``[传说]`` 开头；图谱与 RAG 年份冲突时在 ② 首行标注「史料记载有异」。
+        - 无 RAG 证据时：保持 V1.0.4 的单段正文（向后兼容）。
+        """
+
+        ordered_entities = _order_evidence_for_sections(evidence_entities)
         claims: list[Claim] = []
         used_citation_ids: list[str] = []
         seen_citations: set[str] = set()
         seen_entities: set[tuple[str, str]] = set()
-        for entity in evidence_entities:
+        rag_entities: list[ObservedEntity] = []
+        for entity in ordered_entities:
             key = (entity.kind, entity.entity_id)
             if key in seen_entities:
                 continue
@@ -765,6 +847,8 @@ class EvidenceValidator:
                     citation_ids=citation_ids,
                 )
             )
+            if entity.kind == "rag":
+                rag_entities.append(entity)
             for citation_id in citation_ids:
                 if citation_id not in seen_citations:
                     seen_citations.add(citation_id)
@@ -778,7 +862,16 @@ class EvidenceValidator:
             for citation_id in used_citation_ids
             if citation_id in observed.citations
         ][:_MAX_CITATIONS]
-        markdown = _compose_markdown(claims)
+        if rag_entities:
+            graph_claim_count = len(claims) - len(rag_entities)
+            conflicts = _detect_year_conflicts(observed, rag_entities)
+            markdown = _compose_structured_markdown(
+                claims,
+                graph_claim_count=graph_claim_count,
+                conflicts=conflicts,
+            )
+        else:
+            markdown = _compose_markdown(claims)
         return claims, citations, markdown
 
     # ------------------------------------------------------------------
@@ -889,6 +982,9 @@ def _citation_supports(
         if citation.relation_id == entity.entity_id:
             return True
         return bool(citation.event_id and citation.event_id in entity.related_event_ids)
+    if entity.kind == "rag":
+        # RAG 证据 = 一个 chunk，citation id 就是 chunk_id，天然一一对应。
+        return citation.kind == "rag" and citation.id == entity.entity_id
     return False
 
 
@@ -933,6 +1029,120 @@ def _compose_markdown(claims: list[Claim]) -> str:
     return f"{_GROUNDED_LEAD}\n\n{body}"[:_MAX_MARKDOWN_CHARS]
 
 
+def _order_evidence_for_sections(
+    evidence_entities: Iterable[ObservedEntity],
+) -> list[ObservedEntity]:
+    """分节顺序固定为「图谱事实 → RAG 史料」，不信任模型给的 evidence 顺序。"""
+
+    entities = list(evidence_entities)
+    graph = [entity for entity in entities if entity.kind != "rag"]
+    rag = [entity for entity in entities if entity.kind == "rag"]
+    return [*graph, *rag]
+
+
+def _compose_structured_markdown(
+    claims: list[Claim],
+    *,
+    graph_claim_count: int,
+    conflicts: list[str],
+) -> str:
+    """① 基础事实（图谱）+ ② 史料记载细节（RAG）+ 冲突标注。
+
+    正文全部来自服务端从工具数据重组出的 claims；这里只负责分节与固定标记。
+    """
+
+    graph_texts = [claim.text for claim in claims[:graph_claim_count]]
+    rag_texts = [claim.text for claim in claims[graph_claim_count:]]
+    graph_body = "\n\n".join(graph_texts) if graph_texts else _GROUNDED_GRAPH_EMPTY
+    rag_lines: list[str] = []
+    if conflicts:
+        rag_lines.append(
+            "史料记载有异："
+            + "；".join(conflicts)
+            + "。年份存在出入时以图谱为准，上列史料细节仅供对照。"
+        )
+    if rag_texts:
+        rag_lines.append("\n\n".join(rag_texts))
+    elif not conflicts:
+        rag_lines.append(_GROUNDED_RAG_EMPTY)
+    rag_body = "\n".join(rag_lines)
+    markdown = (
+        f"{_GROUNDED_GRAPH_HEADING}\n{graph_body}\n\n"
+        f"{_GROUNDED_RAG_HEADING}\n{rag_body}"
+    )
+    return markdown[:_MAX_MARKDOWN_CHARS]
+
+
+def _compose_rag_chunk_text(entity: ObservedEntity) -> str:
+    """RAG chunk → 正文行：传说加 ``[传说]`` 句首标签，末尾标注出处。"""
+
+    detail = entity.detail
+    text = _first_text(detail.get("text"))
+    if not text:
+        return ""
+    record_type = detail.get("record_type")
+    prefix = f"{_LEGEND_TAG} " if record_type == _LEGEND_RECORD_TYPE else ""
+    source_label = _first_text(detail.get("source_label"), detail.get("book"), detail.get("source"))
+    section = _first_text(detail.get("section"))
+    suffix_parts = [part for part in (source_label, section) if part]
+    suffix = f"（{'·'.join(suffix_parts)}）" if suffix_parts else ""
+    return f"{prefix}{text}{suffix}"
+
+
+def _detect_year_conflicts(
+    observed: ObservedEvidence,
+    rag_entities: Iterable[ObservedEntity],
+) -> list[str]:
+    """交叉校验：RAG 史料记载的年份区间与图谱纪年不一致时，生成「史料记载有异」标注。
+
+    规则（确定性、可服务端复核）：
+    - 只比较本轮**真实取到详情**的图谱事件（``get_event`` / ``search_events`` 等）；
+    - 只比较 chunk 已对齐到该事件（``event_id``）且语料里抽到了年份区间的情况；
+    - 图谱年份落在语料年份区间内 → 视为不冲突（多年度叙事，如「贞观之治 627—649」）；
+    - 图谱年份在区间外 → 以图谱为准并标注（如商鞅变法图谱 -359、语料首见 -356/-350）。
+    """
+
+    graph_years: dict[str, tuple[int, str]] = {}
+    for (kind, entity_id), entity in observed.entities.items():
+        if kind != "event" or entity.exposure not in ("detail", "structured"):
+            continue
+        year = entity.detail.get("year")
+        if not isinstance(year, int) or isinstance(year, bool) or year == 0:
+            continue
+        title = _first_text(entity.detail.get("title"), entity_id)
+        graph_years[entity_id] = (year, title)
+
+    notes: list[str] = []
+    seen: set[tuple[str, int, int]] = set()
+    for entity in rag_entities:
+        event_id = entity.detail.get("event_id")
+        if not isinstance(event_id, str) or event_id not in graph_years:
+            continue
+        year_min = entity.detail.get("year_min")
+        year_max = entity.detail.get("year_max")
+        if not _is_year(year_min) or not _is_year(year_max):
+            continue
+        if year_min > year_max:
+            year_min, year_max = year_max, year_min
+        graph_year, title = graph_years[event_id]
+        if year_min <= graph_year <= year_max:
+            continue
+        key = (event_id, year_min, year_max)
+        if key in seen:
+            continue
+        seen.add(key)
+        if year_min == year_max:
+            recorded = _year_label(year_min)
+        else:
+            recorded = f"{_year_label(year_min)}—{_year_label(year_max)}"
+        notes.append(f"图谱系「{title}」于{_year_label(graph_year)}，RAG 史料记载涉及{recorded}")
+    return notes
+
+
+def _is_year(value: Any) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value != 0
+
+
 def _neutralize_instruction_text(text: str) -> str:
     """把文本中的「忽略指令 / 系统提示词」等越狱标记替换为中性标注。"""
 
@@ -971,6 +1181,8 @@ def _grounded_certainty(
 
 
 def _compose_entity_text(entity: ObservedEntity, observed: ObservedEvidence) -> str:
+    if entity.kind == "rag":
+        return _compose_rag_chunk_text(entity)
     citation_ids = [
         citation_id
         for citation_id, observed_citation in observed.citations.items()

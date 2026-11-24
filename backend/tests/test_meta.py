@@ -1,6 +1,6 @@
-"""只读 meta 接口测试（V1.0.1 / TC-06）。
+"""只读 meta 接口测试（V1.0.1 / TC-06；V1.0.5 版本号统一）。
 
-验收：`/api/health` 返回 version=1.0.1；`/api/meta` 的 counts/hash 与
+验收：`/api/health` 返回 version=1.0.5；`/api/meta` 的 counts/hash 与
 `backend/data/snapshot.meta.json` 完全一致；capabilities 含 5 个 V1.0 动作类型；
 响应可被契约 JSON Schema 校验。
 """
@@ -33,7 +33,7 @@ def test_health(client: TestClient) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["ok"] is True
-    assert payload["version"] == "1.0.3"
+    assert payload["version"] == "1.0.5"
 
 
 def test_meta_counts_and_hash_match_snapshot_meta(
@@ -46,7 +46,7 @@ def test_meta_counts_and_hash_match_snapshot_meta(
 
     assert payload["ok"] is True
     assert payload["schema_version"] == "1.0"
-    assert payload["api_version"] == "1.0.1"
+    assert payload["api_version"] == "1.0.5"
     assert payload["snapshot"]["version"] == meta["snapshot_version"]
     assert payload["snapshot"]["hash"] == f"sha256:{meta['content_hash']}"
     assert payload["snapshot"]["counts"] == meta["counts"]

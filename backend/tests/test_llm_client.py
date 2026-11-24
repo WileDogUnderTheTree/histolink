@@ -13,6 +13,7 @@ import pytest
 
 from llm_client import (
     DEFAULT_BASE_URL,
+    DEFAULT_FALLBACK_MODEL,
     DEFAULT_MODEL,
     LLMClient,
     LLMConfigError,
@@ -63,7 +64,36 @@ def test_settings_defaults() -> None:
     assert settings.api_key == API_KEY
     assert settings.base_url == DEFAULT_BASE_URL
     assert settings.model == DEFAULT_MODEL
+    assert settings.fallback_model == DEFAULT_FALLBACK_MODEL
     assert settings.timeout_seconds == 30.0
+
+
+def test_settings_fallback_model_override() -> None:
+    """V1.0.5：MODELSCOPE_FALLBACK_MODEL 可覆盖默认备用模型。"""
+
+    settings = load_llm_settings(
+        {
+            "MODELSCOPE_API_KEY": API_KEY,
+            "MODELSCOPE_MODEL": "Qwen/Qwen3.5-35B-A3B",
+            "MODELSCOPE_FALLBACK_MODEL": "Qwen/Qwen2.5-7B-Instruct",
+        },
+        load_env_file=False,
+    )
+    assert settings.fallback_model == "Qwen/Qwen2.5-7B-Instruct"
+
+
+def test_settings_disables_fallback_when_same_as_primary() -> None:
+    """主备同名时没有可切换的模型，fallback_model 归一为 None（避免重复打限流模型）。"""
+
+    settings = load_llm_settings(
+        {
+            "MODELSCOPE_API_KEY": API_KEY,
+            "MODELSCOPE_MODEL": "Qwen/Qwen3.5-8B-Instruct",
+            "MODELSCOPE_FALLBACK_MODEL": "Qwen/Qwen3.5-8B-Instruct",
+        },
+        load_env_file=False,
+    )
+    assert settings.fallback_model is None
 
 
 def test_settings_alias_names() -> None:

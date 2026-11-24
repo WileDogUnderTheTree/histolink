@@ -41,6 +41,8 @@ export interface AgentAnswerView {
   uiActions: UIAction[];
   snapshotVersion: string;
   requestId: string;
+  /** V1.0.5 高可用补丁：最终完成回答的模型名（null 表示后端未上报）。 */
+  modelUsed: string | null;
 }
 
 /** transcript 里可参与历史的最小结构（与 React 状态解耦）。 */
@@ -56,6 +58,26 @@ export const MAX_HISTORY_TURNS = 10;
 export const MAX_HISTORY_CONTENT = 4000;
 export const MAX_QUESTION_LENGTH = 2000;
 export const RATE_LIMIT_MESSAGE = "史令查阅太频繁啦，请稍等几秒再问哦～";
+
+/**
+ * V1.0.5 高可用补丁：主模型（Qwen3.5-35B-A3B）被限流 / 网关错误 / 超时后，
+ * 后端会自动切换备用轻量模型（默认 Qwen3.5-8B-Instruct）完成回答，并在 `trace.model_used`
+ * 里标明最终模型。前端识别到「不是 35B」时，在回答下方补一行轻提示，避免用户误以为
+ * 回答质量下降是数据问题。
+ */
+export const MODEL_FALLBACK_HINT = "当前网络繁忙，史令已切换至轻量模型回答";
+/** 主模型名（Qwen3.5-35B-A3B）的特征标记；不含它即视为备用轻量模型。 */
+const PRIMARY_MODEL_MARKER = /35B/i;
+
+/** 是否需要展示「已切换轻量模型」提示；未上报模型名时不提示。 */
+export function shouldShowModelFallbackHint(
+  modelUsed: string | null | undefined,
+): boolean {
+  const name = modelUsed?.trim();
+  if (!name) return false;
+  return !PRIMARY_MODEL_MARKER.test(name);
+}
+
 const MAX_CONTEXT_ID_LENGTH = 128;
 
 export class AgentClientError extends Error {
@@ -253,6 +275,7 @@ export function answerViewFromEnvelope(envelope: AnswerEnvelope): AgentAnswerVie
     uiActions: envelope.ui_actions ?? [],
     snapshotVersion: envelope.snapshot.version,
     requestId: envelope.request_id,
+    modelUsed: envelope.trace?.model_used ?? null,
   };
 }
 

@@ -11,6 +11,69 @@
 
 ---
 
+## [1.0.5] - 2026-11-24
+
+### V1.0.5 RAG 史料检索与混合架构
+
+- **新增 `backend/rag/`（RAG 数据层）**：
+  - `corpus.py`：按 `## 事件名` 解析两份 WorkBuddy 语料（21 + 30 = **51 篇**），抽取
+    白话文 / 古文原典、`source`（史记等）/ `source_label` / `record_type`（正史 / 传说）/
+    纪年区间，并把事件名对齐到图谱 `event_id`；切分为 **≤500 字**（目标 300–500 字）的 chunk，
+    共 **186 chunk**（白话 89 + 古文摘录 97，传说 2）。
+  - `embedding.py`：embedding provider 链 —— ModelScope OpenAI 兼容 `/embeddings`（首选，
+    当前账号推理 API 未开放 embedding 模型，探测后自动降级）→ 本地 `fastembed` ONNX
+    `BAAI/bge-small-zh-v1.5`（512 维，CPU 推理，无需 torch）→ 纯 Python 字符 n-gram 哈希兜底；
+    provider / model / dim 写进 manifest，检索端严格按 manifest 重建，避免向量空间错配。
+  - `store.py`：`backend/data/chroma_db/` 持久化 chromadb（collection `histolink_rag_v1`，
+    cosine 距离）+ 检索入口（≤3 条 / 每条 ≤300 字）+ manifest 状态。
+- **新增入库脚本 `backend/scripts/ingest_rag.py`**：解析 → 切分 → 向量化 → 写库 → 写 manifest
+  → 库内自检检索（商鞅变法 / 赤壁之战 / 黄帝战蚩尤）；支持 `--dry-run` / `--stats` / `--provider`。
+- **新增第 9 个只读工具 `search_historical_text(query, top_k≤3)`**
+  （`backend/agent/tools/rag.py`）：返回 chunk 正文 + 元数据（event_name / record_type / section /
+  source / event_id / year 区间 / score）+ 统一 `citations`；**单次最多 3 条、每条正文最多 300 字**；
+  空结果 `ok=true,total=0`，向量库未就绪返回 `INSUFFICIENT_EVIDENCE` 失败信封。
+- **契约（V1.0 只增可选值，不破坏既有调用方）**：`Citation.kind` 新增 `rag`、
+  新增可选 `record_type`（正史 / 传说）；`tools-v1.schema.json` 扩到 **9 个工具**；
+  `api-v1.openapi.json` 重新导出、`frontend/lib/api-types.ts` 重新生成。
+- **Agent 图谱 + RAG 混合路由**（`prompts.py` / `schemas.py` / `validator.py` / `orchestrator.py`）：
+  - System Prompt：图谱先取「基础事实」→ RAG 组合查询（用户问题 + 图谱实体/年份）→
+    冲突以图谱为准 → 传说 `[传说]` → 图谱与 RAG 双空必须 `insufficient`；注入 RAG 向量库状态。
+  - `EvidenceKind` 新增 `rag`（`evidence.entity_id` = chunk_id = citation id）。
+  - **轮次硬上限 4 → 6**：混合路由（图谱 1–2 轮 + RAG 1 轮 + final）外加 JSON 修复轮；
+    Prompt 增加 `claims ≤3 / evidence ≤4` 长度硬约束（实测 Qwen 在长史料下曾输出 100+ 条 claims
+    导致 JSON 被 `max_tokens` 截断，修复轮提示同步要求输出最短 JSON）。
+  - **延迟与可靠性**：后端启动时守护线程**预热 RAG 向量库**（首个 RAG 问题不再承担 ~10s 冷启动）；
+    Next dev 同源代理 `experimental.proxyTimeout` 30s → **120s**（否则首个混合回答会被代理
+    ECONNRESET，前端看到 500）；Prompt 增加「相关性 > 实体命中 / 无直接记载必须 insufficient」，
+    修复「秦始皇吃过西红柿吗」被「秦始皇统一六国 + 张骞通西域」旁证凑成 grounded 的问题。
+  - `EvidenceValidator`：grounded 正文由服务端按 **① 基础事实（来自图谱）** /
+    **② 史料记载细节（来自 RAG）** 分节生成；RAG 年份区间与图谱纪年冲突时标注
+    「史料记载有异……以图谱为准」；传说 chunk 句首强制 `[传说]`；无 RAG 证据时正文与 V1.0.4 一致。
+- **版本号统一 V1.0.5**：`frontend/package.json` / 首页 / 图谱 / 时间轴 / 浏览器标题 /
+  Agent 抽屉 / FastAPI `APP_VERSION` / `contracts.models.API_VERSION`。
+- **测试**：后端 **269 → 292 passed**（新增 `test_rag_corpus` 10 条、`test_tools_rag` 9 条、
+  `test_agent_rag_routing` 3 条、工具注册表 RAG 参数 1 条）；契约导出 / 前端类型生成 / 契约校验同步更新。
+- **数据产物**：`backend/data/chroma_db/`（chroma 持久化 + `manifest.json`，**已 gitignore**，
+  重建命令 `backend\.venv\Scripts\python backend\scripts\ingest_rag.py`）。
+- **文档**：新增 [`docs/V1.0.5-RAG混合检索设计.md`](docs/V1.0.5-RAG混合检索设计.md)（架构、数据口径、
+  混合路由、冲突处理、Token 控制、验收命令与实测结果）。
+
+### V1.0.5 高可用补丁：LLM 自动降级（2026-11-24）
+
+- **配置**：`MODELSCOPE_FALLBACK_MODEL`（默认 `Qwen/Qwen3.5-8B-Instruct`）由
+  `backend/llm_client.py` 的 `load_llm_settings()` 读取（本项目无独立 `config.py`，LLM 配置统一在此处）；
+  与主模型同名时自动禁用降级，避免重复打同一个已限流模型。`backend/.env.example` 同步补充说明。
+- **自动降级**：`LLMClient.chat()` 主模型遇到 **HTTP 429 / 502 / 504** 或 `httpx.TimeoutException`
+  时记录 warning 日志，并自动切换备用轻量模型**重试一次**；其它错误（400/401/302/500/503）不降级；
+  备用模型也失败时才抛出 `LLM_UPSTREAM_ERROR` / `LLM_TIMEOUT`（消息带「已降级重试，仍失败」上下文）。
+- **可观测**：`LLMChatResult.model_used` → `AgentResult.model_used` → API `trace.model_used`
+  （V1.0 只增可选字段，向后兼容）；前端抽屉与 `/ask` 在最终模型不是 35B 时于回答下方显示灰字
+  「当前网络繁忙，史令已切换至轻量模型回答」。
+- **测试**：后端 **292 → 306 passed**（新增降级单测：429/502/504/超时自动切换、401/500/503 不降级、
+  备用模型也失败、主备同名禁用、配置默认值 / 覆盖，以及 API `trace.model_used` 贯通用例）。
+
+---
+
 ## [1.0.4] - 2026-11-24
 
 ### V1.0.4 前端 Agent 数据层

@@ -60,6 +60,12 @@ const allowedDevOrigins = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // V1.0.5：RAG 混合检索的首个问题可能包含「4–6 次模型调用 + 向量库冷启动」，
+  // 默认 30s 的 dev 代理超时会把仍在计算的请求直接 ECONNRESET（前端看到 500）。
+  // 这里放宽到 120s；后端本身仍有 LLM 30s/次超时与 6 轮硬上限兜底。
+  experimental: {
+    proxyTimeout: 120_000,
+  },
   ...(allowedDevOrigins.length > 0 ? { allowedDevOrigins } : {}),
   async rewrites() {
     return [

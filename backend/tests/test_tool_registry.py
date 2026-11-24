@@ -24,7 +24,7 @@ def registry(toolkit: Any) -> ToolRegistry:
 
 def test_registry_matches_tool_whitelist(registry: ToolRegistry) -> None:
     assert set(registry.tool_names) == set(TOOL_NAMES)
-    assert len(registry.tool_names) == 8
+    assert len(registry.tool_names) == 9
 
 
 def test_tool_catalog_is_json_and_complete(registry: ToolRegistry) -> None:
@@ -88,6 +88,19 @@ def test_validate_enforces_relation_two_people(registry: ToolRegistry) -> None:
         registry.validate_arguments(
             "get_relation", {"person_id_a": person_id, "person_id_b": person_id}
         )
+
+
+def test_validate_enforces_rag_top_k_limit(registry: ToolRegistry) -> None:
+    """V1.0.5：RAG 工具 top_k 严格 1..3（Token 控制是产品硬约束）。"""
+
+    kwargs = registry.validate_arguments(
+        "search_historical_text", {"query": "商鞅变法 秦孝公 前356年"}
+    )
+    assert kwargs == {"query": "商鞅变法 秦孝公 前356年", "top_k": 3}
+    with pytest.raises(InvalidToolArguments):
+        registry.validate_arguments("search_historical_text", {"query": "赤壁", "top_k": 4})
+    with pytest.raises(InvalidToolArguments):
+        registry.validate_arguments("search_historical_text", {"query": ""})
 
 
 def test_execute_valid_call(registry: ToolRegistry) -> None:

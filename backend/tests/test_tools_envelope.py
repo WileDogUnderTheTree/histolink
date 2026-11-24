@@ -1,10 +1,14 @@
-"""统一返回信封 / 工具注册表测试（V1.0.2）。
+"""统一返回信封 / 工具注册表测试（V1.0.2；V1.0.5 追加 RAG 工具）。
 
 覆盖：
-- 8 个工具都返回统一字段（items / citations / truncated / snapshot_version）；
+- 9 个工具（V1.0.5 起含 search_historical_text）都返回统一字段
+  （items / citations / truncated / snapshot_version）；
 - `data` 全部符合冻结的 `contracts/tools-v1.schema.json` 出参；
 - 注册表与契约工具名一致，未知工具返回 INVALID_REQUEST；
 - `ToolResult` 新增字段保持向后兼容（V1.0 只增可选字段）。
+
+注：`search_historical_text` 依赖本地向量库，单独在 `test_tools_rag.py` 用 fake store 覆盖；
+这里只校验注册表名与契约一致，不触发真实 chromadb 加载。
 """
 
 from __future__ import annotations
@@ -34,7 +38,8 @@ TOOL_CALLS: list[tuple[str, dict[str, Any]]] = [
 
 
 def test_registry_matches_frozen_contract(tool_contracts: dict[str, dict[str, Any]]) -> None:
-    assert len(TOOL_NAMES) == 8
+    assert len(TOOL_NAMES) == 9
+    assert "search_historical_text" in TOOL_NAMES
     assert set(TOOL_NAMES) == set(TOOL_FUNCTIONS) == set(tool_contracts)
 
 
