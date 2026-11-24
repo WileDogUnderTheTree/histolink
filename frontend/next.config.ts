@@ -50,8 +50,18 @@ const extraAllowedDevOrigins = (process.env.ALLOWED_DEV_ORIGINS ?? "")
  */
 const UUMIT_TUNNEL_DEV_ORIGINS = ["**.uua2a.com", "**.uumit.com"];
 
+/**
+ * 本机回环地址的额外 dev 放行来源（V1.0.5.3 体检 F-11）。
+ *
+ * Next 16 默认只把 `localhost` 视作同源；用 `http://127.0.0.1:3000` 打开 dev 页面时，
+ * `/_next/*` dev 资源会被当作跨源请求拦截，表现为「HTML 能打开但 JS 不水合、按钮全失效」。
+ * 这里显式放行回环 IP，避免启动器 / 体检脚本因主机名写法不同而踩坑。
+ */
+const LOOPBACK_DEV_ORIGINS = ["127.0.0.1", "[::1]"];
+
 const allowedDevOrigins = [
   ...new Set([
+    ...LOOPBACK_DEV_ORIGINS,
     ...detectLocalIPv4Hosts(),
     ...UUMIT_TUNNEL_DEV_ORIGINS,
     ...extraAllowedDevOrigins,

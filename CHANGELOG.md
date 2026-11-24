@@ -11,6 +11,29 @@
 
 ---
 
+## [1.0.5.3] - 2026-11-25（进行中 · 全面体检专项启动）
+
+> 版本主题：**全面体检专项**——V1.0.5.2 功能封版后的全量健康检查（构建 / 数据 / 契约 / 测试 / UI·可访问性 / 性能 / 文档 / 安全），只修 P0 / P1 与门禁稳定性，不新增业务功能，为 V1.0.6 多轮对话打稳定基线。
+> 体检计划、八维度检查项与基线报告：`docs/V1.0.5.3-全面体检专项.md`。
+
+### 新增
+
+- **UI 体检工具 `scripts/health-check-ui.mjs`**：基于 CDP + 无头 Edge 的 `/ask` 页面自动化体检。默认 6 个场景 / 12 组断言（侧边栏折叠与持久化、聊天气泡 85% + 行高 1.8、预览模式无侧边栏宽版、引用 >3 折叠、史引 40/60 分屏、窄屏浮层），`--live` 追加真实问答场景；产物为 `*.png` 截图 + `results.json`，可复现、失败即非 0 退出。
+- **体检计划文档** `docs/V1.0.5.3-全面体检专项.md`：八维度检查项、四阶段执行节奏、V1.0.5.3 出口标准、2026-11-25 基线结果与首批 findings 清单。
+
+### 修复
+
+- **F-01 门禁稳定性（P1）**：`gen-frontend-types` / `build-persons` / `extract-sources` 的 `--check` 改为换行归一化比较（新增 `scripts/lib/text-compare.mjs`）。此前在 `core.autocrlf=true` 的 Windows 工作区，检出后的 CRLF 文件会被逐字节比较误判为「生成物过期」，导致 `scripts/verify.ps1` 偶发失败。
+- **F-11 dev 水合（P2）**：`next.config.ts` 的 `allowedDevOrigins` 补充 `127.0.0.1`，修复用 `http://127.0.0.1:3000` 打开 dev 环境时 `/_next/*` dev 资源被同源策略拦截、页面 HTML 正常但无法水合（交互全失效）的问题。
+
+### 验证
+
+- 基线门禁 `scripts/verify.ps1` **12/12 PASS**（总耗时 16s；后端 pytest **336 passed** / 前端 vitest **146 passed** / evals 30/30 / next build 3.4s）。
+- `node scripts/health-check-ui.mjs --live` **12 组断言全绿**，浏览器控制台 0 条产品级 error。
+- 静态质量基线：ruff（验收范围）8 errors、全 `backend/` 44 errors、`ruff format --check` 44 文件待格式化；pytest 1 条 Starlette deprecation warning —— 均纳入 V1.0.7 清理，详见体检报告 §5。
+
+---
+
 ## [1.0.5.2] - 2026-11-25
 
 > 补丁版本主题：**Agent 双数据源接入（人物关系图 × 时间轴·大事记）+ 模型切换窗口 + 历史对话侧边栏**。
@@ -48,11 +71,30 @@
 
 ### 验证
 
-- 后端 pytest **336 passed**（新增 `test_agent_dual_source.py` / `test_agent_models.py` / `test_llm_model_selection.py`，含手动选择模型 400 降级）；前端 vitest **141 passed**（新增 `conversation-store.test.ts` / `model-selection.test.ts`）；`tsc --noEmit` / `next build` 通过；`scripts/verify.ps1` 12 步门禁全绿；`validate-contract` 9 路径 / 9 模型通过。\n- 真实 LLM 冒烟（2026-11-25）：人物类「和孔子有关系的人有哪些？」→ grounded，`[人物关系图]` 在前 / `[时间轴·大事记]` 在后，`trace.sources={"timeline":true,"graph":true}`；事件类「赤壁之战发生在哪一年？」→ grounded；手动选择 `Qwen/Qwen3.5-8B-Instruct` 实测 ModelScope 返回 400「Invalid model id」，已自动降级 `Qwen/Qwen3.5-35B-A3B` 正常回答（`trace.model_requested` = 8B、`trace.model_used` = 35B）。\n- Edge headless 视觉验收：1600px 下 `/ask` 左侧历史对话侧边栏（今天 / 过去 30 天、新建对话选中态）与输入框左上角模型切换按钮正常；≤1080px 侧边栏按设计隐藏，主对话区布局不变。
+- 后端 pytest **336 passed**（新增 `test_agent_dual_source.py` / `test_agent_models.py` / `test_llm_model_selection.py`，含手动选择模型 400 降级）；前端 vitest **141 passed**（新增 `conversation-store.test.ts` / `model-selection.test.ts`）；`tsc --noEmit` / `next build` 通过；`scripts/verify.ps1` 12 步门禁全绿；`validate-contract` 9 路径 / 9 模型通过。
+- 真实 LLM 冒烟（2026-11-25）：人物类「和孔子有关系的人有哪些？」→ grounded，`[人物关系图]` 在前 / `[时间轴·大事记]` 在后，`trace.sources={"timeline":true,"graph":true}`；事件类「赤壁之战发生在哪一年？」→ grounded；手动选择 `Qwen/Qwen3.5-8B-Instruct` 实测 ModelScope 返回 400「Invalid model id」，已自动降级 `Qwen/Qwen3.5-35B-A3B` 正常回答（`trace.model_requested` = 8B、`trace.model_used` = 35B）。
+- Edge headless 视觉验收：1600px 下 `/ask` 左侧历史对话侧边栏（今天 / 过去 30 天、新建对话选中态）与输入框左上角模型切换按钮正常；≤1080px 侧边栏按设计隐藏，主对话区布局不变。
+
+### 变更（UI 呼吸感重构 · 2026-11-25 同版追加）
+
+> 针对 V1.0.5.2 交付后「`/ask` 页面空间拥挤」的阅读体验问题追加的纯前端补丁；不改 API 契约、不改数据、不新增业务能力。
+
+- **侧边栏折叠**：`ConversationSidebar` 头部新增 `«` 收起按钮；收起后顶栏出现「☰ 历史对话」展开入口，折叠偏好写入 `localStorage`（`histolink.ask.sidebar.v1`，刷新保持）；≤1080px 默认收起，展开时切换为左侧浮层 + 遮罩（Esc / 点击遮罩收起）。史引分屏打开时侧边栏自动让位，关闭分屏后恢复用户选择。
+- **聊天区加宽与排版**：`/ask` 单栏宽度 800px → 1040px；气泡最大宽度改为聊天内容区的 **85%**；正文 15px / `line-height: 1.8`，消息内边距 18×20、对话列表 26×30 / 间距 22px。
+- **引用卡片折叠**：引用 >3 条时默认只展示前 3 条，其余收进「▾ 展开全部 N 条引用」胶囊按钮（带剩余条数角标与 `aria-expanded`），点击向下展开 / 收起。
+- **分屏比例自适应**：史引面板出现时 `workspaceLayout` 切换为 2fr : 3fr 网格（左对话 40% / 右面板 60%，1600px 实测 610 : 916）；无史引且侧边栏收起（或预览模式）时，对话区放宽到 `clamp(760px, 68vw, 1280px)` 并居中。
+- **模型切换按钮微调**：下拉按钮改为贴住输入框正上方左侧的圆角胶囊（10.5px 字号 / 999px 圆角 / 轻边框），弱化「工具条」存在感。
+- 新增单测 `frontend/tests/ask-layout.test.ts`（折叠偏好解析 / 窄屏默认收起 / 落盘可逆 / 常量契约，共 5 条）。
+
+### 验证（UI 呼吸感补丁追加）
+
+- 前端 vitest **146 passed**（12 个测试文件，新增 `ask-layout.test.ts`）；`tsc --noEmit` / `next build` / `scripts/verify.ps1` 12 步门禁全绿。
+- `node scripts/health-check-ui.mjs --live` 12 组 UI 断言全绿：1600px 默认视图、侧边栏收起 / 持久化 / 展开、气泡 85%、`line-height: 1.8`、模型按钮位于输入框上方左侧、预览无侧边栏宽版、引用默认 3 条 + 展开 6 条、史引 40/60 分屏、窄屏浮层、真实问答自动分屏；浏览器控制台 0 条产品级 error。
+- 验收截图归档 `docs/images/v1.0.5.2-ui-01..06-*.png`。
 
 ---
 
-## [Unreleased] - 2026-11-25
+## [1.0.5.2-仓库基线] - 2026-11-25（原 `[Unreleased]` 段，V1.0.5.3 体检归档）
 
 > 主题：**本机材料整合 + RAG 语料扩展**（v1.0.5.2 开发前的仓库基线；未改外部 API 契约）。
 

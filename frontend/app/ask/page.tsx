@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -14,6 +14,13 @@ import {
   shouldShowModelFallbackHint,
   type Citation,
 } from "@/lib/agent-client";
+import {
+  ASK_SIDEBAR_NARROW_QUERY,
+  ASK_SIDEBAR_STORAGE_KEY,
+  askSidebarPreferenceToStored,
+  resolveAskSidebarPreference,
+  type AskSidebarPreference,
+} from "@/lib/ask-layout";
 import { graphHref, surfaceLinksFromHref, timelineHref } from "@/lib/routes";
 
 import styles from "./ask.module.css";
@@ -33,6 +40,14 @@ const SUGGESTIONS = [
 
 /** 页面级滚动位置（V1.0.5.1）：从时间轴 / 图谱「返回聊天」时恢复阅读位置。 */
 const SCROLL_STORAGE_KEY = "histolink.ask.scroll.v1";
+
+/**
+ * 引用折叠阈值（V1.0.5.2 UI 呼吸感补丁）。
+ *
+ * 引用超过 3 条时默认只展示前 3 条，剩余条目收进「展开全部 N 条引用」按钮，
+ * 避免引用卡片把屏幕纵向撑爆；点击后再向下展开 / 收起。
+ */
+const CITATION_COLLAPSE_LIMIT = 3;
 
 const ANSWER_STATUS_LABEL: Record<AgentAnswerView["mode"], string> = {
   grounded: "已核验",
@@ -87,9 +102,14 @@ const PREVIEW_TRANSCRIPT: AgentTurn[] = [
     role: "assistant",
     content:
       "## 两场改革的时代背景\n\n商鞅变法发生在**战国时期的秦国**，王安石变法发生在**北宋宋神宗时期**。两者都试图通过制度调整增强国家能力，但面对的社会结构与政治条件并不相同。\n\n> 这是多轮对话布局预览：正文、状态与引用都只是静态占位，不会调用后端。",
+    // V1.0.5.2 UI 呼吸感补丁：预置 6 条引用，用于验证「默认只展示前 3 条 + 展开全部」的折叠交互。
     answer: previewAnswer("grounded", [
       previewCitation("preview-cite-shangyang", "zhanguo-05", "商鞅变法", "史脉图谱"),
       previewCitation("preview-cite-wanganshi", "beisong-10", "王安石变法", "史脉图谱"),
+      previewCitation("preview-cite-fashu", "zhanguo-09", "法家变法比较", "史脉时间轴"),
+      previewCitation("preview-cite-shangjun", "zhanguo-11", "商君书·更法", "史脉时间轴"),
+      previewCitation("preview-cite-songshi", "beisong-12", "宋史·王安石传", "史脉时间轴"),
+      previewCitation("preview-cite-xuzizhi", "beisong-13", "续资治通鉴长编", "史脉时间轴"),
     ]),
   },
   {
@@ -113,9 +133,11 @@ function citationHref(citation: Citation): string | null {
 }
 
 function Citations({ citations, onOpenReference }: { citations: Citation[]; onOpenReference: (href: string) => void }) {
-  if (!citations.length) return null;
+  // Hook 必须无条件调用：引用列表长度在同一轮内稳定，但保持 hook 顺序一致更安全。
   const [expanded, setExpanded] = useState(false);
-  const visibleCitations = expanded ? citations : citations.slice(0, 3);
+  if (!citations.length) return null;
+  const visibleCitations = expanded ? citations : citations.slice(0, CITATION_COLLAPSE_LIMIT);
+  const hiddenCount = citations.length - CITATION_COLLAPSE_LIMIT;
   return (
     <div className={styles.citations} aria-label="回答引用">
       <div className={styles.citationsHeading}><span />史料来源</div>
@@ -127,7 +149,19 @@ function Citations({ citations, onOpenReference }: { citations: Citation[]; onOp
           return href ? <button type="button" className={styles.citation} key={citation.id} title={citation.quote ?? label} onClick={() => onOpenReference(href)}>{content}</button> : <span className={styles.citation} key={citation.id} title={citation.quote ?? label}>{content}</span>;
         })}
       </div>
-      {citations.length > 3 ? <button type="button" className={styles.expandCitations} onClick={() => setExpanded((value) => !value)}>{expanded ? "收起引用" : `展开全部 ${citations.length} 条引用`}</button> : null}
+      {citations.length > CITATION_COLLAPSE_LIMIT ? (
+        <button
+          type="button"
+          className={styles.expandCitations}
+          data-expanded={expanded ? "true" : undefined}
+          aria-expanded={expanded}
+          onClick={() => setExpanded((value) => !value)}
+        >
+          <span className={styles.expandCitationsChevron} aria-hidden="true">▾</span>
+          <span>{expanded ? "收起引用" : `展开全部 ${citations.length} 条引用`}</span>
+          {expanded ? null : <span className={styles.expandCitationsCount} aria-hidden="true">+{hiddenCount}</span>}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -210,6 +244,56 @@ function AskWorkspace() {
   const lastUserScrollTop = useRef(0);
   const navigationIntent = useRef(false);
   const intentResetTimer = useRef<number | null>(null);
+  /**
+   * 侧边栏折叠偏好（V1.0.5.2 UI 呼吸感补丁）。
+   *
+   * 首帧按「展开」渲染（SSR 与 hydration 一致），挂载后再读取 localStorage / 视口宽度：
+   * 宽屏尊重用户上次选择，窄屏默认收起并改为浮层展开。
+   */
+  const [sidebarPreference, setSidebarPreference] = useState<AskSidebarPreference>("expanded");
+  const [sidebarReady, setSidebarReady] = useState(false);
+  const [isNarrowViewport, setIsNarrowViewport] = useState(false);
+  const sidebarCollapsed = sidebarPreference === "collapsed";
+  /** 史引分屏时自动收起侧边栏，把横向空间让给 40% / 60% 分屏；关闭分屏后恢复用户选择。 */
+  const sidebarVisible = !isPreviewMode && sidebarReady && !sidebarCollapsed && !copilotPreview;
+  /** 左侧没有实际占用宽度（预览模式 / 手动收起）→ 对话区切到 60%–70% 宽版并居中。 */
+  const sidebarSpaceFreed = isPreviewMode || sidebarCollapsed;
+
+  const setSidebarCollapsed = useCallback((collapsed: boolean) => {
+    const next: AskSidebarPreference = collapsed ? "collapsed" : "expanded";
+    setSidebarPreference(next);
+    try {
+      window.localStorage.setItem(ASK_SIDEBAR_STORAGE_KEY, askSidebarPreferenceToStored(next));
+    } catch {
+      // 存储不可用时只丢失「刷新后保持折叠」的偏好，不影响当次交互。
+    }
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia(ASK_SIDEBAR_NARROW_QUERY);
+    let stored: string | null = null;
+    try {
+      stored = window.localStorage.getItem(ASK_SIDEBAR_STORAGE_KEY);
+    } catch {
+      stored = null;
+    }
+    setSidebarPreference(resolveAskSidebarPreference(stored, media.matches));
+    setIsNarrowViewport(media.matches);
+    setSidebarReady(true);
+    const onMediaChange = (event: MediaQueryListEvent) => setIsNarrowViewport(event.matches);
+    media.addEventListener("change", onMediaChange);
+    return () => media.removeEventListener("change", onMediaChange);
+  }, []);
+
+  // 窄屏下侧边栏改为浮层：Esc 收起，与点击遮罩的语义一致。
+  useEffect(() => {
+    if (!isNarrowViewport || !sidebarVisible) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSidebarCollapsed(true);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isNarrowViewport, sidebarVisible, setSidebarCollapsed]);
 
   useEffect(() => setDraft(question), [question]);
 
@@ -341,10 +425,12 @@ function AskWorkspace() {
   const chooseSuggestion = (suggestion: string) => setDraft(suggestion);
 
   const userTurnCount = visibleTranscript.filter((turn) => turn.role === "user").length;
+  /** 折叠按钮只在「有侧边栏可开合」时出现：预览模式 / 史引分屏自动让位时不显示。 */
+  const canToggleSidebar = sidebarReady && !isPreviewMode && !copilotPreview;
 
   return (
-    <div className={styles.appFrame}>
-      {isPreviewMode ? null : (
+    <div className={`${styles.appFrame} ${sidebarSpaceFreed ? styles.sidebarCollapsed : ""}`}>
+      {sidebarVisible ? (
         <ConversationSidebar
           groups={conversationGroups}
           activeConversationId={activeConversationId}
@@ -353,17 +439,40 @@ function AskWorkspace() {
           onSelectConversation={(id) => void loadConversation(id)}
           loading={conversationsLoading}
           disabled={isAsking}
+          onCollapse={() => setSidebarCollapsed(true)}
         />
-      )}
+      ) : null}
+      {sidebarVisible && isNarrowViewport ? (
+        <button
+          type="button"
+          className={styles.sidebarBackdrop}
+          aria-label="关闭历史对话浮层"
+          onClick={() => setSidebarCollapsed(true)}
+        />
+      ) : null}
       <main className={styles.page}>
         <h1 className={styles.srOnly}>史脉问答</h1>
         <div className={`${styles.shell} ${copilotPreview ? styles.copilotMode : ""}`}>
         {/* 顶部导航：品牌「史脉问答」+ 流线型 S/史 图标常驻左侧，右侧是统一文字样式控制台导航。 */}
         <header className={styles.topbar}>
-          <Link className={styles.brand} href="/" aria-label="返回史脉首页">
-            <BrandMark className={styles.brandMark} size={40} />
-            <span className={styles.brandText}><small>SHIMAI · CONSOLE</small><strong>史脉问答</strong></span>
-          </Link>
+          <div className={styles.topbarLead}>
+            {canToggleSidebar && !sidebarVisible ? (
+              <button
+                type="button"
+                className={styles.sidebarToggle}
+                title="展开历史对话"
+                aria-label="展开历史对话侧边栏"
+                onClick={() => setSidebarCollapsed(false)}
+              >
+                <span className={styles.sidebarToggleIcon} aria-hidden="true">☰</span>
+                <span>历史对话</span>
+              </button>
+            ) : null}
+            <Link className={styles.brand} href="/" aria-label="返回史脉首页">
+              <BrandMark className={styles.brandMark} size={40} />
+              <span className={styles.brandText}><small>SHIMAI · CONSOLE</small><strong>史脉问答</strong></span>
+            </Link>
+          </div>
           <nav className={styles.nav} aria-label="主要导航"><Link href="/timeline">时间轴</Link><Link href="/graph">人物图谱</Link><button type="button" onClick={openDrawer}>悬浮问答</button><Link href="/">返回首页</Link></nav>
         </header>
 

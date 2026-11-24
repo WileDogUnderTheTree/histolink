@@ -17,10 +17,48 @@
 .header {
   display: flex;
   flex: 0 0 auto;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 12px 12px 18px;
+  border-bottom: 1px solid #ece2d4;
+}
+
+.headerText {
+  display: flex;
+  min-width: 0;
   flex-direction: column;
   gap: 1px;
-  padding: 16px 18px 12px;
-  border-bottom: 1px solid #ece2d4;
+}
+
+/* 折叠按钮（V1.0.5.2 UI 呼吸感补丁）：收起后把 236px 宽度整体让给中间聊天区。 */
+.collapseButton {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #e3d7c8;
+  border-radius: 8px;
+  padding: 0;
+  background: rgb(255 253 248 / 72%);
+  color: #8a7566;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
+}
+
+.collapseButton:hover {
+  border-color: #c99c91;
+  background: #fffaf2;
+  color: #8b0000;
+}
+
+.collapseButton:focus-visible {
+  outline: 2px solid #8b0000;
+  outline-offset: 2px;
 }
 
 .kicker {
@@ -169,9 +207,35 @@
   line-height: 1.5;
 }
 
-/* 窄屏：v1.0.5.2 先隐藏侧边栏（v1.0.6 再补抽屉式入口），主对话区保持原布局。 */
+/* 窄屏：侧边栏默认收起（由页面状态控制），用户点「历史对话」展开后以浮层覆盖页面。
+   v1.0.6 接入重命名 / 删除 / 置顶时沿用该浮层交互。 */
 @media (max-width: 1080px) {
   .sidebar {
-    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 70;
+    width: min(308px, 86vw);
+    height: 100dvh;
+    align-self: auto;
+    box-shadow: 22px 0 52px rgb(60 38 24 / 22%);
+    animation: sidebarSlideIn 200ms ease both;
+  }
+}
+
+@keyframes sidebarSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    animation: none;
   }
 }

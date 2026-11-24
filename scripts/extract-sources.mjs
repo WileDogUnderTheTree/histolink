@@ -16,6 +16,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { DATA_DIR, ROOT, loadTsData } from "./lib/load-ts-data.mjs";
+import { sameText } from "./lib/text-compare.mjs";
 import { parseEventSourceRefs } from "./lib/parse-sources.mjs";
 
 const CHECK_MODE = process.argv.includes("--check");
@@ -224,7 +225,7 @@ if (CHECK_MODE) {
       diffs.push(`${output.label}：文件缺失`);
       continue;
     }
-    if (fs.readFileSync(output.file, "utf8") !== output.content) diffs.push(`${output.label}：内容与生成结果不一致`);
+    if (!sameText(fs.readFileSync(output.file, "utf8"), output.content)) diffs.push(`${output.label}：内容与生成结果不一致`);
   }
   if (diffs.length > 0) {
     console.error("✖ 引用结构化校验失败（生成物过期或手改）：");

@@ -15,6 +15,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { ROOT } from "./lib/load-ts-data.mjs";
+import { sameText } from "./lib/text-compare.mjs";
 
 const CHECK_MODE = process.argv.includes("--check");
 const OPENAPI_PATH = path.join(ROOT, "contracts", "api-v1.openapi.json");
@@ -51,7 +52,7 @@ if (CHECK_MODE) {
     process.exit(1);
   }
   const current = fs.readFileSync(OUTPUT_PATH, "utf8");
-  if (current !== content) {
+  if (!sameText(current, content)) {
     console.error("✖ 前端契约类型与 OpenAPI 不一致（生成物过期或手改）。");
     console.error("  修复：node scripts/gen-frontend-types.mjs");
     process.exit(1);

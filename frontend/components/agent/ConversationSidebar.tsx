@@ -6,7 +6,9 @@
  * 位置：`/ask` 页面最左侧的独立竖向侧边栏。
  * 结构：按时间分组——「今天」组内首项固定为「新建对话」（选中态浅灰背景），
  *       其后是今天的历史对话；「过去 30 天」组按时间倒序展示历史对话标题。
- * 交互：点击「新建对话」清空当前对话开启新会话；点击历史标题加载对应会话。
+ * 交互：点击「新建对话」清空当前对话开启新会话；点击历史标题加载对应会话；
+ *       标题右侧「«」收起侧边栏（V1.0.5.2 UI 呼吸感补丁，把宽度让给中间聊天区）；
+ *       窄屏（≤1080px）展开时由页面 CSS 切换为左侧浮层 + 遮罩。
  *
  * 数据：由 `AgentContext` 注入（v1.0.5.2 走 `lib/conversation-store.ts` 的内存实现 + 演示数据，
  * v1.0.6 接入真实持久化后本组件无需改动）。
@@ -24,6 +26,8 @@ export interface ConversationSidebarProps {
   isCurrentConversationEmpty?: boolean;
   onNewConversation: () => void;
   onSelectConversation: (id: string) => void;
+  /** 收起侧边栏（V1.0.5.2 UI 呼吸感补丁：把横向空间让给中间聊天区）。 */
+  onCollapse: () => void;
   /** 会话列表加载中（首屏读取演示数据时显示占位）。 */
   loading?: boolean;
   disabled?: boolean;
@@ -63,14 +67,26 @@ export function ConversationSidebar({
   isCurrentConversationEmpty = false,
   onNewConversation,
   onSelectConversation,
+  onCollapse,
   loading = false,
   disabled = false,
 }: ConversationSidebarProps) {
   return (
     <aside className={styles.sidebar} aria-label="历史对话">
       <header className={styles.header}>
-        <span className={styles.kicker}>HISTOLINK</span>
-        <strong>历史对话</strong>
+        <div className={styles.headerText}>
+          <span className={styles.kicker}>HISTOLINK</span>
+          <strong>历史对话</strong>
+        </div>
+        <button
+          type="button"
+          className={styles.collapseButton}
+          title="收起历史对话（把宽度让给聊天区）"
+          aria-label="收起历史对话侧边栏"
+          onClick={onCollapse}
+        >
+          <span aria-hidden="true">«</span>
+        </button>
       </header>
 
       <div className={styles.scrollArea}>

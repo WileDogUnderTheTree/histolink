@@ -26,6 +26,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { createRequire } from "node:module";
 import { ROOT, DATA_DIR, loadTsData, loadDataModule } from "./lib/load-ts-data.mjs";
+import { sameText } from "./lib/text-compare.mjs";
 
 const CHECK_MODE = process.argv.includes("--check");
 const requireFromFrontend = createRequire(path.join(ROOT, "frontend", "package.json"));
@@ -553,7 +554,7 @@ if (CHECK_MODE) {
       continue;
     }
     const current = fs.readFileSync(output.file, "utf8");
-    if (current !== output.content) diffs.push(`${output.label}：内容与生成结果不一致`);
+    if (!sameText(current, output.content)) diffs.push(`${output.label}：内容与生成结果不一致`);
   }
   if (diffs.length > 0) {
     console.error("✖ 人物主数据校验失败（生成物过期或手改）：");

@@ -11,11 +11,23 @@
   min-height: 100dvh;
   /* 单一滚动容器：整页由文档滚动承载，内部列表不再各自滚动（避免长回答被裁切 / 多层滚动条）。 */
   overflow-x: clip;
-  padding: 0 24px;
+  padding: 0 28px;
   color: #2e2a24;
 }
-.shell { width: min(100%, 800px); min-height: 100dvh; margin: 0 auto; display: flex; flex-direction: column; transition: width 220ms ease; }
-.shell.copilotMode { width: min(100%, 1360px); }
+.shell { width: min(100%, 1040px); min-height: 100dvh; margin: 0 auto; display: flex; flex-direction: column; transition: width 220ms ease; }
+/* V1.0.5.2 UI 呼吸感补丁：侧边栏收起 / 预览模式（左侧没有占位）时，
+   对话区放宽到视口 60%–70% 并居中，避免长回答被压成细长条。 */
+.appFrame.sidebarCollapsed .shell:not(.copilotMode) { width: min(100%, clamp(760px, 68vw, 1280px)); }
+/* 史引副驾驶分屏：借满可用宽度，左对话 40% / 右面板 60%（见 workspaceLayout 网格）。 */
+.shell.copilotMode { width: 100%; max-width: 1720px; }
+.topbarLead { display: flex; min-width: 0; align-items: center; gap: 12px; }
+/* 侧边栏收起后的「展开历史对话」按钮：常驻顶栏左侧，样式与导航保持同一套纸感语言。 */
+.sidebarToggle { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 5px; border: 1px solid #e2d6c8; border-radius: 999px; padding: 5px 10px 5px 8px; background: rgb(255 253 248 / 74%); color: #6f5d50; font: inherit; font-size: 10.5px; line-height: 1.3; white-space: nowrap; cursor: pointer; transition: border-color 140ms ease, background 140ms ease, color 140ms ease; }
+.sidebarToggle:hover { border-color: #c99c91; background: #fffaf2; color: #8b0000; }
+.sidebarToggle:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+.sidebarToggleIcon { font-size: 12px; line-height: 1; }
+/* 窄屏展开侧边栏时的遮罩（点击 / Esc 收起）。 */
+.sidebarBackdrop { position: fixed; inset: 0; z-index: 65; border: 0; padding: 0; background: rgb(49 34 24 / 28%); cursor: pointer; animation: backdropIn 160ms ease both; }
 .topbar { display: flex; flex: 0 0 50px; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid #e2d9cc; }
 .brand { display: inline-flex; min-width: 0; align-items: center; gap: 9px; color: #2e2a24; text-decoration: none; }
 .brandMark { flex: 0 0 auto; }
@@ -26,7 +38,7 @@
 .nav a, .nav button { border: 0; background: transparent; color: #7c7166; font: inherit; text-decoration: none; cursor: pointer; }
 .nav a:hover, .nav button:hover { color: #8b0000; }
 /* 推荐问题：浅米色渐变胶囊卡片，悬浮时轻微上移 + 边框高亮 + 阴影加深。 */
-.suggestionBar { display: flex; width: 100%; max-width: 820px; flex: 0 0 auto; align-self: center; align-items: center; gap: 10px; padding: 10px 0 3px; }
+.suggestionBar { display: flex; width: 100%; max-width: 100%; flex: 0 0 auto; align-self: center; align-items: center; gap: 10px; padding: 10px 0 3px; }
 .suggestionChip { display: flex; min-width: 0; flex: 1 1 0; align-items: center; gap: 9px; border: 1px solid #e8dbc6; border-radius: 999px; padding: 8px 13px 8px 9px; background: linear-gradient(135deg, #fffaf0 0%, #faf0df 48%, #f4e7d2 100%); color: #6b5a48; font: inherit; font-size: 11.5px; text-align: left; cursor: pointer; box-shadow: inset 0 1px rgb(255 255 255 / 85%), 0 2px 7px rgb(120 85 45 / 5%); transition: transform 180ms ease, border-color 180ms ease, color 180ms ease, background 180ms ease, box-shadow 180ms ease; }
 .suggestionMark { display: grid; width: 21px; height: 21px; flex: 0 0 auto; place-items: center; border: 1px solid #ddc9ae; border-radius: 50%; background: rgb(255 253 247 / 70%); color: #a1735f; font-family: "Songti SC", "STSong", serif; font-size: 9px; letter-spacing: 0; }
 .suggestionText { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -36,8 +48,10 @@
 .suggestionChip:hover b { transform: translateX(2px); color: #8b0000; }
 .suggestionChip:focus-visible { outline: 2px solid #8b0000; outline-offset: 3px; }
 
-.workspaceLayout { min-height: clamp(560px, calc(100dvh - 92px), 900px); flex: 1 1 auto; display: flex; align-items: stretch; gap: 16px; overflow: visible; }
-.chatCard { position: relative; min-width: 0; min-height: 0; flex: 1 1 35%; display: flex; flex-direction: column; overflow: visible; border: 1px solid #ded4c7; border-radius: 16px 16px 0 0; background: rgb(255 253 248 / 78%); box-shadow: 0 18px 46px rgb(87 56 31 / 8%); }
+.workspaceLayout { min-height: clamp(560px, calc(100dvh - 92px), 900px); flex: 1 1 auto; display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 18px; overflow: visible; }
+/* 分屏比例自适应（V1.0.5.2 UI 呼吸感补丁）：右侧史引面板出现时，左对话固定 40% / 右面板 60%。 */
+.shell.copilotMode .workspaceLayout { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+.chatCard { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; overflow: visible; border: 1px solid #ded4c7; border-radius: 16px 16px 0 0; background: rgb(255 253 248 / 78%); box-shadow: 0 18px 46px rgb(87 56 31 / 8%); }
 .chatHeader { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 14px; padding: 7px 22px 6px; border-bottom: 1px solid #ece5da; }
 .chatHeader h2 { margin: 0; color: #3b2d28; font-family: "Songti SC", "STSong", serif; font-size: 16px; font-weight: 600; }
 .chatHeaderMeta { display: inline-flex; min-width: 0; flex: 0 0 auto; align-items: center; gap: 12px; }
@@ -50,7 +64,7 @@
 /* 注意：这里必须是 `flex-shrink: 1` + `min-width: 0`，否则长回答的 max-content 宽度会把
    对话列撑出卡片（表现为文字被右侧裁切 / 覆盖副驾驶面板）。 */
 .conversationBody { min-width: 0; min-height: 0; flex: 1 1 auto; display: flex; overflow: visible; }
-.transcript { min-width: 0; flex: 1 1 auto; list-style: none; display: flex; flex-direction: column; gap: 18px; overflow: visible; margin: 0; padding: 20px 26px; scrollbar-color: #cdbbab transparent; }
+.transcript { min-width: 0; flex: 1 1 auto; list-style: none; display: flex; flex-direction: column; gap: 22px; overflow: visible; margin: 0; padding: 26px 30px 32px; scrollbar-color: #cdbbab transparent; }
 .guideRail { flex: 0 0 180px; overflow: visible; padding: 30px 18px; border-left: 1px solid #eee4d9; background: linear-gradient(180deg, #fffaf4, #f8f1e9); color: #7d6d62; }
 .guideSeal { display: grid; width: 34px; height: 34px; place-items: center; margin-bottom: 14px; border: 1px solid #b98b7d; border-radius: 9px; background: #8b0000; color: #fffaf2; font-family: "Songti SC", "STSong", serif; font-size: 18px; }
 .guideLabel { display: block; margin-bottom: 8px; color: #8b0000; font-size: 9px; font-weight: 700; letter-spacing: .14em; }
@@ -58,7 +72,9 @@
 .guideRail p { margin: 12px 0 18px; color: #6d5c50; font-size: 11px; line-height: 1.7; }
 .guideOpen { border: 1px solid #8b0000; border-radius: 8px; padding: 8px 11px; background: #8b0000; color: #fff8f2; font: inherit; font-size: 11px; cursor: pointer; }
 .guideOpen:hover { background: #650000; }
-.userTurn, .agentTurn { min-width: 0; max-width: 80%; border: 1px solid #e5ddd2; border-radius: 14px; padding: 15px 17px; box-shadow: 0 6px 16px rgb(86 56 33 / 5%); animation: messageIn 220ms ease-out both; }
+/* 气泡宽度（V1.0.5.2 UI 呼吸感补丁）：从固定观感改为相对中间区域的 85%，
+   长回答可以铺开阅读，不再被压成窄条；移动端单独放宽到 94%。 */
+.userTurn, .agentTurn { min-width: 0; max-width: 85%; border: 1px solid #e5ddd2; border-radius: 14px; padding: 18px 20px; box-shadow: 0 6px 16px rgb(86 56 33 / 5%); animation: messageIn 220ms ease-out both; }
 .userTurn { align-self: flex-end; border-bottom-right-radius: 5px; background: #f0ede7; color: #4b443d; }
 .agentTurn { align-self: flex-start; border-color: #e1d3cc; border-left: 3px solid #8b0000; border-bottom-left-radius: 5px; background: #fff; }
 .agentTurn[data-error="true"] { border-color: #d9b4ac; border-left-color: #b23b2e; background: #fff8f5; }
@@ -69,7 +85,7 @@
 .personaIcon { display: grid; width: 20px; height: 20px; place-items: center; border: 1px solid #c99a8e; border-radius: 6px; background: #fbf0eb; color: #8b0000; font-family: "Songti SC", "STSong", serif; font-size: 11px; letter-spacing: 0; }
 .guidePersona { color: #6f160e; }
 .guidePersona .personaIcon { border-color: #b98b7d; background: #8b0000; color: #fffaf2; }
-.messageText { min-width: 0; color: #3f3831; font-size: 14px; line-height: 1.85; overflow-wrap: anywhere; }
+.messageText { min-width: 0; color: #3f3831; font-size: 15px; line-height: 1.8; letter-spacing: .01em; overflow-wrap: anywhere; }
 .answerMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 13px; color: #918176; font-size: 10px; }
 .statusBadge { display: inline-flex; align-items: center; border: 1px solid #c5d9c8; border-radius: 999px; padding: 3px 7px; background: #f2faf3; color: #47784f; font-weight: 700; }
 .answerMeta[data-mode="insufficient"] .statusBadge { border-color: #e4c9a6; background: #fff8ed; color: #9c6a2f; }
@@ -77,14 +93,14 @@
 .previewNotice { align-self: stretch; border: 1px dashed #d8c2a7; border-radius: 10px; padding: 9px 12px; background: #fffaf0; color: #97785c; font-size: 11px; line-height: 1.6; }
 .markdown > :first-child { margin-top: 0; }
 .markdown > :last-child { margin-bottom: 0; }
-.markdown p, .markdown h1, .markdown h2, .markdown h3 { margin: 0 0 11px; }
-.markdown h1, .markdown h2, .markdown h3 { color: #3c2d28; font-family: "Songti SC", "STSong", serif; font-size: 17px; line-height: 1.45; }
-.markdown h3 { color: #8b0000; font-family: inherit; font-size: 14px; }
+.markdown p, .markdown h1, .markdown h2, .markdown h3 { margin: 0 0 12px; }
+.markdown h1, .markdown h2, .markdown h3 { color: #3c2d28; font-family: "Songti SC", "STSong", serif; font-size: 18px; line-height: 1.5; }
+.markdown h3 { color: #8b0000; font-family: inherit; font-size: 15px; }
 .markdown strong { color: #8b0000; }
 .markdown em { color: #74685d; }
 .markdown code { padding: 2px 5px; border-radius: 4px; background: #f2eee7; color: #71382e; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .88em; }
-.markdown ul, .markdown ol { margin: 0 0 11px; padding-left: 23px; }
-.markdown li + li { margin-top: 5px; }
+.markdown ul, .markdown ol { margin: 0 0 12px; padding-left: 23px; }
+.markdown li + li { margin-top: 6px; }
 .markdown li::marker { color: #8b0000; }
 .loadingTurn { min-width: 260px; }
 .loading { display: flex; align-items: center; gap: 5px; color: #887b70; font-size: 13px; }
@@ -92,11 +108,11 @@
 .loading i:nth-of-type(2) { animation-delay: 140ms; }
 .loading i:nth-of-type(3) { animation-delay: 280ms; }
 
-.citations { margin-top: 14px; padding-top: 12px; border-top: 1px solid #eee7de; }
-.citationsHeading { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; color: #957c70; font-size: 10px; font-weight: 700; letter-spacing: .1em; }
+.citations { margin-top: 16px; padding-top: 14px; border-top: 1px solid #eee7de; }
+.citationsHeading { display: flex; align-items: center; gap: 7px; margin-bottom: 9px; color: #957c70; font-size: 10px; font-weight: 700; letter-spacing: .1em; }
 .citationsHeading span { width: 14px; height: 1px; background: #b68a7c; }
-.citationList { display: grid; gap: 6px; }
-.citation { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px 9px; border: 1px solid #e8ddd5; border-radius: 8px; background: #fcfaf6; color: #71382e; font: inherit; text-align: left; text-decoration: none; transition: border-color 160ms ease, background 160ms ease; }
+.citationList { display: grid; gap: 5px; }
+.citation { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 7px 9px; border: 1px solid #e8ddd5; border-radius: 8px; background: #fcfaf6; color: #71382e; font: inherit; text-align: left; text-decoration: none; transition: border-color 160ms ease, background 160ms ease; }
 button.citation { width: 100%; cursor: pointer; }
 .citation:hover { border-color: #c99c91; background: #fff6f2; }
 .citationMark { display: grid; width: 21px; height: 21px; place-items: center; flex: 0 0 auto; border-radius: 6px; background: #f8ece8; color: #8b0000; }
@@ -104,8 +120,13 @@ button.citation { width: 100%; cursor: pointer; }
 .citationBody strong, .citationBody small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .citationBody strong { font-size: 11px; }
 .citationBody small { color: #8b7b70; font-size: 10px; }
-.expandCitations { margin-top: 8px; border: 0; padding: 0; background: transparent; color: #8b0000; font: inherit; font-size: 10px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
-.expandCitations:hover { color: #650000; }
+/* 引用折叠按钮（V1.0.5.2 UI 呼吸感补丁）：超过 3 条时默认收起，点击向下展开 / 收起。 */
+.expandCitations { display: inline-flex; align-items: center; gap: 5px; margin-top: 9px; border: 1px solid #e6d8ca; border-radius: 999px; padding: 4px 10px 4px 8px; background: #fffaf3; color: #8b4a3a; font: inherit; font-size: 10.5px; line-height: 1.4; cursor: pointer; transition: border-color 150ms ease, background 150ms ease, color 150ms ease; }
+.expandCitations:hover { border-color: #c99c91; background: #fff4ee; color: #8b0000; }
+.expandCitations:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+.expandCitationsChevron { font-size: 10px; line-height: 1; transition: transform 160ms ease; }
+.expandCitations[data-expanded="true"] .expandCitationsChevron { transform: rotate(180deg); }
+.expandCitationsCount { border-radius: 999px; padding: 1px 5px; background: #f3e7dd; color: #9a6a55; font-size: 9px; font-weight: 700; line-height: 1.3; }
 .pending { margin-top: 14px; padding: 13px; border: 1px solid #dec1b8; border-radius: 12px; background: #fff8f3; color: #6f2017; font-size: 12px; }
 .pending p { margin: 4px 0 0; color: #94766a; font-size: 10px; }
 .pendingAction { display: flex; align-items: center; gap: 8px; margin-top: 9px; color: #6b5b50; font-size: 11px; }
@@ -116,7 +137,7 @@ button.citation { width: 100%; cursor: pointer; }
 /* 底部输入区（V1.0.5.1）：对话工作区内的固定落位。
    - 仍处于文档流中（不 overlay 正文），长回答由整页滚动承载，不会被固定输入区压缩空间；
    - sticky bottom 只在该卡片仍占据视口时吸附，滚到对话末尾即回到卡片底部，不会永久遮挡内容。 */
-.composerDock { position: sticky; bottom: 0; z-index: 3; flex: 0 0 auto; margin-top: auto; padding: 12px 26px 14px; border-top: 1px solid #ece5da; background: linear-gradient(180deg, rgb(255 253 248 / 92%), #fffdf8 35%); box-shadow: 0 -12px 26px rgb(87 56 31 / 6%); backdrop-filter: blur(6px); }
+.composerDock { position: sticky; bottom: 0; z-index: 3; flex: 0 0 auto; margin-top: auto; padding: 12px 30px 15px; border-top: 1px solid #ece5da; background: linear-gradient(180deg, rgb(255 253 248 / 92%), #fffdf8 35%); box-shadow: 0 -12px 26px rgb(87 56 31 / 6%); backdrop-filter: blur(6px); }
 .composer { display: flex; align-items: flex-end; gap: 10px; padding: 8px 8px 8px 13px; border: 1px solid #d6c9bb; border-radius: 13px; background: #fff; box-shadow: 0 5px 16px rgb(86 56 33 / 7%); }
 .composer textarea { min-height: 24px; max-height: 130px; flex: 1; resize: vertical; border: 0; outline: 0; padding: 5px 0; background: transparent; color: #342f29; font: inherit; font-size: 14px; line-height: 1.6; }
 .composer textarea::placeholder { color: #9b8d80; }
@@ -128,7 +149,7 @@ button.citation { width: 100%; cursor: pointer; }
 .modelFallbackHint { margin: 7px 0 0; color: #9b8d80; font-size: 10px; line-height: 1.5; }
 /* 史引副驾驶（V1.0.5.1）：桌面端与对话列并排、固定在视口高度内，内部 iframe 独立滚动；
    不再随长对话整体拉伸，避免出现「整页滚动 + iframe 内滚动」两层滚动条。 */
-.copilotPanel { position: sticky; top: 10px; min-width: 0; flex: 1 1 65%; align-self: flex-start; display: flex; flex-direction: column; overflow: hidden; height: min(calc(100dvh - 20px), 900px); border: 1px solid #d9c9bb; border-radius: 16px 16px 0 0; background: #f8f5ee; box-shadow: 0 18px 46px rgb(87 56 31 / 10%); animation: copilotIn 220ms ease both; }
+.copilotPanel { position: sticky; top: 10px; min-width: 0; align-self: flex-start; display: flex; flex-direction: column; overflow: hidden; height: min(calc(100dvh - 20px), 900px); border: 1px solid #d9c9bb; border-radius: 16px 16px 0 0; background: #f8f5ee; box-shadow: 0 18px 46px rgb(87 56 31 / 10%); animation: copilotIn 220ms ease both; }
 .copilotHeader { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 16px 9px; border-bottom: 1px solid #e4d9ce; background: #fffdf8; }
 .copilotTitle { min-width: 0; }
 .copilotKicker { display: block; margin-bottom: 2px; color: #9d7568; font-size: 9px; font-weight: 700; letter-spacing: .16em; }
@@ -150,13 +171,61 @@ button.citation { width: 100%; cursor: pointer; }
 @keyframes messageIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes copilotIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes blink { 0%, 80%, 100% { opacity: .3; transform: scale(.8); } 40% { opacity: 1; transform: scale(1); } }
-@media (max-width: 1180px) { .chatCard { flex-basis: 42%; } .copilotPanel { flex-basis: 58%; } }
-@media (max-width: 900px) { .shell.copilotMode { width: min(100%, 800px); } .workspaceLayout { overflow: visible; } .copilotPanel { flex-basis: 58%; } .copilotHeader { flex-wrap: wrap; } .copilotActions { flex-basis: 100%; justify-content: flex-start; } }
-@media (max-width: 720px) { .page { padding: 0 14px; } .topbar { flex-basis: 46px; } .brandMark { width: 32px; height: 32px; } .brand small { display: none; } .nav { gap: 10px; } .nav a { display: none; } .nav a:last-child { display: inline; } .suggestionBar { gap: 7px; padding: 8px 0 2px; } .suggestionChip { gap: 6px; padding: 6px 9px 6px 7px; font-size: 10px; } .suggestionMark { display: none; } .suggestionChip b { display: none; } .workspaceLayout { min-height: calc(100dvh - 70px); flex-direction: column; } .transcript { padding: 15px 14px; } .guideRail { flex-basis: auto; padding: 18px 14px; border-top: 1px solid #eee4d9; border-left: 0; } .guideRail p { margin-bottom: 10px; font-size: 10px; } .guideOpen { font-size: 10px; } .userTurn, .agentTurn { max-width: 94%; } .chatHeader { padding: 7px 16px 6px; } .syncNote { display: none; } .composerDock { padding: 10px 14px 12px; } .pending { margin-right: 0; margin-left: 0; } .copilotHeader { padding: 12px 14px; } .copilotHeader h2 { font-size: 17px; } .copilotExternal { font-size: 10px; padding: 6px 8px; } .shell.copilotMode .chatCard { display: none; } .shell.copilotMode .copilotPanel { flex: 1 1 100%; } .copilotPanel { position: static; height: calc(100dvh - 76px); } }
-@media (prefers-reduced-motion: reduce) { .shell, .userTurn, .agentTurn, .loading i, .copilotPanel { animation: none; transition: none; } }
-/* V1.0.5.2：输入框左上角模型切换窗口行 + 输入框右侧附件 / 新建对话按钮。 */
-.composerTop { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 7px; }
-.composerTopNote { min-width: 0; overflow: hidden; color: #a8988b; font-size: 9.5px; text-overflow: ellipsis; white-space: nowrap; }
+@keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 1280px) {
+  .page { padding: 0 22px; }
+  .transcript { padding: 24px 26px 28px; }
+  .composerDock { padding: 11px 26px 14px; }
+}
+@media (max-width: 1080px) {
+  /* 侧边栏改为浮层后主内容独占整宽，宽版对话区跟随视口放宽。 */
+  .shell { width: min(100%, 980px); }
+  .appFrame.sidebarCollapsed .shell:not(.copilotMode) { width: 100%; }
+}
+@media (max-width: 900px) {
+  .shell.copilotMode .workspaceLayout { grid-template-columns: minmax(0, 44fr) minmax(0, 56fr); }
+  .copilotHeader { flex-wrap: wrap; }
+  .copilotActions { flex-basis: 100%; justify-content: flex-start; }
+  .sidebarToggle span:last-child { display: none; }
+  .sidebarToggle { padding: 6px 8px; border-radius: 10px; }
+}
+@media (max-width: 720px) {
+  .page { padding: 0 14px; }
+  .topbar { flex-basis: 46px; }
+  .brandMark { width: 32px; height: 32px; }
+  .brand small { display: none; }
+  .nav { gap: 10px; }
+  .nav a { display: none; }
+  .nav a:last-child { display: inline; }
+  .suggestionBar { gap: 7px; padding: 8px 0 2px; }
+  .suggestionChip { gap: 6px; padding: 6px 9px 6px 7px; font-size: 10px; }
+  .suggestionMark { display: none; }
+  .suggestionChip b { display: none; }
+  .workspaceLayout { min-height: calc(100dvh - 70px); }
+  .transcript { gap: 16px; padding: 18px 14px 22px; }
+  .userTurn, .agentTurn { max-width: 94%; padding: 14px 15px; }
+  .messageText { font-size: 14.5px; }
+  .guideRail { flex-basis: auto; padding: 18px 14px; border-top: 1px solid #eee4d9; border-left: 0; }
+  .guideRail p { margin-bottom: 10px; font-size: 10px; }
+  .guideOpen { font-size: 10px; }
+  .chatHeader { padding: 7px 16px 6px; }
+  .syncNote { display: none; }
+  .composerDock { padding: 10px 14px 12px; }
+  .pending { margin-right: 0; margin-left: 0; }
+  .copilotHeader { padding: 12px 14px; }
+  .copilotHeader h2 { font-size: 17px; }
+  .copilotExternal { font-size: 10px; padding: 6px 8px; }
+  .shell.copilotMode .workspaceLayout { grid-template-columns: minmax(0, 1fr); }
+  .shell.copilotMode .chatCard { display: none; }
+  .copilotPanel { position: static; height: calc(100dvh - 76px); }
+  .composerTopNote { display: none; }
+  .composer .composerIconButton { width: 32px; height: 32px; }
+}
+@media (prefers-reduced-motion: reduce) { .shell, .userTurn, .agentTurn, .loading i, .copilotPanel, .sidebarBackdrop { animation: none; transition: none; } }
+/* V1.0.5.2 UI 呼吸感补丁：模型切换下拉框贴住输入框正上方左侧，圆角胶囊 + 轻边框，
+   弱化「工具条」存在感；说明文字降为辅助级灰。 */
+.composerTop { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 6px; padding: 0 2px; }
+.composerTopNote { min-width: 0; overflow: hidden; color: #a8988b; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 .composerActions { display: flex; flex: 0 0 auto; align-items: center; gap: 6px; }
 .composer .composerIconButton { display: inline-flex; width: 34px; height: 34px; align-items: center; justify-content: center; gap: 0; border: 1px solid #e2d6c8; border-radius: 9px; padding: 0; background: #fffdf8; color: #7b685c; font: inherit; font-size: 14px; line-height: 1; cursor: pointer; transition: border-color 160ms ease, background 160ms ease, color 160ms ease; }
 .composer .composerIconButton:hover:not(:disabled) { border-color: #c99c91; background: #fff6f2; color: #8b0000; }
