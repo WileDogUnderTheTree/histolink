@@ -2,7 +2,7 @@
 """RAG 语料入库脚本（V1.0.5）。
 
 流程：
-1. 解析 ``docs/史脉_RAG语料库_核心历史事件.md``（21 篇）与 ``docs/史脉_RAG语料库_第二批30篇.md``（30 篇）；
+1. 解析核心历史事件、第二批、第三批与第四批语料（当前共 90 篇）；
 2. 以 ``## 事件名`` 为锚点切分，白话文 / 古文摘录切成 ≤500 字 chunk（目标 300–500 字）；
 3. 抽取元数据（event_name / record_type=正史|传说 / section / source / year 区间），
    并把事件名对齐到图谱 ``event_id``（对齐不到不影响检索，只是 citation 不挂时间轴深链）；
@@ -58,6 +58,7 @@ from rag.store import (
     MANIFEST_FILENAME,
     MANIFEST_SCHEMA,
     RAG_ATTRIBUTION,
+    create_chroma_client,
     rag_dir,
 )
 
@@ -100,10 +101,8 @@ def _build_dataset(corpus_files: list[Path]):
 def _write_collection(
     chunks, embedder, *, collection_name: str, directory: Path
 ) -> None:
-    import chromadb
-
     directory.mkdir(parents=True, exist_ok=True)
-    client = chromadb.PersistentClient(path=str(directory))
+    client = create_chroma_client(directory)
     try:
         client.delete_collection(collection_name)
         log(f"已删除旧集合 {collection_name}")

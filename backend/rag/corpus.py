@@ -1,9 +1,11 @@
 """RAG 语料解析与切分（V1.0.5）。
 
-输入是 WorkBuddy 整理的两份 Markdown 长文语料：
+输入是 WorkBuddy 整理的四份 Markdown 长文语料：
 
 - ``docs/史脉_RAG语料库_核心历史事件.md``（21 篇）
 - ``docs/史脉_RAG语料库_第二批30篇.md``（30 篇）
+- ``docs/史脉_RAG语料库_第三批20篇.md``（当前文件含 19 篇）
+- ``docs/史脉_RAG语料库_第四批20篇.md``（20 篇）
 
 格式约定（两份语料保持一致）：
 
@@ -15,7 +17,7 @@
 
 本模块只做**纯文本解析 / 切分**，不依赖 chromadb、不发网络请求，便于单测：
 
-- ``parse_corpus()``：按 ``## 事件名`` 切出 51 篇 ``RagDocument``；
+- ``parse_corpus()``：按 ``## 事件名`` 切出 90 篇 ``RagDocument``；
 - ``chunk_document()``：把白话文 / 古文摘录切成不超过 500 字（目标 300–500 字）的 chunk；
 - ``build_chunks()``：解析 + 切分 + 统计的便捷入口。
 
@@ -54,9 +56,11 @@ VERNACULAR_SOURCE = "史脉综述"
 DEFAULT_CORPUS_FILES: tuple[str, ...] = (
     "史脉_RAG语料库_核心历史事件.md",
     "史脉_RAG语料库_第二批30篇.md",
+    "史脉_RAG语料库_第三批20篇.md",
+    "史脉_RAG语料库_第四批20篇.md",
 )
-#: 语料篇数（21 + 30）；用于入库时做一次完整性校验。
-EXPECTED_DOCUMENT_COUNT = 51
+#: 当前四份语料共 90 篇；用于入库时做一次完整性校验。
+EXPECTED_DOCUMENT_COUNT = 90
 
 _HEADING_RE = re.compile(r"^## (?P<title>.+?)\s*$")
 _SECTION_RE = re.compile(r"^### (?P<section>.+?)\s*$")

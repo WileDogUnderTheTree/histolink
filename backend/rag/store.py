@@ -5,7 +5,7 @@
 - 读取同目录 ``manifest.json``，严格按入库时的 embedding provider 重建 embedder（防止向量空间错配）；
 - ``search(query, top_k)`` 返回有界结果（≤3 条、每条正文 ≤300 字由工具层再做一次截断）。
 
-线程模型：chromadb PersistentClient 进程内单例；本模块用锁保证只初始化一次。
+线程模型：Chroma client 进程内单例；默认本地持久化，可通过环境变量切换到 HTTP 服务端。
 测试可 ``reset_rag_store()`` 清除缓存；工具层也允许注入 fake store 做单测。
 """
 
@@ -79,6 +79,19 @@ class RetrievedChunk:
 def rag_dir() -> Path:
     raw = os.environ.get("RAG_CHROMA_DIR", "").strip()
     return Path(raw).expanduser() if raw else DEFAULT_RAG_DIR
+
+
+def create_chroma_client(directory: Path | None = None) -> Any:
+    """Create a local persistent client, or an HTTP client when configured."""
+
+    import chromadb
+
+    host = os.environ.get("RAG_CHROMA_HTTP_HOST", "").strip()
+    if host:
+        port = int(os.environ.get("RAG_CHROMA_HTTP_PORT", "8000"))
+        return chromadb.HttpClient(host=host, port=port)
+    path = directory or rag_dir()
+    return chromadb.PersistentClient(path=str(path))
 
 
 def manifest_path(directory: Path | None = None) -> Path:
@@ -173,7 +186,7 @@ class RagStore:
         embedder = rebuild_embedder(manifest)
         collection_name = str(manifest.get("collection") or DEFAULT_COLLECTION)
         try:
-            client = chromadb.PersistentClient(path=str(path))
+            client = create_chroma_client(path)
             collection = client.get_collection(collection_name)
         except Exception as exc:
             raise RagUnavailableError(f"打开 RAG 向量库失败（{path}）：{exc}") from exc
@@ -285,6 +298,7 @@ __all__ = [
     "RagStore",
     "RagUnavailableError",
     "RetrievedChunk",
+    "create_chroma_client",
     "get_rag_store",
     "load_manifest",
     "manifest_path",
