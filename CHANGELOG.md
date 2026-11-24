@@ -25,6 +25,7 @@
 
 - **F-01 门禁稳定性（P1）**：`gen-frontend-types` / `build-persons` / `extract-sources` 的 `--check` 改为换行归一化比较（新增 `scripts/lib/text-compare.mjs`）。此前在 `core.autocrlf=true` 的 Windows 工作区，检出后的 CRLF 文件会被逐字节比较误判为「生成物过期」，导致 `scripts/verify.ps1` 偶发失败。
 - **F-11 dev 水合（P2）**：`next.config.ts` 的 `allowedDevOrigins` 补充 `127.0.0.1`，修复用 `http://127.0.0.1:3000` 打开 dev 环境时 `/_next/*` dev 资源被同源策略拦截、页面 HTML 正常但无法水合（交互全失效）的问题。
+- **F-13 体检工具稳定性（P3）**：`health-check-ui.mjs` 的浏览器清理改为「按 profile 路径精确补杀残留 Edge 子进程 + `process.exit` 显式收尾 + 6 分钟看门狗」，修复 headless 子进程占用 profile 锁导致复跑 EBUSY、CDP 句柄导致 Node 不退出；连续两次复跑均 0 残留。
 
 ### 验证
 

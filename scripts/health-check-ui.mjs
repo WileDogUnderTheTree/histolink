@@ -106,10 +106,70 @@ async function waitForEndpoint() {
   throw new Error("CDP endpoint timeout");
 }
 
+/** 运行一个系统命令并等待结束（10s 超时兜底，避免清理阶段卡死）。 */
+function runAndWait(exe, args) {
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    const timer = setTimeout(finish, 10_000);
+    try {
+      const child = spawn(exe, args, { stdio: "ignore" });
+      child.on("exit", () => {
+        clearTimeout(timer);
+        finish();
+      });
+      child.on("error", () => {
+        clearTimeout(timer);
+        finish();
+      });
+    } catch {
+      clearTimeout(timer);
+      finish();
+    }
+  });
+}
+
+/**
+ * 结束本次体检启动的 Edge（V1.0.5.3 体检 F-13）。
+ *
+ * 注意：`--headless=new` 的启动进程可能很快退出并让实际浏览器进程变成孤儿，
+ * 因此「只杀 `edge.pid`」会留下 gpu / renderer / crashpad 子进程占用 profile 锁；
+ * Windows 下再用「命令行包含本次 profile 目录」精确补杀（不会误伤用户自己开的 Edge），
+ * 非 Windows 平台退化为 kill 主进程。
+ */
+async function killEdge(pid, profileDir) {
+  if (process.platform !== "win32") {
+    try {
+      process.kill(pid, "SIGKILL");
+    } catch {}
+    return;
+  }
+  if (pid) await runAndWait("taskkill.exe", ["/PID", String(pid), "/T", "/F"]);
+  const escapedProfile = String(profileDir).replace(/'/g, "''");
+  await runAndWait("powershell.exe", [
+    "-NoLogo",
+    "-NoProfile",
+    "-NonInteractive",
+    "-Command",
+    `$ErrorActionPreference='SilentlyContinue'; Get-CimInstance Win32_Process -Filter "Name='msedge.exe'" | Where-Object { $_.CommandLine -and $_.CommandLine.Contains('${escapedProfile}') } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }`,
+  ]);
+}
+
 async function main() {
   await mkdir(OUT, { recursive: true });
   // 每次体检从干净的浏览器 profile 起步：避免上次的 localStorage（侧边栏折叠 / 会话）污染首帧断言。
-  await rm(path.join(OUT, "edge-profile"), { recursive: true, force: true });
+  // 若旧 profile 仍被异常退出的 Edge 子进程占用（EBUSY），自动退化为本次运行专属目录。
+  let profileDir = path.join(OUT, "edge-profile");
+  try {
+    await rm(profileDir, { recursive: true, force: true, maxRetries: 2, retryDelay: 250 });
+  } catch {
+    profileDir = path.join(OUT, `edge-profile-${process.pid}-${Date.now()}`);
+    console.warn(`  ! 旧浏览器 profile 仍被占用，改用临时目录：${profileDir}`);
+  }
   const edge = spawn(
     EDGE,
     [
@@ -119,7 +179,7 @@ async function main() {
       "--no-first-run",
       "--no-default-browser-check",
       `--remote-debugging-port=${PORT}`,
-      `--user-data-dir=${path.join(OUT, "edge-profile")}`,
+      `--user-data-dir=${profileDir}`,
       "--window-size=1600,1000",
       "about:blank",
     ],
@@ -163,12 +223,20 @@ async function main() {
         });
       }
       if (message.method === "Log.entryAdded" && message.params.entry.level === "error") {
-        consoleIssues.push({ kind: "log", text: message.params.entry.text });
+        const entry = message.params.entry;
+        consoleIssues.push({
+          kind: "log",
+          text: entry.text,
+          url: entry.url ?? "",
+        });
       }
     });
-    /** dev 模式 HMR WebSocket 在无头导航 / 重启瞬间会报连接失败，不算产品缺陷。 */
+    /** dev 模式 HMR / favicon 404 / React DevTools 提示是环境噪声，不算产品缺陷。 */
     const isDevNoise = (issue) =>
-      /_next\/hmr|WebSocket connection to .*failed|Download the React DevTools/i.test(issue.text);
+      /_next\/hmr|WebSocket connection to .*failed|Download the React DevTools/i.test(issue.text) ||
+      /favicon\.ico|Failed to load resource: the server responded with a status of 404/i.test(
+        `${issue.text} ${issue.url ?? ""}`,
+      );
     const productIssues = () => consoleIssues.filter((issue) => !isDevNoise(issue));
     const send = (method, params = {}) =>
       new Promise((resolve, reject) => {
@@ -573,17 +641,35 @@ async function main() {
     try {
       ws?.close();
     } catch {}
-    edge.kill();
-    await delay(400);
+    // 先精确清理本次启动的 Edge（含孤儿子进程），等锁文件释放后再删 profile。
+    await killEdge(edge.pid, profileDir);
     try {
-      spawn("taskkill.exe", ["/PID", String(edge.pid), "/T", "/F"], { stdio: "ignore" });
+      edge.kill();
     } catch {}
+    await delay(600);
+    try {
+      await rm(profileDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 300 });
+    } catch {
+      // 清理失败只留下 gitignore 内的临时目录，不影响体检结论。
+    }
   }
 }
 
-main().catch((error) => {
-  console.error("FAILED:", error);
-  if (results.length) console.error("已采集验收结果：", JSON.stringify(results.map((r) => r.name)));
-  console.error("浏览器控制台问题：", JSON.stringify(consoleIssues, null, 2));
-  process.exitCode = 1;
-});
+// 兜底：CDP WebSocket / 浏览器子进程句柄可能让 Node 迟迟不退出；超过 6 分钟强制结束。
+const watchdog = setTimeout(() => {
+  console.error("✖ UI 体检脚本超过 6 分钟未结束，强制退出（可能是清理阶段被阻塞）。");
+  process.exit(2);
+}, 6 * 60 * 1000);
+watchdog.unref?.();
+
+// 用 process.exit 显式收尾：先留 250ms 让 stdout 落盘，再退出，避免管道下输出被截断。
+main()
+  .then(() => {
+    setTimeout(() => process.exit(0), 250);
+  })
+  .catch((error) => {
+    console.error("FAILED:", error);
+    if (results.length) console.error("已采集验收结果：", JSON.stringify(results.map((r) => r.name)));
+    console.error("浏览器控制台问题：", JSON.stringify(consoleIssues, null, 2));
+    setTimeout(() => process.exit(1), 250);
+  });

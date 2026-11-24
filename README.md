@@ -699,7 +699,7 @@ interface PersonGraphEdge {
 
 - 以 [docs/V1.0.5.3-全面体检专项.md](docs/V1.0.5.3-全面体检专项.md) 为总纲启动八维度全量体检（构建与门禁 / 前端 UI·可访问性 / 后端接口与 Agent 链路 / 数据与快照 / 测试覆盖 / 性能与资源 / 文档与版本一致性 / 安全与合规），只修 P0 / P1 与门禁稳定性，为 V1.0.6 多轮对话提供稳定基线。
 - 新增 `scripts/health-check-ui.mjs`（CDP 无头浏览器 UI 体检，12 组断言，含 `--live` 真实问答场景）与 `scripts/lib/text-compare.mjs`（生成物 `--check` 换行归一化，修复 `core.autocrlf=true` 环境下 `verify.ps1` 偶发失败）。
-- 基线：`verify.ps1` **12/12 PASS**（pytest 336 / vitest 146 / evals 30/30 / next build 3.4s）；UI 体检 12 组断言全绿；首批 findings 11 条（P1 已修 2 条，其余排期 V1.0.6 / V1.0.7）。
+- 基线：`verify.ps1` **12/12 PASS**（pytest 336 / vitest 146 / evals 30/30 / next build 3.4s）；UI 体检 12 组断言全绿；首批 findings 13 条（已修 5 条：P1 门禁/文档漂移 + P3 工具/文档渲染，其余排期 V1.0.6 / V1.0.7）。
 
 ### V1.0.5.2 UI 呼吸感补丁 — 2026-11-25
 

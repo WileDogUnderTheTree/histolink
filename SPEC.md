@@ -715,7 +715,7 @@ Y(a) = a <= 0 ? a - 1 : a     // 天文纪年 → 史书纪年（用于展示）
 - **定位**：V1.0.5.2 功能封版与 UI 呼吸感补丁之后、V1.0.6 多轮对话之前的全量健康检查；**只修 P0 / P1 与门禁稳定性，不新增业务功能**。
 - **八维度**：A 构建与门禁 / B 前端 UI·交互·可访问性 / C 后端接口与 Agent 链路 / D 数据与快照一致性 / E 测试覆盖 / F 性能与资源 / G 文档与版本一致性 / H 安全与合规。
 - **出口标准（DoD）**：`scripts/verify.ps1` 12 步全绿（同时覆盖 `core.autocrlf=true` 与 LF 工作区）；`scripts/health-check-ui.mjs` 默认与 `--live` 两轮 12 组断言全绿；P0 = 0、P1 全部关闭、P2 有明确排期（V1.0.6 / V1.0.7）；版本号与文档索引一致性检查通过。
-- **基线（2026-11-25）**：`verify.ps1` 12/12 PASS（16s；pytest 336 / vitest 146 / evals 30/30 / next build 3.4s）；ruff 验收范围 8 errors、`ruff format --check` 44 文件待格式化；数据校验 2 条非阻断告警；首批 findings 11 条（P1 已修 2 条）。
+- **基线（2026-11-25）**：`verify.ps1` 12/12 PASS（16s；pytest 336 / vitest 146 / evals 30/30 / next build 3.4s）；ruff 验收范围 8 errors、`ruff format --check` 44 文件待格式化；数据校验 2 条非阻断告警；首批 findings 13 条（已修 5 条：P1 2 条 + P3 3 条）。
 
 ---
 
