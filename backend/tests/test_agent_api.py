@@ -194,7 +194,12 @@ def test_ask_evidence_mismatch_is_downgraded(
     assert payload["answer"]["missing"]
 
 
-def test_ask_rejects_invalid_body(client: TestClient, openapi_spec: dict[str, Any]) -> None:
+def test_ask_rejects_invalid_body(
+    client: TestClient, openapi_spec: dict[str, Any], override_llm
+) -> None:
+    # 注入 FakeLLM：新版 FastAPI 会先解析依赖再校验请求体，CI 环境没有 backend/.env，
+    # 不覆盖 get_llm_client 时会在拿到 400 之前先返回 503 LLM_NOT_CONFIGURED。
+    override_llm(FakeLLM([]))
     response = client.post("/api/agent/ask", json={"question": ""})
     assert response.status_code == 400
     payload = response.json()
