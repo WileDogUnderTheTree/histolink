@@ -23,7 +23,15 @@
  * - `label` 为关系定性，2—6 字（君臣 / 盟友 / 政敌 / 敌手 / 降将 …）。
  * - `description` 只给核心人物对写，1—2 句交代关系来龙去脉。
  * - `eventSummaries` 的键必须是该对人物共同参与的事件 id；按「这对人物」的视角写。
+ *
+ * V1.0.5.4 起：图谱扩充文档（docs/史脉_V1.0.5.4_*.md）解析出的新增关系对与既有关系补丁
+ * 由 `ingested-graph-data.generated.ts` 提供，文件末尾合并为 `PERSON_RELATIONS`；
+ * 手写数据只需维护 `MANUAL_PERSON_RELATIONS`，生成物禁止手改。
  */
+import {
+  INGESTED_RELATION_PATCHES,
+  INGESTED_RELATIONS,
+} from "./ingested-graph-data.generated";
 
 export interface PersonRelationRecord {
   a: string;
@@ -48,7 +56,8 @@ export function pairKey(a: string, b: string): string {
   return [a, b].sort().join("__");
 }
 
-export const PERSON_RELATIONS: readonly PersonRelationRecord[] = [
+/** 手写关系库（唯一允许手改的部分）。 */
+const MANUAL_PERSON_RELATIONS: readonly PersonRelationRecord[] = [
   // ===== 汉末：外戚、宦官与董卓（189—192）=====
   {
     a: "汉灵帝",
@@ -5562,6 +5571,31 @@ export const PERSON_RELATIONS: readonly PersonRelationRecord[] = [
 ];
 
 const relationIndex = new Map<string, PersonRelation>();
+
+/** 生成物：既有关系对的事件简述补丁（键 = pairKey）。 */
+const INGESTED_RELATION_PATCH_INDEX: ReadonlyMap<string, Readonly<Record<string, string>>> = new Map(
+  INGESTED_RELATION_PATCHES.map((patch) => [patch.pairKey, patch.eventSummaries]),
+);
+
+/**
+ * 对外关系库 = 手写关系（应用生成物补丁）+ 图谱扩充新增关系。
+ *
+ * 补丁只补充 `eventSummaries` 里缺失的共同事件简述，不改变手写的关系定性与说明，
+ * 保证「人工校订」始终优先于自动解析。
+ */
+export const PERSON_RELATIONS: readonly PersonRelationRecord[] = [
+  ...MANUAL_PERSON_RELATIONS.map((record) => {
+    const patch = INGESTED_RELATION_PATCH_INDEX.get(pairKey(record.a, record.b));
+    if (!patch) return record;
+    const missing = Object.fromEntries(
+      Object.entries(patch).filter(([eventId]) => !(eventId in record.eventSummaries)),
+    );
+    if (Object.keys(missing).length === 0) return record;
+    return { ...record, eventSummaries: { ...record.eventSummaries, ...missing } };
+  }),
+  ...INGESTED_RELATIONS,
+];
+
 for (const record of PERSON_RELATIONS) {
   const key = pairKey(record.a, record.b);
   if (relationIndex.has(key)) {

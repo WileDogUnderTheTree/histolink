@@ -1,13 +1,13 @@
 {
   "schema_version": "snapshot.v1",
   "counts": {
-    "events": 705,
-    "persons": 1058,
-    "relations": 639,
-    "eras": 18,
+    "events": 718,
+    "persons": 1066,
+    "relations": 652,
+    "eras": 21,
     "scopes": 7,
     "groups": 7,
-    "aliases": 66
+    "aliases": 70
   },
   "events": [
     {
@@ -11259,7 +11259,7 @@
       ],
       "person_ids": [
         "p-shangtang-c08b",
-        "p-xiajie-f6ba",
+        "p-xia-xiajie-01",
         "p-yiyin-d03f"
       ],
       "source_refs": [
@@ -11312,6 +11312,7 @@
       "dynasty": "商",
       "year": -1577,
       "description": "约公元前1577年，太甲即位三年，不明暴虐，不遵汤法，伊尹将其放逐至桐宫。三年间伊尹摄行政事，代理国政，以朝诸侯。（据《史记·殷本纪》；年代依夏商周断代工程推定）",
+      "importance": 3,
       "is_special": false,
       "participants": [
         "伊尹",
@@ -11365,8 +11366,16 @@
       "year": -1400,
       "description": "约公元前1400年，祖乙崩后，祖辛、沃甲、祖丁、南庚、阳甲等诸帝交替即位。自中丁以来废嫡而更立诸弟子，弟子争相代立，比九世乱，诸侯不朝。（据《史记·殷本纪》；年代依夏商周断代工程推定）",
       "is_special": false,
-      "participants": [],
-      "person_ids": [],
+      "participants": [
+        "仲丁",
+        "阳甲",
+        "盘庚"
+      ],
+      "person_ids": [
+        "p-pangeng-a22c",
+        "p-shang-yangjia-01",
+        "p-shang-zhongding-01"
+      ],
       "source_refs": [
         {
           "label": "史记·殷本纪",
@@ -11378,7 +11387,7 @@
       "source_status": "cited",
       "surface": {
         "timeline": true,
-        "graph": false
+        "graph": true
       }
     },
     {
@@ -11529,12 +11538,15 @@
       "dynasty": "商",
       "year": -1060,
       "description": "约公元前1060年，文王连年征伐犬戎、密须、耆国、邘、崇侯虎，而作丰邑，自岐下徙都丰。殷之祖伊闻之惧告纣，纣不以为然。（据《史记·周本纪》；年代依夏商周断代工程推定）",
+      "importance": 3,
       "is_special": false,
       "participants": [
-        "周文王"
+        "周文王",
+        "周武王"
       ],
       "person_ids": [
-        "p-zhouwenwang-37e4"
+        "p-zhouwenwang-37e4",
+        "p-zhouwuwang-1530"
       ],
       "source_refs": [
         {
@@ -11585,14 +11597,17 @@
       "dynasty": "商",
       "year": -1050,
       "description": "约公元前1050年，比干见箕子谏不听而为奴，乃直言强谏。纣怒曰闻圣人心有七窍，遂剖比干观其心。微子乃去殷。（据《史记·宋微子世家》；年代依夏商周断代工程推定）",
+      "importance": 3,
       "is_special": false,
       "participants": [
         "比干",
         "微子",
-        "商纣王"
+        "商纣王",
+        "箕子"
       ],
       "person_ids": [
         "p-bigan-69cb",
+        "p-jizi-1de8",
         "p-shangzhouwang-65bf",
         "p-weizi-4805"
       ],
@@ -11631,6 +11646,151 @@
           "book": "史记",
           "chapter": "周本纪",
           "raw": "（据《史记·周本纪》；年代依夏商周断代工程推定）"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "event_id": "shang-shangtangwangkaisanmian-01",
+      "title": "商汤网开三面",
+      "dynasty": "商",
+      "year": -1610,
+      "description": "汤出猎见人张网四面，令去其三，诸侯闻之归德，汤之仁政渐著。（据《史记·殷本纪》；年代依夏商周断代工程推定）",
+      "importance": 2,
+      "is_special": false,
+      "participants": [
+        "商汤"
+      ],
+      "person_ids": [
+        "p-shangtang-c08b"
+      ],
+      "source_refs": [
+        {
+          "label": "史记·殷本纪",
+          "book": "史记",
+          "chapter": "殷本纪",
+          "raw": "（据《史记·殷本纪》；年代依夏商周断代工程推定）"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "event_id": "shang-taijiafuwei-04",
+      "title": "太甲复位",
+      "dynasty": "商",
+      "year": -1577,
+      "description": "太甲悔过自新，伊尹迎之复位，作《太甲》训诫，太甲成商初贤君。（据《史记·殷本纪》；年代依夏商周断代工程推定）",
+      "importance": 2,
+      "is_special": false,
+      "participants": [
+        "伊尹",
+        "太甲"
+      ],
+      "person_ids": [
+        "p-taijia-8f1f",
+        "p-yiyin-d03f"
+      ],
+      "source_refs": [
+        {
+          "label": "史记·殷本纪",
+          "book": "史记",
+          "chapter": "殷本纪",
+          "raw": "（据《史记·殷本纪》；年代依夏商周断代工程推定）"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "event_id": "shang-tangdaosanglin-03",
+      "title": "汤祷桑林",
+      "dynasty": "商",
+      "year": -1590,
+      "description": "汤克夏后大旱七年，以身为牲祷于桑林，雨乃降，天下归心。（据《吕氏春秋·顺民》；年代依夏商周断代工程推定）",
+      "importance": 2,
+      "is_special": false,
+      "participants": [
+        "商汤"
+      ],
+      "person_ids": [
+        "p-shangtang-c08b"
+      ],
+      "source_refs": [
+        {
+          "label": "吕氏春秋·顺民",
+          "book": "吕氏春秋",
+          "chapter": "顺民",
+          "raw": "（据《吕氏春秋·顺民》；年代依夏商周断代工程推定）"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "event_id": "shang-tangfaweigukunwu-02",
+      "title": "汤伐韦顾昆吾",
+      "dynasty": "商",
+      "year": -1605,
+      "description": "汤依伊尹之谋，先伐韦、顾、昆吾等夏之属国，剪除夏之羽翼。（据《史记·殷本纪》；年代依夏商周断代工程推定）",
+      "importance": 2,
+      "is_special": false,
+      "participants": [
+        "商汤",
+        "伊尹"
+      ],
+      "person_ids": [
+        "p-shangtang-c08b",
+        "p-yiyin-d03f"
+      ],
+      "source_refs": [
+        {
+          "label": "史记·殷本纪",
+          "book": "史记",
+          "chapter": "殷本纪",
+          "raw": "（据《史记·殷本纪》；年代依夏商周断代工程推定）"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "event_id": "shang-wudingzhengguifang-05",
+      "title": "武丁征鬼方",
+      "dynasty": "商",
+      "year": -1240,
+      "description": "武丁遣将征鬼方，三年克之，王后妇好亦统兵出征，商势达于西北。（据《竹书纪年》；年代依夏商周断代工程推定）",
+      "importance": 2,
+      "is_special": false,
+      "participants": [
+        "武丁",
+        "妇好"
+      ],
+      "person_ids": [
+        "p-shang-fuhao-01",
+        "p-wuding-86ff"
+      ],
+      "source_refs": [
+        {
+          "label": "竹书纪年",
+          "book": "竹书纪年",
+          "raw": "（据《竹书纪年》；年代依夏商周断代工程推定）"
         }
       ],
       "source_status": "cited",
@@ -15953,11 +16113,15 @@
       "is_special": false,
       "participants": [
         "鲧",
-        "尧"
+        "尧",
+        "舜",
+        "禹"
       ],
       "person_ids": [
         "p-gun-ec16",
-        "p-yao-b5dd"
+        "p-shun-3851",
+        "p-yao-b5dd",
+        "p-yu-53cd"
       ],
       "source_refs": [
         {
@@ -16086,8 +16250,12 @@
       "year": -2050,
       "description": "约公元前2050年，夏后帝启是禹之子，其母是涂山氏之女。有扈氏不服，启讨伐之，大战於甘。（据《史记·夏本纪》；年代依夏商周断代工程推定）",
       "is_special": false,
-      "participants": [],
-      "person_ids": [],
+      "participants": [
+        "夏启"
+      ],
+      "person_ids": [
+        "p-xia-xiaqi-01"
+      ],
       "source_refs": [
         {
           "label": "史记·夏本纪",
@@ -16099,7 +16267,7 @@
       "source_status": "cited",
       "surface": {
         "timeline": true,
-        "graph": false
+        "graph": true
       }
     },
     {
@@ -16111,11 +16279,13 @@
       "is_special": false,
       "participants": [
         "太康",
-        "后羿"
+        "后羿",
+        "夏启"
       ],
       "person_ids": [
         "p-houyi-4d1b",
-        "p-taikang-ef72"
+        "p-taikang-ef72",
+        "p-xia-xiaqi-01"
       ],
       "source_refs": [
         {
@@ -16242,7 +16412,7 @@
       ],
       "person_ids": [
         "p-shangtang-c08b",
-        "p-xiajie-f6ba"
+        "p-xia-xiajie-01"
       ],
       "source_refs": [
         {
@@ -16273,8 +16443,186 @@
       ],
       "person_ids": [
         "p-shangtang-c08b",
-        "p-xiajie-f6ba",
+        "p-xia-xiajie-01",
         "p-yiyin-d03f"
+      ],
+      "source_refs": [
+        {
+          "label": "史记·夏本纪",
+          "book": "史记",
+          "chapter": "夏本纪",
+          "raw": "（据《史记·夏本纪》；年代依夏商周断代工程推定）"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "event_id": "xia-hanzhuocuanxia-05",
+      "title": "寒浞篡夏",
+      "dynasty": "夏",
+      "year": -1980,
+      "description": "后羿家臣寒浞杀羿篡位，烹而食之，代夏约四十年，夏统中绝。（据《左传·襄公四年》；年代依夏商周断代工程推定）",
+      "importance": 2,
+      "is_special": false,
+      "participants": [
+        "寒浞",
+        "后羿"
+      ],
+      "person_ids": [
+        "p-hanzhuo-6de2",
+        "p-houyi-4d1b"
+      ],
+      "source_refs": [
+        {
+          "label": "左传·襄公四年",
+          "book": "左传",
+          "chapter": "襄公四年",
+          "raw": "（据《左传·襄公四年》；年代依夏商周断代工程推定）"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "event_id": "xia-houyidaixia-04",
+      "title": "后羿代夏",
+      "dynasty": "夏",
+      "year": -1985,
+      "description": "后羿夺取夏政，自立代夏，史称\"因夏民以代夏政\"，太康流亡。（据《左传·襄公四年》；年代依夏商周断代工程推定）",
+      "importance": 2,
+      "is_special": false,
+      "participants": [
+        "后羿",
+        "太康",
+        "寒浞"
+      ],
+      "person_ids": [
+        "p-hanzhuo-6de2",
+        "p-houyi-4d1b",
+        "p-taikang-ef72"
+      ],
+      "source_refs": [
+        {
+          "label": "左传·襄公四年",
+          "book": "左传",
+          "chapter": "襄公四年",
+          "raw": "（据《左传·襄公四年》；年代依夏商周断代工程推定）"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "event_id": "xia-qijianxiajuntaizhixiang-01",
+      "title": "启建夏·钧台之享",
+      "dynasty": "夏",
+      "year": -2070,
+      "description": "禹死后启继位，钧台之享大会诸侯，伯益避让，禅让制终结，世袭王权确立。（据《左传·昭公四年》；年代依夏商周断代工程推定）",
+      "importance": 3,
+      "is_special": false,
+      "participants": [
+        "夏启",
+        "伯益",
+        "禹"
+      ],
+      "person_ids": [
+        "p-xia-boyi-01",
+        "p-xia-xiaqi-01",
+        "p-yu-53cd"
+      ],
+      "source_refs": [
+        {
+          "label": "左传·昭公四年",
+          "book": "左传",
+          "chapter": "昭公四年",
+          "raw": "（据《左传·昭公四年》；年代依夏商周断代工程推定）"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "event_id": "xia-tushanzhihui-02",
+      "title": "涂山之会",
+      "dynasty": "夏",
+      "year": -2070,
+      "description": "禹涂山大会诸侯，执玉帛者万国，确立夏族共主地位，为夏朝建立奠基。（据《左传·哀公七年》；年代依夏商周断代工程推定）",
+      "importance": 2,
+      "is_special": false,
+      "participants": [
+        "禹"
+      ],
+      "person_ids": [
+        "p-yu-53cd"
+      ],
+      "source_refs": [
+        {
+          "label": "左传·哀公七年",
+          "book": "左传",
+          "chapter": "哀公七年",
+          "raw": "（据《左传·哀公七年》；年代依夏商周断代工程推定）"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "event_id": "xia-xiajiebaozheng-06",
+      "title": "夏桀暴政",
+      "dynasty": "夏",
+      "year": -1620,
+      "description": "桀荒淫暴虐，筑倾宫瑶台，残害忠良，民心尽失，诸侯叛离，夏室危殆。（据《史记·夏本纪》；年代依夏商周断代工程推定）",
+      "importance": 2,
+      "is_special": false,
+      "participants": [
+        "夏桀"
+      ],
+      "person_ids": [
+        "p-xia-xiajie-01"
+      ],
+      "source_refs": [
+        {
+          "label": "史记·夏本纪",
+          "book": "史记",
+          "chapter": "夏本纪",
+          "raw": "（据《史记·夏本纪》；年代依夏商周断代工程推定）"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "event_id": "xia-yufasanmiao-03",
+      "title": "禹伐三苗",
+      "dynasty": "夏",
+      "year": -2070,
+      "description": "禹率众征伐三苗，苗民溃散，夏族势力南扩，禹之威望益盛。（据《史记·夏本纪》；年代依夏商周断代工程推定）",
+      "importance": 2,
+      "is_special": false,
+      "participants": [
+        "禹"
+      ],
+      "person_ids": [
+        "p-yu-53cd"
       ],
       "source_refs": [
         {
@@ -18500,7 +18848,7 @@
       ],
       "person_ids": [
         "p-jiangziya-11a8",
-        "p-zhougongdan-1d7a",
+        "p-xizhou-zhougongdan-01",
         "p-zhouwuwang-1530"
       ],
       "source_refs": [
@@ -18559,8 +18907,8 @@
         "周成王"
       ],
       "person_ids": [
-        "p-zhouchengwang-c3f5",
-        "p-zhougongdan-1d7a"
+        "p-xizhou-zhougongdan-01",
+        "p-zhouchengwang-c3f5"
       ],
       "source_refs": [
         {
@@ -18582,16 +18930,19 @@
       "dynasty": "西周",
       "year": -1042,
       "description": "武王崩后成王少，周公旦专王室。管叔蔡叔疑周公不利于成王，挟武庚以作乱。周公奉成王命伐诛武庚，杀管叔，放蔡叔迁之。分殷余民封微子启于宋以续殷祀，封康叔为卫君。（据《史记·管蔡世家》）",
+      "importance": 3,
       "is_special": false,
       "participants": [
         "周公旦",
         "管叔",
-        "蔡叔"
+        "蔡叔",
+        "武庚"
       ],
       "person_ids": [
         "p-caishu-c233",
         "p-guanshu-d6a4",
-        "p-zhougongdan-1d7a"
+        "p-xizhou-wugeng-01",
+        "p-xizhou-zhougongdan-01"
       ],
       "source_refs": [
         {
@@ -18621,8 +18972,8 @@
         "周公旦"
       ],
       "person_ids": [
+        "p-xizhou-zhougongdan-01",
         "p-zhouchengwang-c3f5",
-        "p-zhougongdan-1d7a",
         "p-zhoukangwang-1b49"
       ],
       "source_refs": [
@@ -18674,8 +19025,8 @@
         "周成王"
       ],
       "person_ids": [
-        "p-zhouchengwang-c3f5",
-        "p-zhougongdan-1d7a"
+        "p-xizhou-zhougongdan-01",
+        "p-zhouchengwang-c3f5"
       ],
       "source_refs": [
         {
@@ -18703,8 +19054,8 @@
         "周成王"
       ],
       "person_ids": [
-        "p-zhouchengwang-c3f5",
-        "p-zhougongdan-1d7a"
+        "p-xizhou-zhougongdan-01",
+        "p-zhouchengwang-c3f5"
       ],
       "source_refs": [
         {
@@ -18726,12 +19077,13 @@
       "dynasty": "西周",
       "year": -1030,
       "description": "成王既绌殷命、袭淮夷，归在丰，作周官。兴正礼乐，度制于是改，而民和睦，颂声兴。（据《史记·周本纪》）",
+      "importance": 3,
       "is_special": false,
       "participants": [
         "周公旦"
       ],
       "person_ids": [
-        "p-zhougongdan-1d7a"
+        "p-xizhou-zhougongdan-01"
       ],
       "source_refs": [
         {
@@ -18777,8 +19129,14 @@
       "year": -960,
       "description": "穆王将征犬戎，祭公谋父谏以先王以德服远之道，穆王不听。此役仅得四白狼四白鹿，自是荒服者不至。（据《史记·周本纪》）",
       "is_special": false,
-      "participants": [],
-      "person_ids": [],
+      "participants": [
+        "周穆王",
+        "祭公谋父"
+      ],
+      "person_ids": [
+        "p-xizhou-jigongmoufu-01",
+        "p-xizhou-zhoumuwang-01"
+      ],
       "source_refs": [
         {
           "label": "史记·周本纪",
@@ -18790,7 +19148,7 @@
       "source_status": "cited",
       "surface": {
         "timeline": true,
-        "graph": false
+        "graph": true
       }
     },
     {
@@ -18870,9 +19228,13 @@
       "description": "厉王暴虐，国人谤王。召公谏以“防民之口甚于防水”，厉王不听。三年后国人相与叛，袭厉王，厉王出奔于彘。（据《史记·周本纪》）",
       "is_special": false,
       "participants": [
-        "周厉王"
+        "周厉王",
+        "召穆公",
+        "周定公"
       ],
       "person_ids": [
+        "p-xizhou-zhoudinggong-01",
+        "p-zhaomugong-8694",
         "p-zhouliwang-2141"
       ],
       "source_refs": [
@@ -18932,8 +19294,8 @@
         "周定公"
       ],
       "person_ids": [
+        "p-xizhou-zhoudinggong-01",
         "p-zhaomugong-8694",
-        "p-zhoudinggong-fe02",
         "p-zhouxuanwang-f434"
       ],
       "source_refs": [
@@ -19040,6 +19402,70 @@
       "person_ids": [
         "p-shenhou-beef",
         "p-zhouyouwang-cb3c"
+      ],
+      "source_refs": [
+        {
+          "label": "史记·周本纪",
+          "book": "史记",
+          "chapter": "周本纪",
+          "raw": "（据《史记·周本纪》）"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "event_id": "xizhou-baosihuozhoufeidilishu-02",
+      "title": "褒姒惑周·废嫡立庶",
+      "dynasty": "西周",
+      "year": -779,
+      "description": "幽王宠褒姒，废申后及太子宜臼，立褒姒子伯服，埋西周亡国之祸。（据《国语·晋语》《史记·周本纪》）",
+      "importance": 3,
+      "is_special": false,
+      "participants": [
+        "周幽王",
+        "褒姒"
+      ],
+      "person_ids": [
+        "p-baosi-5bd1",
+        "p-zhouyouwang-cb3c"
+      ],
+      "source_refs": [
+        {
+          "label": "国语·晋语",
+          "book": "国语",
+          "chapter": "晋语",
+          "raw": "（据《国语·晋语》《史记·周本纪》）"
+        },
+        {
+          "label": "史记·周本纪",
+          "book": "史记",
+          "chapter": "周本纪",
+          "raw": "（据《国语·晋语》《史记·周本纪》）"
+        }
+      ],
+      "source_status": "cited",
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "event_id": "xizhou-zhouxuanwangzhongxing-01",
+      "title": "周宣王中兴",
+      "dynasty": "西周",
+      "year": -827,
+      "description": "宣王即位，任仲山甫等，征伐猃狁，复兴国势，西周暂获安宁。（据《史记·周本纪》）",
+      "importance": 2,
+      "is_special": false,
+      "participants": [
+        "周宣王"
+      ],
+      "person_ids": [
+        "p-zhouxuanwang-f434"
       ],
       "source_refs": [
         {
@@ -22483,12 +22909,15 @@
       "dynasties": [
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
-        "xizhou-21"
+        "xizhou-21",
+        "xizhou-baosihuozhoufeidilishu-02"
       ],
       "first_year": -779,
       "last_year": -779,
@@ -22612,7 +23041,10 @@
       "dynasties": [
         "商"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -22776,7 +23208,9 @@
       "dynasties": [
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -24300,7 +24734,10 @@
       "dynasties": [
         "商"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -25976,7 +26413,10 @@
       "dynasties": [
         "商"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -26535,7 +26975,9 @@
       "dynasties": [
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -26850,7 +27292,9 @@
       "dynasties": [
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -26955,7 +27399,10 @@
       "dynasties": [
         "夏"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xia"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -28109,14 +28556,19 @@
       "dynasties": [
         "夏"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xia"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
+        "xia-houyidaixia-04",
+        "xia-hanzhuocuanxia-05",
         "xia-09"
       ],
-      "first_year": -1850,
+      "first_year": -1985,
       "last_year": -1850,
       "status": "active"
     },
@@ -28477,15 +28929,20 @@
       "dynasties": [
         "夏"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xia"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
-        "xia-07"
+        "xia-07",
+        "xia-houyidaixia-04",
+        "xia-hanzhuocuanxia-05"
       ],
       "first_year": -1990,
-      "last_year": -1990,
+      "last_year": -1980,
       "status": "active"
     },
     {
@@ -29122,7 +29579,10 @@
         "商",
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -29827,16 +30287,21 @@
       "aliases": [],
       "primary_dynasty": "西周",
       "dynasties": [
+        "商",
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
+        "shang-14",
         "xizhou-03"
       ],
-      "first_year": -1046,
+      "first_year": -1050,
       "last_year": -1046,
       "status": "active"
     },
@@ -35296,14 +35761,18 @@
       "dynasties": [
         "商"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
+        "shang-06",
         "shang-07"
       ],
-      "first_year": -1300,
+      "first_year": -1400,
       "last_year": -1300,
       "status": "active"
     },
@@ -36709,6 +37178,87 @@
       "status": "active"
     },
     {
+      "person_id": "p-shang-fuhao-01",
+      "display_name": "妇好",
+      "romanized": "fuhao",
+      "disambiguator": {
+        "period": "商",
+        "role": null
+      },
+      "aliases": [],
+      "primary_dynasty": "商",
+      "dynasties": [
+        "商"
+      ],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
+      "scope_ids": [
+        "xianqin"
+      ],
+      "event_ids": [
+        "shang-wudingzhengguifang-05"
+      ],
+      "first_year": -1240,
+      "last_year": -1240,
+      "status": "active"
+    },
+    {
+      "person_id": "p-shang-yangjia-01",
+      "display_name": "阳甲",
+      "romanized": "yangjia",
+      "disambiguator": {
+        "period": "商",
+        "role": null
+      },
+      "aliases": [],
+      "primary_dynasty": "商",
+      "dynasties": [
+        "商"
+      ],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
+      "scope_ids": [
+        "xianqin"
+      ],
+      "event_ids": [
+        "shang-06"
+      ],
+      "first_year": -1400,
+      "last_year": -1400,
+      "status": "active"
+    },
+    {
+      "person_id": "p-shang-zhongding-01",
+      "display_name": "仲丁",
+      "romanized": "zhongding",
+      "disambiguator": {
+        "period": "商",
+        "role": null
+      },
+      "aliases": [],
+      "primary_dynasty": "商",
+      "dynasties": [
+        "商"
+      ],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
+      "scope_ids": [
+        "xianqin"
+      ],
+      "event_ids": [
+        "shang-06"
+      ],
+      "first_year": -1400,
+      "last_year": -1400,
+      "status": "active"
+    },
+    {
       "person_id": "p-shangguanjie-699a",
       "display_name": "上官桀",
       "romanized": "shangguanjie",
@@ -36739,28 +37289,35 @@
       "display_name": "商汤",
       "romanized": "shangtang",
       "disambiguator": {
-        "period": "夏",
+        "period": "商",
         "role": null
       },
       "aliases": [],
-      "primary_dynasty": "夏",
+      "primary_dynasty": "商",
       "dynasties": [
         "商",
         "夏"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xia",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
         "shang-01",
+        "shang-shangtangwangkaisanmian-01",
         "xia-12",
+        "shang-tangfaweigukunwu-02",
         "shang-02",
         "shang-03",
-        "xia-13"
+        "xia-13",
+        "shang-tangdaosanglin-03"
       ],
       "first_year": -1617,
-      "last_year": -1600,
+      "last_year": -1590,
       "status": "active"
     },
     {
@@ -36805,7 +37362,10 @@
         "商",
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -36859,7 +37419,10 @@
       "dynasties": [
         "夏"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xia"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -36961,7 +37524,9 @@
       "dynasties": [
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -37472,15 +38037,19 @@
       "dynasties": [
         "夏"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xia"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
+        "xia-01",
         "xia-02",
         "xia-04"
       ],
-      "first_year": -2083,
+      "first_year": -2100,
       "last_year": -2070,
       "status": "active"
     },
@@ -38730,12 +39299,16 @@
       "dynasties": [
         "商"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
-        "shang-04"
+        "shang-04",
+        "shang-taijiafuwei-04"
       ],
       "first_year": -1577,
       "last_year": -1577,
@@ -38754,15 +39327,19 @@
       "dynasties": [
         "夏"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xia"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
-        "xia-07"
+        "xia-07",
+        "xia-houyidaixia-04"
       ],
       "first_year": -1990,
-      "last_year": -1990,
+      "last_year": -1985,
       "status": "active"
     },
     {
@@ -41695,7 +42272,10 @@
       "dynasties": [
         "商"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -41860,15 +42440,19 @@
       "dynasties": [
         "商"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
-        "shang-08"
+        "shang-08",
+        "shang-wudingzhengguifang-05"
       ],
       "first_year": -1250,
-      "last_year": -1250,
+      "last_year": -1240,
       "status": "active"
     },
     {
@@ -42312,6 +42896,96 @@
       "status": "active"
     },
     {
+      "person_id": "p-xia-boyi-01",
+      "display_name": "伯益",
+      "romanized": "boyi",
+      "disambiguator": {
+        "period": "夏",
+        "role": null
+      },
+      "aliases": [],
+      "primary_dynasty": "夏",
+      "dynasties": [
+        "夏"
+      ],
+      "era_ids": [
+        "shang",
+        "xia"
+      ],
+      "scope_ids": [
+        "xianqin"
+      ],
+      "event_ids": [
+        "xia-qijianxiajuntaizhixiang-01"
+      ],
+      "first_year": -2070,
+      "last_year": -2070,
+      "status": "active"
+    },
+    {
+      "person_id": "p-xia-xiajie-01",
+      "display_name": "夏桀",
+      "romanized": "xiajie",
+      "disambiguator": {
+        "period": "夏",
+        "role": null
+      },
+      "aliases": [
+        "桀"
+      ],
+      "primary_dynasty": "夏",
+      "dynasties": [
+        "夏",
+        "商"
+      ],
+      "era_ids": [
+        "shang",
+        "xia",
+        "xizhou"
+      ],
+      "scope_ids": [
+        "xianqin"
+      ],
+      "event_ids": [
+        "xia-xiajiebaozheng-06",
+        "xia-12",
+        "shang-02",
+        "xia-13"
+      ],
+      "first_year": -1620,
+      "last_year": -1600,
+      "status": "active"
+    },
+    {
+      "person_id": "p-xia-xiaqi-01",
+      "display_name": "夏启",
+      "romanized": "xiaqi",
+      "disambiguator": {
+        "period": "夏",
+        "role": null
+      },
+      "aliases": [],
+      "primary_dynasty": "夏",
+      "dynasties": [
+        "夏"
+      ],
+      "era_ids": [
+        "shang",
+        "xia"
+      ],
+      "scope_ids": [
+        "xianqin"
+      ],
+      "event_ids": [
+        "xia-qijianxiajuntaizhixiang-01",
+        "xia-06",
+        "xia-07"
+      ],
+      "first_year": -2070,
+      "last_year": -1990,
+      "status": "active"
+    },
+    {
       "person_id": "p-xiahoudun-521e",
       "display_name": "夏侯惇",
       "romanized": "xiahoudun",
@@ -42361,33 +43035,6 @@
       ],
       "first_year": 219,
       "last_year": 219,
-      "status": "active"
-    },
-    {
-      "person_id": "p-xiajie-f6ba",
-      "display_name": "夏桀",
-      "romanized": "xiajie",
-      "disambiguator": {
-        "period": "夏",
-        "role": null
-      },
-      "aliases": [],
-      "primary_dynasty": "夏",
-      "dynasties": [
-        "夏",
-        "商"
-      ],
-      "era_ids": [],
-      "scope_ids": [
-        "xianqin"
-      ],
-      "event_ids": [
-        "xia-12",
-        "shang-02",
-        "xia-13"
-      ],
-      "first_year": -1610,
-      "last_year": -1600,
       "status": "active"
     },
     {
@@ -43051,7 +43698,10 @@
       "dynasties": [
         "商"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -43440,6 +44090,145 @@
       ],
       "first_year": -121,
       "last_year": -121,
+      "status": "active"
+    },
+    {
+      "person_id": "p-xizhou-jigongmoufu-01",
+      "display_name": "祭公谋父",
+      "romanized": "jigongmoufu",
+      "disambiguator": {
+        "period": "西周",
+        "role": null
+      },
+      "aliases": [],
+      "primary_dynasty": "西周",
+      "dynasties": [
+        "西周"
+      ],
+      "era_ids": [
+        "xizhou"
+      ],
+      "scope_ids": [
+        "xianqin"
+      ],
+      "event_ids": [
+        "xizhou-12"
+      ],
+      "first_year": -960,
+      "last_year": -960,
+      "status": "active"
+    },
+    {
+      "person_id": "p-xizhou-wugeng-01",
+      "display_name": "武庚",
+      "romanized": "wugeng",
+      "disambiguator": {
+        "period": "西周",
+        "role": null
+      },
+      "aliases": [],
+      "primary_dynasty": "西周",
+      "dynasties": [
+        "西周"
+      ],
+      "era_ids": [
+        "xizhou"
+      ],
+      "scope_ids": [
+        "xianqin"
+      ],
+      "event_ids": [
+        "xizhou-05"
+      ],
+      "first_year": -1042,
+      "last_year": -1042,
+      "status": "active"
+    },
+    {
+      "person_id": "p-xizhou-zhoudinggong-01",
+      "display_name": "周定公",
+      "romanized": "zhoudinggong",
+      "disambiguator": {
+        "period": "西周",
+        "role": null
+      },
+      "aliases": [
+        "周公（周定公）"
+      ],
+      "primary_dynasty": "西周",
+      "dynasties": [
+        "西周"
+      ],
+      "era_ids": [
+        "xizhou"
+      ],
+      "scope_ids": [
+        "xianqin"
+      ],
+      "event_ids": [
+        "xizhou-16",
+        "xizhou-18"
+      ],
+      "first_year": -841,
+      "last_year": -828,
+      "status": "active"
+    },
+    {
+      "person_id": "p-xizhou-zhougongdan-01",
+      "display_name": "周公旦",
+      "romanized": "zhougongdan",
+      "disambiguator": {
+        "period": "西周",
+        "role": null
+      },
+      "aliases": [],
+      "primary_dynasty": "西周",
+      "dynasties": [
+        "西周"
+      ],
+      "era_ids": [
+        "xizhou"
+      ],
+      "scope_ids": [
+        "xianqin"
+      ],
+      "event_ids": [
+        "xizhou-02",
+        "xizhou-04",
+        "xizhou-05",
+        "xizhou-06",
+        "xizhou-08",
+        "xizhou-09",
+        "xizhou-10"
+      ],
+      "first_year": -1046,
+      "last_year": -1030,
+      "status": "active"
+    },
+    {
+      "person_id": "p-xizhou-zhoumuwang-01",
+      "display_name": "周穆王",
+      "romanized": "zhoumuwang",
+      "disambiguator": {
+        "period": "西周",
+        "role": null
+      },
+      "aliases": [],
+      "primary_dynasty": "西周",
+      "dynasties": [
+        "西周"
+      ],
+      "era_ids": [
+        "xizhou"
+      ],
+      "scope_ids": [
+        "xianqin"
+      ],
+      "event_ids": [
+        "xizhou-12"
+      ],
+      "first_year": -960,
+      "last_year": -960,
       "status": "active"
     },
     {
@@ -44988,7 +45777,10 @@
       "dynasties": [
         "夏"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xia"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -45873,16 +46665,22 @@
         "商",
         "夏"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xia",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
         "shang-01",
+        "shang-tangfaweigukunwu-02",
         "shang-02",
         "shang-03",
         "xia-13",
-        "shang-04"
+        "shang-04",
+        "shang-taijiafuwei-04"
       ],
       "first_year": -1617,
       "last_year": -1577,
@@ -46009,20 +46807,29 @@
         "period": "夏",
         "role": null
       },
-      "aliases": [],
+      "aliases": [
+        "大禹"
+      ],
       "primary_dynasty": "夏",
       "dynasties": [
         "夏"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xia"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
+        "xia-01",
         "xia-02",
-        "xia-04"
+        "xia-04",
+        "xia-qijianxiajuntaizhixiang-01",
+        "xia-tushanzhihui-02",
+        "xia-yufasanmiao-03"
       ],
-      "first_year": -2083,
+      "first_year": -2100,
       "last_year": -2070,
       "status": "active"
     },
@@ -48356,19 +49163,24 @@
         "period": "西周",
         "role": null
       },
-      "aliases": [],
+      "aliases": [
+        "召公"
+      ],
       "primary_dynasty": "西周",
       "dynasties": [
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
+        "xizhou-16",
         "xizhou-18"
       ],
-      "first_year": -828,
+      "first_year": -841,
       "last_year": -828,
       "status": "active"
     },
@@ -49429,7 +50241,9 @@
       "dynasties": [
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -49467,60 +50281,6 @@
       ],
       "first_year": 908,
       "last_year": 908,
-      "status": "active"
-    },
-    {
-      "person_id": "p-zhoudinggong-fe02",
-      "display_name": "周定公",
-      "romanized": "zhoudinggong",
-      "disambiguator": {
-        "period": "西周",
-        "role": null
-      },
-      "aliases": [],
-      "primary_dynasty": "西周",
-      "dynasties": [
-        "西周"
-      ],
-      "era_ids": [],
-      "scope_ids": [
-        "xianqin"
-      ],
-      "event_ids": [
-        "xizhou-18"
-      ],
-      "first_year": -828,
-      "last_year": -828,
-      "status": "active"
-    },
-    {
-      "person_id": "p-zhougongdan-1d7a",
-      "display_name": "周公旦",
-      "romanized": "zhougongdan",
-      "disambiguator": {
-        "period": "西周",
-        "role": null
-      },
-      "aliases": [],
-      "primary_dynasty": "西周",
-      "dynasties": [
-        "西周"
-      ],
-      "era_ids": [],
-      "scope_ids": [
-        "xianqin"
-      ],
-      "event_ids": [
-        "xizhou-02",
-        "xizhou-04",
-        "xizhou-05",
-        "xizhou-06",
-        "xizhou-08",
-        "xizhou-09",
-        "xizhou-10"
-      ],
-      "first_year": -1046,
-      "last_year": -1030,
       "status": "active"
     },
     {
@@ -49614,7 +50374,9 @@
       "dynasties": [
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -49638,7 +50400,9 @@
       "dynasties": [
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -49715,7 +50479,10 @@
       "dynasties": [
         "商"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
@@ -49742,17 +50509,21 @@
         "商",
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "shang",
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
+        "shang-12",
         "shang-15",
         "xizhou-01",
         "xizhou-02",
         "xizhou-03"
       ],
-      "first_year": -1048,
+      "first_year": -1060,
       "last_year": -1046,
       "status": "active"
     },
@@ -49797,15 +50568,18 @@
       "dynasties": [
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
-        "xizhou-18"
+        "xizhou-18",
+        "xizhou-zhouxuanwangzhongxing-01"
       ],
       "first_year": -828,
-      "last_year": -828,
+      "last_year": -827,
       "status": "active"
     },
     {
@@ -49847,12 +50621,15 @@
       "dynasties": [
         "西周"
       ],
-      "era_ids": [],
+      "era_ids": [
+        "xizhou"
+      ],
       "scope_ids": [
         "xianqin"
       ],
       "event_ids": [
         "xizhou-21",
+        "xizhou-baosihuozhoufeidilishu-02",
         "xizhou-22"
       ],
       "first_year": -779,
@@ -50974,7 +51751,7 @@
     },
     {
       "pair_key": "伊尹__夏桀",
-      "person_id_a": "p-xiajie-f6ba",
+      "person_id_a": "p-xia-xiajie-01",
       "person_id_b": "p-yiyin-d03f",
       "label": "敌手",
       "event_summaries": {
@@ -51011,6 +51788,20 @@
       },
       "basis_event_ids": [
         "qing-43"
+      ],
+      "attribution": "史脉关系库（人工校订）"
+    },
+    {
+      "pair_key": "伯益__禹",
+      "person_id_a": "p-yu-53cd",
+      "person_id_b": "p-xia-boyi-01",
+      "label": "君臣（禅让之争）",
+      "description": "禹本荐伯益，启夺位，益退避，禅让制由此终结。",
+      "event_summaries": {
+        "xia-qijianxiajuntaizhixiang-01": "禹本荐伯益，启夺位，益退避，禅让制由此终结。"
+      },
+      "basis_event_ids": [
+        "xia-qijianxiajuntaizhixiang-01"
       ],
       "attribution": "史脉关系库（人工校订）"
     },
@@ -52770,6 +53561,20 @@
       "attribution": "史脉关系库（人工校订）"
     },
     {
+      "pair_key": "召穆公__周厉王",
+      "person_id_a": "p-zhouliwang-2141",
+      "person_id_b": "p-zhaomugong-8694",
+      "label": "君臣（暴政谏诤）",
+      "description": "厉王弭谤，召公谏防民之口甚于防川，不听，国人暴动。",
+      "event_summaries": {
+        "xizhou-16": "厉王弭谤，召公谏防民之口甚于防川，不听，国人暴动。"
+      },
+      "basis_event_ids": [
+        "xizhou-16"
+      ],
+      "attribution": "史脉关系库（人工校订）"
+    },
+    {
       "pair_key": "史弥远__韩侂胄",
       "person_id_a": "p-shimiyuan-9924",
       "person_id_b": "p-hantuozhou-3058",
@@ -53298,6 +54103,20 @@
       "attribution": "史脉关系库（人工校订）"
     },
     {
+      "pair_key": "后羿__寒浞",
+      "person_id_a": "p-houyi-4d1b",
+      "person_id_b": "p-hanzhuo-6de2",
+      "label": "君臣→篡逆",
+      "description": "寒浞本羿之家臣，杀羿篡位，代夏约四十年。",
+      "event_summaries": {
+        "xia-hanzhuocuanxia-05": "寒浞本羿之家臣，杀羿篡位，代夏约四十年。"
+      },
+      "basis_event_ids": [
+        "xia-hanzhuocuanxia-05"
+      ],
+      "attribution": "史脉关系库（人工校订）"
+    },
+    {
       "pair_key": "吕后__陈平",
       "person_id_a": "p-chenping-b722",
       "person_id_b": "p-lvhou-bdad",
@@ -53591,7 +54410,7 @@
     },
     {
       "pair_key": "周公旦__周康王",
-      "person_id_a": "p-zhougongdan-1d7a",
+      "person_id_a": "p-xizhou-zhougongdan-01",
       "person_id_b": "p-zhoukangwang-1b49",
       "label": "君臣（辅政）",
       "event_summaries": {
@@ -53604,7 +54423,7 @@
     },
     {
       "pair_key": "周公旦__周成王",
-      "person_id_a": "p-zhougongdan-1d7a",
+      "person_id_a": "p-xizhou-zhougongdan-01",
       "person_id_b": "p-zhouchengwang-c3f5",
       "label": "叔侄（摄政）",
       "description": "武王崩，成王年幼，周公摄政七年，东征平乱、营洛邑，而后还政。",
@@ -53625,7 +54444,7 @@
     {
       "pair_key": "周公旦__周武王",
       "person_id_a": "p-zhouwuwang-1530",
-      "person_id_b": "p-zhougongdan-1d7a",
+      "person_id_b": "p-xizhou-zhougongdan-01",
       "label": "兄弟（辅弼）",
       "description": "周公旦为武王同母弟，佐武王克商；武王崩后摄政辅成王。",
       "event_summaries": {
@@ -53638,7 +54457,7 @@
     },
     {
       "pair_key": "周公旦__姜子牙",
-      "person_id_a": "p-zhougongdan-1d7a",
+      "person_id_a": "p-xizhou-zhougongdan-01",
       "person_id_b": "p-jiangziya-11a8",
       "label": "同僚",
       "event_summaries": {
@@ -53650,8 +54469,22 @@
       "attribution": "史脉关系库（人工校订）"
     },
     {
+      "pair_key": "周公旦__武庚",
+      "person_id_a": "p-xizhou-zhougongdan-01",
+      "person_id_b": "p-xizhou-wugeng-01",
+      "label": "敌对（平叛）",
+      "description": "武庚联三监叛周复商，周公东征杀之。",
+      "event_summaries": {
+        "xizhou-05": "武庚联三监叛周复商，周公东征杀之。"
+      },
+      "basis_event_ids": [
+        "xizhou-05"
+      ],
+      "attribution": "史脉关系库（人工校订）"
+    },
+    {
       "pair_key": "周公旦__管叔",
-      "person_id_a": "p-zhougongdan-1d7a",
+      "person_id_a": "p-xizhou-zhougongdan-01",
       "person_id_b": "p-guanshu-d6a4",
       "label": "兄弟→反目",
       "event_summaries": {
@@ -53664,7 +54497,7 @@
     },
     {
       "pair_key": "周公旦__蔡叔",
-      "person_id_a": "p-zhougongdan-1d7a",
+      "person_id_a": "p-xizhou-zhougongdan-01",
       "person_id_b": "p-caishu-c233",
       "label": "兄弟→反目",
       "event_summaries": {
@@ -53690,15 +54523,45 @@
       "attribution": "史脉关系库（人工校订）"
     },
     {
+      "pair_key": "周厉王__周定公",
+      "person_id_a": "p-zhouliwang-2141",
+      "person_id_b": "p-xizhou-zhoudinggong-01",
+      "label": "君臣（共和行政）",
+      "description": "厉王奔彘，周召共和行政，中国确切纪年开始。",
+      "event_summaries": {
+        "xizhou-16": "厉王奔彘，周召共和行政，中国确切纪年开始。"
+      },
+      "basis_event_ids": [
+        "xizhou-16"
+      ],
+      "attribution": "史脉关系库（人工校订）"
+    },
+    {
+      "pair_key": "周幽王__申侯",
+      "person_id_a": "p-zhouyouwang-cb3c",
+      "person_id_b": "p-shenhou-beef",
+      "label": "君臣→敌对（外戚引戎）",
+      "description": "申侯因女申后被废，联犬戎攻镐京，杀幽王。",
+      "event_summaries": {
+        "xizhou-22": "申侯因女申后被废，联犬戎攻镐京，杀幽王。"
+      },
+      "basis_event_ids": [
+        "xizhou-22"
+      ],
+      "attribution": "史脉关系库（人工校订）"
+    },
+    {
       "pair_key": "周幽王__褒姒",
       "person_id_a": "p-zhouyouwang-cb3c",
       "person_id_b": "p-baosi-5bd1",
       "label": "夫妻（宠幸）",
       "event_summaries": {
-        "xizhou-21": "幽王宠褒姒，废申后及太子，烽火戏诸侯，终致犬戎之祸。"
+        "xizhou-21": "幽王宠褒姒，废申后及太子，烽火戏诸侯，终致犬戎之祸。",
+        "xizhou-baosihuozhoufeidilishu-02": "幽王宠褒姒，废申后及太子宜臼，立褒姒子伯服。"
       },
       "basis_event_ids": [
-        "xizhou-21"
+        "xizhou-21",
+        "xizhou-baosihuozhoufeidilishu-02"
       ],
       "attribution": "史脉关系库（人工校订）"
     },
@@ -53712,6 +54575,20 @@
       },
       "basis_event_ids": [
         "xizhou-06"
+      ],
+      "attribution": "史脉关系库（人工校订）"
+    },
+    {
+      "pair_key": "周文王__周武王",
+      "person_id_a": "p-zhouwenwang-37e4",
+      "person_id_b": "p-zhouwuwang-1530",
+      "label": "父子（灭商遗志）",
+      "description": "文王奠基翦商，武王克成父志，牧野灭商。",
+      "event_summaries": {
+        "shang-12": "文王奠基翦商，武王克成父志，牧野灭商。"
+      },
+      "basis_event_ids": [
+        "shang-12"
       ],
       "attribution": "史脉关系库（人工校订）"
     },
@@ -53953,7 +54830,7 @@
     },
     {
       "pair_key": "商汤__夏桀",
-      "person_id_a": "p-xiajie-f6ba",
+      "person_id_a": "p-xia-xiajie-01",
       "person_id_b": "p-shangtang-c08b",
       "label": "敌国（革命）",
       "description": "夏桀囚汤于夏台，汤归于亳后举兵伐桀，鸣条一战放桀于南巢，夏亡。",
@@ -54015,6 +54892,20 @@
       "label": "君臣（死谏）",
       "event_summaries": {
         "shang-14": "比干强谏纣王，纣怒曰「吾闻圣人心有七窍」，剖而观之。"
+      },
+      "basis_event_ids": [
+        "shang-14"
+      ],
+      "attribution": "史脉关系库（人工校订）"
+    },
+    {
+      "pair_key": "商纣王__箕子",
+      "person_id_a": "p-shangzhouwang-65bf",
+      "person_id_b": "p-jizi-1de8",
+      "label": "君臣（囚禁佯狂）",
+      "description": "箕子谏纣不听，披发佯狂为奴，被囚。",
+      "event_summaries": {
+        "shang-14": "箕子谏纣不听，披发佯狂为奴，被囚。"
       },
       "basis_event_ids": [
         "shang-14"
@@ -54158,6 +55049,34 @@
       "attribution": "史脉关系库（人工校订）"
     },
     {
+      "pair_key": "夏启__太康",
+      "person_id_a": "p-xia-xiaqi-01",
+      "person_id_b": "p-taikang-ef72",
+      "label": "父子（失国之君）",
+      "description": "启子太康失德畋猎，被后羿拒于洛水而失国。",
+      "event_summaries": {
+        "xia-07": "启子太康失德畋猎，被后羿拒于洛水而失国。"
+      },
+      "basis_event_ids": [
+        "xia-07"
+      ],
+      "attribution": "史脉关系库（人工校订）"
+    },
+    {
+      "pair_key": "夏启__禹",
+      "person_id_a": "p-yu-53cd",
+      "person_id_b": "p-xia-xiaqi-01",
+      "label": "父子（世袭开端）",
+      "description": "禹传位于启，终结禅让制，开世袭王朝之始。",
+      "event_summaries": {
+        "xia-qijianxiajuntaizhixiang-01": "禹传位于启，终结禅让制，开世袭王朝之始。"
+      },
+      "basis_event_ids": [
+        "xia-qijianxiajuntaizhixiang-01"
+      ],
+      "attribution": "史脉关系库（人工校订）"
+    },
+    {
       "pair_key": "多尔衮__皇太极",
       "person_id_a": "p-huangtaiji-e3a2",
       "person_id_b": "p-duoergun-d674",
@@ -54234,6 +55153,20 @@
       },
       "basis_event_ids": [
         "qing-41"
+      ],
+      "attribution": "史脉关系库（人工校订）"
+    },
+    {
+      "pair_key": "妇好__武丁",
+      "person_id_a": "p-wuding-86ff",
+      "person_id_b": "p-shang-fuhao-01",
+      "label": "夫妻（王后统兵）",
+      "description": "妇好为武丁王后，统兵征伐，甲骨文有载。",
+      "event_summaries": {
+        "shang-wudingzhengguifang-05": "妇好为武丁王后，统兵征伐，甲骨文有载。"
+      },
+      "basis_event_ids": [
+        "shang-wudingzhengguifang-05"
       ],
       "attribution": "史脉关系库（人工校订）"
     },
@@ -58297,6 +59230,20 @@
       "attribution": "史脉关系库（人工校订）"
     },
     {
+      "pair_key": "盘庚__阳甲",
+      "person_id_a": "p-pangeng-a22c",
+      "person_id_b": "p-shang-yangjia-01",
+      "label": "兄弟（继位平乱）",
+      "description": "盘庚继阳甲位，迁都至殷，平息九世之乱。",
+      "event_summaries": {
+        "shang-06": "盘庚继阳甲位，迁都至殷，平息九世之乱。"
+      },
+      "basis_event_ids": [
+        "shang-06"
+      ],
+      "attribution": "史脉关系库（人工校订）"
+    },
+    {
       "pair_key": "石敬瑭__耶律德光",
       "person_id_a": "p-shijingtang-c0ae",
       "person_id_b": "p-yelvdeguang-14c8",
@@ -58324,6 +59271,20 @@
       "basis_event_ids": [
         "xia-02",
         "xia-04"
+      ],
+      "attribution": "史脉关系库（人工校订）"
+    },
+    {
+      "pair_key": "禹__鲧",
+      "person_id_a": "p-gun-ec16",
+      "person_id_b": "p-yu-53cd",
+      "label": "父子（治水相继）",
+      "description": "鲧治水无功被殛，禹继父业治水成功，开夏之基业。",
+      "event_summaries": {
+        "xia-01": "鲧治水无功被殛，禹继父业治水成功，开夏之基业。"
+      },
+      "basis_event_ids": [
+        "xia-01"
       ],
       "attribution": "史脉关系库（人工校订）"
     },
@@ -59378,6 +60339,1247 @@
     }
   ],
   "eras": [
+    {
+      "era_id": "xia",
+      "label": "夏",
+      "dynasties": [
+        "夏"
+      ],
+      "default_center_person_id": "p-yu-53cd",
+      "graph": {
+        "nodes": [
+          {
+            "person_id": "p-gun-ec16",
+            "name": "鲧",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-hanzhuo-6de2",
+            "name": "寒浞",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-houyi-4d1b",
+            "name": "后羿",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-shangtang-c08b",
+            "name": "商汤",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-shaokang-43f7",
+            "name": "少康",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-shun-3851",
+            "name": "舜",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-taikang-ef72",
+            "name": "太康",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-xia-boyi-01",
+            "name": "伯益",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-xia-xiajie-01",
+            "name": "夏桀",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-xia-xiaqi-01",
+            "name": "夏启",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-yao-b5dd",
+            "name": "尧",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-yiyin-d03f",
+            "name": "伊尹",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-yu-53cd",
+            "name": "禹",
+            "dynasty": "夏"
+          }
+        ],
+        "edges": [
+          {
+            "person_id_a": "p-gun-ec16",
+            "person_id_b": "p-shun-3851",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-01"
+            ]
+          },
+          {
+            "person_id_a": "p-gun-ec16",
+            "person_id_b": "p-yao-b5dd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-01"
+            ]
+          },
+          {
+            "person_id_a": "p-gun-ec16",
+            "person_id_b": "p-yu-53cd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-01"
+            ]
+          },
+          {
+            "person_id_a": "p-hanzhuo-6de2",
+            "person_id_b": "p-houyi-4d1b",
+            "weight": 2,
+            "shared_event_ids": [
+              "xia-hanzhuocuanxia-05",
+              "xia-houyidaixia-04"
+            ]
+          },
+          {
+            "person_id_a": "p-hanzhuo-6de2",
+            "person_id_b": "p-shaokang-43f7",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-09"
+            ]
+          },
+          {
+            "person_id_a": "p-hanzhuo-6de2",
+            "person_id_b": "p-taikang-ef72",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-houyidaixia-04"
+            ]
+          },
+          {
+            "person_id_a": "p-houyi-4d1b",
+            "person_id_b": "p-taikang-ef72",
+            "weight": 2,
+            "shared_event_ids": [
+              "xia-07",
+              "xia-houyidaixia-04"
+            ]
+          },
+          {
+            "person_id_a": "p-houyi-4d1b",
+            "person_id_b": "p-xia-xiaqi-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-07"
+            ]
+          },
+          {
+            "person_id_a": "p-shangtang-c08b",
+            "person_id_b": "p-xia-xiajie-01",
+            "weight": 2,
+            "shared_event_ids": [
+              "xia-12",
+              "xia-13"
+            ]
+          },
+          {
+            "person_id_a": "p-shangtang-c08b",
+            "person_id_b": "p-yiyin-d03f",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-13"
+            ]
+          },
+          {
+            "person_id_a": "p-shun-3851",
+            "person_id_b": "p-yao-b5dd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-01"
+            ]
+          },
+          {
+            "person_id_a": "p-shun-3851",
+            "person_id_b": "p-yu-53cd",
+            "weight": 3,
+            "shared_event_ids": [
+              "xia-01",
+              "xia-02",
+              "xia-04"
+            ]
+          },
+          {
+            "person_id_a": "p-taikang-ef72",
+            "person_id_b": "p-xia-xiaqi-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-07"
+            ]
+          },
+          {
+            "person_id_a": "p-xia-boyi-01",
+            "person_id_b": "p-xia-xiaqi-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-qijianxiajuntaizhixiang-01"
+            ]
+          },
+          {
+            "person_id_a": "p-xia-boyi-01",
+            "person_id_b": "p-yu-53cd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-qijianxiajuntaizhixiang-01"
+            ]
+          },
+          {
+            "person_id_a": "p-xia-xiajie-01",
+            "person_id_b": "p-yiyin-d03f",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-13"
+            ]
+          },
+          {
+            "person_id_a": "p-xia-xiaqi-01",
+            "person_id_b": "p-yu-53cd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-qijianxiajuntaizhixiang-01"
+            ]
+          },
+          {
+            "person_id_a": "p-yao-b5dd",
+            "person_id_b": "p-yu-53cd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-01"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "era_id": "shang",
+      "label": "商",
+      "dynasties": [
+        "夏",
+        "商"
+      ],
+      "default_center_person_id": "p-shangtang-c08b",
+      "graph": {
+        "nodes": [
+          {
+            "person_id": "p-bigan-69cb",
+            "name": "比干",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-daji-92b3",
+            "name": "妲己",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-fushuo-0a77",
+            "name": "傅说",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-gun-ec16",
+            "name": "鲧",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-hanzhuo-6de2",
+            "name": "寒浞",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-houyi-4d1b",
+            "name": "后羿",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-jiangziya-11a8",
+            "name": "姜子牙",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-jizi-1de8",
+            "name": "箕子",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-pangeng-a22c",
+            "name": "盘庚",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-shang-fuhao-01",
+            "name": "妇好",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-shang-yangjia-01",
+            "name": "阳甲",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-shang-zhongding-01",
+            "name": "仲丁",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-shangtang-c08b",
+            "name": "商汤",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-shangzhouwang-65bf",
+            "name": "商纣王",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-shaokang-43f7",
+            "name": "少康",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-shun-3851",
+            "name": "舜",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-taijia-8f1f",
+            "name": "太甲",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-taikang-ef72",
+            "name": "太康",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-weizi-4805",
+            "name": "微子",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-wuding-86ff",
+            "name": "武丁",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-xia-boyi-01",
+            "name": "伯益",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-xia-xiajie-01",
+            "name": "夏桀",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-xia-xiaqi-01",
+            "name": "夏启",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-xiaoxin-091f",
+            "name": "小辛",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-yao-b5dd",
+            "name": "尧",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-yiyin-d03f",
+            "name": "伊尹",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-yu-53cd",
+            "name": "禹",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-zhouwenwang-37e4",
+            "name": "周文王",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-zhouwuwang-1530",
+            "name": "周武王",
+            "dynasty": "商"
+          }
+        ],
+        "edges": [
+          {
+            "person_id_a": "p-bigan-69cb",
+            "person_id_b": "p-jizi-1de8",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
+            ]
+          },
+          {
+            "person_id_a": "p-bigan-69cb",
+            "person_id_b": "p-shangzhouwang-65bf",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
+            ]
+          },
+          {
+            "person_id_a": "p-bigan-69cb",
+            "person_id_b": "p-weizi-4805",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
+            ]
+          },
+          {
+            "person_id_a": "p-daji-92b3",
+            "person_id_b": "p-shangzhouwang-65bf",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-11"
+            ]
+          },
+          {
+            "person_id_a": "p-fushuo-0a77",
+            "person_id_b": "p-wuding-86ff",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-08"
+            ]
+          },
+          {
+            "person_id_a": "p-gun-ec16",
+            "person_id_b": "p-shun-3851",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-01"
+            ]
+          },
+          {
+            "person_id_a": "p-gun-ec16",
+            "person_id_b": "p-yao-b5dd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-01"
+            ]
+          },
+          {
+            "person_id_a": "p-gun-ec16",
+            "person_id_b": "p-yu-53cd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-01"
+            ]
+          },
+          {
+            "person_id_a": "p-hanzhuo-6de2",
+            "person_id_b": "p-houyi-4d1b",
+            "weight": 2,
+            "shared_event_ids": [
+              "xia-hanzhuocuanxia-05",
+              "xia-houyidaixia-04"
+            ]
+          },
+          {
+            "person_id_a": "p-hanzhuo-6de2",
+            "person_id_b": "p-shaokang-43f7",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-09"
+            ]
+          },
+          {
+            "person_id_a": "p-hanzhuo-6de2",
+            "person_id_b": "p-taikang-ef72",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-houyidaixia-04"
+            ]
+          },
+          {
+            "person_id_a": "p-houyi-4d1b",
+            "person_id_b": "p-taikang-ef72",
+            "weight": 2,
+            "shared_event_ids": [
+              "xia-07",
+              "xia-houyidaixia-04"
+            ]
+          },
+          {
+            "person_id_a": "p-houyi-4d1b",
+            "person_id_b": "p-xia-xiaqi-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-07"
+            ]
+          },
+          {
+            "person_id_a": "p-jiangziya-11a8",
+            "person_id_b": "p-zhouwenwang-37e4",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-13"
+            ]
+          },
+          {
+            "person_id_a": "p-jiangziya-11a8",
+            "person_id_b": "p-zhouwuwang-1530",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-15"
+            ]
+          },
+          {
+            "person_id_a": "p-jizi-1de8",
+            "person_id_b": "p-shangzhouwang-65bf",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
+            ]
+          },
+          {
+            "person_id_a": "p-jizi-1de8",
+            "person_id_b": "p-weizi-4805",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
+            ]
+          },
+          {
+            "person_id_a": "p-pangeng-a22c",
+            "person_id_b": "p-shang-yangjia-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-06"
+            ]
+          },
+          {
+            "person_id_a": "p-pangeng-a22c",
+            "person_id_b": "p-shang-zhongding-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-06"
+            ]
+          },
+          {
+            "person_id_a": "p-pangeng-a22c",
+            "person_id_b": "p-xiaoxin-091f",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-07"
+            ]
+          },
+          {
+            "person_id_a": "p-shang-fuhao-01",
+            "person_id_b": "p-wuding-86ff",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-wudingzhengguifang-05"
+            ]
+          },
+          {
+            "person_id_a": "p-shang-yangjia-01",
+            "person_id_b": "p-shang-zhongding-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-06"
+            ]
+          },
+          {
+            "person_id_a": "p-shangtang-c08b",
+            "person_id_b": "p-xia-xiajie-01",
+            "weight": 3,
+            "shared_event_ids": [
+              "shang-02",
+              "xia-12",
+              "xia-13"
+            ]
+          },
+          {
+            "person_id_a": "p-shangtang-c08b",
+            "person_id_b": "p-yiyin-d03f",
+            "weight": 5,
+            "shared_event_ids": [
+              "shang-01",
+              "shang-02",
+              "shang-03",
+              "shang-tangfaweigukunwu-02",
+              "xia-13"
+            ]
+          },
+          {
+            "person_id_a": "p-shangzhouwang-65bf",
+            "person_id_b": "p-weizi-4805",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
+            ]
+          },
+          {
+            "person_id_a": "p-shangzhouwang-65bf",
+            "person_id_b": "p-zhouwenwang-37e4",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-10"
+            ]
+          },
+          {
+            "person_id_a": "p-shun-3851",
+            "person_id_b": "p-yao-b5dd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-01"
+            ]
+          },
+          {
+            "person_id_a": "p-shun-3851",
+            "person_id_b": "p-yu-53cd",
+            "weight": 3,
+            "shared_event_ids": [
+              "xia-01",
+              "xia-02",
+              "xia-04"
+            ]
+          },
+          {
+            "person_id_a": "p-taijia-8f1f",
+            "person_id_b": "p-yiyin-d03f",
+            "weight": 2,
+            "shared_event_ids": [
+              "shang-04",
+              "shang-taijiafuwei-04"
+            ]
+          },
+          {
+            "person_id_a": "p-taikang-ef72",
+            "person_id_b": "p-xia-xiaqi-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-07"
+            ]
+          },
+          {
+            "person_id_a": "p-xia-boyi-01",
+            "person_id_b": "p-xia-xiaqi-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-qijianxiajuntaizhixiang-01"
+            ]
+          },
+          {
+            "person_id_a": "p-xia-boyi-01",
+            "person_id_b": "p-yu-53cd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-qijianxiajuntaizhixiang-01"
+            ]
+          },
+          {
+            "person_id_a": "p-xia-xiajie-01",
+            "person_id_b": "p-yiyin-d03f",
+            "weight": 2,
+            "shared_event_ids": [
+              "shang-02",
+              "xia-13"
+            ]
+          },
+          {
+            "person_id_a": "p-xia-xiaqi-01",
+            "person_id_b": "p-yu-53cd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-qijianxiajuntaizhixiang-01"
+            ]
+          },
+          {
+            "person_id_a": "p-yao-b5dd",
+            "person_id_b": "p-yu-53cd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-01"
+            ]
+          },
+          {
+            "person_id_a": "p-zhouwenwang-37e4",
+            "person_id_b": "p-zhouwuwang-1530",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-12"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "era_id": "xizhou",
+      "label": "西周",
+      "dynasties": [
+        "商",
+        "西周"
+      ],
+      "default_center_person_id": "p-xizhou-zhougongdan-01",
+      "graph": {
+        "nodes": [
+          {
+            "person_id": "p-baosi-5bd1",
+            "name": "褒姒",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-bigan-69cb",
+            "name": "比干",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-caishu-c233",
+            "name": "蔡叔",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-daji-92b3",
+            "name": "妲己",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-fushuo-0a77",
+            "name": "傅说",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-gongbohe-807c",
+            "name": "共伯和",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-guanshu-d6a4",
+            "name": "管叔",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-jiangziya-11a8",
+            "name": "姜子牙",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-jizi-1de8",
+            "name": "箕子",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-pangeng-a22c",
+            "name": "盘庚",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-shang-fuhao-01",
+            "name": "妇好",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-shang-yangjia-01",
+            "name": "阳甲",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-shang-zhongding-01",
+            "name": "仲丁",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-shangtang-c08b",
+            "name": "商汤",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-shangzhouwang-65bf",
+            "name": "商纣王",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-shenhou-beef",
+            "name": "申侯",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-taijia-8f1f",
+            "name": "太甲",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-weizi-4805",
+            "name": "微子",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-wuding-86ff",
+            "name": "武丁",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-xia-xiajie-01",
+            "name": "夏桀",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-xiaoxin-091f",
+            "name": "小辛",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-xizhou-jigongmoufu-01",
+            "name": "祭公谋父",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-xizhou-wugeng-01",
+            "name": "武庚",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-xizhou-zhoudinggong-01",
+            "name": "周定公",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-xizhou-zhougongdan-01",
+            "name": "周公旦",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-xizhou-zhoumuwang-01",
+            "name": "周穆王",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-yiyin-d03f",
+            "name": "伊尹",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-zhaomugong-8694",
+            "name": "召穆公",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-zhouchengwang-c3f5",
+            "name": "周成王",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-zhoukangwang-1b49",
+            "name": "周康王",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-zhouliwang-2141",
+            "name": "周厉王",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-zhouwenwang-37e4",
+            "name": "周文王",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-zhouwuwang-1530",
+            "name": "周武王",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-zhouxuanwang-f434",
+            "name": "周宣王",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-zhouyouwang-cb3c",
+            "name": "周幽王",
+            "dynasty": "西周"
+          }
+        ],
+        "edges": [
+          {
+            "person_id_a": "p-baosi-5bd1",
+            "person_id_b": "p-zhouyouwang-cb3c",
+            "weight": 2,
+            "shared_event_ids": [
+              "xizhou-21",
+              "xizhou-baosihuozhoufeidilishu-02"
+            ]
+          },
+          {
+            "person_id_a": "p-bigan-69cb",
+            "person_id_b": "p-jizi-1de8",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
+            ]
+          },
+          {
+            "person_id_a": "p-bigan-69cb",
+            "person_id_b": "p-shangzhouwang-65bf",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
+            ]
+          },
+          {
+            "person_id_a": "p-bigan-69cb",
+            "person_id_b": "p-weizi-4805",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
+            ]
+          },
+          {
+            "person_id_a": "p-caishu-c233",
+            "person_id_b": "p-guanshu-d6a4",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-05"
+            ]
+          },
+          {
+            "person_id_a": "p-caishu-c233",
+            "person_id_b": "p-xizhou-wugeng-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-05"
+            ]
+          },
+          {
+            "person_id_a": "p-caishu-c233",
+            "person_id_b": "p-xizhou-zhougongdan-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-05"
+            ]
+          },
+          {
+            "person_id_a": "p-daji-92b3",
+            "person_id_b": "p-shangzhouwang-65bf",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-11"
+            ]
+          },
+          {
+            "person_id_a": "p-fushuo-0a77",
+            "person_id_b": "p-wuding-86ff",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-08"
+            ]
+          },
+          {
+            "person_id_a": "p-gongbohe-807c",
+            "person_id_b": "p-zhouliwang-2141",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-17"
+            ]
+          },
+          {
+            "person_id_a": "p-guanshu-d6a4",
+            "person_id_b": "p-xizhou-wugeng-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-05"
+            ]
+          },
+          {
+            "person_id_a": "p-guanshu-d6a4",
+            "person_id_b": "p-xizhou-zhougongdan-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-05"
+            ]
+          },
+          {
+            "person_id_a": "p-jiangziya-11a8",
+            "person_id_b": "p-shangzhouwang-65bf",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-01"
+            ]
+          },
+          {
+            "person_id_a": "p-jiangziya-11a8",
+            "person_id_b": "p-xizhou-zhougongdan-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-02"
+            ]
+          },
+          {
+            "person_id_a": "p-jiangziya-11a8",
+            "person_id_b": "p-zhouwenwang-37e4",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-13"
+            ]
+          },
+          {
+            "person_id_a": "p-jiangziya-11a8",
+            "person_id_b": "p-zhouwuwang-1530",
+            "weight": 3,
+            "shared_event_ids": [
+              "shang-15",
+              "xizhou-01",
+              "xizhou-02"
+            ]
+          },
+          {
+            "person_id_a": "p-jizi-1de8",
+            "person_id_b": "p-shangzhouwang-65bf",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
+            ]
+          },
+          {
+            "person_id_a": "p-jizi-1de8",
+            "person_id_b": "p-weizi-4805",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
+            ]
+          },
+          {
+            "person_id_a": "p-jizi-1de8",
+            "person_id_b": "p-zhouwuwang-1530",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-03"
+            ]
+          },
+          {
+            "person_id_a": "p-pangeng-a22c",
+            "person_id_b": "p-shang-yangjia-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-06"
+            ]
+          },
+          {
+            "person_id_a": "p-pangeng-a22c",
+            "person_id_b": "p-shang-zhongding-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-06"
+            ]
+          },
+          {
+            "person_id_a": "p-pangeng-a22c",
+            "person_id_b": "p-xiaoxin-091f",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-07"
+            ]
+          },
+          {
+            "person_id_a": "p-shang-fuhao-01",
+            "person_id_b": "p-wuding-86ff",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-wudingzhengguifang-05"
+            ]
+          },
+          {
+            "person_id_a": "p-shang-yangjia-01",
+            "person_id_b": "p-shang-zhongding-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-06"
+            ]
+          },
+          {
+            "person_id_a": "p-shangtang-c08b",
+            "person_id_b": "p-xia-xiajie-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-02"
+            ]
+          },
+          {
+            "person_id_a": "p-shangtang-c08b",
+            "person_id_b": "p-yiyin-d03f",
+            "weight": 4,
+            "shared_event_ids": [
+              "shang-01",
+              "shang-02",
+              "shang-03",
+              "shang-tangfaweigukunwu-02"
+            ]
+          },
+          {
+            "person_id_a": "p-shangzhouwang-65bf",
+            "person_id_b": "p-weizi-4805",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
+            ]
+          },
+          {
+            "person_id_a": "p-shangzhouwang-65bf",
+            "person_id_b": "p-zhouwenwang-37e4",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-10"
+            ]
+          },
+          {
+            "person_id_a": "p-shangzhouwang-65bf",
+            "person_id_b": "p-zhouwuwang-1530",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-01"
+            ]
+          },
+          {
+            "person_id_a": "p-shenhou-beef",
+            "person_id_b": "p-zhouyouwang-cb3c",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-22"
+            ]
+          },
+          {
+            "person_id_a": "p-taijia-8f1f",
+            "person_id_b": "p-yiyin-d03f",
+            "weight": 2,
+            "shared_event_ids": [
+              "shang-04",
+              "shang-taijiafuwei-04"
+            ]
+          },
+          {
+            "person_id_a": "p-xia-xiajie-01",
+            "person_id_b": "p-yiyin-d03f",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-02"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-jigongmoufu-01",
+            "person_id_b": "p-xizhou-zhoumuwang-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-12"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-wugeng-01",
+            "person_id_b": "p-xizhou-zhougongdan-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-05"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-zhoudinggong-01",
+            "person_id_b": "p-zhaomugong-8694",
+            "weight": 2,
+            "shared_event_ids": [
+              "xizhou-16",
+              "xizhou-18"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-zhoudinggong-01",
+            "person_id_b": "p-zhouliwang-2141",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-16"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-zhoudinggong-01",
+            "person_id_b": "p-zhouxuanwang-f434",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-18"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-zhougongdan-01",
+            "person_id_b": "p-zhouchengwang-c3f5",
+            "weight": 4,
+            "shared_event_ids": [
+              "xizhou-04",
+              "xizhou-06",
+              "xizhou-08",
+              "xizhou-09"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-zhougongdan-01",
+            "person_id_b": "p-zhoukangwang-1b49",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-06"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-zhougongdan-01",
+            "person_id_b": "p-zhouwuwang-1530",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-02"
+            ]
+          },
+          {
+            "person_id_a": "p-zhaomugong-8694",
+            "person_id_b": "p-zhouliwang-2141",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-16"
+            ]
+          },
+          {
+            "person_id_a": "p-zhaomugong-8694",
+            "person_id_b": "p-zhouxuanwang-f434",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-18"
+            ]
+          },
+          {
+            "person_id_a": "p-zhouchengwang-c3f5",
+            "person_id_b": "p-zhoukangwang-1b49",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-06"
+            ]
+          },
+          {
+            "person_id_a": "p-zhouwenwang-37e4",
+            "person_id_b": "p-zhouwuwang-1530",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-12"
+            ]
+          }
+        ]
+      }
+    },
     {
       "era_id": "chunqiu",
       "label": "春秋",
@@ -82764,7 +84966,7 @@
     {
       "scope_id": "xianqin",
       "label": "先秦",
-      "default_center_person_id": "p-zhougongdan-1d7a",
+      "default_center_person_id": "p-xizhou-zhougongdan-01",
       "graph": {
         "nodes": [
           {
@@ -83293,9 +85495,24 @@
             "dynasty": "战国"
           },
           {
+            "person_id": "p-shang-fuhao-01",
+            "name": "妇好",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-shang-yangjia-01",
+            "name": "阳甲",
+            "dynasty": "商"
+          },
+          {
+            "person_id": "p-shang-zhongding-01",
+            "name": "仲丁",
+            "dynasty": "商"
+          },
+          {
             "person_id": "p-shangtang-c08b",
             "name": "商汤",
-            "dynasty": "夏"
+            "dynasty": "商"
           },
           {
             "person_id": "p-shangyang-0dca",
@@ -83533,8 +85750,18 @@
             "dynasty": "春秋"
           },
           {
-            "person_id": "p-xiajie-f6ba",
+            "person_id": "p-xia-boyi-01",
+            "name": "伯益",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-xia-xiajie-01",
             "name": "夏桀",
+            "dynasty": "夏"
+          },
+          {
+            "person_id": "p-xia-xiaqi-01",
+            "name": "夏启",
             "dynasty": "夏"
           },
           {
@@ -83576,6 +85803,31 @@
             "person_id": "p-xipeng-d8ff",
             "name": "隰朋",
             "dynasty": "春秋"
+          },
+          {
+            "person_id": "p-xizhou-jigongmoufu-01",
+            "name": "祭公谋父",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-xizhou-wugeng-01",
+            "name": "武庚",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-xizhou-zhoudinggong-01",
+            "name": "周定公",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-xizhou-zhougongdan-01",
+            "name": "周公旦",
+            "dynasty": "西周"
+          },
+          {
+            "person_id": "p-xizhou-zhoumuwang-01",
+            "name": "周穆王",
+            "dynasty": "西周"
           },
           {
             "person_id": "p-xizhoujun-14dc",
@@ -83798,16 +86050,6 @@
             "dynasty": "西周"
           },
           {
-            "person_id": "p-zhoudinggong-fe02",
-            "name": "周定公",
-            "dynasty": "西周"
-          },
-          {
-            "person_id": "p-zhougongdan-1d7a",
-            "name": "周公旦",
-            "dynasty": "西周"
-          },
-          {
             "person_id": "p-zhouhuanwang-b253",
             "name": "周桓王",
             "dynasty": "春秋"
@@ -83998,9 +86240,18 @@
           {
             "person_id_a": "p-baosi-5bd1",
             "person_id_b": "p-zhouyouwang-cb3c",
+            "weight": 2,
+            "shared_event_ids": [
+              "xizhou-21",
+              "xizhou-baosihuozhoufeidilishu-02"
+            ]
+          },
+          {
+            "person_id_a": "p-bigan-69cb",
+            "person_id_b": "p-jizi-1de8",
             "weight": 1,
             "shared_event_ids": [
-              "xizhou-21"
+              "shang-14"
             ]
           },
           {
@@ -84061,7 +86312,15 @@
           },
           {
             "person_id_a": "p-caishu-c233",
-            "person_id_b": "p-zhougongdan-1d7a",
+            "person_id_b": "p-xizhou-wugeng-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-05"
+            ]
+          },
+          {
+            "person_id_a": "p-caishu-c233",
+            "person_id_b": "p-xizhou-zhougongdan-01",
             "weight": 1,
             "shared_event_ids": [
               "xizhou-05"
@@ -84682,7 +86941,15 @@
           },
           {
             "person_id_a": "p-guanshu-d6a4",
-            "person_id_b": "p-zhougongdan-1d7a",
+            "person_id_b": "p-xizhou-wugeng-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-05"
+            ]
+          },
+          {
+            "person_id_a": "p-guanshu-d6a4",
+            "person_id_b": "p-xizhou-zhougongdan-01",
             "weight": 1,
             "shared_event_ids": [
               "xizhou-05"
@@ -84732,7 +86999,23 @@
           },
           {
             "person_id_a": "p-gun-ec16",
+            "person_id_b": "p-shun-3851",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-01"
+            ]
+          },
+          {
+            "person_id_a": "p-gun-ec16",
             "person_id_b": "p-yao-b5dd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-01"
+            ]
+          },
+          {
+            "person_id_a": "p-gun-ec16",
+            "person_id_b": "p-yu-53cd",
             "weight": 1,
             "shared_event_ids": [
               "xia-01"
@@ -84926,6 +87209,15 @@
           },
           {
             "person_id_a": "p-hanzhuo-6de2",
+            "person_id_b": "p-houyi-4d1b",
+            "weight": 2,
+            "shared_event_ids": [
+              "xia-hanzhuocuanxia-05",
+              "xia-houyidaixia-04"
+            ]
+          },
+          {
+            "person_id_a": "p-hanzhuo-6de2",
             "person_id_b": "p-shaokang-43f7",
             "weight": 1,
             "shared_event_ids": [
@@ -84933,8 +87225,25 @@
             ]
           },
           {
+            "person_id_a": "p-hanzhuo-6de2",
+            "person_id_b": "p-taikang-ef72",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-houyidaixia-04"
+            ]
+          },
+          {
             "person_id_a": "p-houyi-4d1b",
             "person_id_b": "p-taikang-ef72",
+            "weight": 2,
+            "shared_event_ids": [
+              "xia-07",
+              "xia-houyidaixia-04"
+            ]
+          },
+          {
+            "person_id_a": "p-houyi-4d1b",
+            "person_id_b": "p-xia-xiaqi-01",
             "weight": 1,
             "shared_event_ids": [
               "xia-07"
@@ -84950,7 +87259,7 @@
           },
           {
             "person_id_a": "p-jiangziya-11a8",
-            "person_id_b": "p-zhougongdan-1d7a",
+            "person_id_b": "p-xizhou-zhougongdan-01",
             "weight": 1,
             "shared_event_ids": [
               "xizhou-02"
@@ -85231,6 +87540,22 @@
             "shared_event_ids": [
               "chunqiu-24",
               "chunqiu-26"
+            ]
+          },
+          {
+            "person_id_a": "p-jizi-1de8",
+            "person_id_b": "p-shangzhouwang-65bf",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
+            ]
+          },
+          {
+            "person_id_a": "p-jizi-1de8",
+            "person_id_b": "p-weizi-4805",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-14"
             ]
           },
           {
@@ -85538,6 +87863,22 @@
             "weight": 1,
             "shared_event_ids": [
               "zhanguo-43"
+            ]
+          },
+          {
+            "person_id_a": "p-pangeng-a22c",
+            "person_id_b": "p-shang-yangjia-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-06"
+            ]
+          },
+          {
+            "person_id_a": "p-pangeng-a22c",
+            "person_id_b": "p-shang-zhongding-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-06"
             ]
           },
           {
@@ -85969,8 +88310,24 @@
             ]
           },
           {
+            "person_id_a": "p-shang-fuhao-01",
+            "person_id_b": "p-wuding-86ff",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-wudingzhengguifang-05"
+            ]
+          },
+          {
+            "person_id_a": "p-shang-yangjia-01",
+            "person_id_b": "p-shang-zhongding-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "shang-06"
+            ]
+          },
+          {
             "person_id_a": "p-shangtang-c08b",
-            "person_id_b": "p-xiajie-f6ba",
+            "person_id_b": "p-xia-xiajie-01",
             "weight": 3,
             "shared_event_ids": [
               "shang-02",
@@ -85981,11 +88338,12 @@
           {
             "person_id_a": "p-shangtang-c08b",
             "person_id_b": "p-yiyin-d03f",
-            "weight": 4,
+            "weight": 5,
             "shared_event_ids": [
               "shang-01",
               "shang-02",
               "shang-03",
+              "shang-tangfaweigukunwu-02",
               "xia-13"
             ]
           },
@@ -86047,9 +88405,18 @@
           },
           {
             "person_id_a": "p-shun-3851",
-            "person_id_b": "p-yu-53cd",
-            "weight": 2,
+            "person_id_b": "p-yao-b5dd",
+            "weight": 1,
             "shared_event_ids": [
+              "xia-01"
+            ]
+          },
+          {
+            "person_id_a": "p-shun-3851",
+            "person_id_b": "p-yu-53cd",
+            "weight": 3,
+            "shared_event_ids": [
+              "xia-01",
               "xia-02",
               "xia-04"
             ]
@@ -86115,9 +88482,18 @@
           {
             "person_id_a": "p-taijia-8f1f",
             "person_id_b": "p-yiyin-d03f",
+            "weight": 2,
+            "shared_event_ids": [
+              "shang-04",
+              "shang-taijiafuwei-04"
+            ]
+          },
+          {
+            "person_id_a": "p-taikang-ef72",
+            "person_id_b": "p-xia-xiaqi-01",
             "weight": 1,
             "shared_event_ids": [
-              "shang-04"
+              "xia-07"
             ]
           },
           {
@@ -86372,12 +88748,36 @@
             ]
           },
           {
-            "person_id_a": "p-xiajie-f6ba",
+            "person_id_a": "p-xia-boyi-01",
+            "person_id_b": "p-xia-xiaqi-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-qijianxiajuntaizhixiang-01"
+            ]
+          },
+          {
+            "person_id_a": "p-xia-boyi-01",
+            "person_id_b": "p-yu-53cd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-qijianxiajuntaizhixiang-01"
+            ]
+          },
+          {
+            "person_id_a": "p-xia-xiajie-01",
             "person_id_b": "p-yiyin-d03f",
             "weight": 2,
             "shared_event_ids": [
               "shang-02",
               "xia-13"
+            ]
+          },
+          {
+            "person_id_a": "p-xia-xiaqi-01",
+            "person_id_b": "p-yu-53cd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-qijianxiajuntaizhixiang-01"
             ]
           },
           {
@@ -86402,6 +88802,74 @@
             "weight": 1,
             "shared_event_ids": [
               "zhanguo-32"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-jigongmoufu-01",
+            "person_id_b": "p-xizhou-zhoumuwang-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-12"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-wugeng-01",
+            "person_id_b": "p-xizhou-zhougongdan-01",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-05"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-zhoudinggong-01",
+            "person_id_b": "p-zhaomugong-8694",
+            "weight": 2,
+            "shared_event_ids": [
+              "xizhou-16",
+              "xizhou-18"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-zhoudinggong-01",
+            "person_id_b": "p-zhouliwang-2141",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-16"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-zhoudinggong-01",
+            "person_id_b": "p-zhouxuanwang-f434",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-18"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-zhougongdan-01",
+            "person_id_b": "p-zhouchengwang-c3f5",
+            "weight": 4,
+            "shared_event_ids": [
+              "xizhou-04",
+              "xizhou-06",
+              "xizhou-08",
+              "xizhou-09"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-zhougongdan-01",
+            "person_id_b": "p-zhoukangwang-1b49",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-06"
+            ]
+          },
+          {
+            "person_id_a": "p-xizhou-zhougongdan-01",
+            "person_id_b": "p-zhouwuwang-1530",
+            "weight": 1,
+            "shared_event_ids": [
+              "xizhou-02"
             ]
           },
           {
@@ -86477,6 +88945,14 @@
             ]
           },
           {
+            "person_id_a": "p-yao-b5dd",
+            "person_id_b": "p-yu-53cd",
+            "weight": 1,
+            "shared_event_ids": [
+              "xia-01"
+            ]
+          },
+          {
             "person_id_a": "p-zaikong-92f7",
             "person_id_b": "p-zhouxiangwang-6702",
             "weight": 1,
@@ -86510,10 +88986,10 @@
           },
           {
             "person_id_a": "p-zhaomugong-8694",
-            "person_id_b": "p-zhoudinggong-fe02",
+            "person_id_b": "p-zhouliwang-2141",
             "weight": 1,
             "shared_event_ids": [
-              "xizhou-18"
+              "xizhou-16"
             ]
           },
           {
@@ -86574,17 +89050,6 @@
           },
           {
             "person_id_a": "p-zhouchengwang-c3f5",
-            "person_id_b": "p-zhougongdan-1d7a",
-            "weight": 4,
-            "shared_event_ids": [
-              "xizhou-04",
-              "xizhou-06",
-              "xizhou-08",
-              "xizhou-09"
-            ]
-          },
-          {
-            "person_id_a": "p-zhouchengwang-c3f5",
             "person_id_b": "p-zhoukangwang-1b49",
             "weight": 1,
             "shared_event_ids": [
@@ -86592,27 +89057,11 @@
             ]
           },
           {
-            "person_id_a": "p-zhoudinggong-fe02",
-            "person_id_b": "p-zhouxuanwang-f434",
-            "weight": 1,
-            "shared_event_ids": [
-              "xizhou-18"
-            ]
-          },
-          {
-            "person_id_a": "p-zhougongdan-1d7a",
-            "person_id_b": "p-zhoukangwang-1b49",
-            "weight": 1,
-            "shared_event_ids": [
-              "xizhou-06"
-            ]
-          },
-          {
-            "person_id_a": "p-zhougongdan-1d7a",
+            "person_id_a": "p-zhouwenwang-37e4",
             "person_id_b": "p-zhouwuwang-1530",
             "weight": 1,
             "shared_event_ids": [
-              "xizhou-02"
+              "shang-12"
             ]
           },
           {
@@ -103918,6 +106367,14 @@
       "person_id": "p-wanyanyongji-73f8"
     },
     {
+      "alias": "召公",
+      "person_id": "p-zhaomugong-8694"
+    },
+    {
+      "alias": "周公（周定公）",
+      "person_id": "p-xizhou-zhoudinggong-01"
+    },
+    {
       "alias": "唐太宗",
       "person_id": "p-lishimin-7efd"
     },
@@ -103948,6 +106405,10 @@
     {
       "alias": "唐高祖",
       "person_id": "p-liyuan-1546"
+    },
+    {
+      "alias": "大禹",
+      "person_id": "p-yu-53cd"
     },
     {
       "alias": "宋哲宗",
@@ -104056,6 +106517,10 @@
     {
       "alias": "朱祁镇",
       "person_id": "p-mingyingzong-9548"
+    },
+    {
+      "alias": "桀",
+      "person_id": "p-xia-xiajie-01"
     },
     {
       "alias": "梁武帝",
@@ -105795,6 +108260,15 @@
       "僧格林沁": [
         "p-senggelinqin-5d3f"
       ],
+      "妇好": [
+        "p-shang-fuhao-01"
+      ],
+      "阳甲": [
+        "p-shang-yangjia-01"
+      ],
+      "仲丁": [
+        "p-shang-zhongding-01"
+      ],
       "上官桀": [
         "p-shangguanjie-699a"
       ],
@@ -106416,14 +108890,20 @@
       "伍子胥": [
         "p-wuzixu-2d17"
       ],
+      "伯益": [
+        "p-xia-boyi-01"
+      ],
+      "夏桀": [
+        "p-xia-xiajie-01"
+      ],
+      "夏启": [
+        "p-xia-xiaqi-01"
+      ],
       "夏侯惇": [
         "p-xiahoudun-521e"
       ],
       "夏侯渊": [
         "p-xiahouyuan-3005"
-      ],
-      "夏桀": [
-        "p-xiajie-f6ba"
       ],
       "咸丰帝": [
         "p-xianfengdi-0e92"
@@ -106541,6 +109021,21 @@
       ],
       "休屠王": [
         "p-xiutuwang-849a"
+      ],
+      "祭公谋父": [
+        "p-xizhou-jigongmoufu-01"
+      ],
+      "武庚": [
+        "p-xizhou-wugeng-01"
+      ],
+      "周定公": [
+        "p-xizhou-zhoudinggong-01"
+      ],
+      "周公旦": [
+        "p-xizhou-zhougongdan-01"
+      ],
+      "周穆王": [
+        "p-xizhou-zhoumuwang-01"
       ],
       "西周君": [
         "p-xizhoujun-14dc"
@@ -107205,12 +109700,6 @@
       "周德威": [
         "p-zhoudewei-d295"
       ],
-      "周定公": [
-        "p-zhoudinggong-fe02"
-      ],
-      "周公旦": [
-        "p-zhougongdan-1d7a"
-      ],
       "周恭帝": [
         "p-zhougongdi-94d2"
       ],
@@ -107401,7 +109890,9 @@
       "p-baoshuya-8fcd": [
         "chunqiu"
       ],
-      "p-baosi-5bd1": [],
+      "p-baosi-5bd1": [
+        "xizhou"
+      ],
       "p-baozheng-bb98": [
         "beisong"
       ],
@@ -107414,7 +109905,10 @@
       "p-benyashili-c4e3": [
         "ming"
       ],
-      "p-bigan-69cb": [],
+      "p-bigan-69cb": [
+        "shang",
+        "xizhou"
+      ],
       "p-boluonidou-ebaa": [
         "qing"
       ],
@@ -107432,7 +109926,9 @@
       "p-cailun-4902": [
         "qinhan"
       ],
-      "p-caishu-c233": [],
+      "p-caishu-c233": [
+        "xizhou"
+      ],
       "p-caiwenji-c945": [
         "sanguo"
       ],
@@ -107607,7 +110103,10 @@
       "p-cuizhu-894d": [
         "chunqiu"
       ],
-      "p-daji-92b3": [],
+      "p-daji-92b3": [
+        "shang",
+        "xizhou"
+      ],
       "p-danchao-5ddc": [
         "qinhan"
       ],
@@ -107800,7 +110299,10 @@
       "p-furong-fb22": [
         "dongjin"
       ],
-      "p-fushuo-0a77": [],
+      "p-fushuo-0a77": [
+        "shang",
+        "xizhou"
+      ],
       "p-fusu-3e2c": [
         "qinhan"
       ],
@@ -107863,7 +110365,9 @@
         "jin",
         "nansong"
       ],
-      "p-gongbohe-807c": [],
+      "p-gongbohe-807c": [
+        "xizhou"
+      ],
       "p-gongshitai-1e98": [
         "yuan"
       ],
@@ -107897,7 +110401,9 @@
       "p-guangxudi-7a1d": [
         "qing"
       ],
-      "p-guanshu-d6a4": [],
+      "p-guanshu-d6a4": [
+        "xizhou"
+      ],
       "p-guanyu-9007": [
         "sanguo"
       ],
@@ -107907,7 +110413,10 @@
       "p-guiyou-efd0": [
         "yuan"
       ],
-      "p-gun-ec16": [],
+      "p-gun-ec16": [
+        "shang",
+        "xia"
+      ],
       "p-guochongtao-1e38": [
         "wudai"
       ],
@@ -108037,7 +110546,10 @@
       "p-hanzhaohou-aab7": [
         "zhanguo"
       ],
-      "p-hanzhuo-6de2": [],
+      "p-hanzhuo-6de2": [
+        "shang",
+        "xia"
+      ],
       "p-haojing-f3f0": [
         "yuan"
       ],
@@ -108077,7 +110589,10 @@
       "p-housheng-bf2e": [
         "qinhan"
       ],
-      "p-houyi-4d1b": [],
+      "p-houyi-4d1b": [
+        "shang",
+        "xia"
+      ],
       "p-huangchao-a92e": [
         "tang"
       ],
@@ -108146,7 +110661,10 @@
       "p-jiangwei-f108": [
         "sanguo"
       ],
-      "p-jiangziya-11a8": [],
+      "p-jiangziya-11a8": [
+        "shang",
+        "xizhou"
+      ],
       "p-jianwendi-6d48": [
         "ming"
       ],
@@ -108227,7 +110745,10 @@
       "p-jizha-e1f4": [
         "chunqiu"
       ],
-      "p-jizi-1de8": [],
+      "p-jizi-1de8": [
+        "shang",
+        "xizhou"
+      ],
       "p-juqumujian-aeed": [
         "nanbeichao"
       ],
@@ -108860,7 +111381,10 @@
         "beisong",
         "xixia"
       ],
-      "p-pangeng-a22c": [],
+      "p-pangeng-a22c": [
+        "shang",
+        "xizhou"
+      ],
       "p-pangjuan-ba05": [
         "zhanguo"
       ],
@@ -109017,19 +111541,41 @@
       "p-senggelinqin-5d3f": [
         "qing"
       ],
+      "p-shang-fuhao-01": [
+        "shang",
+        "xizhou"
+      ],
+      "p-shang-yangjia-01": [
+        "shang",
+        "xizhou"
+      ],
+      "p-shang-zhongding-01": [
+        "shang",
+        "xizhou"
+      ],
       "p-shangguanjie-699a": [
         "qinhan"
       ],
-      "p-shangtang-c08b": [],
+      "p-shangtang-c08b": [
+        "shang",
+        "xia",
+        "xizhou"
+      ],
       "p-shangyang-0dca": [
         "zhanguo"
       ],
-      "p-shangzhouwang-65bf": [],
+      "p-shangzhouwang-65bf": [
+        "shang",
+        "xizhou"
+      ],
       "p-shaohongyuan-da0b": [
         "jin",
         "nansong"
       ],
-      "p-shaokang-43f7": [],
+      "p-shaokang-43f7": [
+        "shang",
+        "xia"
+      ],
       "p-shenbuhai-c996": [
         "zhanguo"
       ],
@@ -109039,7 +111585,9 @@
       "p-shengongwuchen-1ab9": [
         "chunqiu"
       ],
-      "p-shenhou-beef": [],
+      "p-shenhou-beef": [
+        "xizhou"
+      ],
       "p-shenkuo-af80": [
         "beisong",
         "liao",
@@ -109099,7 +111647,10 @@
       "p-shulvping-3731": [
         "liao"
       ],
-      "p-shun-3851": [],
+      "p-shun-3851": [
+        "shang",
+        "xia"
+      ],
       "p-shunzhidi-6764": [
         "qing"
       ],
@@ -109243,8 +111794,14 @@
         "nansong",
         "yuan"
       ],
-      "p-taijia-8f1f": [],
-      "p-taikang-ef72": [],
+      "p-taijia-8f1f": [
+        "shang",
+        "xizhou"
+      ],
+      "p-taikang-ef72": [
+        "shang",
+        "xia"
+      ],
       "p-taipinggongzhu-7d1f": [
         "tang"
       ],
@@ -109590,7 +112147,10 @@
       "p-weizhi-8b5d": [
         "tang"
       ],
-      "p-weizi-4805": [],
+      "p-weizi-4805": [
+        "shang",
+        "xizhou"
+      ],
       "p-weizifu-8f4c": [
         "qinhan"
       ],
@@ -109608,7 +112168,10 @@
       "p-wuchen-c001": [
         "qinhan"
       ],
-      "p-wuding-86ff": [],
+      "p-wuding-86ff": [
+        "shang",
+        "xizhou"
+      ],
       "p-wuguang-5958": [
         "qinhan"
       ],
@@ -109661,13 +112224,25 @@
       "p-wuzixu-2d17": [
         "chunqiu"
       ],
+      "p-xia-boyi-01": [
+        "shang",
+        "xia"
+      ],
+      "p-xia-xiajie-01": [
+        "shang",
+        "xia",
+        "xizhou"
+      ],
+      "p-xia-xiaqi-01": [
+        "shang",
+        "xia"
+      ],
       "p-xiahoudun-521e": [
         "sanguo"
       ],
       "p-xiahouyuan-3005": [
         "sanguo"
       ],
-      "p-xiajie-f6ba": [],
       "p-xianfengdi-0e92": [
         "qing"
       ],
@@ -109742,7 +112317,10 @@
       "p-xiaowolila-290c": [
         "liao"
       ],
-      "p-xiaoxin-091f": [],
+      "p-xiaoxin-091f": [
+        "shang",
+        "xizhou"
+      ],
       "p-xiaoyan-6f1b": [
         "nanbeichao"
       ],
@@ -109787,6 +112365,21 @@
       ],
       "p-xiutuwang-849a": [
         "qinhan"
+      ],
+      "p-xizhou-jigongmoufu-01": [
+        "xizhou"
+      ],
+      "p-xizhou-wugeng-01": [
+        "xizhou"
+      ],
+      "p-xizhou-zhoudinggong-01": [
+        "xizhou"
+      ],
+      "p-xizhou-zhougongdan-01": [
+        "xizhou"
+      ],
+      "p-xizhou-zhoumuwang-01": [
+        "xizhou"
       ],
       "p-xizhoujun-14dc": [
         "zhanguo"
@@ -109963,7 +112556,10 @@
       "p-yanzhuanggong-51e8": [
         "chunqiu"
       ],
-      "p-yao-b5dd": [],
+      "p-yao-b5dd": [
+        "shang",
+        "xia"
+      ],
       "p-yaochong-aa0c": [
         "tang"
       ],
@@ -110064,7 +112660,11 @@
       "p-yixin-a0ee": [
         "qing"
       ],
-      "p-yiyin-d03f": [],
+      "p-yiyin-d03f": [
+        "shang",
+        "xia",
+        "xizhou"
+      ],
       "p-yizhixiechanyu-464e": [
         "qinhan"
       ],
@@ -110078,7 +112678,10 @@
       "p-youyu-05c3": [
         "chunqiu"
       ],
-      "p-yu-53cd": [],
+      "p-yu-53cd": [
+        "shang",
+        "xia"
+      ],
       "p-yuanbaoju-f4a1": [
         "nanbeichao"
       ],
@@ -110357,7 +112960,9 @@
       "p-zhaoliehou-1a22": [
         "zhanguo"
       ],
-      "p-zhaomugong-8694": [],
+      "p-zhaomugong-8694": [
+        "xizhou"
+      ],
       "p-zhaopu-8cdf": [
         "beisong"
       ],
@@ -110484,12 +113089,12 @@
       "p-zhoubo-b0af": [
         "qinhan"
       ],
-      "p-zhouchengwang-c3f5": [],
+      "p-zhouchengwang-c3f5": [
+        "xizhou"
+      ],
       "p-zhoudewei-d295": [
         "wudai"
       ],
-      "p-zhoudinggong-fe02": [],
-      "p-zhougongdan-1d7a": [],
       "p-zhougongdi-94d2": [
         "beisong"
       ],
@@ -110499,24 +113104,38 @@
       "p-zhoujingdi-f828": [
         "sui"
       ],
-      "p-zhoukangwang-1b49": [],
-      "p-zhouliwang-2141": [],
+      "p-zhoukangwang-1b49": [
+        "xizhou"
+      ],
+      "p-zhouliwang-2141": [
+        "xizhou"
+      ],
       "p-zhoupingwang-6ed8": [
         "chunqiu"
       ],
       "p-zhouweiliewang-bc57": [
         "zhanguo"
       ],
-      "p-zhouwenwang-37e4": [],
-      "p-zhouwuwang-1530": [],
+      "p-zhouwenwang-37e4": [
+        "shang",
+        "xizhou"
+      ],
+      "p-zhouwuwang-1530": [
+        "shang",
+        "xizhou"
+      ],
       "p-zhouxiangwang-6702": [
         "chunqiu"
       ],
-      "p-zhouxuanwang-f434": [],
+      "p-zhouxuanwang-f434": [
+        "xizhou"
+      ],
       "p-zhouyafu-61ad": [
         "qinhan"
       ],
-      "p-zhouyouwang-cb3c": [],
+      "p-zhouyouwang-cb3c": [
+        "xizhou"
+      ],
       "p-zhouyu-b475": [
         "sanguo"
       ],
@@ -110983,6 +113602,11 @@
       "shang-13": "商",
       "shang-14": "商",
       "shang-15": "商",
+      "shang-shangtangwangkaisanmian-01": "商",
+      "shang-taijiafuwei-04": "商",
+      "shang-tangdaosanglin-03": "商",
+      "shang-tangfaweigukunwu-02": "商",
+      "shang-wudingzhengguifang-05": "商",
       "special-star-1893": "清",
       "sui-01": "隋",
       "sui-02": "隋",
@@ -111131,6 +113755,12 @@
       "xia-11": "夏",
       "xia-12": "夏",
       "xia-13": "夏",
+      "xia-hanzhuocuanxia-05": "夏",
+      "xia-houyidaixia-04": "夏",
+      "xia-qijianxiajuntaizhixiang-01": "夏",
+      "xia-tushanzhihui-02": "夏",
+      "xia-xiajiebaozheng-06": "夏",
+      "xia-yufasanmiao-03": "夏",
       "xihan-baideng": "西汉",
       "xihan-chaocuo-guishu": "西汉",
       "xihan-chaoxian": "西汉",
@@ -111220,6 +113850,8 @@
       "xizhou-20": "西周",
       "xizhou-21": "西周",
       "xizhou-22": "西周",
+      "xizhou-baosihuozhoufeidilishu-02": "西周",
+      "xizhou-zhouxuanwangzhongxing-01": "西周",
       "yuan-01": "元",
       "yuan-02": "元",
       "yuan-03": "元",
@@ -111315,6 +113947,89 @@
       "zhanguo-55": "战国"
     },
     "era_members": {
+      "xia": [
+        "p-gun-ec16",
+        "p-hanzhuo-6de2",
+        "p-houyi-4d1b",
+        "p-shangtang-c08b",
+        "p-shaokang-43f7",
+        "p-shun-3851",
+        "p-taikang-ef72",
+        "p-xia-boyi-01",
+        "p-xia-xiajie-01",
+        "p-xia-xiaqi-01",
+        "p-yao-b5dd",
+        "p-yiyin-d03f",
+        "p-yu-53cd"
+      ],
+      "shang": [
+        "p-bigan-69cb",
+        "p-daji-92b3",
+        "p-fushuo-0a77",
+        "p-gun-ec16",
+        "p-hanzhuo-6de2",
+        "p-houyi-4d1b",
+        "p-jiangziya-11a8",
+        "p-jizi-1de8",
+        "p-pangeng-a22c",
+        "p-shang-fuhao-01",
+        "p-shang-yangjia-01",
+        "p-shang-zhongding-01",
+        "p-shangtang-c08b",
+        "p-shangzhouwang-65bf",
+        "p-shaokang-43f7",
+        "p-shun-3851",
+        "p-taijia-8f1f",
+        "p-taikang-ef72",
+        "p-weizi-4805",
+        "p-wuding-86ff",
+        "p-xia-boyi-01",
+        "p-xia-xiajie-01",
+        "p-xia-xiaqi-01",
+        "p-xiaoxin-091f",
+        "p-yao-b5dd",
+        "p-yiyin-d03f",
+        "p-yu-53cd",
+        "p-zhouwenwang-37e4",
+        "p-zhouwuwang-1530"
+      ],
+      "xizhou": [
+        "p-baosi-5bd1",
+        "p-bigan-69cb",
+        "p-caishu-c233",
+        "p-daji-92b3",
+        "p-fushuo-0a77",
+        "p-gongbohe-807c",
+        "p-guanshu-d6a4",
+        "p-jiangziya-11a8",
+        "p-jizi-1de8",
+        "p-pangeng-a22c",
+        "p-shang-fuhao-01",
+        "p-shang-yangjia-01",
+        "p-shang-zhongding-01",
+        "p-shangtang-c08b",
+        "p-shangzhouwang-65bf",
+        "p-shenhou-beef",
+        "p-taijia-8f1f",
+        "p-weizi-4805",
+        "p-wuding-86ff",
+        "p-xia-xiajie-01",
+        "p-xiaoxin-091f",
+        "p-xizhou-jigongmoufu-01",
+        "p-xizhou-wugeng-01",
+        "p-xizhou-zhoudinggong-01",
+        "p-xizhou-zhougongdan-01",
+        "p-xizhou-zhoumuwang-01",
+        "p-yiyin-d03f",
+        "p-zhaomugong-8694",
+        "p-zhouchengwang-c3f5",
+        "p-zhoukangwang-1b49",
+        "p-zhouliwang-2141",
+        "p-zhouwenwang-37e4",
+        "p-zhouwuwang-1530",
+        "p-zhouxuanwang-f434",
+        "p-zhouyouwang-cb3c"
+      ],
       "chunqiu": [
         "p-baoshuya-8fcd",
         "p-cengzi-f3b8",
@@ -112544,5 +115259,5 @@
       ]
     }
   },
-  "snapshot_version": "v1-2978ceda7d15"
+  "snapshot_version": "v1-42922a564324"
 }

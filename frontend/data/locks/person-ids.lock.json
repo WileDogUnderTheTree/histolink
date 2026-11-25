@@ -1,6 +1,6 @@
 {
   "schema_version": "person-ids.v1",
-  "person_count": 1058,
+  "person_count": 1066,
   "persons": [
     {
       "id": "p-abeizhongmalv-6cc0",
@@ -132,7 +132,7 @@
       "id": "p-baosi-5bd1",
       "displayName": "褒姒",
       "firstYear": -779,
-      "identityHash": "f0199793"
+      "identityHash": "ad9311d4"
     },
     {
       "id": "p-baozheng-bb98",
@@ -1385,8 +1385,8 @@
     {
       "id": "p-hanzhuo-6de2",
       "displayName": "寒浞",
-      "firstYear": -1850,
-      "identityHash": "5fad8cdb"
+      "firstYear": -1985,
+      "identityHash": "2333e911"
     },
     {
       "id": "p-haojing-f3f0",
@@ -1470,7 +1470,7 @@
       "id": "p-houyi-4d1b",
       "displayName": "后羿",
       "firstYear": -1990,
-      "identityHash": "38fc235d"
+      "identityHash": "861be014"
     },
     {
       "id": "p-huangchao-a92e",
@@ -1763,8 +1763,8 @@
     {
       "id": "p-jizi-1de8",
       "displayName": "箕子",
-      "firstYear": -1046,
-      "identityHash": "a25a77da"
+      "firstYear": -1050,
+      "identityHash": "f5530c33"
     },
     {
       "id": "p-juqumujian-aeed",
@@ -2963,8 +2963,8 @@
     {
       "id": "p-pangeng-a22c",
       "displayName": "盘庚",
-      "firstYear": -1300,
-      "identityHash": "838394bb"
+      "firstYear": -1400,
+      "identityHash": "939efaa4"
     },
     {
       "id": "p-pangjuan-ba05",
@@ -3273,6 +3273,24 @@
       "identityHash": "1ab25b83"
     },
     {
+      "id": "p-shang-fuhao-01",
+      "displayName": "妇好",
+      "firstYear": -1240,
+      "identityHash": "2e427c77"
+    },
+    {
+      "id": "p-shang-yangjia-01",
+      "displayName": "阳甲",
+      "firstYear": -1400,
+      "identityHash": "fff16f55"
+    },
+    {
+      "id": "p-shang-zhongding-01",
+      "displayName": "仲丁",
+      "firstYear": -1400,
+      "identityHash": "e721adaa"
+    },
+    {
       "id": "p-shangguanjie-699a",
       "displayName": "上官桀",
       "firstYear": -87,
@@ -3282,7 +3300,7 @@
       "id": "p-shangtang-c08b",
       "displayName": "商汤",
       "firstYear": -1617,
-      "identityHash": "3f361277"
+      "identityHash": "73062e4c"
     },
     {
       "id": "p-shangyang-0dca",
@@ -3443,8 +3461,8 @@
     {
       "id": "p-shun-3851",
       "displayName": "舜",
-      "firstYear": -2083,
-      "identityHash": "986569cb"
+      "firstYear": -2100,
+      "identityHash": "a93f3ce6"
     },
     {
       "id": "p-shunzhidi-6764",
@@ -3720,13 +3738,13 @@
       "id": "p-taijia-8f1f",
       "displayName": "太甲",
       "firstYear": -1577,
-      "identityHash": "7933b9aa"
+      "identityHash": "45848506"
     },
     {
       "id": "p-taikang-ef72",
       "displayName": "太康",
       "firstYear": -1990,
-      "identityHash": "f97553e5"
+      "identityHash": "6125ce0b"
     },
     {
       "id": "p-taipinggongzhu-7d1f",
@@ -4416,7 +4434,7 @@
       "id": "p-wuding-86ff",
       "displayName": "武丁",
       "firstYear": -1250,
-      "identityHash": "260072df"
+      "identityHash": "b03df268"
     },
     {
       "id": "p-wuguang-5958",
@@ -4515,6 +4533,24 @@
       "identityHash": "36a9d5ce"
     },
     {
+      "id": "p-xia-boyi-01",
+      "displayName": "伯益",
+      "firstYear": -2070,
+      "identityHash": "6e351eca"
+    },
+    {
+      "id": "p-xia-xiajie-01",
+      "displayName": "夏桀",
+      "firstYear": -1620,
+      "identityHash": "6406e80e"
+    },
+    {
+      "id": "p-xia-xiaqi-01",
+      "displayName": "夏启",
+      "firstYear": -2070,
+      "identityHash": "a2accf80"
+    },
+    {
       "id": "p-xiahoudun-521e",
       "displayName": "夏侯惇",
       "firstYear": 198,
@@ -4525,12 +4561,6 @@
       "displayName": "夏侯渊",
       "firstYear": 219,
       "identityHash": "3c9724ac"
-    },
-    {
-      "id": "p-xiajie-f6ba",
-      "displayName": "夏桀",
-      "firstYear": -1610,
-      "identityHash": "43e6286d"
     },
     {
       "id": "p-xianfengdi-0e92",
@@ -4765,6 +4795,36 @@
       "displayName": "休屠王",
       "firstYear": -121,
       "identityHash": "656b2447"
+    },
+    {
+      "id": "p-xizhou-jigongmoufu-01",
+      "displayName": "祭公谋父",
+      "firstYear": -960,
+      "identityHash": "476d4107"
+    },
+    {
+      "id": "p-xizhou-wugeng-01",
+      "displayName": "武庚",
+      "firstYear": -1042,
+      "identityHash": "3cfd48fe"
+    },
+    {
+      "id": "p-xizhou-zhoudinggong-01",
+      "displayName": "周定公",
+      "firstYear": -841,
+      "identityHash": "ae6241f3"
+    },
+    {
+      "id": "p-xizhou-zhougongdan-01",
+      "displayName": "周公旦",
+      "firstYear": -1046,
+      "identityHash": "6fbf2018"
+    },
+    {
+      "id": "p-xizhou-zhoumuwang-01",
+      "displayName": "周穆王",
+      "firstYear": -960,
+      "identityHash": "3c8e14ae"
     },
     {
       "id": "p-xizhoujun-14dc",
@@ -5310,7 +5370,7 @@
       "id": "p-yiyin-d03f",
       "displayName": "伊尹",
       "firstYear": -1617,
-      "identityHash": "7ec562fc"
+      "identityHash": "d70eca4f"
     },
     {
       "id": "p-yizhixiechanyu-464e",
@@ -5339,8 +5399,8 @@
     {
       "id": "p-yu-53cd",
       "displayName": "禹",
-      "firstYear": -2083,
-      "identityHash": "bcb75153"
+      "firstYear": -2100,
+      "identityHash": "65b1962b"
     },
     {
       "id": "p-yuanbaoju-f4a1",
@@ -5849,8 +5909,8 @@
     {
       "id": "p-zhaomugong-8694",
       "displayName": "召穆公",
-      "firstYear": -828,
-      "identityHash": "0c4d1d9b"
+      "firstYear": -841,
+      "identityHash": "1263ee40"
     },
     {
       "id": "p-zhaopu-8cdf",
@@ -6093,18 +6153,6 @@
       "identityHash": "40f04619"
     },
     {
-      "id": "p-zhoudinggong-fe02",
-      "displayName": "周定公",
-      "firstYear": -828,
-      "identityHash": "fee5e7b1"
-    },
-    {
-      "id": "p-zhougongdan-1d7a",
-      "displayName": "周公旦",
-      "firstYear": -1046,
-      "identityHash": "6fbf2018"
-    },
-    {
       "id": "p-zhougongdi-94d2",
       "displayName": "周恭帝",
       "firstYear": 960,
@@ -6155,8 +6203,8 @@
     {
       "id": "p-zhouwuwang-1530",
       "displayName": "周武王",
-      "firstYear": -1048,
-      "identityHash": "b7f59d21"
+      "firstYear": -1060,
+      "identityHash": "b7beca59"
     },
     {
       "id": "p-zhouxiangwang-6702",
@@ -6168,7 +6216,7 @@
       "id": "p-zhouxuanwang-f434",
       "displayName": "周宣王",
       "firstYear": -828,
-      "identityHash": "284eea56"
+      "identityHash": "ac100d03"
     },
     {
       "id": "p-zhouyafu-61ad",
@@ -6180,7 +6228,7 @@
       "id": "p-zhouyouwang-cb3c",
       "displayName": "周幽王",
       "firstYear": -779,
-      "identityHash": "dad4a4c8"
+      "identityHash": "aa944e58"
     },
     {
       "id": "p-zhouyu-b475",

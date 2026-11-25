@@ -3,6 +3,12 @@ import type { PersonRelation } from "./person-relations";
 import { TIMELINE_EVENTS } from "./timeline-events";
 import type { Dynasty, TimelineEvent } from "./timeline-events";
 import { WEIJIN_EVENTS } from "./weijin-events";
+import {
+  INGESTED_ERA_TO_SCOPE,
+  INGESTED_GRAPH_ERAS,
+  INGESTED_KEY_FIGURES,
+  INGESTED_PERSON_ALIASES,
+} from "./ingested-graph-data.generated";
 
 /**
  * 人物关系图覆盖的朝代；V0.5.1 起增加春秋、战国，V0.6.1 起增加三国，
@@ -74,8 +80,8 @@ export interface PersonGraphData {
   edges: readonly PersonGraphEdge[];
 }
 
-/** 人物图分期。每个分期是一份独立数据集，中心人物默认值各自不同。 */
-export type PersonGraphEraId =
+/** 既有（手写）细览分期的 id。 */
+export type BasePersonGraphEraId =
   | "chunqiu"
   | "zhanguo"
   | "qinhan"
@@ -94,6 +100,18 @@ export type PersonGraphEraId =
   | "yuan"
   | "ming"
   | "qing";
+
+/**
+ * V1.0.5.4 图谱扩充生成的新分期 id（夏 / 商 / 西周）。
+ *
+ * 新增分期由 `backend/scripts/ingest_graph_data.py` 解析 docs 扩充表后写入
+ * `ingested-graph-data.generated.ts` 的 `INGESTED_GRAPH_ERAS`；这里登记 id 联合类型，
+ * 页面 Tab / 深链接 / 关系图构建全部自动跟随，不需要逐处硬编码。
+ */
+export type IngestedPersonGraphEraId = "xia" | "shang" | "xizhou";
+
+/** 人物图分期。每个分期是一份独立数据集，中心人物默认值各自不同。 */
+export type PersonGraphEraId = BasePersonGraphEraId | IngestedPersonGraphEraId;
 
 export interface PersonGraphEra {
   id: PersonGraphEraId;
@@ -472,7 +490,25 @@ const ERA_GRAPHS = {
   yuan: YUAN_GRAPH,
   ming: MING_GRAPH,
   qing: QING_GRAPH,
-} satisfies Record<PersonGraphEraId, PersonGraphData>;
+} satisfies Record<BasePersonGraphEraId, PersonGraphData>;
+
+/**
+ * V1.0.5.4 图谱扩充生成的新分期（夏 / 商 / 西周 …）。
+ *
+ * 生成物只声明 `{id, label, dynasties, eventIds, defaultCenterPersonId}`，这里用与既有分期
+ * 完全相同的 `buildPersonGraph(pickEvents(...), dynasties)` 构建，保证节点 / 边 / 关系口径一致。
+ * 排在新分期之前（史序更早），页面 Tab 顺序即为此数组顺序。
+ */
+const INGESTED_ERAS: readonly PersonGraphEra[] = INGESTED_GRAPH_ERAS.map((spec) => ({
+  id: spec.id as IngestedPersonGraphEraId,
+  label: spec.label,
+  dynasties: spec.dynasties as readonly GraphDynasty[],
+  defaultCenterPersonId: spec.defaultCenterPersonId,
+  graph: buildPersonGraph(
+    pickEvents(spec.eventIds),
+    spec.dynasties as readonly GraphDynasty[],
+  ),
+}));
 
 /** 先秦简阅图：跨夏商西周与春秋战国的聚合数据集，仅简阅模式使用。 */
 const PRE_QIN_GRAPH = buildPersonGraph(TIMELINE_EVENTS, PRE_QIN_DYNASTIES);
@@ -485,8 +521,8 @@ const WEIJIN_GRAPH = buildPersonGraph(pickEvents(WEIJIN_EVENT_IDS), [
   "南北朝",
 ]);
 
-/** 人物图分期清单：选择器按此顺序展示，并各自提供默认中心人物。 */
-export const PERSON_GRAPH_ERAS: readonly PersonGraphEra[] = [
+/** 既有（手写）分期清单：选择器按此顺序展示，并各自提供默认中心人物。 */
+const BASE_PERSON_GRAPH_ERAS: readonly PersonGraphEra[] = [
   {
     id: "chunqiu",
     label: "春秋",
@@ -619,6 +655,17 @@ export const PERSON_GRAPH_ERAS: readonly PersonGraphEra[] = [
   },
 ];
 
+/**
+ * 人物图分期清单：选择器按此顺序展示，并各自提供默认中心人物。
+ *
+ * V1.0.5.4 起把「图谱扩充」生成的新分期（夏 / 商 / 西周）排在最前，再接既有分期；
+ * 页面 Tab、深链接默认值、`person-types.PersonGraphEraId` 全部由这一个数组驱动。
+ */
+export const PERSON_GRAPH_ERAS: readonly PersonGraphEra[] = [
+  ...INGESTED_ERAS,
+  ...BASE_PERSON_GRAPH_ERAS,
+];
+
 /** V0.4.1 兼容导出：秦汉人物图，默认中心人物为刘邦。 */
 export const QIN_HAN_PERSON_GRAPH = ERA_GRAPHS.qinhan;
 export const DEFAULT_GRAPH_CENTER_PERSON = "刘邦";
@@ -661,8 +708,8 @@ export const PERSON_GRAPH_SCOPES: readonly PersonGraphScope[] = [
   { id: "yuanmingqing", label: "元明清", graph: YUAN_MING_QING_GRAPH, defaultCenterPersonId: "朱元璋" },
 ];
 
-/** 细览分期 → 简阅断代：模式切换时用于定位到同一大断代。 */
-export const ERA_TO_SCOPE: Readonly<Record<PersonGraphEraId, PersonGraphScopeId>> = {
+/** 既有（手写）细览分期 → 简阅断代：模式切换时用于定位到同一大断代。 */
+const BASE_ERA_TO_SCOPE: Readonly<Record<BasePersonGraphEraId, PersonGraphScopeId>> = {
   chunqiu: "xianqin",
   zhanguo: "xianqin",
   qinhan: "qinhan",
@@ -684,9 +731,24 @@ export const ERA_TO_SCOPE: Readonly<Record<PersonGraphEraId, PersonGraphScopeId>
   qing: "yuanmingqing",
 };
 
-/** 简阅断代 → 细览落地分期：切回细览且无历史记录时使用。 */
+/**
+ * 细览分期 → 简阅断代（V1.0.5.4 起合并入库生成的新分期映射）。
+ *
+ * 夏 / 商 / 西周同属「先秦」简阅断代；生成物只声明自己新增的映射，
+ * 这里与手写基线合并成完整表，避免每批新分期都改手写文件。
+ */
+export const ERA_TO_SCOPE: Readonly<Record<PersonGraphEraId, PersonGraphScopeId>> = {
+  // 显式声明新分期默认归属，保证即使生成物暂时为空，类型与运行时映射也完整。
+  xia: "xianqin",
+  shang: "xianqin",
+  xizhou: "xianqin",
+  ...BASE_ERA_TO_SCOPE,
+  ...(INGESTED_ERA_TO_SCOPE as Readonly<Partial<Record<PersonGraphEraId, PersonGraphScopeId>>>),
+};
+
+/** 简阅断代 → 细览落地分期：切回细览且无历史记录时使用（先秦默认落在最早的夏）。 */
 export const SCOPE_TO_ERA: Readonly<Record<PersonGraphScopeId, PersonGraphEraId>> = {
-  xianqin: "chunqiu",
+  xianqin: "xia",
   qinhan: "qinhan",
   sanguo: "sanguo",
   weijin: "xijin",
@@ -696,13 +758,14 @@ export const SCOPE_TO_ERA: Readonly<Record<PersonGraphScopeId, PersonGraphEraId>
 };
 
 /**
- * V0.5.2 左侧「名人堂」快捷导航配置。
+ * V0.5.2 左侧「名人堂」快捷导航配置（手写基线）。
  *
  * 按分期标签给出该期代表性人物。页面渲染前会再用当期图数据过滤一次：
  * 名字写错或人物不在该期时只会被跳过，不会导致页面报错。
  * 每期人数可自由增删（建议 6—8 位）。
+ * V1.0.5.4 起，图谱扩充生成的新分期（夏 / 商 / 西周）名人堂由生成物自动提供（按事件度数排序）。
  */
-export const KEY_FIGURES: Record<string, string[]> = {
+const BASE_KEY_FIGURES: Readonly<Record<string, readonly string[]>> = {
   先秦: ["周公旦", "商汤", "周文王", "周武王", "姜子牙", "孔子", "齐桓公", "孙武"],
   春秋: ["齐桓公", "晋文公", "孔子", "老子", "管仲"],
   战国: ["商鞅", "秦孝公", "孙膑", "苏秦", "白起"],
@@ -792,15 +855,23 @@ export const KEY_FIGURES: Record<string, string[]> = {
   元明清: ["成吉思汗", "忽必烈", "朱元璋", "朱棣", "康熙帝", "乾隆帝", "曾国藩", "李鸿章"],
 };
 
+/** 名人堂：手写基线 + 图谱扩充生成的新分期（生成物只包含新增分期，不覆盖既有配置）。 */
+export const KEY_FIGURES: Readonly<Record<string, readonly string[]>> = {
+  ...BASE_KEY_FIGURES,
+  ...INGESTED_KEY_FIGURES,
+};
+
 /**
  * 人物别名 → 图谱节点名（V0.6.4 起）。
  *
  * 节点名以史书通称为准（如「孝文帝」而非「拓跋宏」），搜索时允许用本名 / 庙号 / 谥号命中：
  * 页面把别名展开成节点名后走同一套模糊搜索，不新增独立节点。
  * V0.7.2 补充隋唐宋辽金夏各期常见庙号（如「唐太宗」→ 李世民）；
- * V0.8.0 补充元明清本名与庙号（如「铁木真」→ 成吉思汗、「明太祖」→ 朱元璋、「清圣祖」→ 康熙帝）。
+ * V0.8.0 补充元明清本名与庙号（如「铁木真」→ 成吉思汗、「明太祖」→ 朱元璋、「清圣祖」→ 康熙帝）；
+ * V1.0.5.4 起合并图谱扩充生成物：「桀」→ 夏桀、「大禹」→ 禹、「召公」→ 召穆公 等由
+ * `backend/scripts/ingest_graph_data.py` 从 docs 数据自动归一，`--check` 门禁防止手改漂移。
  */
-export const PERSON_NAME_ALIASES: Readonly<Record<string, string>> = {
+const BASE_PERSON_NAME_ALIASES: Readonly<Record<string, string>> = {
   拓跋宏: "孝文帝",
   元宏: "孝文帝",
   魏孝文帝: "孝文帝",
@@ -871,6 +942,12 @@ export const PERSON_NAME_ALIASES: Readonly<Record<string, string>> = {
   唐宣宗: "李忱",
   唐德宗: "李适",
   唐宪宗: "李纯",
+};
+
+/** 人物别名 → 图谱节点名：手写基线 + 图谱扩充自动归一（生成物优先合并、重复键以手写为准）。 */
+export const PERSON_NAME_ALIASES: Readonly<Record<string, string>> = {
+  ...INGESTED_PERSON_ALIASES,
+  ...BASE_PERSON_NAME_ALIASES,
 };
 
 /** V0.6.1 阵营快捷入口（仅三国分期渲染）：点击等同选中该阵营君主为中心人物。 */

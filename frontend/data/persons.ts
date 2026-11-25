@@ -1,8 +1,9 @@
 /**
- * 人物主数据 · 对外读取入口（V1.0.1 / TC-02）。
+ * 人物主数据 · 对外读取入口（V1.0.1 / TC-02；V1.0.5.4 图谱扩充接入）。
  *
  * 数据来源分三层：
- * 1. `persons.generated.ts` —— 由 `scripts/build-persons.mjs` 生成，已应用人工裁决；
+ * 1. `persons.generated.ts` —— 由 `scripts/build-persons.mjs` 生成，已应用人工裁决与
+ *    图谱扩充生成物（`ingested-graph-data.generated.ts` 的 `INGESTED_PERSON_ID_PINS`）；
  * 2. `person-overrides.ts`  —— 唯一允许手改的裁决层（拆分规则、ID 固定、别名覆盖）；
  * 3. 本文件 —— 只读查询入口，页面与 Agent 都通过它拿 `person_id`。
  *
@@ -15,7 +16,7 @@ import type { PersonRecord } from "./person-types";
 
 export type { PersonDisambiguator, PersonRecord, PersonStatus } from "./person-types";
 
-/** 全部人物记录（按 `id` 排序；当前 1,058 条 = 1,059 个姓名 − 3 条异名合并 + 2 条同名拆分）。 */
+/** 全部人物记录（按 `id` 排序；V1.0.5.4 起 1,066 条 = 1,067 个姓名 − 3 条异名合并 + 2 条同名拆分）。 */
 export const PERSONS: readonly PersonRecord[] = GENERATED_PERSONS;
 
 /** `person_id → 记录`。 */

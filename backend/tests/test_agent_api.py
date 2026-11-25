@@ -51,7 +51,10 @@ def _validate_envelope(payload: dict[str, Any], openapi_spec: dict[str, Any]) ->
 
 
 def test_ask_grounded_returns_answer_envelope(
-    client: TestClient, openapi_spec: dict[str, Any], override_llm
+    client: TestClient,
+    openapi_spec: dict[str, Any],
+    snapshot_store,
+    override_llm,
 ) -> None:
     override_llm(
         FakeLLM(
@@ -77,7 +80,7 @@ def test_ask_grounded_returns_answer_envelope(
     assert payload["trace"]["tools"][0]["name"] == "get_event"
     assert payload["trace"]["tools"][0]["hits"] == 1
     assert payload["trace"]["model_used"] == "fake-qwen"
-    assert payload["snapshot"]["version"] == "v1-2978ceda7d15"
+    assert payload["snapshot"]["version"] == snapshot_store.meta["snapshot_version"]
     assert payload["schema_version"] == "1.0"
     assert payload["request_id"].startswith("req_")
 

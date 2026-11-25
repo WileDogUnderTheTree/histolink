@@ -3,16 +3,16 @@
   "version": "golden.v1",
   "generated_at": "2026-11-23",
   "snapshot": {
-    "version": "v1-2978ceda7d15",
-    "hash": "sha256:5b89c7e0b9aee85aff06eabc5d0642e29e147d038da2e24856956768c449d06b",
+    "version": "v1-42922a564324",
+    "hash": "sha256:871e8bfb2b18b8a15c4fd718b1dea9cf7ad17f94a03e10d1bc6df215a2bf3dc9",
     "counts": {
-      "events": 705,
-      "persons": 1058,
-      "relations": 639,
-      "eras": 18,
+      "events": 718,
+      "persons": 1066,
+      "relations": 652,
+      "eras": 21,
       "scopes": 7,
       "groups": 7,
-      "aliases": 66
+      "aliases": 70
     }
   },
   "category_counts": {

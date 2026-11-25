@@ -19,13 +19,24 @@ def _copy_snapshot(src_dir: Path, dst_dir: Path) -> tuple[Path, Path]:
     return snapshot, meta
 
 
+def _data_counts_lock(repo_root: Path) -> dict:
+    """读取全量冻结计数锁（V1.0.5.4 起由 export-snapshot 生成）。"""
+
+    return json.loads(
+        (repo_root / "frontend" / "data" / "locks" / "data-counts.lock.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+
 def test_load_real_snapshot(repo_root: Path) -> None:
     data_dir = repo_root / "backend" / "data"
     store = SnapshotStore.load(data_dir / "snapshot.v1.json", data_dir / "snapshot.meta.json")
-    assert store.meta["counts"]["events"] == 705
+    expected = _data_counts_lock(repo_root)["counts"]
+    assert store.meta["counts"]["events"] == expected["events"]
     assert store.snapshot_meta.hash.startswith("sha256:")
-    assert len(store.persons_by_id) == 1058
-    assert len(store.events_by_id) == 705
+    assert len(store.persons_by_id) == expected["persons"]
+    assert len(store.events_by_id) == expected["events"]
 
 
 def test_missing_snapshot_fails_fast(tmp_path: Path) -> None:

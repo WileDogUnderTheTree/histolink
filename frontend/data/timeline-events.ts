@@ -1,4 +1,8 @@
 import { EVENT_PARTICIPANTS } from "./timeline-participants";
+import {
+  INGESTED_EVENT_RECORDS,
+  INGESTED_IMPORTANCE_OVERRIDES,
+} from "./ingested-graph-data.generated";
 
 /**
  * 时间轴事件数据。
@@ -111,7 +115,8 @@ export interface TimelineEvent {
 /** 读取事件重要度，缺省为 2（重要）。简阅模式只渲染 `importance === 3`。 */
 export const importanceOf = (event: TimelineEvent): 1 | 2 | 3 => event.importance ?? 2;
 
-type TimelineEventInput = Omit<TimelineEvent, "participants">;
+/** 时间轴事件原始记录（不含 participants，由 `EVENT_PARTICIPANTS` 注入）。 */
+export type TimelineEventInput = Omit<TimelineEvent, "participants">;
 
 /** 各朝代起始年（史书纪年），仅用于选择器排序；夏、商、周依夏商周断代工程推定。 */
 export const DYNASTY_START_YEARS: Readonly<Record<Dynasty, number>> = {
@@ -5782,8 +5787,30 @@ const TIMELINE_EVENT_RECORDS: readonly TimelineEventInput[] = [
   },
 ];
 
-/** 所有对外事件均具备 participants，便于时间轴与人物图共享同一事件源。 */
-export const TIMELINE_EVENTS: readonly TimelineEvent[] = TIMELINE_EVENT_RECORDS.map((event) => ({
-  ...event,
-  participants: EVENT_PARTICIPANTS[event.id] ?? [],
-}));
+/**
+ * 所有对外事件均具备 participants，便于时间轴与人物图共享同一事件源。
+ *
+ * V1.0.5.4 起追加「图谱扩充」入库生成物：
+ * - `INGESTED_EVENT_RECORDS`：从 docs 图谱扩充表解析出的新事件；
+ * - `INGESTED_EVENT_PARTICIPANTS`：新事件参与者 + 既有事件的参与者增补（`EVENT_PARTICIPANTS`
+ *   已在 `timeline-participants.ts` 内合并，这里不再重复追加）；
+ * - `INGESTED_IMPORTANCE_OVERRIDES`：扩充表把既有事件重要度「就高」覆盖（如 3 = 简阅顶级）。
+ */
+function withIngestedParticipants(event: TimelineEventInput): TimelineEvent {
+  const override = INGESTED_IMPORTANCE_OVERRIDES[event.id];
+  const baseImportance = event.importance ?? 2;
+  const importance =
+    override && baseImportance < override[1] ? override[1] : event.importance;
+  return {
+    ...event,
+    ...(importance ? { importance } : {}),
+    participants: EVENT_PARTICIPANTS[event.id] ?? [],
+  };
+}
+
+export const TIMELINE_EVENTS: readonly TimelineEvent[] = [
+  ...TIMELINE_EVENT_RECORDS.map(withIngestedParticipants),
+  ...INGESTED_EVENT_RECORDS.map((event) =>
+    withIngestedParticipants(event as TimelineEventInput),
+  ),
+];

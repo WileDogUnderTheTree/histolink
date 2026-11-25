@@ -36,6 +36,31 @@ const errors = [];
 const warnings = [];
 const fail = (message) => errors.push(message);
 const warn = (message) => warnings.push(message);
+
+/**
+ * 全量冻结计数锁（V1.0.5.4 起，由 scripts/export-snapshot.mjs 生成）。
+ *
+ * 数据扩充后由 `backend/scripts/ingest_graph_data.py` 重跑流水线自动刷新；
+ * 门禁读取同一份锁，避免在 validate / pytest 里散落魔法数字。
+ */
+const DATA_COUNTS_LOCK_PATH = path.join(DATA_DIR, "locks", "data-counts.lock.json");
+let dataCountsLock = null;
+if (!fs.existsSync(DATA_COUNTS_LOCK_PATH)) {
+  fail("缺少数据计数锁 frontend/data/locks/data-counts.lock.json（先运行 node scripts/export-snapshot.mjs）");
+} else {
+  try {
+    dataCountsLock = JSON.parse(fs.readFileSync(DATA_COUNTS_LOCK_PATH, "utf8"));
+  } catch (error) {
+    fail(`数据计数锁不是合法 JSON：${error.message}`);
+  }
+}
+if (dataCountsLock) {
+  if (dataCountsLock.schema_version !== "data-counts.v1") {
+    fail(`数据计数锁 schema_version 非法：${dataCountsLock.schema_version}`);
+  }
+}
+const LOCK_COUNTS = dataCountsLock?.counts ?? {};
+const LOCK_SOURCES = dataCountsLock?.sources ?? {};
 // ========== 1. 事件数据 ==========
 const seenIds = new Set();
 for (const event of eventPool) {
@@ -327,7 +352,7 @@ const { PERSONS, PERSON_BY_ID } = loadDataModule("persons");
 const { PERSON_ALIAS_TO_ID } = loadDataModule("person-aliases");
 const { PERSON_SPLIT_RULES, PERSON_ALIAS_OVERRIDES } = loadDataModule("person-overrides");
 
-const PERSON_ID_PATTERN = /^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$/;
+const PERSON_ID_PATTERN = /^p-[a-z0-9]+(?:-[a-z0-9]+)*-(?:[0-9a-f]{4}|\d{2})$/;
 const uniqueParticipantNames = new Set();
 for (const event of eventPool) {
   for (const name of event.participants ?? []) uniqueParticipantNames.add(name);
@@ -516,8 +541,6 @@ const aliasCount = Object.keys(PERSON_ALIAS_TO_ID).length;
 if (aliasCount !== Object.keys(PERSON_NAME_ALIASES).length) fail(`别名映射数 ${aliasCount} 与 PERSON_NAME_ALIASES 条数不一致`);
 // ========== 8. 引用结构化（V1.0.1 / TC-03） ==========
 const { EVENT_SOURCES, EVENT_SOURCE_STATUS } = loadDataModule("event-sources");
-const EXPECTED_SOURCE_REF_COUNT = 823;
-const EXPECTED_SOURCE_LABEL_COUNT = 191;
 
 const sourceEventIds = new Set(Object.keys(EVENT_SOURCES));
 const sourceStatusIds = new Set(Object.keys(EVENT_SOURCE_STATUS));
@@ -570,13 +593,13 @@ for (const event of eventPool) {
     if ((ref.chapter ?? "") !== expectedChapter) fail(`${label}：chapter 与 label 切分不一致（${ref.label}）`);
   }
 }
-if (sourceRefTotal !== EXPECTED_SOURCE_REF_COUNT) {
-  fail(`引用条目总数 ${sourceRefTotal} 与冻结值 ${EXPECTED_SOURCE_REF_COUNT} 不一致；数据变更必须同步 docs/source-review.md 与任务卡口径`);
+if (sourceRefTotal !== LOCK_SOURCES.ref_total) {
+  fail(`引用条目总数 ${sourceRefTotal} 与数据计数锁 ${LOCK_SOURCES.ref_total} 不一致；数据变更必须重跑 node scripts/export-snapshot.mjs`);
 }
-if (sourceOneBook !== 585) fail(`单书引用事件数 ${sourceOneBook} 与冻结值 585 不一致`);
-if (sourceTwoBook !== 119) fail(`两书并列事件数 ${sourceTwoBook} 与冻结值 119 不一致`);
-if (sourceLabels.size !== EXPECTED_SOURCE_LABEL_COUNT) {
-  fail(`书目标签数 ${sourceLabels.size} 与冻结值 ${EXPECTED_SOURCE_LABEL_COUNT} 不一致`);
+if (sourceOneBook !== LOCK_SOURCES.one_book) fail(`单书引用事件数 ${sourceOneBook} 与数据计数锁 ${LOCK_SOURCES.one_book} 不一致`);
+if (sourceTwoBook !== LOCK_SOURCES.two_book) fail(`两书并列事件数 ${sourceTwoBook} 与数据计数锁 ${LOCK_SOURCES.two_book} 不一致`);
+if (sourceLabels.size !== LOCK_SOURCES.label_total) {
+  fail(`书目标签数 ${sourceLabels.size} 与数据计数锁 ${LOCK_SOURCES.label_total} 不一致`);
 }
 const easterEggIds = Object.entries(EVENT_SOURCE_STATUS)
   .filter(([, status]) => status === "easter_egg")
@@ -632,10 +655,14 @@ if (!snapshot) {
   for (const [key, expected] of Object.entries(expectedCounts)) {
     if (counts[key] !== expected) fail(`快照 counts.${key}=${counts[key]}，期望 ${expected}`);
   }
-  if (counts.events !== 705) fail(`快照事件数 ${counts.events} 与冻结值 705 不一致`);
-  if (counts.relations !== 639) fail(`快照关系数 ${counts.relations} 与冻结值 639 不一致`);
-  if (counts.eras !== 18 || counts.scopes !== 7 || counts.groups !== 7) fail("快照分期/断代/分组数与预期不一致");
-  if (counts.aliases !== 66) fail(`快照别名数 ${counts.aliases} 与冻结值 66 不一致`);
+  if (counts.events !== LOCK_COUNTS.events) fail(`快照事件数 ${counts.events} 与数据计数锁 ${LOCK_COUNTS.events} 不一致`);
+  if (counts.relations !== LOCK_COUNTS.relations) fail(`快照关系数 ${counts.relations} 与数据计数锁 ${LOCK_COUNTS.relations} 不一致`);
+  if (counts.eras !== LOCK_COUNTS.eras || counts.scopes !== LOCK_COUNTS.scopes || counts.groups !== LOCK_COUNTS.groups) {
+    fail(
+      `快照分期/断代/分组数（${counts.eras}/${counts.scopes}/${counts.groups}）与数据计数锁（${LOCK_COUNTS.eras}/${LOCK_COUNTS.scopes}/${LOCK_COUNTS.groups}）不一致`,
+    );
+  }
+  if (counts.aliases !== LOCK_COUNTS.aliases) fail(`快照别名数 ${counts.aliases} 与数据计数锁 ${LOCK_COUNTS.aliases} 不一致`);
 
   // 元数据：hash / version / counts / license 必须与快照一致。
   if (snapshotMeta) {

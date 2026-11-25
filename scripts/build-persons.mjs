@@ -3,10 +3,11 @@
  * 人物主数据生成器（V1.0.1 / TC-02）。
  *
  * 输入（全部只读）：
- * - frontend/data/timeline-events.ts / weijin-events.ts：705 条事件与参与者
+ * - frontend/data/timeline-events.ts / weijin-events.ts：事件与参与者
  * - frontend/data/timeline-participants.ts：参与姓名索引（与事件双向一致）
- * - frontend/data/person-graph.ts：18 期 / 7 组图成员、66 条别名
+ * - frontend/data/person-graph.ts：人物图分期 / 简阅断代、别名（数量随数据自动变化）
  * - frontend/data/person-overrides.ts：人工裁决层（唯一允许手改）
+ * - frontend/data/ingested-graph-data.generated.ts：图谱扩充生成物（人物 ID 固定表等）
  *
  * 输出（生成物，禁止手改）：
  * - frontend/data/persons.generated.ts
@@ -63,6 +64,14 @@ const {
   PERSON_REVIEW_NOTES,
   PERSON_ALIAS_MERGE_REVIEWER,
 } = overrides;
+
+/**
+ * 图谱扩充生成物里的「人物 ID 固定表」（V1.0.5.4 起）。
+ *
+ * 值形如 `p-xizhou-zhougongdan-01` / `p-xia-xiajie-01`：可读、稳定、跨批次不变。
+ * 固定 ID 优先于自动 hash ID；未列入的人物仍走原有 `<romanized>-<hash>` 规则。
+ */
+const INGESTED_PERSON_ID_PINS = loadDataModule("ingested-graph-data.generated").INGESTED_PERSON_ID_PINS ?? {};
 
 /** 姓名 → 事件列表。 */
 const eventsByName = new Map();
@@ -303,10 +312,30 @@ drafts.sort(
 );
 
 const usedBase = new Map();
+const pinnedIds = new Set();
+const draftNames = new Set(drafts.map((draft) => draft.displayName));
+for (const [displayName, personId] of Object.entries(INGESTED_PERSON_ID_PINS)) {
+  if (!draftNames.has(displayName)) {
+    fail(
+      `图谱扩充生成物：人物 ID 固定「${displayName}」→「${personId}」在当前数据中不存在（请检查 docs 数据或删除该固定）`,
+    );
+    continue;
+  }
+  if (pinnedIds.has(personId)) {
+    fail(`图谱扩充生成物：人物 ID 固定值重复：${personId}`);
+    continue;
+  }
+  pinnedIds.add(personId);
+}
 for (const draft of drafts) {
-  const romanized = romanize(draft.displayName);
-  draft.romanized = romanized;
-  const base = draft.idTag ? `p-${romanized}-${draft.idTag}` : `p-${romanized}`;
+  draft.romanized = romanize(draft.displayName);
+  const pinned = INGESTED_PERSON_ID_PINS[draft.displayName];
+  if (pinned) {
+    draft.id = pinned;
+    draft.suffixHash = pinned.slice(pinned.lastIndexOf("-") + 1);
+    continue;
+  }
+  const base = draft.idTag ? `p-${draft.romanized}-${draft.idTag}` : `p-${draft.romanized}`;
   const taken = usedBase.get(base) ?? new Set();
 
   let salt = 0;

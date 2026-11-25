@@ -11,6 +11,7 @@
  *   backend/data/snapshot.v1.json
  *   backend/data/snapshot.meta.json
  *   frontend/data/locks/event-ids.lock.json
+ *   frontend/data/locks/data-counts.lock.json（全量冻结计数：事件 / 人物 / 关系 / 分期 / 引用）
  *
  * 确定性约定：
  * - 快照 JSON 不含时间戳，所有数组 / 对象键排序固定；
@@ -31,6 +32,7 @@ const CHECK_MODE = process.argv.includes("--check");
 const SNAPSHOT_OUT = path.join(BACKEND_DATA_DIR, "snapshot.v1.json");
 const META_OUT = path.join(BACKEND_DATA_DIR, "snapshot.meta.json");
 const EVENT_LOCK_OUT = path.join(DATA_DIR, "locks", "event-ids.lock.json");
+const DATA_COUNTS_OUT = path.join(DATA_DIR, "locks", "data-counts.lock.json");
 
 const compareText = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const compareEvents = (a, b) => a.year - b.year || compareText(a.id, b.id);
@@ -394,6 +396,33 @@ const eventLock = {
   })),
 };
 
+/**
+ * 全量冻结计数（V1.0.5.4 起）：由生成脚本写盘，`validate-data.mjs` / pytest 读取同一份锁，
+ * 数据扩充时无需在多处手改魔法数字；任何非预期的漂移都会被门禁拦下。
+ */
+const sourceStats = (() => {
+  let refTotal = 0;
+  let oneBook = 0;
+  let twoBook = 0;
+  const labels = new Set();
+  for (const event of eventPool) {
+    const refs = EVENT_SOURCES[event.id] ?? [];
+    refTotal += refs.length;
+    if (refs.length === 1) oneBook += 1;
+    if (refs.length === 2) twoBook += 1;
+    for (const ref of refs) labels.add(ref.label);
+  }
+  return { ref_total: refTotal, label_total: labels.size, one_book: oneBook, two_book: twoBook };
+})();
+
+const dataCountsLock = {
+  schema_version: "data-counts.v1",
+  description:
+    "由 scripts/export-snapshot.mjs 生成的全量冻结计数；validate-data.mjs 与 backend pytest 读取本锁做基线校验。",
+  counts: snapshot.counts,
+  sources: sourceStats,
+};
+
 const outputs = [
   {
     label: "snapshot.v1.json",
@@ -411,6 +440,12 @@ const outputs = [
     label: "event-ids.lock.json",
     file: EVENT_LOCK_OUT,
     content: JSON.stringify(eventLock, null, 2) + "\n",
+    allowTimestampVariance: false,
+  },
+  {
+    label: "data-counts.lock.json",
+    file: DATA_COUNTS_OUT,
+    content: JSON.stringify(dataCountsLock, null, 2) + "\n",
     allowTimestampVariance: false,
   },
 ];
@@ -458,5 +493,5 @@ console.log(
   `✓ 已生成快照 ${finalVersion}：${snapshot.counts.events} 事件 / ${snapshot.counts.persons} 人物 / ${snapshot.counts.relations} 关系 / ${snapshot.counts.eras} 期 / ${snapshot.counts.scopes} 断代 / ${snapshot.counts.aliases} 别名（${meta.files.size_bytes} bytes）`,
 );
 console.log(
-  `  输出：${[SNAPSHOT_OUT, META_OUT, EVENT_LOCK_OUT].map((file) => path.relative(ROOT, file)).join("、")}`,
+  `  输出：${[SNAPSHOT_OUT, META_OUT, EVENT_LOCK_OUT, DATA_COUNTS_OUT].map((file) => path.relative(ROOT, file)).join("、")}`,
 );

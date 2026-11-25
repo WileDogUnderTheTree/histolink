@@ -1,0 +1,139 @@
+{
+  "schema_version": "graph-ingest-config.v1",
+  "description": "《史脉》V1.0.5.4 图谱扩容·全自动入库配置。Python 脚本只读本文件；每批新数据一般只需追加 event_title_map / event_source_map。",
+  "doc_globs": [
+    "史脉_V1.0.5.4_*.md"
+  ],
+  "doc_exclude_patterns": [
+    "史脉_V1.0.5.4-*"
+  ],
+  "canonical_person_names": {
+    "大禹": "禹",
+    "桀": "夏桀",
+    "帝辛": "商纣王",
+    "纣王": "商纣王",
+    "成汤": "商汤",
+    "吕尚": "姜子牙",
+    "姜尚": "姜子牙",
+    "太公望": "姜子牙",
+    "启": "夏启",
+    "周公（周定公）": "周定公",
+    "周公(周定公)": "周定公",
+    "召公": "召穆公"
+  },
+  "extra_person_aliases": {
+    "桀": "夏桀"
+  },
+  "person_id_pins": {
+    "周公旦": "p-xizhou-zhougongdan-01",
+    "周定公": "p-xizhou-zhoudinggong-01",
+    "夏桀": "p-xia-xiajie-01",
+    "禹": "p-yu-53cd",
+    "舜": "p-shun-3851",
+    "商汤": "p-shangtang-c08b",
+    "周武王": "p-zhouwuwang-1530",
+    "寒浞": "p-hanzhuo-6de2",
+    "盘庚": "p-pangeng-a22c",
+    "箕子": "p-jizi-1de8",
+    "召穆公": "p-zhaomugong-8694"
+  },
+  "dynasty_ids": {
+    "夏": "xia",
+    "商": "shang",
+    "西周": "xizhou",
+    "春秋": "chunqiu",
+    "战国": "zhanguo",
+    "秦": "qin",
+    "西汉": "xihan",
+    "东汉": "handong",
+    "三国": "sanguo",
+    "西晋": "xijin",
+    "东晋十六国": "dongjin",
+    "南北朝": "nanbeichao",
+    "隋": "sui",
+    "唐": "tang",
+    "五代十国": "wudai",
+    "北宋": "beisong",
+    "南宋": "nansong",
+    "辽": "liao",
+    "西夏": "xixia",
+    "金": "jin",
+    "元": "yuan",
+    "明": "ming",
+    "清": "qing"
+  },
+  "event_title_map": {
+    "鲧治水失职": "xia-01",
+    "大禹治水": "xia-02",
+    "甘之战": "xia-06",
+    "太康失国": "xia-07",
+    "夏桀囚汤于夏台": "xia-12",
+    "伊尹负鼎佐汤": "shang-01",
+    "伊尹放太甲": "shang-04",
+    "九世之乱": "shang-06",
+    "武丁梦得傅说": "shang-08",
+    "文王羑里之囚": "shang-10",
+    "文王翦商": "shang-12",
+    "渭水访贤": "shang-13",
+    "帝辛拒谏害忠": "shang-14",
+    "孟津之会": "shang-15",
+    "武王克殷分封": "xizhou-02",
+    "武王访箕子·洪范": "xizhou-03",
+    "三监之乱": "xizhou-05",
+    "营建洛邑": "xizhou-09",
+    "周公制礼作乐": "xizhou-10",
+    "周穆王西征": "xizhou-12"
+  },
+  "event_source_map": {
+    "涂山之会": "《左传·哀公七年》",
+    "禹伐三苗": "《史记·夏本纪》",
+    "启建夏·钧台之享": "《左传·昭公四年》",
+    "后羿代夏": "《左传·襄公四年》",
+    "寒浞篡夏": "《左传·襄公四年》",
+    "夏桀暴政": "《史记·夏本纪》",
+    "商汤网开三面": "《史记·殷本纪》",
+    "汤伐韦顾昆吾": "《史记·殷本纪》",
+    "汤祷桑林": "《吕氏春秋·顺民》",
+    "太甲复位": "《史记·殷本纪》",
+    "武丁征鬼方": "《竹书纪年》",
+    "周宣王中兴": "《史记·周本纪》",
+    "褒姒惑周·废嫡立庶": "《国语·晋语》《史记·周本纪》"
+  },
+  "event_participant_additions": {
+    "周穆王西征": [
+      "祭公谋父"
+    ]
+  },
+  "era_defaults": {
+    "夏": {
+      "id": "xia",
+      "default_center_person_id": "禹"
+    },
+    "商": {
+      "id": "shang",
+      "default_center_person_id": "商汤"
+    },
+    "西周": {
+      "id": "xizhou",
+      "default_center_person_id": "周公旦"
+    }
+  },
+  "era_extra_dynasties": {
+    "商": [
+      "夏"
+    ],
+    "西周": [
+      "商"
+    ]
+  },
+  "source_note": "年代依夏商周断代工程推定",
+  "source_notes_after_year": -841,
+  "key_figure_size": 8,
+  "era_scope_map": {
+    "夏": "xianqin",
+    "商": "xianqin",
+    "西周": "xianqin",
+    "春秋": "xianqin",
+    "战国": "xianqin"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": "person-id-pins.v1",
+  "description": "由 backend/scripts/ingest_graph_data.py 维护：新增人物的可读 person_id 固定表（禁止手改键顺序）。",
+  "persons": {
+    "仲丁": "p-shang-zhongding-01",
+    "伯益": "p-xia-boyi-01",
+    "周穆王": "p-xizhou-zhoumuwang-01",
+    "夏启": "p-xia-xiaqi-01",
+    "妇好": "p-shang-fuhao-01",
+    "武庚": "p-xizhou-wugeng-01",
+    "祭公谋父": "p-xizhou-jigongmoufu-01",
+    "阳甲": "p-shang-yangjia-01"
+  }
+}

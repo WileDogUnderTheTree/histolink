@@ -10,8 +10,15 @@
  * V0.8.2 随 174 条新事件登记参与者，并合并 docs/01—06 的人物、为单参与者旧事件补共事人物
  * （修复孤儿节点，确保每个图谱人物至少一条连线）。
  * 人名取值以史书通称为准（如「吴王阖闾」「越王勾践」「秦始皇」统一为同一节点）。
+ *
+ * V1.0.5.4 起：本文件只维护「基础事件」的参与者；docs 图谱扩充表解析出的
+ * 新事件参与者、以及既有事件的参与者增补由 `ingested-graph-data.generated.ts`
+ * 提供，文件末尾统一合并导出 `EVENT_PARTICIPANTS`（生成物禁止手改）。
  */
-export const EVENT_PARTICIPANTS: Readonly<Record<string, readonly string[]>> = {
+import { INGESTED_EVENT_PARTICIPANTS } from "./ingested-graph-data.generated";
+
+/** 基础事件的参与者索引（唯一允许手改的部分）。 */
+const BASE_EVENT_PARTICIPANTS: Readonly<Record<string, readonly string[]>> = {
   // ===== 春秋（前 770—前 476），45 条 =====
   "chunqiu-01": ["周平王", "晋文侯", "郑武公", "秦襄公"],
   "chunqiu-02": ["郑庄公", "共叔段", "武姜"],
@@ -731,3 +738,20 @@ export const EVENT_PARTICIPANTS: Readonly<Record<string, readonly string[]>> = {
   "qing-44": ["孙中山", "黄兴", "袁世凯", "黎元洪"],
   "qing-45": ["宣统帝", "隆裕太后", "袁世凯", "孙中山"],
 };
+
+/**
+ * 合并图谱扩充表带来的参与者：既有事件追加新参与人，新事件直接登记完整名单。
+ *
+ * 合并后索引与 `TIMELINE_EVENTS[].participants` 必须逐条一致（`scripts/validate-data.mjs`
+ * 双向校验），因此时间轴事件一律从这里取参与者，不在其它文件另存一份。
+ */
+export const EVENT_PARTICIPANTS: Readonly<Record<string, readonly string[]>> = (() => {
+  const merged: Record<string, readonly string[]> = { ...BASE_EVENT_PARTICIPANTS };
+  for (const [eventId, extraParticipants] of Object.entries(INGESTED_EVENT_PARTICIPANTS)) {
+    if (extraParticipants.length === 0) continue;
+    const baseParticipants = BASE_EVENT_PARTICIPANTS[eventId] ?? [];
+    const appended = extraParticipants.filter((name) => !baseParticipants.includes(name));
+    merged[eventId] = [...baseParticipants, ...appended];
+  }
+  return merged;
+})();

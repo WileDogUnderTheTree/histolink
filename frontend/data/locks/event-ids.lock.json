@@ -1,6 +1,6 @@
 {
   "schema_version": "event-ids.v1",
-  "event_count": 705,
+  "event_count": 718,
   "events": [
     {
       "id": "beisong-01",
@@ -3659,7 +3659,7 @@
       "year": -1400,
       "surface": {
         "timeline": true,
-        "graph": false
+        "graph": true
       }
     },
     {
@@ -3747,6 +3747,56 @@
       "title": "武王观兵盟津",
       "dynasty": "商",
       "year": -1048,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-shangtangwangkaisanmian-01",
+      "title": "商汤网开三面",
+      "dynasty": "商",
+      "year": -1610,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-taijiafuwei-04",
+      "title": "太甲复位",
+      "dynasty": "商",
+      "year": -1577,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-tangdaosanglin-03",
+      "title": "汤祷桑林",
+      "dynasty": "商",
+      "year": -1590,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-tangfaweigukunwu-02",
+      "title": "汤伐韦顾昆吾",
+      "dynasty": "商",
+      "year": -1605,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "shang-wudingzhengguifang-05",
+      "title": "武丁征鬼方",
+      "dynasty": "商",
+      "year": -1240,
       "surface": {
         "timeline": true,
         "graph": true
@@ -5159,7 +5209,7 @@
       "year": -2050,
       "surface": {
         "timeline": true,
-        "graph": false
+        "graph": true
       }
     },
     {
@@ -5227,6 +5277,66 @@
       "title": "鸣条之战，夏亡",
       "dynasty": "夏",
       "year": -1600,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-hanzhuocuanxia-05",
+      "title": "寒浞篡夏",
+      "dynasty": "夏",
+      "year": -1980,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-houyidaixia-04",
+      "title": "后羿代夏",
+      "dynasty": "夏",
+      "year": -1985,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-qijianxiajuntaizhixiang-01",
+      "title": "启建夏·钧台之享",
+      "dynasty": "夏",
+      "year": -2070,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-tushanzhihui-02",
+      "title": "涂山之会",
+      "dynasty": "夏",
+      "year": -2070,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-xiajiebaozheng-06",
+      "title": "夏桀暴政",
+      "dynasty": "夏",
+      "year": -1620,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-yufasanmiao-03",
+      "title": "禹伐三苗",
+      "dynasty": "夏",
+      "year": -2070,
       "surface": {
         "timeline": true,
         "graph": true
@@ -6019,7 +6129,7 @@
       "year": -960,
       "surface": {
         "timeline": true,
-        "graph": false
+        "graph": true
       }
     },
     {
@@ -6117,6 +6227,26 @@
       "title": "犬戎攻镐京，西周灭亡",
       "dynasty": "西周",
       "year": -771,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-baosihuozhoufeidilishu-02",
+      "title": "褒姒惑周·废嫡立庶",
+      "dynasty": "西周",
+      "year": -779,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xizhou-zhouxuanwangzhongxing-01",
+      "title": "周宣王中兴",
+      "dynasty": "西周",
+      "year": -827,
       "surface": {
         "timeline": true,
         "graph": true

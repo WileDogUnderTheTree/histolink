@@ -27,7 +27,11 @@ export type PersonStatus = "active" | "merged";
 
 /** 人物主数据记录。 */
 export interface PersonRecord {
-  /** 稳定主键：`p-<罗马化姓名>[-<拆分标签>]-<4 位 hash>`。 */
+  /**
+   * 稳定主键：默认 `p-<罗马化姓名>[-<拆分标签>]-<4 位 hash>`；
+   * V1.0.5.4 起图谱扩充引入的人物使用可读固定 ID（如 `p-xizhou-zhoudinggong-01`，
+   * 见 `ingested-graph-data.generated.ts` 的 `INGESTED_PERSON_ID_PINS`）。
+   */
   id: string;
   displayName: string;
   /** 拼音罗马化（小写、无音调、仅 a-z0-9），用于可读 ID 与排序。 */
@@ -39,7 +43,7 @@ export interface PersonRecord {
   primaryDynasty: Dynasty;
   /** 全部出现过的朝代（按首次出现年份排序）。 */
   dynasties: readonly Dynasty[];
-  /** 所属细览分期（18 期）；夏商西周人物无细览分期，只出现在简阅断代。 */
+  /** 所属细览分期（数量随图谱分期自动变化）；新增分期由图谱扩充生成物提供。 */
   eraIds: readonly PersonGraphEraId[];
   /** 所属简阅断代（7 组）。 */
   scopeIds: readonly PersonGraphScopeId[];

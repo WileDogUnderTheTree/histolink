@@ -235,6 +235,57 @@ describe("会话排序稳定性（V1.0.5.2-layout 回归）", () => {
     expect(listed[0].id).toBe(fresh.id);
     expect(listed[0].title).toBe("新的历史对话");
   });
+
+  // V1.0.5.3 回归：用户反馈的「点击置顶 Bug」——点击历史记录不得被误判为「置顶 / 最新活跃」。
+  it("点击查看已置顶会话：保持置顶、原位高亮、不重排、不取消置顶", async () => {
+    const { repository, advance } = repositoryWithClock();
+    const a = await repository.create({ turns: [turn("user", "会话 A")] });
+    advance(1000);
+    const b = await repository.create({ turns: [turn("user", "会话 B")] });
+    advance(1000);
+    const c = await repository.create({ turns: [turn("user", "会话 C")] });
+
+    // C 被用户主动置顶 → 进入「置顶」组；其余顺序保持 c/b/a 的时间序。
+    await repository.pin(c.id, true);
+    const beforeView = await repository.list();
+    const beforeOrder = beforeView.map((item) => item.id);
+    expect(beforeView[0].id).toBe(c.id);
+    expect(beforeView[0].pinned).toBe(true);
+
+    // 模拟用户点击「置顶」组里的 C 查看历史：只同步正文，不得刷新时间 / 改变置顶 / 重排。
+    advance(60 * 60 * 1000);
+    await repository.syncTurns(c.id, [
+      turn("user", "会话 C"),
+      turn("assistant", "查看历史时的正文同步"),
+    ]);
+    const afterView = await repository.list();
+    expect(afterView.map((item) => item.id)).toEqual(beforeOrder);
+    expect(afterView[0].id).toBe(c.id);
+    expect(afterView[0].pinned).toBe(true);
+
+    // 主动取消置顶后回到原时间序（c 最新 → 仍在最前，其余 b/a 不变）。
+    await repository.pin(c.id, false);
+    expect((await repository.list()).map((item) => item.id)).toEqual([c.id, b.id, a.id]);
+  });
+
+  it("点击普通历史记录不会把它变成置顶项", async () => {
+    const { repository, advance } = repositoryWithClock();
+    const first = await repository.create({ turns: [turn("user", "第一条")] });
+    advance(1000);
+    const second = await repository.create({ turns: [turn("user", "第二条")] });
+    const order = (await repository.list()).map((item) => item.id);
+
+    advance(1000);
+    await repository.syncTurns(second.id, [
+      turn("user", "第二条"),
+      turn("assistant", "查看正文"),
+    ]);
+
+    const afterView = await repository.list();
+    expect(afterView.map((item) => item.id)).toEqual(order);
+    expect(afterView.every((item) => item.pinned === false)).toBe(true);
+    expect(afterView.find((item) => item.id === first.id)?.title).toBe("第一条");
+  });
 });
 
 describe("v1.0.6 预留占位（持久化与跨会话上下文）", () => {

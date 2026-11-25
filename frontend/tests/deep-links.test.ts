@@ -115,12 +115,12 @@ describe("resolveGraphDeepLink", () => {
     expect(detail.eraId).toBe("tang");
   });
 
-  it("无参数 / 非法参数回落细览春秋默认中心", () => {
+  it("无参数 / 非法参数回落细览最早分期（V1.0.5.4 起为「夏」）", () => {
     for (const search of ["", "era=不存在", "person=不存在", "mode=unknown"]) {
       const resolved = resolveGraphDeepLink(search);
       expect(resolved.mode).toBe("detail");
-      expect(resolved.eraId).toBe("chunqiu");
-      expect(resolved.centerPersonId).toBe("孔子");
+      expect(resolved.eraId).toBe("xia");
+      expect(resolved.centerPersonId).toBe("禹");
     }
   });
 
