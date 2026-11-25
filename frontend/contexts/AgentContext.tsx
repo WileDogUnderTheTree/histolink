@@ -126,10 +126,16 @@ export interface AgentSessionValue {
   conversationsLoading: boolean;
   /** 当前会话是否为空（只有欢迎语）→「新建对话」选中态。 */
   isCurrentConversationEmpty: boolean;
-  /** 新建对话：保存当前会话、清空 transcript、开启新会话。 */
+  /** 新建对话：保存当前会话、清空 transcript、开启新会话（新会话出现在列表最上方）。 */
   newConversation: () => Promise<void>;
-  /** 加载历史对话：保存当前会话后载入目标会话。 */
+  /** 加载历史对话：仅切换查看，**不改变该条目的列表位置与排序时间**。 */
   loadConversation: (id: string) => Promise<void>;
+  /** 重命名历史对话（本地内存状态更新；锁定标题，不改变列表位置）。 */
+  renameConversation: (id: string, title: string) => Promise<void>;
+  /** 删除历史对话（本地内存状态更新；若删的是当前会话则回到欢迎语）。 */
+  deleteConversation: (id: string) => Promise<void>;
+  /** 置顶 / 取消置顶历史对话（本地内存状态更新；置顶项移到列表最上方「置顶」组）。 */
+  pinConversation: (id: string, pinned: boolean) => Promise<void>;
 }
 
 const AgentSessionContext = createContext<AgentSessionValue | null>(null);
@@ -195,6 +201,17 @@ function toStoredTurns(turns: readonly AgentTurn[]): StoredConversationTurn[] {
   return turns.map((turn) => ({ ...turn }));
 }
 
+/**
+ * transcript 的「已同步签名」（V1.0.5.2-layout 补丁）。
+ *
+ * 轮次 id 每轮唯一，用 id 序列即可判断「文本内容是否变化」，避免每帧 JSON 序列化。
+ * 切换 / 加载会话时先写入签名，让同步 effect 跳过 save——这是修复
+ * 「点击历史记录被误判为最新活跃并弹到列表顶部」的关键。
+ */
+function transcriptSignature(turns: readonly AgentTurn[]): string {
+  return turns.map((turn) => turn.id).join("|");
+}
+
 export function AgentProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
   const router = useRouter();
@@ -222,6 +239,9 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [conversationsLoading, setConversationsLoading] = useState(true);
   const activeConversationIdRef = useRef<string | null>(null);
+  /** 已写入仓库的 transcript 签名 / 轮次数：决定是否需要同步、以及是否属于「新消息」。 */
+  const syncedTurnsSignatureRef = useRef<string>(transcriptSignature([WELCOME_TURN]));
+  const syncedTurnCountRef = useRef<number>(1);
 
   /**
    * 史引副驾驶联动目标（P2）：任何一轮回答落地后自动更新。
@@ -295,24 +315,37 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
   }, [transcript, isRestored]);
 
   /**
-   * 把 transcript 同步进历史对话仓库（V1.0.5.2）。
+   * 把 transcript 同步进历史对话仓库（V1.0.5.2；V1.0.5.2-layout 补丁修正排序语义）。
    *
-   * 只有在出现用户轮次后才创建会话记录，避免「新建对话」立刻在列表里留下空标题；
-   * 有活动会话时持续更新其 turns / updatedAt，刷新侧边栏排序。
+   * 规则（用户验收口径）：
+   * - 列表顺序只由【创建时间 / 最后一条消息发送时间】决定；
+   * - **只有会话里真的新增了消息**才调用 `save`（刷新 `updatedAt`）；
+   * - 加载 / 切换会话用 `syncTurns`（不刷新时间），且加载后先登记签名、跳过本轮同步，
+   *   保证「点击查看」绝不把该条历史记录弹到列表顶部；
+   * - 首次出现用户轮次时创建会话记录（恢复会话场景）。
    */
   const hasUserTurn = transcript.some((turn) => turn.role === "user");
   useEffect(() => {
     if (!isRestored) return;
+    const signature = transcriptSignature(transcript);
+    if (signature === syncedTurnsSignatureRef.current) return;
+    const previousTurnCount = syncedTurnCountRef.current;
+    syncedTurnsSignatureRef.current = signature;
+    syncedTurnCountRef.current = transcript.length;
+
+    const storedTurns = toStoredTurns(transcript);
     const activeId = activeConversationIdRef.current;
     if (activeId) {
-      void repository
-        .save(activeId, toStoredTurns(transcript))
-        .then(() => refreshConversations());
+      const write =
+        transcript.length > previousTurnCount
+          ? repository.save(activeId, storedTurns)
+          : repository.syncTurns(activeId, storedTurns);
+      void write.then(() => refreshConversations());
       return;
     }
     if (!hasUserTurn) return;
     void repository
-      .create({ turns: toStoredTurns(transcript) })
+      .create({ turns: storedTurns })
       .then((record) => {
         activeConversationIdRef.current = record.id;
         setActiveConversationId(record.id);
@@ -390,14 +423,34 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
     }
   }, []);
 
-  /** 新建对话（V1.0.5.2）：保存当前会话后清空对话区。 */
+  /**
+   * 新建对话（V1.0.5.2；V1.0.5.2-layout 补丁）。
+   *
+   * 用户点击「+ 新建对话」时：
+   * 1. 当前会话内容用 `syncTurns` 落库（不刷新排序时间，避免自己把旧会话顶上去）；
+   * 2. **立即创建一条新的空会话记录**（`updatedAt = now`）→ 它会出现在列表最上方，
+   *    且只有这个主动动作会新增列表项；
+   * 3. 中间聊天区清空回欢迎语状态（`WELCOME_TURN`），滚动由页面负责回位。
+   *
+   * 若当前已经是空白新会话则不重复创建，避免列表里出现多条空标题。
+   */
   const newConversation = useCallback(async () => {
     const activeId = activeConversationIdRef.current;
+    const currentTurns = transcriptRef.current;
+    const currentHasUserTurn = currentTurns.some((turn) => turn.role === "user");
     if (activeId) {
-      await repository.save(activeId, toStoredTurns(transcriptRef.current));
+      if (!currentHasUserTurn) {
+        setPendingActions([]);
+        setLastAnswer(null);
+        return;
+      }
+      await repository.syncTurns(activeId, toStoredTurns(currentTurns));
     }
-    activeConversationIdRef.current = null;
-    setActiveConversationId(null);
+    const record = await repository.create({ turns: [] });
+    activeConversationIdRef.current = record.id;
+    syncedTurnsSignatureRef.current = transcriptSignature([WELCOME_TURN]);
+    syncedTurnCountRef.current = 1;
+    setActiveConversationId(record.id);
     setPendingActions([]);
     setLastAnswer(null);
     setTranscript([WELCOME_TURN]);
@@ -409,24 +462,73 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
     await refreshConversations();
   }, [repository, refreshConversations]);
 
-  /** 加载历史对话（V1.0.5.2）：保存当前会话后切换到目标会话。 */
+  /**
+   * 加载历史对话（V1.0.5.2；V1.0.5.2-layout 补丁）。
+   *
+   * 关键行为：点击查看只切换当前会话与高亮，**绝不改变该条目的物理位置**——
+   * 切换前保存当前会话用 `syncTurns`（不刷新 `updatedAt`），加载后登记签名跳过同步 effect。
+   */
   const loadConversation = useCallback(
     async (id: string) => {
       const currentId = activeConversationIdRef.current;
       if (currentId === id) return;
       if (currentId) {
-        await repository.save(currentId, toStoredTurns(transcriptRef.current));
+        await repository.syncTurns(currentId, toStoredTurns(transcriptRef.current));
       }
       const record = await repository.get(id);
       if (!record) return;
       const turns: AgentTurn[] = record.turns.map((turn) => ({ ...turn }));
+      const nextTranscript = turns.length > 0 ? turns : [WELCOME_TURN];
       activeConversationIdRef.current = record.id;
+      syncedTurnsSignatureRef.current = transcriptSignature(nextTranscript);
+      syncedTurnCountRef.current = nextTranscript.length;
       setActiveConversationId(record.id);
-      setTranscript(turns.length > 0 ? turns : [WELCOME_TURN]);
+      setTranscript(nextTranscript);
       setPendingActions([]);
       setLastAnswer(
         [...turns].reverse().find((turn) => turn.answer)?.answer ?? null,
       );
+      await refreshConversations();
+    },
+    [repository, refreshConversations],
+  );
+
+  /** 重命名历史对话（本地内存状态）：只改标题并锁定，不改变列表位置。 */
+  const renameConversation = useCallback(
+    async (id: string, title: string) => {
+      await repository.rename(id, title);
+      await refreshConversations();
+    },
+    [repository, refreshConversations],
+  );
+
+  /** 删除历史对话（本地内存状态）：删除当前会话时回到空白欢迎态。 */
+  const deleteConversation = useCallback(
+    async (id: string) => {
+      await repository.remove(id);
+      if (activeConversationIdRef.current === id) {
+        activeConversationIdRef.current = null;
+        syncedTurnsSignatureRef.current = transcriptSignature([WELCOME_TURN]);
+        syncedTurnCountRef.current = 1;
+        setActiveConversationId(null);
+        setTranscript([WELCOME_TURN]);
+        setPendingActions([]);
+        setLastAnswer(null);
+        try {
+          window.sessionStorage.removeItem(TRANSCRIPT_STORAGE_KEY);
+        } catch {
+          // 忽略存储异常：内存状态已回到欢迎语。
+        }
+      }
+      await refreshConversations();
+    },
+    [repository, refreshConversations],
+  );
+
+  /** 置顶 / 取消置顶（本地内存状态）：置顶项由侧边栏放进最上方「置顶」组。 */
+  const pinConversation = useCallback(
+    async (id: string, pinned: boolean) => {
+      await repository.pin(id, pinned);
       await refreshConversations();
     },
     [repository, refreshConversations],
@@ -527,7 +629,7 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
     [actionBus],
   );
 
-  /** 侧边栏分组（今天 / 过去 30 天）；每次列表变化时重算。 */
+  /** 侧边栏分组（置顶 / 今天 / 过去 30 天）；每次列表变化时重算。 */
   const conversationGroups = useMemo(
     () => groupConversationsByTime(conversations),
     [conversations],
@@ -563,6 +665,9 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
       isCurrentConversationEmpty,
       newConversation,
       loadConversation,
+      renameConversation,
+      deleteConversation,
+      pinConversation,
     }),
     [
       transcript,
@@ -592,6 +697,9 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
       isCurrentConversationEmpty,
       newConversation,
       loadConversation,
+      renameConversation,
+      deleteConversation,
+      pinConversation,
     ],
   );
 

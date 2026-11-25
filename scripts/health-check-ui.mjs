@@ -2,14 +2,17 @@
 /**
  * 史脉 · `/ask` 页面 UI / UX 无头浏览器体检（V1.0.5.3 全面体检专项 · 工具 1）。
  *
- * 覆盖（对照 V1.0.5.2 UI 呼吸感补丁的验收口径）：
- *  1) 1600×1000 默认视图：侧边栏展开、聊天区加宽、气泡 85% / 行高 1.8、模型按钮位置；
- *  2) 侧边栏收起 + localStorage 持久化 + 刷新后保持收起 + 顶栏「展开历史对话」入口；
- *  3) 预览模式不渲染侧边栏、无侧边栏时对话区 60%–70% 宽版居中；
- *  4) 引用 >3 默认折叠、「展开全部 N 条引用」、展开后全部可见；
- *  5) 引用点击打开史引副驾驶：左对话 40% / 右面板 60% 分屏；
- *  6) 窄屏 820px：侧边栏默认收起、展开为浮层 + 遮罩、点击遮罩可收起；
- *  7) （--live）真实提问：长回答 / 引用 / 史引自动分屏 + 侧边栏自动让位。
+ * 覆盖（对照 V1.0.5.2 UI 呼吸感补丁 + V1.0.5.2-layout 布局与侧边栏修复补丁的验收口径）：
+ *  1) 1600×1000 默认视图：100vh App Shell（无整页滚动）、侧边栏/聊天/史引三栏独立滚动、
+ *     气泡 85% / 行高 1.8、模型按钮位置；
+ *  2) 会话列表排序稳定性：点击最下面一条历史记录必须**原位变灰**、不重排；聊天列表自动到底部；
+ *     中间 / 左侧滚轮互不联动且整页不动；
+ *  3) 历史侧边栏交互：悬浮「⋯」菜单（置顶 / 重命名 / 删除）、新建对话清空回欢迎语；
+ *  4) 侧边栏收起 + localStorage 持久化 + 刷新后保持收起 + 顶栏「展开历史对话」入口；
+ *  5) 引用 >3 默认折叠、「展开全部 N 条引用」、展开后全部可见；
+ *  6) 引用点击打开史引副驾驶：左对话 40% / 右面板 60% 分屏，右面板高度锁定在视口内；
+ *  7) 窄屏 820px：侧边栏默认收起、展开为浮层 + 遮罩、点击遮罩可收起、整页仍不滚动；
+ *  8) （--live）真实提问：新问题 / 新回答自动滚动到底部 + 长回答 / 引用 / 史引自动分屏。
  *
  * 前置条件：
  *   - 前端已在 `--base-url`（默认 http://localhost:3000）运行（dev 或 next start 均可）；
@@ -83,6 +86,8 @@ const BASE = OPTIONS.baseUrl;
 
 const results = [];
 const consoleIssues = [];
+/** 断言计数器：结果汇总同时给出「检查点 / 断言」两个维度。 */
+let assertionCount = 0;
 
 function log(name, payload) {
   console.log(`\n[${name}]`);
@@ -91,6 +96,7 @@ function log(name, payload) {
 }
 
 function assert(name, condition, detail) {
+  assertionCount += 1;
   if (!condition) throw new Error(`ASSERT FAILED [${name}] ${detail ?? ""}`);
   console.log(`  ✓ ${name}`);
 }
@@ -253,6 +259,27 @@ async function main() {
       if (result.exceptionDetails) throw new Error(JSON.stringify(result.exceptionDetails));
       return result.result?.value;
     };
+    /** 真实鼠标滚轮：用于验证「哪一栏在滚、整页是否跟着动」。 */
+    const mouseWheel = async (x, y, deltaY) => {
+      await send("Input.dispatchMouseEvent", {
+        type: "mouseWheel",
+        x: Math.round(x),
+        y: Math.round(y),
+        deltaX: 0,
+        deltaY,
+        pointerType: "mouse",
+      });
+      await delay(400);
+    };
+    /** 真实鼠标移动：触发 CSS :hover（悬浮菜单断言需要）。 */
+    const mouseMove = async (x, y) => {
+      await send("Input.dispatchMouseEvent", {
+        type: "mouseMoved",
+        x: Math.round(x),
+        y: Math.round(y),
+      });
+      await delay(200);
+    };
     const shoot = async (name) => {
       // 隐藏 Next.js 开发模式左下角指示器，保证归档截图只包含产品 UI。
       await evaluate(`(() => {
@@ -356,7 +383,255 @@ async function main() {
     await shoot("01-default-1600");
 
     // =====================================================================
-    // 2) 侧边栏收起 → 宽版居中 → 持久化 → 刷新保持
+    // 1b) 100vh App Shell：整页不滚动，左 / 中 / 右各自独立滚动
+    // =====================================================================
+    const appShell = await evaluate(`(() => {
+      const rect = (el) => el ? el.getBoundingClientRect() : null;
+      const app = document.querySelector('[data-app-shell]');
+      const sidebar = document.querySelector('aside[aria-label="历史对话"]');
+      const transcript = document.querySelector('[data-transcript-scroll]');
+      const dock = document.querySelector('div[class*="composerDock"]');
+      const appRect = rect(app);
+      const sidebarRect = rect(sidebar);
+      return {
+        innerHeight,
+        innerWidth,
+        docScrollHeight: document.documentElement.scrollHeight,
+        docScrollWidth: document.documentElement.scrollWidth,
+        docScrollY: scrollY,
+        bodyOverflow: getComputedStyle(document.body).overflow,
+        app: appRect ? { height: Math.round(appRect.height), overflow: getComputedStyle(app).overflow } : null,
+        sidebarHeight: sidebarRect ? Math.round(sidebarRect.height) : null,
+        transcript: transcript ? { overflowY: getComputedStyle(transcript).overflowY, clientHeight: transcript.clientHeight, scrollHeight: transcript.scrollHeight } : null,
+        composerBottom: dock ? Math.round(rect(dock).bottom) : null,
+      };
+    })()`);
+    log("01b-app-shell", appShell);
+    assert("整页无文档滚动（100vh App Shell）", appShell.docScrollHeight <= appShell.innerHeight + 1, JSON.stringify(appShell));
+    assert("App Shell 高度锁定视口且 overflow hidden", appShell.app?.height === appShell.innerHeight && appShell.app?.overflow === "hidden", JSON.stringify(appShell.app));
+    assert("左侧历史栏高度 = 视口高度（自身内部滚动）", appShell.sidebarHeight === appShell.innerHeight, JSON.stringify({ sidebarHeight: appShell.sidebarHeight, innerHeight: appShell.innerHeight }));
+    assert("中间聊天列表是独立滚动容器", appShell.transcript?.overflowY === "auto");
+    assert("底部输入区位于视口内", appShell.composerBottom <= appShell.innerHeight + 1, JSON.stringify({ composerBottom: appShell.composerBottom, innerHeight: appShell.innerHeight }));
+    assert("页面上仍无横向溢出", appShell.docScrollWidth <= appShell.innerWidth);
+    await shoot("01b-app-shell");
+
+    // =====================================================================
+    // 2) 排序稳定性 + 三栏独立滚动（矮窗口：两侧内容必须溢出才可验证）
+    // =====================================================================
+    await viewport(1600, 400);
+    await go("/ask", 2800);
+    const beforeClick = await evaluate(`(() => {
+      const s = document.querySelector('aside[aria-label="历史对话"] div[class*="scrollArea"]');
+      const t = document.querySelector('[data-transcript-scroll]');
+      return {
+        order: [...document.querySelectorAll('[data-conversation-id]')].map((el) => el.getAttribute('data-conversation-id')),
+        sidebar: s ? { scrollHeight: s.scrollHeight, clientHeight: s.clientHeight, scrollTop: s.scrollTop } : null,
+        transcript: t ? { scrollHeight: t.scrollHeight, clientHeight: t.clientHeight, scrollTop: t.scrollTop } : null,
+        docScrollHeight: document.documentElement.scrollHeight,
+        innerHeight,
+      };
+    })()`);
+    log("02a-sort-and-scroll-before", beforeClick);
+    assert("矮窗口下左侧历史列表内部可滚动", Boolean(beforeClick.sidebar && beforeClick.sidebar.scrollHeight > beforeClick.sidebar.clientHeight), JSON.stringify(beforeClick.sidebar));
+    assert("矮窗口下整页依旧无文档滚动", beforeClick.docScrollHeight <= beforeClick.innerHeight + 1, JSON.stringify({ doc: beforeClick.docScrollHeight, viewport: beforeClick.innerHeight }));
+
+    // 滚左侧列表：只有左侧内部滚动，整页与聊天区都不动
+    await mouseWheel(120, 230, 420);
+    const sidebarWheel = await evaluate(`(() => {
+      const s = document.querySelector('aside[aria-label="历史对话"] div[class*="scrollArea"]');
+      const t = document.querySelector('[data-transcript-scroll]');
+      return { docScrollY: scrollY, sidebarScrollTop: s.scrollTop, chatScrollTop: t.scrollTop };
+    })()`);
+    log("02b-sidebar-wheel", sidebarWheel);
+    assert("滚左侧列表：只有左侧内部滚动，整页 / 聊天区不动", sidebarWheel.sidebarScrollTop > 0 && sidebarWheel.docScrollY === 0 && sidebarWheel.chatScrollTop === beforeClick.transcript.scrollTop, JSON.stringify(sidebarWheel));
+
+    // 点击最下面一条历史记录：必须「原位变灰」，绝不弹到列表顶部
+    const clickedItem = await evaluate(`(() => {
+      const items = [...document.querySelectorAll('[data-conversation-id]')];
+      const target = items[items.length - 1];
+      if (!target) return null;
+      const id = target.getAttribute('data-conversation-id');
+      target.querySelector('button[class*="conversationButton"]').click();
+      return { id, index: items.length - 1, order: items.map((el) => el.getAttribute('data-conversation-id')) };
+    })()`);
+    await delay(1000);
+    const afterClick = await evaluate(`(() => {
+      const items = [...document.querySelectorAll('[data-conversation-id]')];
+      const transcript = document.querySelector('[data-transcript-scroll]');
+      return {
+        order: items.map((el) => el.getAttribute('data-conversation-id')),
+        activeId: items.find((el) => el.getAttribute('data-active') === "true")?.getAttribute('data-conversation-id') ?? null,
+        activeIndex: items.findIndex((el) => el.getAttribute('data-active') === "true"),
+        transcript: transcript ? { scrollTop: transcript.scrollTop, scrollHeight: transcript.scrollHeight, clientHeight: transcript.clientHeight, atBottom: transcript.scrollTop + transcript.clientHeight >= transcript.scrollHeight - 4 } : null,
+        docScrollY: scrollY,
+        docScrollHeight: document.documentElement.scrollHeight,
+        innerHeight,
+      };
+    })()`);
+    log("02c-click-last-conversation", { clicked: clickedItem, after: afterClick });
+    assert("点击最下面一条历史记录后列表物理顺序完全不变", JSON.stringify(afterClick.order) === JSON.stringify(beforeClick.order), JSON.stringify({ before: beforeClick.order, after: afterClick.order }));
+    assert("点击项只改变高亮（选中态），位置不变", afterClick.activeId === clickedItem?.id && afterClick.activeIndex === clickedItem?.index, JSON.stringify({ clicked: clickedItem, activeId: afterClick.activeId, activeIndex: afterClick.activeIndex }));
+    assert("加载历史对话后聊天列表自动滚动到底部", afterClick.transcript?.atBottom === true, JSON.stringify(afterClick.transcript));
+    assert("加载历史对话期间整页仍不滚动", afterClick.docScrollHeight <= afterClick.innerHeight + 1, JSON.stringify({ doc: afterClick.docScrollHeight, viewport: afterClick.innerHeight }));
+
+    // 滚中间聊天区：只有聊天列表内部滚动，整页与左侧列表都不动
+    await mouseWheel(760, 210, -520);
+    const chatWheel = await evaluate(`(() => {
+      const s = document.querySelector('aside[aria-label="历史对话"] div[class*="scrollArea"]');
+      const t = document.querySelector('[data-transcript-scroll]');
+      return { docScrollY: scrollY, chatScrollTop: t.scrollTop, sidebarScrollTop: s.scrollTop };
+    })()`);
+    log("02d-chat-wheel", chatWheel);
+    assert("滚中间聊天区：只有聊天列表内部滚动，整页 / 左侧不动", chatWheel.chatScrollTop < afterClick.transcript.scrollTop && chatWheel.docScrollY === 0 && chatWheel.sidebarScrollTop === sidebarWheel.sidebarScrollTop, JSON.stringify(chatWheel));
+    await shoot("02-sort-and-scroll");
+
+    // 恢复大视口，进入侧边栏交互场景
+    await viewport(1600, 1000);
+    await go("/ask", 2800);
+
+    // =====================================================================
+    // 3) 历史侧边栏交互：悬浮「⋯」菜单（置顶 / 重命名 / 删除）+ 新建对话
+    // =====================================================================
+    const freshOrder = await evaluate(`[...document.querySelectorAll('[data-conversation-id]')].map((el) => el.getAttribute('data-conversation-id'))`);
+    const menuTrigger = await evaluate(`(() => {
+      const item = [...document.querySelectorAll('[data-conversation-id]')].at(-1);
+      const trigger = item?.querySelector('[data-conversation-menu-trigger]');
+      const rect = trigger?.getBoundingClientRect();
+      return {
+        id: item?.getAttribute('data-conversation-id') ?? null,
+        rect: rect ? { x: rect.x, y: rect.y, w: rect.width, h: rect.height } : null,
+        opacity: trigger ? getComputedStyle(trigger).opacity : null,
+      };
+    })()`);
+    assert("每条历史记录带「⋯」更多操作按钮", Boolean(menuTrigger.id && menuTrigger.rect), JSON.stringify(menuTrigger));
+    await mouseMove(menuTrigger.rect.x + menuTrigger.rect.w / 2, menuTrigger.rect.y + menuTrigger.rect.h / 2);
+    const hoveredOpacity = await evaluate(`(() => {
+      const item = [...document.querySelectorAll('[data-conversation-id]')].at(-1);
+      return getComputedStyle(item.querySelector('[data-conversation-menu-trigger]')).opacity;
+    })()`);
+    log("03-hover-opacity", { idle: menuTrigger.opacity, hover: hoveredOpacity });
+    assert("鼠标悬浮历史记录时「⋯」图标出现", hoveredOpacity === "1", hoveredOpacity);
+
+    await evaluate(`(() => { [...document.querySelectorAll('[data-conversation-id]')].at(-1).querySelector('[data-conversation-menu-trigger]').click(); return true; })()`);
+    await waitFor(`Boolean(document.querySelector('[role="menu"][aria-label="历史对话操作"]'))`, 4000);
+    const menuState = await evaluate(`(() => {
+      const menu = document.querySelector('[role="menu"][aria-label="历史对话操作"]');
+      if (!menu) return null;
+      const rect = menu.getBoundingClientRect();
+      return {
+        items: [...menu.querySelectorAll('[role="menuitem"]')].map((item) => item.textContent.trim()),
+        inViewport: rect.top >= 0 && rect.left >= 0 && rect.bottom <= innerHeight && rect.right <= innerWidth,
+      };
+    })()`);
+    log("03a-hover-menu", menuState);
+    assert("悬浮菜单包含「置顶 / 重命名 / 删除」", JSON.stringify(menuState?.items) === JSON.stringify(["置顶", "重命名", "删除"]), JSON.stringify(menuState));
+    assert("悬浮菜单完整落在视口内", menuState?.inViewport === true);
+    await shoot("03-hover-menu");
+
+    // 置顶：用户主动点击后进入最上方「置顶」分组
+    await evaluate(`(() => { [...document.querySelectorAll('[role="menuitem"]')].find((btn) => btn.textContent.trim() === "置顶")?.click(); return true; })()`);
+    await delay(700);
+    const pinnedState = await evaluate(`(() => {
+      const groups = [...document.querySelectorAll('section[aria-labelledby^="conversation-group"] h2')].map((el) => el.textContent);
+      const items = [...document.querySelectorAll('[data-conversation-id]')];
+      return {
+        groups,
+        firstId: items[0]?.getAttribute('data-conversation-id') ?? null,
+        pinnedIds: items.filter((el) => el.getAttribute('data-pinned') === "true").map((el) => el.getAttribute('data-conversation-id')),
+        order: items.map((el) => el.getAttribute('data-conversation-id')),
+      };
+    })()`);
+    log("03b-pinned", pinnedState);
+    assert("置顶后出现「置顶」分组且该项移到列表最上方", pinnedState.groups[0] === "置顶" && pinnedState.firstId === menuTrigger.id && pinnedState.pinnedIds.includes(menuTrigger.id), JSON.stringify(pinnedState));
+    await shoot("03b-pinned");
+
+    // 取消置顶：恢复原时间顺序
+    await evaluate(`(() => { [...document.querySelectorAll('[data-conversation-id]')][0].querySelector('[data-conversation-menu-trigger]').click(); return true; })()`);
+    await waitFor(`Boolean(document.querySelector('[role="menu"][aria-label="历史对话操作"]'))`, 4000);
+    await evaluate(`(() => { [...document.querySelectorAll('[role="menuitem"]')].find((btn) => btn.textContent.trim() === "取消置顶")?.click(); return true; })()`);
+    await delay(700);
+    const unpinnedOrder = await evaluate(`[...document.querySelectorAll('[data-conversation-id]')].map((el) => el.getAttribute('data-conversation-id'))`);
+    assert("取消置顶后恢复原顺序", JSON.stringify(unpinnedOrder) === JSON.stringify(freshOrder), JSON.stringify({ freshOrder, unpinnedOrder }));
+
+    // 重命名：只改标题，不改变列表位置
+    await evaluate(`(() => { [...document.querySelectorAll('[data-conversation-id]')].at(-1).querySelector('[data-conversation-menu-trigger]').click(); return true; })()`);
+    await waitFor(`Boolean(document.querySelector('[role="menu"][aria-label="历史对话操作"]'))`, 4000);
+    await evaluate(`(() => { [...document.querySelectorAll('[role="menuitem"]')].find((btn) => btn.textContent.trim() === "重命名")?.click(); return true; })()`);
+    await waitFor(`Boolean(document.querySelector('input[aria-label="重命名历史对话"]'))`, 4000);
+    const renameDraft = "重命名后的会话标题";
+    await evaluate(`(() => {
+      const input = document.querySelector('input[aria-label="重命名历史对话"]');
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+      setter.call(input, ${JSON.stringify("重命名后的会话标题")});
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      return true;
+    })()`);
+    await delay(200);
+    await evaluate(`(() => { document.querySelector('input[aria-label="重命名历史对话"]')?.closest("form")?.requestSubmit(); return true; })()`);
+    await delay(700);
+    const renamedState = await evaluate(`(() => {
+      const items = [...document.querySelectorAll('[data-conversation-id]')];
+      const titles = items.map((el) => el.querySelector('span[class*="conversationTitle"]')?.textContent ?? "");
+      return { titles, order: items.map((el) => el.getAttribute('data-conversation-id')), renamedId: items.at(-1)?.getAttribute('data-conversation-id') ?? null };
+    })()`);
+    log("03c-renamed", renamedState);
+    assert("重命名后标题更新且位置不变", renamedState.renamedId === menuTrigger.id && renamedState.titles.at(-1) === renameDraft && JSON.stringify(renamedState.order) === JSON.stringify(freshOrder), JSON.stringify(renamedState));
+    await shoot("03c-renamed");
+
+    // 删除：该条消失，其余项相对顺序不变
+    const deleteTarget = await evaluate(`(() => {
+      const items = [...document.querySelectorAll('[data-conversation-id]')];
+      const target = items[0];
+      const id = target.getAttribute('data-conversation-id');
+      target.querySelector('[data-conversation-menu-trigger]').click();
+      return { id, order: items.map((el) => el.getAttribute('data-conversation-id')) };
+    })()`);
+    await waitFor(`Boolean(document.querySelector('[role="menu"][aria-label="历史对话操作"]'))`, 4000);
+    await evaluate(`(() => { [...document.querySelectorAll('[role="menuitem"]')].find((btn) => btn.textContent.trim() === "删除")?.click(); return true; })()`);
+    await delay(700);
+    const afterDelete = await evaluate(`(() => {
+      const items = [...document.querySelectorAll('[data-conversation-id]')];
+      return { order: items.map((el) => el.getAttribute('data-conversation-id')), count: items.length };
+    })()`);
+    const expectedAfterDelete = deleteTarget.order.filter((id) => id !== deleteTarget.id);
+    log("03d-deleted", { deleted: deleteTarget.id, afterDelete });
+    assert("删除后该条消失且其余项顺序不变", afterDelete.count === deleteTarget.order.length - 1 && JSON.stringify(afterDelete.order) === JSON.stringify(expectedAfterDelete), JSON.stringify({ expectedAfterDelete, afterDelete }));
+
+    // 新建对话：清空聊天区回欢迎语，新会话出现在列表最上方
+    const newConversationState = await evaluate(`(() => {
+      const before = [...document.querySelectorAll('[data-conversation-id]')].map((el) => el.getAttribute('data-conversation-id'));
+      document.querySelector('div[class*="newConversationDock"] button').click();
+      return { before };
+    })()`);
+    await delay(1000);
+    const afterNewConversation = await evaluate(`(() => {
+      const items = [...document.querySelectorAll('[data-conversation-id]')];
+      const transcript = document.querySelector('[data-transcript-scroll]');
+      const newButton = document.querySelector('div[class*="newConversationDock"] button');
+      const chatTurns = transcript ? [...transcript.querySelectorAll(":scope > li")] : [];
+      return {
+        order: items.map((el) => el.getAttribute('data-conversation-id')),
+        transcriptTurnCount: chatTurns.length,
+        transcriptText: transcript ? transcript.textContent.slice(0, 60) : "",
+        transcriptAtBottom: transcript ? transcript.scrollTop + transcript.clientHeight >= transcript.scrollHeight - 4 : null,
+        newButtonActive: newButton?.getAttribute('data-active'),
+        docScrollHeight: document.documentElement.scrollHeight,
+        innerHeight,
+      };
+    })()`);
+    const addedId = afterNewConversation.order.find((id) => !newConversationState.before.includes(id));
+    log("03e-new-conversation", { before: newConversationState.before, after: afterNewConversation });
+    assert("点击「新建对话」清空聊天区回欢迎语", afterNewConversation.transcriptTurnCount === 1 && afterNewConversation.transcriptText.includes("你好，我是史脉问答"), JSON.stringify(afterNewConversation));
+    assert("新建对话后新会话出现在列表最上方", Boolean(addedId) && afterNewConversation.order.indexOf(addedId) === 0, JSON.stringify({ addedId, order: afterNewConversation.order }));
+    assert("新建对话按钮进入选中态", afterNewConversation.newButtonActive === "true");
+    assert("新建对话后整页仍不滚动", afterNewConversation.docScrollHeight <= afterNewConversation.innerHeight + 1);
+    await shoot("03e-new-conversation");
+
+    // 刷新页面，回到干净的演示列表，供后续折叠 / 分屏场景使用
+    await go("/ask", 2800);
+
+    // =====================================================================
+    // 4) 侧边栏收起 → 宽版居中 → 持久化 → 刷新保持
     // =====================================================================
     await evaluate(`document.querySelector('button[aria-label="收起历史对话侧边栏"]').click()`);
     await delay(700);
@@ -372,13 +647,13 @@ async function main() {
         stored: localStorage.getItem('histolink.ask.sidebar.v1'),
       };
     })()`);
-    log("02-sidebar-collapsed", collapsed);
+    log("04-sidebar-collapsed", collapsed);
     assert("收起后侧边栏不再占位", collapsed.sidebar === false);
     assert("顶栏出现展开入口", collapsed.toggle === true);
     assert("对话区放宽到视口 60%–70%", collapsed.chat / 1600 >= 0.55 && collapsed.chat / 1600 <= 0.75, `${collapsed.chat}/1600`);
     assert("对话区水平居中", Math.abs(collapsed.shellOffsetX - (1600 - collapsed.shell) / 2) < 24, JSON.stringify({ x: collapsed.shellOffsetX, expected: (1600 - collapsed.shell) / 2 }));
     assert("折叠偏好已落盘", collapsed.stored === "collapsed", collapsed.stored);
-    await shoot("02-sidebar-collapsed");
+    await shoot("04-sidebar-collapsed");
 
     await go("/ask", 3000);
     const persisted = await evaluate(`(() => ({
@@ -386,9 +661,9 @@ async function main() {
       toggle: Boolean(document.querySelector('button[aria-label="展开历史对话侧边栏"]')),
       stored: localStorage.getItem('histolink.ask.sidebar.v1'),
     }))()`);
-    log("03-sidebar-persisted-after-reload", persisted);
+    log("05-sidebar-persisted-after-reload", persisted);
     assert("刷新后保持收起", persisted.sidebar === false && persisted.toggle === true);
-    await shoot("03-sidebar-persisted-after-reload");
+    await shoot("05-sidebar-persisted-after-reload");
 
     // 恢复展开，供后续真实问答 / 分屏对比
     await evaluate(`document.querySelector('button[aria-label="展开历史对话侧边栏"]').click()`);
@@ -400,7 +675,7 @@ async function main() {
     assert("可重新展开侧边栏", reExpanded.sidebar === true && reExpanded.stored === "expanded", JSON.stringify(reExpanded));
 
     // =====================================================================
-    // 3) 引用折叠：多轮预览（6 条引用 → 默认 3 条）
+    // 5) 引用折叠：多轮预览（6 条引用 → 默认 3 条）
     // =====================================================================
     await go("/ask?preview=multiturn", 3000);
     const previewLayout = await evaluate(`(() => {
@@ -410,7 +685,7 @@ async function main() {
         chatWidth: chat ? Math.round(chat.getBoundingClientRect().width) : null,
       };
     })()`);
-    log("04a-preview-layout", previewLayout);
+    log("06a-preview-layout", previewLayout);
     assert("预览模式不渲染历史侧边栏", previewLayout.sidebar === false, JSON.stringify(previewLayout));
     assert("预览模式（无侧边栏）对话区为 60%–70% 宽版", previewLayout.chatWidth / 1600 >= 0.6, `${previewLayout.chatWidth}/1600`);
 
@@ -425,11 +700,11 @@ async function main() {
         expandAriaExpanded: expand ? expand.getAttribute('aria-expanded') : null,
       };
     })()`);
-    log("04-citations-collapsed", citationBefore);
+    log("06-citations-collapsed", citationBefore);
     assert("默认只展示前 3 条引用", citationBefore.visibleCards === 3, JSON.stringify(citationBefore));
     assert("折叠按钮文案含「展开全部 6 条引用」", citationBefore.expandText?.includes("展开全部 6 条引用"), citationBefore.expandText);
     assert("折叠按钮 aria-expanded=false", citationBefore.expandAriaExpanded === "false");
-    await shoot("04-citations-collapsed");
+    await shoot("06-citations-collapsed");
 
     await evaluate(`document.querySelector('div[aria-label="回答引用"] button[aria-expanded]').click()`);
     await delay(450);
@@ -443,13 +718,13 @@ async function main() {
         expandAriaExpanded: expand ? expand.getAttribute('aria-expanded') : null,
       };
     })()`);
-    log("05-citations-expanded", citationAfter);
+    log("07-citations-expanded", citationAfter);
     assert("展开后 6 条引用全部可见", citationAfter.visibleCards === 6, JSON.stringify(citationAfter));
     assert("展开后按钮变为「收起引用」", citationAfter.expandText?.includes("收起引用"), citationAfter.expandText);
-    await shoot("05-citations-expanded");
+    await shoot("07-citations-expanded");
 
     // =====================================================================
-    // 4) 史引副驾驶分屏：左对话 40% / 右面板 60%
+    // 6) 史引副驾驶分屏：左对话 40% / 右面板 60%
     // =====================================================================
     const citationClick = await evaluate(`(() => {
       const button = document.querySelector('div[aria-label="回答引用"] button[class*="citation"]');
@@ -481,14 +756,14 @@ async function main() {
         panelHasIframe: Boolean(panel.querySelector('iframe')),
       };
     })()`);
-    log("06-copilot-split", split);
+    log("08-copilot-split", split);
     assert("史引面板已打开", split.panel !== false);
     assert("分屏比例约 40% / 60%", Math.abs(split.ratio - 0.4) < 0.03, split.ratio);
     assert("史引面板含时间轴 iframe", split.panelHasIframe === true);
-    await shoot("06-copilot-split");
+    await shoot("08-copilot-split");
 
     // =====================================================================
-    // 5) 窄屏 820px：默认收起 + 浮层展开
+    // 7) 窄屏 820px：默认收起 + 浮层展开
     // =====================================================================
     await viewport(820, 1000);
     await go("/ask", 3200);
@@ -496,12 +771,15 @@ async function main() {
       sidebar: Boolean(document.querySelector('aside[aria-label="历史对话"]')),
       toggle: Boolean(document.querySelector('button[aria-label="展开历史对话侧边栏"]')),
       overflow: document.documentElement.scrollWidth > innerWidth,
+      docScrollHeight: document.documentElement.scrollHeight,
+      innerHeight,
       chatWidth: Math.round(document.querySelector('section[aria-labelledby="conversation-title"]').getBoundingClientRect().width),
     }))()`);
-    log("07-narrow-default", narrowDefault);
+    log("09-narrow-default", narrowDefault);
     assert("窄屏默认收起侧边栏", narrowDefault.sidebar === false && narrowDefault.toggle === true, JSON.stringify(narrowDefault));
     assert("窄屏无横向溢出", narrowDefault.overflow === false);
-    await shoot("07-narrow-default");
+    assert("窄屏整页无文档滚动", narrowDefault.docScrollHeight <= narrowDefault.innerHeight + 1, JSON.stringify(narrowDefault));
+    await shoot("09-narrow-default");
 
     await evaluate(`document.querySelector('button[aria-label="展开历史对话侧边栏"]').click()`);
     await delay(650);
@@ -514,13 +792,39 @@ async function main() {
         backdrop: Boolean(backdrop),
         position: sidebar ? getComputedStyle(sidebar).position : null,
         width: s ? Math.round(s.width) : null,
+        height: s ? Math.round(s.height) : null,
         coversLeft: s ? Math.round(s.left) <= 1 : null,
+        docScrollHeight: document.documentElement.scrollHeight,
+        innerHeight,
       };
     })()`);
-    log("08-narrow-overlay", narrowOverlay);
+    log("10-narrow-overlay", narrowOverlay);
     assert("窄屏展开为左侧浮层", narrowOverlay.position === "fixed" && narrowOverlay.coversLeft === true, JSON.stringify(narrowOverlay));
     assert("浮层带遮罩", narrowOverlay.backdrop === true);
-    await shoot("08-narrow-overlay");
+    assert("窄屏浮层高度 = 视口高度且不撑开文档", narrowOverlay.height === narrowOverlay.innerHeight && narrowOverlay.docScrollHeight <= narrowOverlay.innerHeight + 1, JSON.stringify(narrowOverlay));
+    await shoot("10-narrow-overlay");
+
+    // 窄屏浮层内「⋯」菜单按视口定位（浮层动画 / transform 不能把 fixed 菜单带偏）
+    await evaluate(`(() => { document.querySelector('[data-conversation-id] [data-conversation-menu-trigger]')?.click(); return true; })()`);
+    await waitFor(`Boolean(document.querySelector('[role="menu"][aria-label="历史对话操作"]'))`, 4000);
+    const narrowMenu = await evaluate(`(() => {
+      const menu = document.querySelector('[role="menu"][aria-label="历史对话操作"]');
+      if (!menu) return null;
+      const r = menu.getBoundingClientRect();
+      return {
+        top: Math.round(r.top), left: Math.round(r.left), right: Math.round(r.right), bottom: Math.round(r.bottom),
+        innerWidth, innerHeight,
+        inViewport: r.top >= 0 && r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight,
+      };
+    })()`);
+    log("10b-narrow-menu", narrowMenu);
+    assert("窄屏浮层内「⋯」菜单按视口定位且不超出屏幕", narrowMenu?.inViewport === true, JSON.stringify(narrowMenu));
+    await shoot("10b-narrow-menu");
+    // 只关闭菜单（点击外部），保留浮层，供下一段验证点击遮罩收起。
+    await evaluate(`document.body.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }))`);
+    await delay(250);
+    const narrowMenuClosed = await evaluate(`Boolean(document.querySelector('[role="menu"][aria-label="历史对话操作"]'))`);
+    assert("点击外部关闭悬浮菜单", narrowMenuClosed === false);
 
     await evaluate(`document.querySelector('button[aria-label="关闭历史对话浮层"]').click()`);
     await delay(500);
@@ -531,7 +835,7 @@ async function main() {
     assert("点击遮罩可收起浮层", narrowClosed.sidebar === false && narrowClosed.backdrop === false, JSON.stringify(narrowClosed));
 
     // =====================================================================
-    // 6) 真实问答（--live 时启用；失败只记录不阻断 UI 体检）
+    // 8) 真实问答（--live 时启用；失败只记录不阻断 UI 体检）
     // =====================================================================
     if (!OPTIONS.live) {
       console.log("\n  · 跳过真实问答场景（加 --live 启用，需要后端与模型可用）");
@@ -562,11 +866,20 @@ async function main() {
           const turns = list ? list.querySelectorAll(':scope > li').length : 0;
           const citations = document.querySelectorAll('div[aria-label="回答引用"]').length;
           const panel = Boolean(document.querySelector('aside[aria-label="史引副驾驶"]'));
-          return { busy, turns, citations, panel };
+          const t = document.querySelector('[data-transcript-scroll]');
+          return {
+            busy,
+            turns,
+            citations,
+            panel,
+            transcriptAtBottom: t ? t.scrollTop + t.clientHeight >= t.scrollHeight - 4 : null,
+            docScrollHeight: document.documentElement.scrollHeight,
+            innerHeight,
+          };
         })()`);
         if (!state.busy && state.turns >= 2) {
           answered = true;
-          log("09-real-answer", state);
+          log("11-real-answer", state);
           break;
         }
         if (i % 10 === 0) console.log("  … waiting answer", i, JSON.stringify(state));
@@ -581,6 +894,7 @@ async function main() {
           const c = chat?.getBoundingClientRect();
           const p = panel?.getBoundingClientRect();
           const expand = document.querySelector('div[aria-label="回答引用"] button[aria-expanded]');
+          const t = document.querySelector('[data-transcript-scroll]');
           return {
             turns: bubbles.length,
             longestBubble: longest,
@@ -590,13 +904,23 @@ async function main() {
             copilot: Boolean(panel),
             sidebar: Boolean(document.querySelector('aside[aria-label="历史对话"]')),
             split: c && p ? { chat: Math.round(c.width), panel: Math.round(p.width), ratio: +(c.width / (c.width + p.width)).toFixed(3) } : null,
+            transcript: t ? { scrollTop: t.scrollTop, scrollHeight: t.scrollHeight, clientHeight: t.clientHeight, atBottom: t.scrollTop + t.clientHeight >= t.scrollHeight - 4 } : null,
+            panelHeight: p ? Math.round(p.height) : null,
+            panelBottom: p ? Math.round(p.bottom) : null,
+            docScrollHeight: document.documentElement.scrollHeight,
+            innerHeight,
           };
         })()`);
-        log("09-real-answer-metrics", realMetrics);
+        log("11-real-answer-metrics", realMetrics);
+        assert("新问题 / 新回答落地后聊天列表自动滚动到底部", realMetrics.transcript?.atBottom === true, JSON.stringify(realMetrics.transcript));
+        assert("真实回答 / 史引分屏后整页仍无文档滚动", realMetrics.docScrollHeight <= realMetrics.innerHeight + 1, JSON.stringify({ doc: realMetrics.docScrollHeight, viewport: realMetrics.innerHeight }));
+        if (realMetrics.panelHeight) {
+          assert("史引面板高度锁定在视口内", realMetrics.panelBottom <= realMetrics.innerHeight + 1, JSON.stringify({ panelHeight: realMetrics.panelHeight, panelBottom: realMetrics.panelBottom, innerHeight: realMetrics.innerHeight }));
+        }
         if (realMetrics.copilot) {
           assert("真实回答触发史引时侧边栏自动让位", realMetrics.sidebar === false, JSON.stringify(realMetrics));
           assert("真实回答分屏比例约 40% / 60%", Math.abs(realMetrics.split.ratio - 0.4) < 0.05, JSON.stringify(realMetrics.split));
-          await shoot("09-real-answer-guide-split");
+          await shoot("11-real-answer-guide-split");
           await evaluate(`(() => {
             const btn = [...document.querySelectorAll('aside[aria-label="史引副驾驶"] button')].find((b) => b.textContent.includes('返回聊天'));
             btn?.click();
@@ -612,7 +936,7 @@ async function main() {
           })()`);
           console.log("  · 关闭史引后：", JSON.stringify(afterClose));
         }
-        await shoot("09-real-answer");
+        await shoot("11-real-answer");
         console.log("  ✓ 真实问答截图完成（长回答在加宽后的工作区内铺开）");
       } else {
         console.warn("  ! 真实问答超时（未阻断验收，仅记录）");
@@ -636,7 +960,7 @@ async function main() {
     } else {
       console.log("\n✓ 浏览器控制台无产品级 error");
     }
-    console.log(`\n全部 UI 体检场景通过（${results.length} 组断言），截图目录：${OUT}`);
+    console.log(`\n全部 UI 体检场景通过（${results.length} 个检查点 / ${assertionCount} 条断言），截图目录：${OUT}`);
   } finally {
     try {
       ws?.close();

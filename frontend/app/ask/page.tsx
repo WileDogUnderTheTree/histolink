@@ -39,8 +39,6 @@ const SUGGESTIONS = [
 ];
 
 /** 页面级滚动位置（V1.0.5.1）：从时间轴 / 图谱「返回聊天」时恢复阅读位置。 */
-const SCROLL_STORAGE_KEY = "histolink.ask.scroll.v1";
-
 /**
  * 引用折叠阈值（V1.0.5.2 UI 呼吸感补丁）。
  *
@@ -227,7 +225,8 @@ function AskWorkspace() {
   const { transcript, isRestored, isAsking, pendingActions, ask, cancelAction, openDrawer, guide,
     models, defaultModelId, selectedModelId, selectModel, modelsReady, modelsFromFallback,
     conversationGroups, activeConversationId, conversationsLoading, isCurrentConversationEmpty,
-    newConversation, loadConversation } = useAgentSession();
+    newConversation, loadConversation, renameConversation, deleteConversation,
+    pinConversation } = useAgentSession();
   const visibleTranscript = isPreviewMode ? PREVIEW_TRANSCRIPT : transcript;
   // 预览模式不消费真实会话的联动目标，避免静态布局被上一次真实回答的副驾驶面板干扰。
   const activeGuide = isPreviewMode ? null : guide;
@@ -237,13 +236,29 @@ function AskWorkspace() {
   /** 已经自动展开过的联动 turn：用户主动关掉面板后，同一轮不会被强行重新弹开。 */
   const presentedGuideTurn = useRef<string | null>(null);
   const guideInitialized = useRef(false);
-  /** 页面级滚动（V1.0.5.1）：恢复会话滚动位置，之后只有新增轮次才自动滚动到底部。 */
-  const scrollRestored = useRef(false);
-  const lastTurnCount = useRef(0);
-  const scrollSaveFrame = useRef<number | null>(null);
-  const lastUserScrollTop = useRef(0);
-  const navigationIntent = useRef(false);
-  const intentResetTimer = useRef<number | null>(null);
+  /**
+   * 中间聊天区滚动（V1.0.5.2-layout 补丁）。
+   *
+   * 滚动容器从文档改为 `.transcript` 自身（App Shell 内独立滚动）：
+   * - 首屏 / 切换历史会话 / 发送新问题 / AI 返回新回答 → 自动回到底部（显示最新消息）；
+   * - 首次挂载用 auto（瞬时）避免长会话出现从顶部滑到底的动画。
+   */
+  const transcriptScrollReady = useRef(false);
+  const lastTranscriptTurnCount = useRef(0);
+  const lastConversationId = useRef<string | null>(null);
+  /**
+   * 用户是否仍贴在聊天列表底部（V1.0.5.2-layout 补丁）。
+   *
+   * 回答落地 / 史引分屏导致列宽变化会触发文本重排，内容高度在滚动动画之后还会增长；
+   * 用 ResizeObserver 在「用户没有主动往上翻」时把这些增量补齐，保证真正停在最新消息。
+   */
+  const stickToBottom = useRef(true);
+  const scrollTranscriptToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    const node = transcriptRef.current;
+    if (!node) return;
+    stickToBottom.current = true;
+    node.scrollTo({ top: node.scrollHeight, behavior });
+  }, []);
   /**
    * 侧边栏折叠偏好（V1.0.5.2 UI 呼吸感补丁）。
    *
@@ -298,88 +313,66 @@ function AskWorkspace() {
   useEffect(() => setDraft(question), [question]);
 
   /**
-   * 记录页面滚动位置（V1.0.5.1）。
+   * 100vh App Shell 锁（V1.0.5.2-layout 补丁）。
    *
-   * 说明：Next App Router 在路由跳转时可能把滚动位置复位为 0，因此不能简单地
-   * 「监听 scroll 后写入」；这里以「用户最后一次真实滚动」为准，并在点击 / 键盘 / popstate
-   * 等跳转意图发生时先同步落盘，卸载时再写一次最后位置，避免把程序性复位误存为离开位置。
+   * `/ask` 最外层容器本身就是 100dvh + overflow: hidden；这里再给 html / body 加锁，
+   * 确保任何子元素（史引 iframe / 超长回答 / 浮层）都不会把文档撑出第二根滚动条。
+   * 离开页面时移除，不影响 `/`、`/timeline`、`/graph` 的正常文档滚动。
+   */
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.add("askAppShell");
+    document.body.classList.add("askAppShell");
+    return () => {
+      root.classList.remove("askAppShell");
+      document.body.classList.remove("askAppShell");
+    };
+  }, []);
+
+  // 中间聊天区自动滚动（V1.0.5.2-layout 补丁）：
+  // 首屏 / 切换会话 / 新问题 / AI 新回答 → 滚动到聊天列表底部（最新消息）。
+  useEffect(() => {
+    if (isPreviewMode || !isRestored) return;
+    const conversationChanged =
+      lastConversationId.current !== activeConversationId;
+    const hasNewTurn =
+      visibleTranscript.length > lastTranscriptTurnCount.current;
+    const firstPaint = !transcriptScrollReady.current;
+    if (!firstPaint && !conversationChanged && !hasNewTurn && !isAsking) return;
+
+    transcriptScrollReady.current = true;
+    lastConversationId.current = activeConversationId;
+    lastTranscriptTurnCount.current = visibleTranscript.length;
+    const behavior: ScrollBehavior = firstPaint || conversationChanged ? "auto" : "smooth";
+    // 等一帧让 React 把新消息 / 新会话内容写进 DOM 后再量 scrollHeight。
+    const frame = window.requestAnimationFrame(() =>
+      scrollTranscriptToBottom(behavior),
+    );
+    return () => window.cancelAnimationFrame(frame);
+  }, [
+    isPreviewMode,
+    isRestored,
+    visibleTranscript.length,
+    isAsking,
+    activeConversationId,
+    scrollTranscriptToBottom,
+  ]);
+
+  /**
+   * 补滚（V1.0.5.2-layout 补丁）：聊天容器尺寸变化时（史引 40/60 分屏、窗口缩放、
+   * 引用折叠等）如果用户仍贴在底部，就重新对齐到最新消息，避免「回答明明更新了却停在中间」。
    */
   useEffect(() => {
     if (isPreviewMode) return;
-    const write = (top: number) => {
-      try {
-        window.sessionStorage.setItem(SCROLL_STORAGE_KEY, String(Math.max(0, Math.round(top))));
-      } catch {
-        // 存储不可用时只是丢失滚动位置，不影响对话本身。
-      }
-    };
-    const scheduleWrite = () => {
-      if (scrollSaveFrame.current !== null) return;
-      scrollSaveFrame.current = window.requestAnimationFrame(() => {
-        scrollSaveFrame.current = null;
-        if (navigationIntent.current) return;
-        lastUserScrollTop.current = window.scrollY;
-        write(window.scrollY);
-      });
-    };
-    const markIntent = () => {
-      if (navigationIntent.current) return;
-      lastUserScrollTop.current = window.scrollY;
-      write(window.scrollY);
-      navigationIntent.current = true;
-      if (intentResetTimer.current !== null) window.clearTimeout(intentResetTimer.current);
-      intentResetTimer.current = window.setTimeout(() => {
-        navigationIntent.current = false;
-        intentResetTimer.current = null;
-      }, 900);
-    };
-    window.addEventListener("scroll", scheduleWrite, { passive: true });
-    window.addEventListener("click", markIntent, true);
-    window.addEventListener("keydown", markIntent, true);
-    window.addEventListener("popstate", markIntent, true);
-    return () => {
-      window.removeEventListener("scroll", scheduleWrite);
-      window.removeEventListener("click", markIntent, true);
-      window.removeEventListener("keydown", markIntent, true);
-      window.removeEventListener("popstate", markIntent, true);
-      if (scrollSaveFrame.current !== null) {
-        window.cancelAnimationFrame(scrollSaveFrame.current);
-        scrollSaveFrame.current = null;
-      }
-      if (intentResetTimer.current !== null) window.clearTimeout(intentResetTimer.current);
-      write(lastUserScrollTop.current);
-    };
+    const node = transcriptRef.current;
+    if (!node || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      if (!stickToBottom.current) return;
+      node.scrollTop = node.scrollHeight;
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
   }, [isPreviewMode]);
-
-  // 会话恢复完成后：先还原滚动位置；之后的每一次新增轮次才平滑滚动到最新回答。
-  useEffect(() => {
-    if (isPreviewMode || !isRestored) return;
-    if (!scrollRestored.current) {
-      scrollRestored.current = true;
-      lastTurnCount.current = visibleTranscript.length;
-      let saved = 0;
-      try {
-        saved = Number(window.sessionStorage.getItem(SCROLL_STORAGE_KEY) ?? "0");
-      } catch {
-        saved = 0;
-      }
-      if (Number.isFinite(saved) && saved > 0) {
-        // 延后一拍：Next 的导航滚动复位可能发生在 mount 之后，等路由完成再恢复。
-        window.setTimeout(() => window.scrollTo({ top: saved, behavior: "auto" }), 120);
-        window.setTimeout(() => {
-          if (window.scrollY < 1) window.scrollTo({ top: saved, behavior: "auto" });
-        }, 420);
-      }
-      return;
-    }
-    if (visibleTranscript.length > lastTurnCount.current || isAsking) {
-      lastTurnCount.current = visibleTranscript.length;
-      // 页面级滚动容器（单一滚动条）：滚动到对话工作区底部，露出最新回答与输入区。
-      window.requestAnimationFrame(() =>
-        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" }),
-      );
-    }
-  }, [isPreviewMode, isRestored, visibleTranscript.length, isAsking]);
 
   /**
    * P2：回答落地后自动展开史引副驾驶。
@@ -429,7 +422,7 @@ function AskWorkspace() {
   const canToggleSidebar = sidebarReady && !isPreviewMode && !copilotPreview;
 
   return (
-    <div className={`${styles.appFrame} ${sidebarSpaceFreed ? styles.sidebarCollapsed : ""}`}>
+    <div className={`${styles.appFrame} ${sidebarSpaceFreed ? styles.sidebarCollapsed : ""}`} data-app-shell="100vh">
       {sidebarVisible ? (
         <ConversationSidebar
           groups={conversationGroups}
@@ -437,6 +430,9 @@ function AskWorkspace() {
           isCurrentConversationEmpty={isCurrentConversationEmpty}
           onNewConversation={() => void newConversation()}
           onSelectConversation={(id) => void loadConversation(id)}
+          onRenameConversation={(id, title) => void renameConversation(id, title)}
+          onDeleteConversation={(id) => void deleteConversation(id)}
+          onPinConversation={(id, pinned) => void pinConversation(id, pinned)}
           loading={conversationsLoading}
           disabled={isAsking}
           onCollapse={() => setSidebarCollapsed(true)}
@@ -509,7 +505,19 @@ function AskWorkspace() {
               </div>
             </div>
             <div className={styles.conversationBody}>
-              <ol className={styles.transcript} aria-live="polite" aria-busy={isAsking} ref={transcriptRef}>
+              <ol
+                className={styles.transcript}
+                aria-live="polite"
+                aria-busy={isAsking}
+                ref={transcriptRef}
+                data-transcript-scroll="true"
+                onScroll={() => {
+                  const node = transcriptRef.current;
+                  if (!node) return;
+                  stickToBottom.current =
+                    node.scrollTop + node.clientHeight >= node.scrollHeight - 24;
+                }}
+              >
                 {isPreviewMode ? <li className={styles.previewNotice}>静态数据仅用于验证多轮对话布局（时间线 / 长文本 / 每轮状态与引用），未连接发送与多轮业务逻辑。</li> : null}
                 {visibleTranscript.map((turn) => <Message key={turn.id} turn={turn} guide={Boolean(turn.answer?.uiActions.length) || turn.id === activeGuide?.turnId} onOpenReference={(href) => openCopilot(href, "史料关联事件")} />)}
                 {isAsking ? <li className={`${styles.agentTurn} ${styles.loadingTurn}`} aria-label="史脉正在检索史料"><div className={styles.messageMeta}><Persona guide={false} /><span>检索中</span></div><div className={styles.loading}><span>正在从史脉数据中查找答案</span><i /><i /><i /></div></li> : null}

@@ -18,7 +18,8 @@
 
 ### 新增
 
-- **UI 体检工具 `scripts/health-check-ui.mjs`**：基于 CDP + 无头 Edge 的 `/ask` 页面自动化体检。默认 6 个场景 / 12 组断言（侧边栏折叠与持久化、聊天气泡 85% + 行高 1.8、预览模式无侧边栏宽版、引用 >3 折叠、史引 40/60 分屏、窄屏浮层），`--live` 追加真实问答场景；产物为 `*.png` 截图 + `results.json`，可复现、失败即非 0 退出。
+- **UI 体检工具 `scripts/health-check-ui.mjs`**：基于 CDP + 无头 Edge 的 `/ask` 页面自动化体检。默认 22 个检查点 / 58 条断言（100vh App Shell、三栏独立滚动、点击历史不重排、悬浮「⋯」菜单与置顶 / 重命名 / 删除、新建对话、侧边栏折叠与持久化、聊天气泡 85% + 行高 1.8、预览模式无侧边栏宽版、引用 >3 折叠、史引 40/60 分屏、窄屏浮层），`--live` 追加真实问答场景（24 个检查点 / 63 条断言，含新问答自动滚动到底部）；产物为 `*.png` 截图 + `results.json`，可复现、失败即非 0 退出。
+- **V1.0.5.3 专项回归测试 `backend/tests/test_regression_v1053.py`**：27 条离线用例覆盖四条主线——模型降级（429/502/504/超时自动切换备用、`model_used` / `trace.model_used`、主备皆失败错误信封）、会话隔离（history 不跨请求泄漏、并发不串扰、session_id 无共享状态）、边界兜底（空 / 超长 / 缺字段 / 非法 JSON / RAG 不可用 / 工具异常均不 500）、契约一致性（9 工具三源一致、动作类型、版本号、错误码与 envelope 字段不漂移）。
 - **体检计划文档** `docs/V1.0.5.3-全面体检专项.md`：八维度检查项、四阶段执行节奏、V1.0.5.3 出口标准、2026-11-25 基线结果与首批 findings 清单。
 
 ### 修复
@@ -29,8 +30,9 @@
 
 ### 验证
 
-- 基线门禁 `scripts/verify.ps1` **12/12 PASS**（总耗时 16s；后端 pytest **336 passed** / 前端 vitest **146 passed** / evals 30/30 / next build 3.4s）。
-- `node scripts/health-check-ui.mjs --live` **12 组断言全绿**，浏览器控制台 0 条产品级 error。
+- 规模复检：门禁 `scripts/verify.ps1` **12/12 PASS**（总耗时 13.7s；后端 pytest **363 passed**（基线 336 + 专项回归 27） / 前端 vitest **153 passed**（基线 146 + 排序稳定性 7） / evals 30/30 / next build 3.1s）。
+- `node scripts/health-check-ui.mjs --live` **24 个检查点 / 63 条断言全绿**，浏览器控制台 0 条产品级 error；默认模式 22 个检查点 / 58 条断言全绿。
+- V1.0.5.2-layout 同版补丁（100vh App Shell、三栏独立滚动、侧边栏点击不重排、悬浮菜单）已合入并通过两轮 UI 体检，详见 `docs/V1.0.5.2-布局与侧边栏修复补丁.md`。
 - 静态质量基线：ruff（验收范围）8 errors、全 `backend/` 44 errors、`ruff format --check` 44 文件待格式化；pytest 1 条 Starlette deprecation warning —— 均纳入 V1.0.7 清理，详见体检报告 §5。
 
 ---
@@ -92,6 +94,16 @@
 - 前端 vitest **146 passed**（12 个测试文件，新增 `ask-layout.test.ts`）；`tsc --noEmit` / `next build` / `scripts/verify.ps1` 12 步门禁全绿。
 - `node scripts/health-check-ui.mjs --live` 12 组 UI 断言全绿：1600px 默认视图、侧边栏收起 / 持久化 / 展开、气泡 85%、`line-height: 1.8`、模型按钮位于输入框上方左侧、预览无侧边栏宽版、引用默认 3 条 + 展开 6 条、史引 40/60 分屏、窄屏浮层、真实问答自动分屏；浏览器控制台 0 条产品级 error。
 - 验收截图归档 `docs/images/v1.0.5.2-ui-01..06-*.png`。
+
+### 变更（布局与侧边栏修复补丁 · 2026-11-25 同版追加）
+
+> 针对「整页跟随滚动 + 点击历史记录被弹到列表顶部」的体验问题追加的纯前端补丁；不改 API 契约、不改 Agent 能力、不新增依赖。详见 `docs/V1.0.5.2-布局与侧边栏修复补丁.md`。
+
+- **100vh App Shell 三栏布局**：`/ask` 最外层锁死 `100dvh + overflow: hidden`，`html/body` 挂载 `askAppShell` 滚动锁；左侧历史栏 / 中间聊天列表 / 右侧史引面板各自独立滚动（`min-height: 0; overflow-y: auto`），浏览器窗口不再出现整页滚动条。
+- **中间聊天区自动滚动**：首屏、切换历史对话、发送新问题、AI 返回新回答时自动滚动到底部；`ResizeObserver` 在史引 40/60 分屏导致列宽变化后补滚到最新消息。
+- **左侧侧边栏**：新增悬浮「⋯」菜单（置顶 / 重命名 / 删除）、置顶独立分组、行内重命名（锁定标题）、删除后顺序稳定、固定「+ 新建对话」入口（点击后立即创建新会话并出现在最上方、聊天区回欢迎语）。
+- **修复点击重排根因**：历史会话数据层新增 `syncTurns()`（只同步正文、不刷新排序时间），`save()` 仅在新消息落地时刷新 `updatedAt`；`AgentContext` 以 transcript 签名跳过「查看会话」触发的保存——点击一条历史记录只改变高亮，物理位置绝不改变。
+- **验收**：`scripts/verify.ps1` 12/12 PASS（pytest 363 / vitest 153）；`health-check-ui.mjs` 默认 22 检查点 / 58 条断言、`--live` 24 检查点 / 63 条断言全绿；截图归档 `docs/images/v1.0.5.2-layout-01..08-*.png`。
 
 ---
 

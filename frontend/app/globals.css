@@ -29,6 +29,20 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/*
+ * /ask 100vh App Shell（V1.0.5.2-layout 补丁）。
+ *
+ * `/ask` 由页面挂载时给 html / body 加 `askAppShell`，把文档滚动彻底锁死：
+ * 页面最外层 100dvh + overflow: hidden，左中右三栏各自在内部滚动，
+ * 浏览器窗口绝不再出现整页滚动条，也不影响其他页面的正常文档滚动。
+ */
+html.askAppShell,
+body.askAppShell {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 .page {
   min-height: 100vh;
   display: flex;

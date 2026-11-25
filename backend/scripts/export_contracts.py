@@ -8,7 +8,7 @@
 生成物（提交入库，禁止手改）：
 - contracts/api-v1.openapi.json    （OpenAPI 3.1，info.version=1.0）
 - contracts/actions-v1.schema.json （动作信封 + 枚举 + target surface）
-- contracts/tools-v1.schema.json   （8 个只读工具的入参/出参）
+- contracts/tools-v1.schema.json   （9 个只读工具的入参/出参）
 
 `contracts/action-policy.json` 是人工维护文件，不由本脚本生成；
 它的覆盖校验在 `scripts/validate-contract.mjs`（Node 侧）里完成。

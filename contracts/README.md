@@ -12,9 +12,9 @@
 
 | 文件 | 类型 | 生成方式 | 说明 |
 |---|---|---|---|
-| `api-v1.openapi.json` | 生成 | `cd backend; .\.venv\Scripts\python scripts\export_contracts.py` | OpenAPI 3.1，`info.version=1.0`；7 条路径 |
+| `api-v1.openapi.json` | 生成 | `cd backend; .\.venv\Scripts\python scripts\export_contracts.py` | OpenAPI 3.1，`info.version=1.0`；9 条路径 |
 | `actions-v1.schema.json` | 生成 | 同上 | 动作信封 `UIAction` JSON Schema + `x-action-types` / `x-surfaces` / `x-availability` / `x-action-surface` 元数据 |
-| `tools-v1.schema.json` | 生成 | 同上 | 8 个只读工具的入参/出参 JSON Schema |
+| `tools-v1.schema.json` | 生成 | 同上 | 9 个只读工具的入参/出参 JSON Schema |
 | `action-policy.json` | **人工** | 手改 | 动作类型 → surface / 可用性 / 自动策略；`validate-contract.mjs` 校验覆盖 |
 | `samples/*.json` | **人工** | 手改 | 契约样例：请求 / grounded 回答 / 错误 / 澄清 / 动作信封 / ping_llm；`validate-contract.mjs` 逐个校验 |
 | `README.md` | **人工** | 手改 | 本文件：冻结规则、升级规则、字段清单 |
@@ -99,15 +99,18 @@ cd backend
 
 `GET /api/health`、`GET /api/meta`、`GET /api/entities/person/{person_id}`、
 `GET /api/entities/event/{event_id}`、`GET /api/entities/persons?name=&era_id=&limit=`、
-`GET /api/search/events?q=&limit=`、`POST /api/agent/ask`、
+`POST /api/agent/ask`、`GET /api/agent/models`（V1.0.5.2 模型注册表）、
 `GET /api/agent/ping_llm?message=`（TC-10 连通性探测，返回 `PingLLMResponse`；模型未配置 503
 `LLM_NOT_CONFIGURED`，上游错误 502 `LLM_UPSTREAM_ERROR`，超时 504 `LLM_TIMEOUT`）。
+> 注：`GET /api/search/events` 目前仅存在于冻结契约 / 契约桩中，运行实现未挂载
+> （V1.0.5.3 体检 finding F-14，排期 V1.0.6 补齐或从契约移除）。
 所有响应带 `ok`、`request_id`（ask）或 `schema_version` 与 `snapshot`（数据接口）。
 
 ### 4.7 工具契约
 
-8 个只读工具：`resolve_entity`、`search_events`、`get_event`、`get_person`、
-`get_person_events`、`get_relation`、`get_era_graph`、`timeline_span`；
+9 个只读工具：`resolve_entity`、`search_events`、`get_event`、`get_person`、
+`get_person_events`、`get_relation`、`get_era_graph`、`timeline_span`、
+`search_historical_text`（V1.0.5 RAG 混合检索）；
 只读、有界（`limit` 上限）、返回 ID、空结果有明确语义。工具不暴露给浏览器（除 dev 调试）。
 
 V1.0.2 起（产品批复），工具契约的 `output` 升级为 `ToolResult` **统一返回信封**：
@@ -122,6 +125,6 @@ V1.0.2 起（产品批复），工具契约的 `output` 升级为 `ToolResult` *
 
 - `actions-v1.schema.json` 顶层对象直接是 `UIAction` 的 JSON Schema（可逐个校验动作样例），
   枚举与可用性以 `x-*` 扩展字段附带，避免另造一层不能直接校验的包装；
-- `tools-v1.schema.json` 使用 `tools[]` 数组承载 8 个工具，每个工具内嵌 `input` / `output`
+- `tools-v1.schema.json` 使用 `tools[]` 数组承载 9 个工具，每个工具内嵌 `input` / `output`
   JSON Schema，便于逐工具校验；
 - `contracts/samples/` 为 TC-04 新增的契约样例目录（任务卡未列，属于验收所需）。
