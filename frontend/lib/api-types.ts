@@ -172,6 +172,7 @@ export interface components {
             certainty?: ("high" | "medium" | "low") | null;
             /** Claims */
             claims?: components["schemas"]["Claim"][];
+            comparison_analysis?: components["schemas"]["ComparisonAnalysis"] | null;
             /** Markdown */
             markdown: string;
             /** Missing */
@@ -424,6 +425,24 @@ export interface components {
             name: string;
             /** Person Id */
             person_id: string;
+        };
+        /**
+         * ComparisonAnalysis
+         * @description V1.0.5.4 新增可选：模型基于本轮已核验事实生成的对比分析。
+         *
+         *     与 `Answer.markdown`（服务端事实实证）严格分离，只作为「💡 史令对比分析」附加展示：
+         *
+         *     - 仅在对比 / 总结类问题且回答为 grounded 时可能出现；
+         *     - 文本在服务端通过「年份 ∈ 事实块年份」「人物 ∈ 事实块人物白名单」两道校验，
+         *       校验失败或二次模型调用失败时整个字段为 null，事实实证不受影响；
+         *     - 不改变三态语义与既有必填字段（V1.0 内只增可选字段）。
+         */
+        ComparisonAnalysis: {
+            /**
+             * Text
+             * @description 模型基于本轮事实块归纳的对比分析；已通过服务端证据链校验
+             */
+            text: string;
         };
         /** ConversationTurn */
         ConversationTurn: {

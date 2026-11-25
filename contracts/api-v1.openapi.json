@@ -28,6 +28,16 @@
             "title": "Claims",
             "type": "array"
           },
+          "comparison_analysis": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ComparisonAnalysis"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "markdown": {
             "maxLength": 10000,
             "minLength": 1,
@@ -819,6 +829,24 @@
           "disambiguator"
         ],
         "title": "ClarificationCandidate",
+        "type": "object"
+      },
+      "ComparisonAnalysis": {
+        "additionalProperties": false,
+        "description": "V1.0.5.4 新增可选：模型基于本轮已核验事实生成的对比分析。\n\n与 `Answer.markdown`（服务端事实实证）严格分离，只作为「💡 史令对比分析」附加展示：\n\n- 仅在对比 / 总结类问题且回答为 grounded 时可能出现；\n- 文本在服务端通过「年份 ∈ 事实块年份」「人物 ∈ 事实块人物白名单」两道校验，\n  校验失败或二次模型调用失败时整个字段为 null，事实实证不受影响；\n- 不改变三态语义与既有必填字段（V1.0 内只增可选字段）。",
+        "properties": {
+          "text": {
+            "description": "模型基于本轮事实块归纳的对比分析；已通过服务端证据链校验",
+            "maxLength": 1500,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "ComparisonAnalysis",
         "type": "object"
       },
       "ConversationTurn": {

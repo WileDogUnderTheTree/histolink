@@ -161,6 +161,18 @@ button.citation { width: 100%; cursor: pointer; }
 .composerHint { margin: 7px 2px 0; color: #a09488; font-size: 10px; }
 /* V1.0.5 高可用补丁：主模型降级到备用轻量模型时的脚注提示（可选展示，不影响回答内容）。 */
 .modelFallbackHint { margin: 7px 0 0; color: #9b8d80; font-size: 10px; line-height: 1.5; }
+/* V1.0.5.4 二次归纳：「💡 史令对比分析」独立卡片，放在事实实证 / 引用之后（回答最后一层）。
+   分析由模型生成但已经服务端年份 / 人物白名单证据链校验；用暖金描边与淡背景与事实正文分层，
+   非对比 / 总结类问题或校验失败时后端不返回该字段，本卡片不渲染。 */
+.comparisonAnalysis { margin-top: 16px; padding: 13px 15px 11px; border: 1px solid #e6d3b3; border-left: 3px solid #b8860b; border-radius: 11px; background: linear-gradient(180deg, #fffaf0, #fffdf8); }
+.comparisonHeading { display: flex; flex-wrap: wrap; align-items: baseline; gap: 7px; margin-bottom: 8px; }
+.comparisonIcon { font-size: 13px; line-height: 1; }
+.comparisonTitle { margin: 0; color: #7a4b12; font-family: "Songti SC", "STSong", serif; font-size: 14px; font-weight: 700; letter-spacing: .04em; }
+.comparisonTag { margin-left: auto; border: 1px solid #e2cda6; border-radius: 999px; padding: 2px 7px; background: #fff; color: #9a7a45; font-size: 9px; letter-spacing: .08em; }
+.comparisonBody { color: #453a2d; font-size: 14px; line-height: 1.8; }
+.comparisonBody > :first-child { margin-top: 0; }
+.comparisonBody > :last-child { margin-bottom: 0; }
+.comparisonNote { margin: 9px 0 0; padding-top: 7px; border-top: 1px dashed #eadcc2; color: #a08a68; font-size: 10px; line-height: 1.5; }
 /* 史引副驾驶（V1.0.5.1；V1.0.5.2-layout 补丁）：桌面端与对话列并排、
    高度 = 工作区高度（App Shell 内 100%），iframe 内部独立滚动；
    不随长对话拉伸，避免出现「整页滚动 + iframe 内滚动」两层滚动条。 */

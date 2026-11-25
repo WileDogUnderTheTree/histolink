@@ -5808,9 +5808,16 @@ function withIngestedParticipants(event: TimelineEventInput): TimelineEvent {
   };
 }
 
+const timelineEventRecordsById = new Map<string, TimelineEventInput>();
+for (const event of TIMELINE_EVENT_RECORDS) {
+  timelineEventRecordsById.set(event.id, event);
+}
+for (const event of INGESTED_EVENT_RECORDS) {
+  if (!timelineEventRecordsById.has(event.id)) {
+    timelineEventRecordsById.set(event.id, event);
+  }
+}
+
 export const TIMELINE_EVENTS: readonly TimelineEvent[] = [
-  ...TIMELINE_EVENT_RECORDS.map(withIngestedParticipants),
-  ...INGESTED_EVENT_RECORDS.map((event) =>
-    withIngestedParticipants(event as TimelineEventInput),
-  ),
-];
+  ...timelineEventRecordsById.values(),
+].map(withIngestedParticipants);

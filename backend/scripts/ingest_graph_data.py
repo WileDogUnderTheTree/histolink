@@ -42,8 +42,8 @@
   与 `scripts/build-persons.mjs` 的 ID 规则保持一致；
 * 所有输出内容确定性排序、不含时间戳，重复运行字节级一致（`--check` 据此判定）；
 * 只写「生成物」：`ingested-graph-data.generated.ts`、`backend/data/ingest/person-id-pins.json`、
-  入库报告，以及既有 Node 脚本自己的生成物（persons.generated.ts / event-sources.ts /
-  snapshot / 锁文件）；**不改写任何手写数据文件**（timeline-events.ts 等只需一次性接线）。
+  `person-graph.ts` 的魏晋事件白名单、入库报告，以及既有 Node 脚本自己的生成物
+  （persons.generated.ts / event-sources.ts / snapshot / 锁文件）；不改写其他手写数据文件。
 """
 
 from __future__ import annotations
@@ -65,6 +65,7 @@ INGEST_DIR = BACKEND_DIR / "data" / "ingest"
 CONFIG_PATH = INGEST_DIR / "config.json"
 PINS_PATH = INGEST_DIR / "person-id-pins.json"
 GENERATED_TS = DATA_DIR / "ingested-graph-data.generated.ts"
+PERSON_GRAPH_TS = DATA_DIR / "person-graph.ts"
 PERSON_LOCK_PATH = DATA_DIR / "locks" / "person-ids.lock.json"
 HELPER = ROOT / "scripts" / "ingest-data-helper.mjs"
 DEFAULT_REPORT = DOCS_DIR / "图谱数据入库报告.md"
@@ -166,6 +167,7 @@ class ParsedEvent:
     participants: list[str]
     importance: int | None
     source_doc: str
+    source_hint: str = ""
 
 
 @dataclass
@@ -188,13 +190,44 @@ class ParseResult:
 
 YEAR_RE = re.compile(r"前\s*(\d+)")
 YEAR_AD_RE = re.compile(r"(\d{1,4})\s*年?")
+CENTURY_RE = re.compile(
+    r"(前)?\s*(\d+)(?:\s*[-—–~至]\s*(前)?\s*(\d+))?\s*世纪"
+)
+
+
+def _century_midpoint(number: int, before: bool) -> int:
+    """世纪 → 该世纪中点年份（前 N 世纪取负向）。"""
+    if before:
+        return 50 - number * 100
+    return (number - 1) * 100 + 50
 
 
 def parse_year(raw: str) -> int:
-    """把「约前2100 / 前1046后 / 约前1400-前1300 / 827」解析成史书纪年整数。"""
+    """把「约前2100 / 前1046后 / 约前1400-前1300 / 827 / 8世纪」解析成史书纪年整数。
+
+    「世纪」写法（如「前4-前3世纪」「13-14世纪」）没有确切年份，按所列世纪区间的
+    中点近似（如「前4-前3世纪」→ -300、「13-14世纪」→ 1300），保证确定性排序。
+    """
     text = raw.strip().replace("公元", "").replace(" ", "")
     if not text:
         raise IngestError(f"无法解析年份：{raw!r}")
+    century = CENTURY_RE.search(text)
+    if century:
+        first = int(century.group(2))
+        first_before = century.group(1) is not None
+        if century.group(4):
+            second = int(century.group(4))
+            second_before = century.group(3) is not None
+        else:
+            second = first
+            second_before = first_before
+        low, high = sorted(
+            [
+                _century_midpoint(first, first_before),
+                _century_midpoint(second, second_before),
+            ]
+        )
+        return (low + high) // 2
     match = YEAR_RE.search(text)
     if match:
         return -int(match.group(1))
@@ -253,8 +286,10 @@ def iter_tables(lines: list[str]) -> Iterable[tuple[str, list[str], list[list[st
 
 
 def column_index(header: list[str], *keys: str) -> int | None:
+    normalize = lambda value: re.sub(r"\s+", "", value)
     for position, cell in enumerate(header):
-        if any(key in cell for key in keys):
+        normalized_cell = normalize(cell)
+        if any(normalize(key) in normalized_cell for key in keys):
             return position
     return None
 
@@ -265,13 +300,81 @@ def cell_at(row: list[str], position: int | None, default: str = "") -> str:
     return row[position]
 
 
+SPECIAL_DOC_NAMES = {
+    "史脉_V1.0.5.4_图谱扩充_三国特化.md",
+    "史脉_V1.0.5.4_图谱扩充_唐特化.md",
+    "史脉_V1.0.5.4_图谱扩充_宋特化.md",
+    "史脉_V1.0.5.4_图谱扩充_明特化.md",
+}
+
+
+def parse_special_year(raw: str) -> int:
+    """把特化文档中的朝代时期写法转换为可排序年份。"""
+    named_periods = {
+        "北宋初": 960,
+        "北宋": 1043,
+        "洪武间": 1383,
+    }
+    normalized = re.sub(r"\s+", "", raw)
+    if normalized in named_periods:
+        return named_periods[normalized]
+    return parse_year(raw)
+
+
+def year_range_contains(raw: str, year: int) -> bool:
+    years = [int(value) for value in re.findall(r"\d{1,4}", raw)]
+    if not years:
+        return False
+    sign = -1 if "前" in raw else 1
+    low, high = sorted(sign * value for value in years)
+    return low <= year <= high
+
+
+def special_doc_dynasty(path: Path, year: int, title: str) -> str:
+    """按特化文档的叙事视角将事件归入已有时间轴朝代。"""
+    if path.name == "史脉_V1.0.5.4_图谱扩充_三国特化.md":
+        return "东汉" if year <= 219 else "三国"
+    if path.name == "史脉_V1.0.5.4_图谱扩充_唐特化.md":
+        return "隋" if year < 618 else "唐"
+    if path.name == "史脉_V1.0.5.4_图谱扩充_宋特化.md":
+        if "金崛起" in title:
+            return "金"
+        if title == "采石之战":
+            return "金"
+        return "北宋" if year < 1127 else "南宋"
+    if path.name == "史脉_V1.0.5.4_图谱扩充_明特化.md":
+        if title == "鄱阳湖之战":
+            return "明"
+        return "元" if year < 1368 else "明"
+    raise IngestError(f"{path.name}：没有配置特化文档的朝代归属规则。")
+
+
+def special_doc_relation_dynasty(path: Path) -> str:
+    if path.name == "史脉_V1.0.5.4_图谱扩充_三国特化.md":
+        return "三国"
+    if path.name == "史脉_V1.0.5.4_图谱扩充_唐特化.md":
+        return "唐"
+    if path.name == "史脉_V1.0.5.4_图谱扩充_宋特化.md":
+        return "北宋"
+    if path.name == "史脉_V1.0.5.4_图谱扩充_明特化.md":
+        return "明"
+    raise IngestError(f"{path.name}：没有配置特化文档关系的朝代归属规则。")
+
+
+def person_name_forms(name: str) -> list[str]:
+    forms = [name.strip()]
+    forms.extend(re.findall(r"[（(]([^）)]+)[）)]", name))
+    return list(dict.fromkeys(form for form in forms if len(form.strip()) >= 2))
+
+
 def parse_document(path: Path) -> ParseResult:
     """解析一份「图谱扩充」文档中的表一（事件）/ 表二（人物关系）。"""
     text = path.read_text(encoding="utf-8")
     lines = text.splitlines()
     result = ParseResult(path=path)
+    is_special_doc = path.name in SPECIAL_DOC_NAMES
     for heading, header, rows in iter_tables(lines):
-        joined = "".join(header)
+        joined = re.sub(r"\s+", "", "".join(header))
         if "事件名称" in joined and "参与人物" in joined:
             dynasty_col = column_index(header, "朝代")
             year_col = column_index(header, "年份")
@@ -279,6 +382,7 @@ def parse_document(path: Path) -> ParseResult:
             desc_col = column_index(header, "事件简述", "简述")
             people_col = column_index(header, "参与人物")
             importance_col = column_index(header, "重要度")
+            source_col = column_index(header, "参考史料", "史料出处", "史料来源", "史源")
             if title_col is None or people_col is None:
                 raise IngestError(f"{path.name}：表一缺少「事件名称 / 参与人物」列（章节：{heading}）")
             for row in rows:
@@ -302,6 +406,33 @@ def parse_document(path: Path) -> ParseResult:
                         participants=participants,
                         importance=importance,
                         source_doc=path.name,
+                        source_hint=cell_at(row, source_col).strip(),
+                    )
+                )
+        elif is_special_doc and "时间" in joined and "事件" in joined and "正史内容" in joined:
+            year_col = column_index(header, "时间")
+            title_col = column_index(header, "事件")
+            desc_col = column_index(header, "正史内容")
+            source_col = column_index(header, "史料来源")
+            for row in rows:
+                title = cell_at(row, title_col).strip()
+                if not title:
+                    continue
+                if path.name == "史脉_V1.0.5.4_图谱扩充_三国特化.md":
+                    title = {"司马懿平辽东": "司马懿平定辽东"}.get(title, title)
+                year_raw = cell_at(row, year_col).strip()
+                year = parse_special_year(year_raw)
+                result.events.append(
+                    ParsedEvent(
+                        dynasty=special_doc_dynasty(path, year, title),
+                        year=year,
+                        year_raw=year_raw,
+                        title=title,
+                        description=cell_at(row, desc_col).strip(),
+                        participants=[],
+                        importance=None,
+                        source_doc=path.name,
+                        source_hint=cell_at(row, source_col).strip(),
                     )
                 )
         elif "人物A" in joined and "人物B" in joined:
@@ -310,7 +441,7 @@ def parse_document(path: Path) -> ParseResult:
             b_col = column_index(header, "人物B")
             label_col = column_index(header, "关系")
             event_col = column_index(header, "共同参与事件")
-            desc_col = column_index(header, "关系简述", "简述")
+            desc_col = column_index(header, "关系简述", "简述", "正史内容")
             if a_col is None or b_col is None:
                 raise IngestError(f"{path.name}：表二缺少「人物A / 人物B」列（章节：{heading}）")
             for row in rows:
@@ -318,19 +449,64 @@ def parse_document(path: Path) -> ParseResult:
                 person_b = cell_at(row, b_col).strip()
                 if not person_a or not person_b or person_a in {"人物A"}:
                     continue
-                if person_a == person_b:
-                    continue
-                result.relations.append(
-                    ParsedRelation(
-                        dynasty=cell_at(row, dynasty_col).strip() or "未分期",
-                        person_a=person_a,
-                        person_b=person_b,
-                        label=cell_at(row, label_col).strip() or "关系未详",
-                        anchor_titles=split_cell_list(cell_at(row, event_col)),
-                        description=cell_at(row, desc_col).strip(),
-                        source_doc=path.name,
+                if is_special_doc:
+                    people_a = split_cell_list(person_a)
+                    people_b = split_cell_list(person_b)
+                    placeholders = {"-", "—", "－", "无"}
+                    if any(name in placeholders for name in people_a + people_b):
+                        continue
+                    if len(people_a) > 1 and len(people_b) > 1:
+                        if len(people_a) != len(people_b):
+                            raise IngestError(
+                                f"{path.name}：关系「{person_a} / {person_b}」两侧人数不同，"
+                                "无法确定配对方式。"
+                            )
+                        pairs = zip(people_a, people_b)
+                    else:
+                        pairs = (
+                            (name_a, name_b)
+                            for name_a in people_a
+                            for name_b in people_b
+                        )
+                else:
+                    if person_a == person_b:
+                        continue
+                    pairs = [(person_a, person_b)]
+                for name_a, name_b in pairs:
+                    if name_a == name_b:
+                        continue
+                    relation_dynasty = cell_at(row, dynasty_col).strip()
+                    if not relation_dynasty:
+                        if is_special_doc:
+                            relation_dynasty = special_doc_relation_dynasty(path)
+                        else:
+                            relation_dynasty = "未分期"
+                    result.relations.append(
+                        ParsedRelation(
+                            dynasty=relation_dynasty,
+                            person_a=name_a,
+                            person_b=name_b,
+                            label=cell_at(row, label_col).strip() or "关系未详",
+                            anchor_titles=split_cell_list(cell_at(row, event_col)),
+                            description=cell_at(row, desc_col).strip(),
+                            source_doc=path.name,
+                        )
                     )
-                )
+    if is_special_doc and result.events:
+        people: list[tuple[str, list[str]]] = []
+        seen_people: set[str] = set()
+        for relation in result.relations:
+            for name in (relation.person_a, relation.person_b):
+                if name not in seen_people:
+                    seen_people.add(name)
+                    people.append((name, person_name_forms(name)))
+        for event in result.events:
+            narrative = f"{event.title} {event.description}"
+            event.participants = [
+                name
+                for name, forms in people
+                if any(form in narrative for form in forms)
+            ]
     return result
 
 
@@ -399,7 +575,18 @@ class GraphIngestor:
         self.era_scope_map: dict[str, str] = {}
         self.aliases: dict[str, str] = {}
         self.person_pins: dict[str, str] = {}
+        self.dynasty_aliases: dict[str, str] = {
+            str(alias): str(target)
+            for alias, target in (self.config.get("canonical_dynasty_names") or {}).items()
+        }
+        self.excluded_person_names: set[str] = {
+            str(name) for name in (self.config.get("person_name_exclusions") or [])
+        }
+        self.excluded_canonical_person_names: set[str] = {
+            self.canonical_person(name) for name in self.excluded_person_names
+        }
         self.generated_content = ""
+        self.person_graph_content = ""
         self.pins_content = ""
 
     # -- 输入 ---------------------------------------------------------------
@@ -434,6 +621,13 @@ class GraphIngestor:
                 if path in paths:
                     continue
                 paths.append(path)
+        if not self.args.pattern:
+            for filename in self.config.get("doc_include_files") or []:
+                path = DOCS_DIR / filename
+                if not path.is_file():
+                    raise IngestError(f"配置的补充文档不存在：{path}")
+                if path not in paths:
+                    paths.append(path)
         if not paths:
             raise IngestError(
                 f"未在 docs/ 下找到匹配的图谱扩充文档：{patterns}（检查 --pattern 或文件名）"
@@ -443,11 +637,21 @@ class GraphIngestor:
     def parse_documents(self) -> None:
         paths = self.resolve_doc_paths()
         log(f"[2/7] 扫描并解析 {len(paths)} 份文档…")
+        valid_dynasties = set(self.base_index["dynasty_start_years"])
         for path in paths:
             parsed = parse_document(path)
             if not parsed.events and not parsed.relations:
                 warn(self.warnings, f"{path.name} 未解析到表一/表二，已跳过。")
                 continue
+            for event in parsed.events:
+                event.dynasty = self.canonical_dynasty(event.dynasty)
+                if event.dynasty not in valid_dynasties:
+                    raise IngestError(
+                        f"{path.name}：朝代「{event.dynasty}」不在 DYNASTY_START_YEARS 中；"
+                        "请在 config.json 的 canonical_dynasty_names 配置归一映射。"
+                    )
+            for relation in parsed.relations:
+                relation.dynasty = self.canonical_dynasty(relation.dynasty)
             self.parsed.append(parsed)
             log(
                 f"   {path.name}：事件 {len(parsed.events)} 条 / 人物关系 {len(parsed.relations)} 条"
@@ -455,6 +659,11 @@ class GraphIngestor:
         if not self.parsed:
             raise IngestError("所有候选文档都没有解析到有效表格数据。")
         self._dedupe_parsed()
+
+    def canonical_dynasty(self, name: str) -> str:
+        """朝代归一（魏晋两批文档用「曹魏 / 北魏 / 十六国」等细分名，统一到时间轴 23 朝）。"""
+        cleaned = name.strip()
+        return self.dynasty_aliases.get(cleaned, cleaned)
 
     def _dedupe_parsed(self) -> None:
         """跨文档合并同题事件 / 同一人物对关系（只做保守合并，冲突留待人工裁决）。"""
@@ -470,7 +679,10 @@ class GraphIngestor:
                 if existing is None:
                     events_by_title[key] = event
                     continue
-                if (existing.dynasty, existing.year) != (event.dynasty, event.year):
+                same_chronology = existing.year == event.year or year_range_contains(
+                    event.year_raw, existing.year
+                )
+                if existing.dynasty != event.dynasty or not same_chronology:
                     warn(
                         self.warnings,
                         f"同题事件「{event.title}」在多份文档中朝代/年份不一致，保留首个（{existing.dynasty} {existing.year_raw}）。",
@@ -480,11 +692,60 @@ class GraphIngestor:
                         existing.participants.append(name)
                 if event.importance and (existing.importance or 0) < event.importance:
                     existing.importance = event.importance
+                if event.source_doc in SPECIAL_DOC_NAMES:
+                    if (
+                        event.description
+                        and (
+                            not existing.description
+                            or (
+                                event.description not in existing.description
+                                and existing.description not in event.description
+                            )
+                        )
+                    ):
+                        existing.description = (
+                            f"{existing.description.rstrip('。')}；补充：{event.description}"
+                            if existing.description
+                            else event.description
+                        )
+                    source_hints = list(
+                        dict.fromkeys(
+                            hint.strip()
+                            for hint in (existing.source_hint, event.source_hint)
+                            if hint.strip()
+                        )
+                    )
+                    existing.source_hint = "；".join(source_hints)
             for relation in parsed.relations:
                 self.original_person_names.update([relation.person_a, relation.person_b])
                 key = "__".join(sorted([relation.person_a, relation.person_b]))
                 if key not in relations_by_pair:
                     relations_by_pair[key] = relation
+                elif relation.source_doc in SPECIAL_DOC_NAMES:
+                    existing = relations_by_pair[key]
+                    supplement = (
+                        f"{relation.label}：{relation.description}"
+                        if relation.description and relation.label != existing.label
+                        else relation.description
+                    )
+                    if (
+                        supplement
+                        and (
+                            not existing.description
+                            or (
+                                supplement not in existing.description
+                                and existing.description not in supplement
+                            )
+                        )
+                    ):
+                        existing.description = (
+                            f"{existing.description.rstrip('。')}；补充：{supplement}"
+                            if existing.description
+                            else supplement
+                        )
+                    for anchor in relation.anchor_titles:
+                        if anchor not in existing.anchor_titles:
+                            existing.anchor_titles.append(anchor)
         self.doc_events = list(events_by_title.values())
         self.doc_relations = list(relations_by_pair.values())
         log(
@@ -500,6 +761,20 @@ class GraphIngestor:
         cleaned = name.strip()
         return self.config.get("canonical_person_names", {}).get(cleaned, cleaned)
 
+    def _normalized_event_title_map(self) -> dict[str, str]:
+        mapping: dict[str, str] = {}
+        for title, event_id in (self.config.get("event_title_map") or {}).items():
+            key = self._normalize_title(str(title))
+            target = str(event_id)
+            existing = mapping.get(key)
+            if existing is not None and existing != target:
+                raise IngestError(
+                    f"event_title_map 中标题「{title}」归一化后重复映射到不同事件："
+                    f"{existing} / {target}。"
+                )
+            mapping[key] = target
+        return mapping
+
     def batch_romanize(self, texts: Iterable[str]) -> None:
         pending = sorted({text for text in texts if text and text not in self.roman})
         if not pending:
@@ -510,10 +785,7 @@ class GraphIngestor:
     # -- 事件合并 -----------------------------------------------------------
     def merge_events(self) -> None:
         log("[3/7] 合并事件（去重 / 参与人增补 / 重要度就高 / 新事件 ID）…")
-        title_map: dict[str, str] = {
-            self._normalize_title(title): event_id
-            for title, event_id in (self.config.get("event_title_map") or {}).items()
-        }
+        title_map = self._normalized_event_title_map()
         base_title_index: dict[str, list[str]] = {}
         for event_id, event in self.base_events.items():
             base_title_index.setdefault(self._normalize_title(event["title"]), []).append(event_id)
@@ -531,6 +803,19 @@ class GraphIngestor:
             event.participants = [
                 name for name in event.participants if not (name in seen or seen.add(name))
             ]
+            excluded = [
+                name for name in event.participants if name in self.excluded_canonical_person_names
+            ]
+            if excluded:
+                warn(
+                    self.warnings,
+                    f"事件「{event.title}」的参与者 {excluded} 属于非人物实体（config.person_name_exclusions），已剔除。",
+                )
+                event.participants = [
+                    name
+                    for name in event.participants
+                    if name not in self.excluded_canonical_person_names
+                ]
             prepared.append(event)
 
         # 来源表里只列了主角、但史料明确共同参与的人物（如《史记》载祭公谋父谏穆王征犬戎），
@@ -540,6 +825,12 @@ class GraphIngestor:
                 event.title, []
             ):
                 canonical_extra = self.canonical_person(extra_name)
+                if canonical_extra in self.excluded_canonical_person_names:
+                    warn(
+                        self.warnings,
+                        f"事件「{event.title}」的补充参与者「{canonical_extra}」属于非人物实体，已剔除。",
+                    )
+                    continue
                 if canonical_extra and canonical_extra not in event.participants:
                     event.participants.append(canonical_extra)
         new_titles = []
@@ -694,12 +985,20 @@ class GraphIngestor:
 
     def _with_source_note(self, event: ParsedEvent) -> str:
         sources = (self.config.get("event_source_map") or {}).get(event.title)
+        if not sources and event.source_hint:
+            # 标准扩充文档自带「参考史料 / 史料出处」列时直接采用（批量扩充的主要来源）。
+            sources = event.source_hint.strip().rstrip("；;，, ")
         if not sources:
             sources = {
                 "夏": "《史记·夏本纪》",
                 "商": "《史记·殷本纪》",
                 "西周": "《史记·周本纪》",
             }.get(event.dynasty)
+        if sources:
+            # 史源括注必须是「（据《…》）」单层括号：去掉来源单元格里的嵌套说明，
+            # 如「《录鬼簿》《青楼集》（《元史》无文苑传）」。
+            sources = re.sub(r"（[^（）]*）", "", sources)
+            sources = re.sub(r"\([^()]*\)", "", sources).strip().rstrip("；;，, ")
         if not sources:
             warn(
                 self.warnings,
@@ -724,6 +1023,18 @@ class GraphIngestor:
             relation.person_a = self.canonical_person(relation.person_a)
             relation.person_b = self.canonical_person(relation.person_b)
             if not relation.person_a or not relation.person_b:
+                continue
+            excluded = [
+                name
+                for name in (relation.person_a, relation.person_b)
+                if name in self.excluded_canonical_person_names
+            ]
+            if excluded:
+                warn(
+                    self.warnings,
+                    f"关系「{relation.person_a} × {relation.person_b}」（{relation.source_doc}）"
+                    f"含非人物实体 {excluded}，已跳过。",
+                )
                 continue
             relation_records.append(relation)
         relation_records.sort(
@@ -811,19 +1122,44 @@ class GraphIngestor:
                     "eventSummaries": {primary: summary},
                 }
             )
+        self._prune_dangling_relations()
         log(
             f"   新增关系 {len(self.new_relations)} 对 / 合并进既有关系 "
             f"{len(self.relation_patches)} 对补丁"
         )
 
+    def _prune_dangling_relations(self) -> None:
+        """只保留最终事件池中仍有共同参与事件的新增关系与关系补丁。"""
+        valid_pairs: set[str] = set()
+        for event in self.final_events.values():
+            participants = sorted(set(event.participants))
+            for source_index, source in enumerate(participants):
+                for target in participants[source_index + 1 :]:
+                    valid_pairs.add("__".join([source, target]))
+
+        before = len(self.new_relations) + len(self.relation_patches)
+        self.new_relations = [
+            relation
+            for relation in self.new_relations
+            if "__".join(sorted([relation["a"], relation["b"]])) in valid_pairs
+        ]
+        self.relation_patches = [
+            patch for patch in self.relation_patches if patch["pairKey"] in valid_pairs
+        ]
+        removed = before - len(self.new_relations) - len(self.relation_patches)
+        if removed:
+            warn(self.warnings, f"已清理 {removed} 条不再有共同事件锚点的悬空关系/补丁。")
+
     def _resolve_event_title(self, title: str) -> str | None:
         key = self._normalize_title(title)
-        mapping = {
-            self._normalize_title(doc_title): event_id
-            for doc_title, event_id in (self.config.get("event_title_map") or {}).items()
-        }
+        mapping = self._normalized_event_title_map()
         if key in mapping:
-            return mapping[key]
+            event_id = mapping[key]
+            if event_id not in self.final_events:
+                raise IngestError(
+                    f"event_title_map 把「{title}」映射到了不存在的事件 {event_id}。"
+                )
+            return event_id
         for event_id, event in self.final_events.items():
             if self._normalize_title(event.title) == key:
                 return event_id
@@ -835,6 +1171,56 @@ class GraphIngestor:
         if len(candidates) == 1:
             return candidates[0]
         return None
+
+    def update_person_graph_whitelists(self) -> None:
+        """把本批涉及的魏晋事件接入细览白名单（简阅白名单由三期自动合并）。"""
+        dynasty_lists = {
+            "西晋": "XIJIN_EVENT_IDS",
+            "东晋十六国": "DONGJIN_EVENT_IDS",
+            "南北朝": "NANBEICHAO_EVENT_IDS",
+        }
+        candidate_ids = {event.event_id for event in self.new_events}
+        for merged in self.merged_events:
+            event_id = self._resolve_event_title(merged.doc_title)
+            if event_id:
+                candidate_ids.add(event_id)
+        for relation in self.new_relations:
+            candidate_ids.update(relation["eventSummaries"])
+        for patch in self.relation_patches:
+            candidate_ids.update(patch["eventSummaries"])
+
+        additions: dict[str, list[str]] = {}
+        for event_id in sorted(candidate_ids):
+            event = self.final_events.get(event_id)
+            if event is None:
+                continue
+            array_name = dynasty_lists.get(event.dynasty)
+            if array_name:
+                additions.setdefault(array_name, []).append(event_id)
+
+        content = PERSON_GRAPH_TS.read_text(encoding="utf-8")
+        for array_name, event_ids in additions.items():
+            pattern = re.compile(
+                rf"(?P<start>\bconst\s+{re.escape(array_name)}\s*:\s*readonly\s+string\[\]\s*=\s*\[)"
+                rf"(?P<body>.*?)(?P<close>\r?\n\]);",
+                re.DOTALL,
+            )
+            match = pattern.search(content)
+            if not match:
+                raise IngestError(
+                    f"person-graph.ts 中找不到预期的事件白名单 {array_name}。"
+                )
+            body = match.group("body")
+            existing_ids = set(re.findall(r"""["']([^"']+)["']""", body))
+            missing_ids = [event_id for event_id in event_ids if event_id not in existing_ids]
+            if not missing_ids:
+                continue
+            updated_body = body.rstrip() + "\n" + "\n".join(
+                f'  "{event_id}",' for event_id in missing_ids
+            ) + "\n"
+            content = content[: match.start("body")] + updated_body + content[match.end("body") :]
+            log(f"   {array_name} 追加事件 {missing_ids}")
+        self.person_graph_content = content
 
     # -- 图谱分期 / 别名 / 名人堂 -------------------------------------------
     def build_eras(self) -> None:
@@ -1301,6 +1687,16 @@ class GraphIngestor:
                 )
             GENERATED_TS.write_text(self.generated_content, encoding="utf-8")
             log(f"   已写入 {GENERATED_TS.relative_to(ROOT)}")
+        current_person_graph = PERSON_GRAPH_TS.read_text(encoding="utf-8")
+        if current_person_graph != self.person_graph_content:
+            changed = True
+            if self.args.check:
+                raise IngestError(
+                    "生成物 frontend/data/person-graph.ts 的事件白名单已过期；"
+                    "请运行 python backend/scripts/ingest_graph_data.py 重新生成。"
+                )
+            PERSON_GRAPH_TS.write_text(self.person_graph_content, encoding="utf-8")
+            log(f"   已更新 {PERSON_GRAPH_TS.relative_to(ROOT)} 中的人物图事件白名单")
         if PINS_PATH.exists():
             current_pins = PINS_PATH.read_text(encoding="utf-8")
         else:
@@ -1453,6 +1849,7 @@ class GraphIngestor:
         self.merge_events()
         self.merge_relations()
         self.build_eras()
+        self.update_person_graph_whitelists()
         self.build_aliases()
         self.build_person_pins()
         self.generated_content = self.render_generated_ts()

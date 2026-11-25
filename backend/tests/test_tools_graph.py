@@ -26,8 +26,12 @@ def test_get_era_graph_default_crop(
     assert data["era_id"] == "xixia"
     assert "scope_id" not in data
     assert len(data["nodes"]) == 20
-    assert result["meta"]["node_total"] == 29
-    assert result["meta"]["edge_total"] == 46
+    assert result["meta"]["node_total"] == len(
+        tool_context.era_by_id["xixia"]["graph"]["nodes"]
+    )
+    assert result["meta"]["edge_total"] == len(
+        tool_context.era_by_id["xixia"]["graph"]["edges"]
+    )
     assert result["truncated"] is True
     assert result["items"] == data["nodes"]
     assert len(data["edges"]) <= 160
@@ -46,8 +50,8 @@ def test_get_era_graph_full_when_under_limit(
     assert_tool_contract(result, "get_era_graph")
 
     data = result["data"]
-    assert len(data["nodes"]) == 29
-    assert len(data["edges"]) == 46
+    assert len(data["nodes"]) == len(tool_context.era_by_id["xixia"]["graph"]["nodes"])
+    assert len(data["edges"]) == len(tool_context.era_by_id["xixia"]["graph"]["edges"])
     assert data["truncated"] is False
     assert result["truncated"] is False
     assert result["citations"]
@@ -113,7 +117,9 @@ def test_get_era_graph_scope_mode(
     assert data["scope_id"] == "songliaojinxia"
     assert "era_id" not in data
     assert len(data["nodes"]) == 10
-    assert result["meta"]["node_total"] == 205
+    assert result["meta"]["node_total"] == len(
+        tool_context.scope_by_id["songliaojinxia"]["graph"]["nodes"]
+    )
     assert result["truncated"] is True
 
 

@@ -232,8 +232,85 @@ _PERSON_CUES = (
     "其人",
     "经历",
 )
-_COMPARISON_CUES = ("对比", "区别", "异同", "有什么不同", "比较", "异同点")
+#: 对比类线索（显式 + 隐式），**同时**用于问题类型判定与二次归纳触发（V1.0.5.4 修复一）。
+#:
+#: 需求要求覆盖的问法：
+#: - 显式：对比 / 区别 / 异同 / 比较 / 异同点 / 差异 / 差别 / 相同点 / 不同点；
+#: - 隐式：A 和 B 一样吗？A 和 B 有什么不同？A 和 B 谁的影响更大？
+#: 之前的白名单只有 `对比/区别/异同/有什么不同/比较/异同点`，导致
+#: 「刘邦...和秦始皇...一样吗」这类隐式对比完全漏判、不触发二次归纳。
+_COMPARISON_CUES = (
+    # 显式对比词
+    "对比",
+    "比较",
+    "相比",
+    "相较",
+    "区别",
+    "差别",
+    "差异",
+    "异同",
+    "异同点",
+    "相同点",
+    "不同点",
+    "共同点",
+    "不同之处",
+    "有何不同",
+    "有什么不同",
+    "有哪些不同",
+    "不一样",
+    "不同在哪",
+    "差别在哪",
+    "差异在哪",
+    "有何区别",
+    "有什么区别",
+    "有何差异",
+    "有什么差异",
+    "有什么差别",
+)
+#: 隐式对比句式（正则）：`A 和 B 一样吗` / `A 和 B 谁的影响更大` / `不同在哪` 等。
+#: 只做确定性匹配，不引入模型调用；与双源覆盖校验共用同一判定。
+_COMPARISON_PATTERNS = (
+    # 「A 和 B 一样吗 / 相同吗 / 相似吗」这类「是否相同」问法。
+    re.compile(r"(?:一样|相同|相似|类似)\s*(?:吗|么|嘛)"),
+    # 「A 和 B 谁 / 哪个 … 更（大 / 强 / 重要 / 深远 …）」这类「谁更」问法。
+    re.compile(
+        r"(?:谁|哪个|哪一个|哪一位|哪位|哪种|哪方)"
+        r"[^。！？?]{0,24}?更(?:大|多|强|厉害|重要|高|好|优|突出|明显|深远)"
+    ),
+    # 「不同 / 差异 / 区别 在哪（里）」的倒装问法。
+    re.compile(r"(?:不同|差异|区别|差别)(?:在哪|在哪里|是什么|何在)"),
+    # 「有什么区别 / 有什么不一样」等「有」字分离写法。
+    re.compile(r"有(?:什么|何|哪些)[^。！？?]{0,8}?(?:不同|差异|区别|差别|不一样)"),
+)
+#: V1.0.5.4 二次归纳（对比分析）的额外触发线索：总结 / 归纳类也算对比归纳问题。
+_COMPARISON_SUMMARY_CUES = (*_COMPARISON_CUES, "总结", "归纳")
 _EVENT_CUES = ("哪一年", "发生在", "经过", "经过与影响", "事件", "战役", "之变", "之乱", "变法")
+
+
+def _matches_comparison_cues(text: str) -> bool:
+    """文本是否命中显式对比词或隐式对比句式（确定性匹配）。"""
+
+    if any(cue in text for cue in _COMPARISON_CUES):
+        return True
+    return any(pattern.search(text) for pattern in _COMPARISON_PATTERNS)
+
+
+def detect_comparison_intent(question: str) -> bool:
+    """判定问题是否属于「对比 / 区别 / 异同 / 总结」类（V1.0.5.4 二次归纳触发条件）。
+
+    纯函数、确定性匹配（显式关键词 + 隐式句式），**不设硬编码白名单**：
+    只要命中 `_COMPARISON_CUES` / `_COMPARISON_PATTERNS` / 总结归纳线索之一即返回 True。
+
+    只是二次归纳的**触发开关**：不改变三态语义、不影响双源覆盖校验，
+    调用方在 grounded 之前 / 收尾兜底时都可用它决定是否必须尝试二次归纳。
+    """
+
+    text = (question or "").strip()
+    if not text:
+        return False
+    if any(cue in text for cue in _COMPARISON_SUMMARY_CUES):
+        return True
+    return any(pattern.search(text) for pattern in _COMPARISON_PATTERNS)
 
 
 def detect_question_focus(
@@ -246,7 +323,7 @@ def detect_question_focus(
     """
 
     text = (question or "").strip()
-    if any(cue in text for cue in _COMPARISON_CUES):
+    if _matches_comparison_cues(text):
         return "comparison"
     if any(cue in text for cue in _RELATION_CUES):
         return "relation"
@@ -304,6 +381,8 @@ class ValidationOutcome:
     observed_citation_count: int
     #: V1.0.5.2：``{"timeline": bool, "graph": bool}``，由最终证据类型计算，回填 trace.sources。
     source_coverage: dict[str, bool] = field(default_factory=dict)
+    #: V1.0.5.4：最终通过校验的 evidence 实体（二次归纳构建事实块时复用，避免重复核验）。
+    evidence_entities: list[ObservedEntity] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -828,6 +907,7 @@ class EvidenceValidator:
             citations=citations,
             downgraded=False,
             source_coverage=source_coverage(evidence_entities),
+            evidence_entities=evidence_entities,
         )
 
     def _outcome(
@@ -839,6 +919,7 @@ class EvidenceValidator:
         downgraded: bool,
         reason: str | None = None,
         source_coverage: dict[str, bool] | None = None,
+        evidence_entities: list[ObservedEntity] | None = None,
     ) -> ValidationOutcome:
         return ValidationOutcome(
             answer=final,
@@ -850,6 +931,7 @@ class EvidenceValidator:
             source_coverage=source_coverage
             if source_coverage is not None
             else {SOURCE_TIMELINE: False, SOURCE_GRAPH: False},
+            evidence_entities=list(evidence_entities or []),
         )
 
     def _resolve_evidence(
@@ -1019,6 +1101,50 @@ class EvidenceValidator:
         return claims, citations, markdown
 
     # ------------------------------------------------------------------
+    # V1.0.5.4 对比兜底：模型 insufficient / 被降级时的服务端 grounded 重合成
+    # ------------------------------------------------------------------
+    def compose_rescue_grounded(
+        self,
+        observed: ObservedEvidence,
+        evidence_entities: Iterable[ObservedEntity],
+        question: str = "",
+    ) -> tuple[list[Claim], list[Citation], str, QuestionFocus] | None:
+        """用本轮真实图谱事实重新合成服务端 grounded 正文（V1.0.5.4 修复二）。
+
+        背景：对比类问题只要图谱返回了 A / B 的实体数据，就不允许因为「模型没选好
+        evidence / 没拿到 RAG 史料」而直接判定 insufficient。此时由服务端从本轮
+        **真实工具返回**里挑出可用实体，复用 `_compose_grounded` 的双源分节规则重新
+        生成正文与 claims / citations；模型随后只需基于事实块做二次归纳。
+
+        与正常 grounded 路径同口径：只使用 `fact_usable`、非 list 形态、且被 citation
+        绑定的实体，不放过任何未核验内容。无法合成正文时返回 None（调用方保持原三态）。
+        """
+
+        usable = [
+            entity
+            for entity in _unique_observed(evidence_entities)
+            if entity.fact_usable and entity.exposure != "list" and entity.citation_ids
+        ]
+        if not usable:
+            return None
+        focus = detect_question_focus(question, usable)
+        composed = self._compose_grounded(observed, usable, focus)
+        if composed is None:
+            return None
+        claims, citations, markdown = composed
+        if not markdown or not claims or not citations:
+            return None
+        return claims, citations, markdown, focus
+
+    @staticmethod
+    def grounded_certainty(
+        evidence_entities: Iterable[ObservedEntity], observed: ObservedEvidence
+    ) -> Certainty:
+        """服务端写死 grounded 的 certainty（对比兜底路径复用同一规则）。"""
+
+        return _grounded_certainty(list(evidence_entities), observed)
+
+    # ------------------------------------------------------------------
     # 降级 / 过滤
     # ------------------------------------------------------------------
     def _downgrade(
@@ -1166,6 +1292,20 @@ def _action_targets_observed_entities(
             if entity is None or not entity.fact_usable:
                 return False
     return True
+
+
+def _unique_observed(entities: Iterable[ObservedEntity]) -> list[ObservedEntity]:
+    """按 ``(kind, entity_id)`` 去重并保持顺序（对比兜底重合成证据时使用）。"""
+
+    seen: set[tuple[str, str]] = set()
+    ordered: list[ObservedEntity] = []
+    for entity in entities:
+        key = (entity.kind, entity.entity_id)
+        if key in seen:
+            continue
+        seen.add(key)
+        ordered.append(entity)
+    return ordered
 
 
 def _split_evidence_by_source(
@@ -1642,6 +1782,7 @@ __all__ = [
     "QuestionFocus",
     "ValidationOutcome",
     "check_dual_source_coverage",
+    "detect_comparison_intent",
     "detect_question_focus",
     "source_coverage",
 ]

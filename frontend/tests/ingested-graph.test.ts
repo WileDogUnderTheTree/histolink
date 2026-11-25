@@ -42,6 +42,14 @@ const eventById = (eventId: string) => {
 const relationPairKeys = new Set(PERSON_RELATIONS.map((record) => pairKey(record.a, record.b)));
 
 describe("图谱分期：夏 / 商 / 西周", () => {
+  it("按稳定事件 ID 将生成事件去重后合并进时间轴", () => {
+    const timelineEventIds = TIMELINE_EVENTS.map((event) => event.id);
+    expect(new Set(timelineEventIds).size).toBe(timelineEventIds.length);
+    for (const { id } of INGESTED_EVENT_RECORDS) {
+      expect(TIMELINE_EVENTS.filter((event) => event.id === id)).toHaveLength(1);
+    }
+  });
+
   it("新增三个细览分期，并按史序排在最前（/graph Tab 自动跟随）", () => {
     expect(PERSON_GRAPH_ERAS.slice(0, 3).map((era) => era.id)).toEqual([
       "xia",

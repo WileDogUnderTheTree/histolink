@@ -57,6 +57,8 @@ function makeAnswer(overrides: Partial<AgentAnswerView> = {}): AgentAnswerView {
     modelUsed: null,
     modelRequested: null,
     sources: { timeline: true, graph: false },
+    // V1.0.5.4：对比分析块默认无（该测试只关心史引联动）。
+    comparisonAnalysis: null,
     ...overrides,
   } as AgentAnswerView;
 }

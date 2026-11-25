@@ -86,6 +86,7 @@ function previewAnswer(mode: AgentAnswerView["mode"], citations: Citation[]): Ag
     modelUsed: null,
     modelRequested: null,
     sources: null,
+    comparisonAnalysis: null,
   };
 }
 
@@ -202,6 +203,31 @@ function CopilotPanel({ href, target, onClose }: { href: string; target: string;
   );
 }
 
+/**
+ * 「💡 史令对比分析」卡片（V1.0.5.4）。
+ *
+ * 与正文分离的独立区块：正文（`answer.markdown`）是服务端写死的事实实证，
+ * 本卡片展示模型基于本轮事实块做的二次归纳（服务端已通过年份 / 人物白名单校验）。
+ * 非对比 / 总结类问题或校验失败时后端不返回该字段，这里整块不渲染。
+ */
+function ComparisonAnalysisBlock({ text }: { text: string }) {
+  return (
+    <section className={styles.comparisonAnalysis} aria-label="史令对比分析">
+      <div className={styles.comparisonHeading}>
+        <span className={styles.comparisonIcon} aria-hidden="true">💡</span>
+        <h3 className={styles.comparisonTitle}>史令对比分析</h3>
+        <span className={styles.comparisonTag}>基于上方事实归纳</span>
+      </div>
+      <div className={styles.comparisonBody}>
+        <MarkdownMessage content={text} />
+      </div>
+      <p className={styles.comparisonNote}>
+        以上对比由模型仅根据本轮已核验史料归纳，事实与引用以上方「史料实证」为准。
+      </p>
+    </section>
+  );
+}
+
 function Message({ turn, guide, onOpenReference }: { turn: AgentTurn; guide: boolean; onOpenReference: (href: string) => void }) {
   const answerStatus = turn.answer ? ANSWER_STATUS_LABEL[turn.answer.mode] : null;
   return (
@@ -213,6 +239,7 @@ function Message({ turn, guide, onOpenReference }: { turn: AgentTurn; guide: boo
         <span>{turn.answer.citations.length > 0 ? `${turn.answer.citations.length} 条可核验来源` : "证据待补充"}</span>
       </div> : null}
       {turn.role === "assistant" && turn.answer ? <Citations citations={turn.answer.citations} onOpenReference={onOpenReference} /> : null}
+      {turn.role === "assistant" && turn.answer?.comparisonAnalysis ? <ComparisonAnalysisBlock text={turn.answer.comparisonAnalysis.text} /> : null}
       {turn.role === "assistant" && turn.answer && shouldShowModelFallbackHint(turn.answer.modelUsed, turn.answer.modelRequested) ? <p className={styles.modelFallbackHint}>{MODEL_FALLBACK_HINT}</p> : null}
     </li>
   );

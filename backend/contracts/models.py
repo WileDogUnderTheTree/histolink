@@ -162,6 +162,24 @@ class AnswerMode(str, Enum):
     REFUSAL = "refusal"
 
 
+class ComparisonAnalysis(StrictModel):
+    """V1.0.5.4 新增可选：模型基于本轮已核验事实生成的对比分析。
+
+    与 `Answer.markdown`（服务端事实实证）严格分离，只作为「💡 史令对比分析」附加展示：
+
+    - 仅在对比 / 总结类问题且回答为 grounded 时可能出现；
+    - 文本在服务端通过「年份 ∈ 事实块年份」「人物 ∈ 事实块人物白名单」两道校验，
+      校验失败或二次模型调用失败时整个字段为 null，事实实证不受影响；
+    - 不改变三态语义与既有必填字段（V1.0 内只增可选字段）。
+    """
+
+    text: str = Field(
+        min_length=1,
+        max_length=1500,
+        description="模型基于本轮事实块归纳的对比分析；已通过服务端证据链校验",
+    )
+
+
 class Answer(StrictModel):
     markdown: str = Field(min_length=1, max_length=10000)
     mode: AnswerMode
@@ -173,9 +191,13 @@ class Answer(StrictModel):
     reason_code: Literal["OUT_OF_SCOPE", "UNSAFE_REQUEST", "NO_RELIABLE_BASIS"] | None = None
     #: insufficient 专用：相关但不是答案的条目（前端须明确标注）。
     related_event_ids: list[str] = Field(default_factory=list, max_length=5)
+    #: V1.0.5.4 新增可选：对比 / 总结类 grounded 回答的「二次归纳」分析块（向后兼容）。
+    comparison_analysis: ComparisonAnalysis | None = None
 
     @model_validator(mode="after")
     def validate_mode_fields(self) -> Answer:
+        if self.mode != AnswerMode.GROUNDED and self.comparison_analysis is not None:
+            raise ValueError("只有 grounded 回答可以携带 comparison_analysis")
         if self.mode == AnswerMode.GROUNDED:
             if not self.claims:
                 raise ValueError("grounded 回答必须至少包含 1 条 claim")

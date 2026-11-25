@@ -83,8 +83,8 @@ def test_search_events_respects_limit_and_marks_truncated(
     assert_tool_contract(result, "search_events")
 
     assert result["ok"] is True
-    assert result["data"]["total"] == 7
     assert len(result["data"]["events"]) == 2
+    assert result["data"]["total"] > len(result["data"]["events"])
     assert result["truncated"] is True
 
 
@@ -205,18 +205,17 @@ def test_get_person_events_sorted_with_co_occurrence(
     assert_tool_contract(result, "get_person_events")
 
     assert result["ok"] is True
-    assert result["data"]["total"] == 10
+    assert result["data"]["total"] == len(tool_context.events_by_person[LI_SHIMIN])
     assert len(result["data"]["events"]) == 3
     assert result["truncated"] is True
     years = [event["year"] for event in result["data"]["events"]]
     assert years == sorted(years)
 
     co_occurring = result["data"]["co_occurring_person_ids"]
-    assert len(co_occurring) == 17
     assert LI_SHIMIN not in co_occurring
     assert WU_ZETIAN in co_occurring
     assert len(set(co_occurring)) == len(co_occurring)
-    assert result["meta"]["co_occurring_total"] == 17
+    assert result["meta"]["co_occurring_total"] >= len(co_occurring)
     assert result["citations"]
 
 
@@ -237,8 +236,8 @@ def test_timeline_span_negative_years(
     assert_tool_contract(result, "timeline_span")
 
     assert result["ok"] is True
-    assert result["data"]["total"] == 23
     assert len(result["data"]["events"]) == 3
+    assert result["data"]["total"] > len(result["data"]["events"])
     assert result["truncated"] is True
     years = [event["year"] for event in result["data"]["events"]]
     assert years == sorted(years)
@@ -254,7 +253,10 @@ def test_timeline_span_negative_years(
 def test_timeline_span_empty_range_is_explicit(
     tool_context: Any, assert_tool_contract: Callable[[dict[str, Any], str], None]
 ) -> None:
-    result = timeline_span(tool_context, start_year=1900, end_year=1901)
+    latest_year = max(event["year"] for event in tool_context.events_by_id.values())
+    result = timeline_span(
+        tool_context, start_year=latest_year + 1, end_year=latest_year + 2
+    )
     assert_tool_contract(result, "timeline_span")
 
     assert result["ok"] is True

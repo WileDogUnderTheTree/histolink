@@ -166,6 +166,24 @@ class ModelAnswer(AgentModel):
         return self
 
 
+class ComparisonAnalysis(AgentModel):
+    """**二次归纳**产出的对比分析（V1.0.5.4，模型生成 + 服务端证据链校验）。
+
+    与 `FinalAnswer.markdown` 严格分离：
+
+    - `markdown` 是服务端根据工具真实返回写死的「史料实证」，**不含任何模型文本**；
+    - `text` 是模型仅根据本轮事实块做的对比归纳，单独作为「💡 史令对比分析」下发；
+    - 只有通过 `agent.comparison.validate_comparison_analysis` 的年份 / 人物白名单校验
+      才会被挂到 `FinalAnswer` 上；校验失败或二次调用失败时该字段为 `None`，
+      正文仍保留完整的事实实证（不降级为 insufficient）。
+    """
+
+    text: str = Field(min_length=1, max_length=1500)
+    #: 事实块里可核验的年份 / 人物数量，仅用于服务端测试与观测，不参与用户可见渲染。
+    verified_year_count: int = Field(default=0, ge=0)
+    verified_person_count: int = Field(default=0, ge=0)
+
+
 class FinalAnswer(AgentModel):
     """**服务端生成**的最终回答（进入 `AgentResult` / `AnswerEnvelope`）。
 
@@ -173,7 +191,9 @@ class FinalAnswer(AgentModel):
 
     - `markdown` 由服务端写死：grounded 用工具原文重写，insufficient / refusal 用固定模板；
     - `certainty` 由服务端按模式写死（grounded high/medium、insufficient low、refusal null）；
-    - `missing` 由服务端生成（insufficient 用枚举映射文案，降级用服务端诊断原因）。
+    - `missing` 由服务端生成（insufficient 用枚举映射文案，降级用服务端诊断原因）；
+    - `comparison_analysis`（V1.0.5.4 可选）只承载二次归纳的对比分析，与事实实证分字段下发，
+      不参与 `markdown` 的生成，也不改变三态语义。
 
     模型无法构造这个结构，也就无法把任意历史陈述带进用户可见回答（P0-3）。
     """
@@ -187,9 +207,13 @@ class FinalAnswer(AgentModel):
     missing: list[str] = Field(default_factory=list, max_length=10)
     reason_code: RefusalReason | None = None
     ui_actions: list[UIAction] = Field(default_factory=list, max_length=3)
+    #: V1.0.5.4：仅 grounded 且对比 / 总结类问题可能携带；服务端已完成证据链校验。
+    comparison_analysis: ComparisonAnalysis | None = None
 
     @model_validator(mode="after")
     def validate_mode_fields(self) -> FinalAnswer:
+        if self.mode != "grounded" and self.comparison_analysis is not None:
+            raise ValueError("只有 grounded 回答可以携带 comparison_analysis")
         if self.mode == "grounded":
             if not self.claims:
                 raise ValueError("grounded 回答必须至少包含 1 条 claim")
@@ -258,6 +282,7 @@ __all__ = [
     "AgentResult",
     "AnswerMode",
     "Certainty",
+    "ComparisonAnalysis",
     "Evidence",
     "EvidenceKind",
     "FinalAnswer",

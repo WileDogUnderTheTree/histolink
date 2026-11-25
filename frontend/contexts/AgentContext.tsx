@@ -48,7 +48,9 @@ import {
   fetchAgentModels,
   isErrorEnvelope,
   namespaceUiActions,
+  normalizeRestoredAnswerView,
   postAsk,
+  resolveRequestModelId,
   type AgentAnswerView,
   type AgentTranscriptTurn,
   type ModelOption,
@@ -167,13 +169,20 @@ function loadStoredTranscript(): AgentTurn[] {
     if (!raw) return [WELCOME_TURN];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) return [WELCOME_TURN];
-    const turns = parsed.filter((turn): turn is AgentTurn => {
-      if (!turn || typeof turn !== "object") return false;
-      const value = turn as Partial<AgentTurn>;
-      return typeof value.id === "string"
-        && (value.role === "user" || value.role === "assistant")
-        && typeof value.content === "string";
-    });
+    const turns = parsed
+      .filter((turn): turn is AgentTurn => {
+        if (!turn || typeof turn !== "object") return false;
+        const value = turn as Partial<AgentTurn>;
+        return typeof value.id === "string"
+          && (value.role === "user" || value.role === "assistant")
+          && typeof value.content === "string";
+      })
+      .map((turn) => ({
+        ...turn,
+        answer: turn.answer ? normalizeRestoredAnswerView(turn.answer) : null,
+        isError: turn.isError === true,
+        skipHistory: turn.skipHistory === true,
+      }));
     return turns.length > 0 ? turns : [WELCOME_TURN];
   } catch {
     return [WELCOME_TURN];
@@ -265,23 +274,33 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
   }, [repository]);
 
   // 模型注册表：首屏读取；失败回退静态表，绝不影响提问。
+  // V1.0.5.4 修复三：再加一层 catch 兜底（异常 promise 不能变成新窗口首屏的控制台报错）。
   useEffect(() => {
     const controller = new AbortController();
-    void fetchAgentModels({ signal: controller.signal }).then((state) => {
-      if (controller.signal.aborted) return;
-      setModels(state.models);
-      setDefaultModelId(state.defaultModelId);
-      setModelsFromFallback(state.fromFallback);
-      setModelsReady(true);
-      const stored = loadStoredModelId();
-      const known = state.models.some((model) => model.id === stored);
-      setSelectedModelId((previous) => {
-        if (previous && state.models.some((model) => model.id === previous)) {
-          return previous;
-        }
-        return known ? stored : state.defaultModelId;
+    void fetchAgentModels({ signal: controller.signal })
+      .then((state) => {
+        if (controller.signal.aborted) return;
+        setModels(state.models);
+        setDefaultModelId(state.defaultModelId);
+        setModelsFromFallback(state.fromFallback);
+        setModelsReady(true);
+        const stored = loadStoredModelId();
+        const known = state.models.some((model) => model.id === stored);
+        setSelectedModelId((previous) => {
+          if (previous && state.models.some((model) => model.id === previous)) {
+            return previous;
+          }
+          return known ? stored : state.defaultModelId;
+        });
+      })
+      .catch(() => {
+        if (controller.signal.aborted) return;
+        setModels(FALLBACK_MODEL_OPTIONS);
+        setDefaultModelId(FALLBACK_MODEL_OPTIONS[0]?.id ?? null);
+        setSelectedModelId((previous) => previous ?? FALLBACK_MODEL_OPTIONS[0]?.id ?? null);
+        setModelsFromFallback(true);
+        setModelsReady(true);
       });
-    });
     return () => controller.abort();
   }, []);
 
@@ -365,6 +384,16 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
 
   const sessionIdRef = useRef<string | null>(null);
   const inFlightRef = useRef(false);
+
+  /**
+   * 会话 id 初始化（V1.0.5.4 修复三）：mount 时即生成，保证冷启动 / 新窗口的
+   * 首次请求一定带合法的 `session_id`（不再依赖「第一次 ask 时才懒生成」）。
+   */
+  useEffect(() => {
+    if (!sessionIdRef.current) {
+      sessionIdRef.current = createSessionId();
+    }
+  }, []);
 
   const actionBusRef = useRef<ActionBus | null>(null);
   if (actionBusRef.current === null) {
@@ -542,7 +571,14 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
       inFlightRef.current = true;
       setIsAsking(true);
       const requestId = createTurnRequestId();
-      const requestedModel = selectedModelId ?? defaultModelId;
+      /**
+       * 请求级 model_id（V1.0.5.4 修复三）：
+       * - 已选模型 / 注册表就绪 → 始终带上当前模型 id（含后端默认主模型）；
+       * - 冷启动时注册表尚未返回 → 不发送静态兜底 id（可能与后端 .env 配置不一致，
+       *   会被后端按「未知模型」拒绝），交给后端默认主模型，避免新窗口首个请求报错。
+       */
+      const requestModelId = resolveRequestModelId(selectedModelId, defaultModelId, modelsReady);
+      const requestedModel = requestModelId;
       appendTurn({ id: `${requestId}-user`, role: "user", content: trimmed });
 
       try {
@@ -553,7 +589,7 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
           search: window.location.search,
           sessionId,
           history: transcriptRef.current,
-          modelId: selectedModelId,
+          modelId: requestModelId,
         });
         const response = await postAsk(request);
 
@@ -609,7 +645,7 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
         setIsAsking(false);
       }
     },
-    [appendTurn, defaultModelId, dispatchAnswerActions, selectedModelId],
+    [appendTurn, defaultModelId, dispatchAnswerActions, modelsReady, selectedModelId],
   );
 
   const confirmAction = useCallback(

@@ -234,6 +234,12 @@ def build_answer_envelope(
         missing=answer.missing,
         reason_code=answer.reason_code,
         related_event_ids=answer.related_event_ids,
+        # V1.0.5.4 新增可选字段：二次归纳的对比分析（仅 grounded 对比 / 总结类问题可能非空）。
+        comparison_analysis=(
+            {"text": answer.comparison_analysis.text}
+            if answer.comparison_analysis is not None
+            else None
+        ),
     )
     trace = Trace(
         tools=[

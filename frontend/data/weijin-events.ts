@@ -9,10 +9,18 @@
  * 年份为史书纪年：公元存正数、公元前存负数，不使用公元 0 年。
  * 事件描述据《晋书》《宋书》《梁书》《魏书》《北齐书》《周书》《隋书》等正史整理，
  * 保留出处括注；人物关系数据见 person-relations.ts。
+ *
+ * V1.0.5.4 图谱扩充起：与时间轴事件一致，参与者统一从 `EVENT_PARTICIPANTS`
+ * （基础索引 + `ingested-graph-data.generated.ts` 增补）读取，避免扩充表的参与者增补
+ * 只落到快照、不落到前端图谱的两套口径。事件与年份本身仍由本文件手写维护。
  */
-import type { TimelineEvent } from "./timeline-events";
+import type { TimelineEvent, TimelineEventInput } from "./timeline-events";
+import { EVENT_PARTICIPANTS } from "./timeline-participants";
 
-export const WEIJIN_EVENTS: readonly TimelineEvent[] = [
+/** 手写参与者作为兜底；生成物中的增补在其后追加（去重保序）。 */
+type WeijinEventInput = TimelineEventInput & { participants?: readonly string[] };
+
+const BASE_WEIJIN_EVENTS: readonly WeijinEventInput[] = [
 
   {
     id: "weijin-zhulin",
@@ -427,3 +435,12 @@ export const WEIJIN_EVENTS: readonly TimelineEvent[] = [
     ],
   },
 ];
+
+/** 图谱补足事件：参与者 = 手写名单 + 生成物增补（与 `TIMELINE_EVENTS` 同一口径）。 */
+export const WEIJIN_EVENTS: readonly TimelineEvent[] = BASE_WEIJIN_EVENTS.map(
+  (event): TimelineEvent => {
+    const generated = EVENT_PARTICIPANTS[event.id] ?? [];
+    const merged = [...new Set([...(event.participants ?? []), ...generated])];
+    return { ...event, participants: merged };
+  },
+);

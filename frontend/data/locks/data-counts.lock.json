@@ -2,18 +2,18 @@
   "schema_version": "data-counts.v1",
   "description": "由 scripts/export-snapshot.mjs 生成的全量冻结计数；validate-data.mjs 与 backend pytest 读取本锁做基线校验。",
   "counts": {
-    "events": 718,
-    "persons": 1066,
-    "relations": 652,
+    "events": 831,
+    "persons": 1164,
+    "relations": 787,
     "eras": 21,
     "scopes": 7,
     "groups": 7,
-    "aliases": 70
+    "aliases": 86
   },
   "sources": {
-    "ref_total": 837,
-    "label_total": 197,
-    "one_book": 597,
-    "two_book": 120
+    "ref_total": 1049,
+    "label_total": 363,
+    "one_book": 647,
+    "two_book": 154
   }
 }

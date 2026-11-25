@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import jsonschema
@@ -15,6 +16,7 @@ from agent_testkit import (
     grounded_answer,
     insufficient_answer,
     refusal_answer,
+    tool_batch_step,
     tool_call_step,
 )
 from fastapi.testclient import TestClient
@@ -336,3 +338,151 @@ def test_ask_injected_legacy_text_is_not_returned(
     assert "忽略" not in payload["answer"]["markdown"]
     assert "火药" not in "".join(claim["text"] for claim in payload["answer"]["claims"])
     assert "赤壁之战" in payload["answer"]["markdown"]
+
+
+def test_ask_comparison_question_returns_optional_comparison_analysis(
+    client: TestClient,
+    openapi_spec: dict[str, Any],
+    override_llm,
+    toolkit,
+) -> None:
+    """V1.0.5.4：对比类 grounded 回答返回可选 comparison_analysis，事实实证正文不变。
+
+    - 新增字段是可选的（非对比问题仍为 null），不改变既有必填字段与三态语义；
+    - 分析文本单独字段下发，不进入 `answer.markdown`（服务端写死的事实实证）。
+    """
+
+    def _event_citation(event_id: str) -> str:
+        result = toolkit.call("get_event", event_id=event_id)
+        return next(
+            citation["id"]
+            for citation in result["citations"]
+            if citation["kind"] == "event"
+        )
+
+    shang_citation = _event_citation("zhanguo-05")
+    wang_citation = _event_citation("beisong-10")
+    analysis = "**背景**：商鞅变法发生于前359年，王安石变法发生于1069年。"
+
+    override_llm(
+        FakeLLM(
+            [
+                tool_batch_step(
+                    [
+                        {"tool": "get_event", "arguments": {"event_id": "zhanguo-05"}},
+                        {"tool": "get_event", "arguments": {"event_id": "beisong-10"}},
+                    ]
+                ),
+                final_step(
+                    {
+                        "mode": "grounded",
+                        "claims": [
+                            {"id": "c1", "citation_ids": [shang_citation]},
+                            {"id": "c2", "citation_ids": [wang_citation]},
+                        ],
+                        "evidence": [
+                            {"entity_type": "event", "entity_id": "zhanguo-05"},
+                            {"entity_type": "event", "entity_id": "beisong-10"},
+                        ],
+                        "related_event_ids": ["zhanguo-05", "beisong-10"],
+                        "missing_reasons": [],
+                        "reason_code": None,
+                        "ui_actions": [],
+                    }
+                ),
+                json.dumps({"analysis": analysis}, ensure_ascii=False),
+            ]
+        )
+    )
+    response = client.post(
+        "/api/agent/ask",
+        json={**ASK_BODY, "question": "商鞅变法与王安石变法的区别"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    _validate_envelope(payload, openapi_spec)
+
+    assert payload["answer"]["mode"] == "grounded"
+    assert payload["answer"]["comparison_analysis"] == {"text": analysis}
+    assert analysis not in payload["answer"]["markdown"]
+    assert "商鞅变法" in payload["answer"]["markdown"]
+    assert "**[时间轴·大事记]**" in payload["answer"]["markdown"]
+
+
+def test_ask_non_comparison_question_has_no_comparison_analysis(
+    client: TestClient,
+    openapi_spec: dict[str, Any],
+    override_llm,
+) -> None:
+    """普通事实问答不触发二次归纳：comparison_analysis 为 null。"""
+
+    override_llm(
+        FakeLLM(
+            [
+                tool_call_step("get_event", {"event_id": "handong-chibi"}),
+                final_step(grounded_answer(citation_ids=[CHIBI_CITATION])),
+            ]
+        )
+    )
+    response = client.post("/api/agent/ask", json=ASK_BODY)
+    assert response.status_code == 200
+    payload = response.json()
+    _validate_envelope(payload, openapi_spec)
+
+    assert payload["answer"]["mode"] == "grounded"
+    assert payload["answer"].get("comparison_analysis") is None
+
+
+def test_ask_comparison_rescue_when_model_reports_insufficient(
+    client: TestClient,
+    openapi_spec: dict[str, Any],
+    override_llm,
+) -> None:
+    """V1.0.5.4 修复二（API 出口）：模型直接 insufficient，但图谱已有 A/B 实体时兜底为 grounded。
+
+    验收问题：「刘邦统一汉朝和秦始皇统一六国的历史意义和影响一样吗」——
+    不允许直接返回「资料不足」，必须由服务端事实 + 二次归纳给出 grounded 对比分析。
+    """
+
+    analysis = (
+        "**背景**：秦始皇统一六国发生于前221年，刘邦建立汉朝发生于前202年。"
+        "**历史意义**：前者建立中央集权王朝，后者恢复战乱后的社会经济。"
+        "**影响**：两者对后世制度与民生的影响并不相同；材料未提供完整评价对比。"
+    )
+    override_llm(
+        FakeLLM(
+            [
+                tool_batch_step(
+                    [
+                        {"tool": "get_person", "arguments": {"person_id": "p-liubang-f5be"}},
+                        {
+                            "tool": "get_person",
+                            "arguments": {"person_id": "p-qinshihuang-f6c7"},
+                        },
+                        {"tool": "get_event", "arguments": {"event_id": "qin-unify"}},
+                        {"tool": "get_event", "arguments": {"event_id": "han-founded"}},
+                    ]
+                ),
+                final_step(insufficient_answer(["INSUFFICIENT_DATA"])),
+                json.dumps({"analysis": analysis}, ensure_ascii=False),
+            ]
+        )
+    )
+    response = client.post(
+        "/api/agent/ask",
+        json={
+            **ASK_BODY,
+            "question": "刘邦统一汉朝和秦始皇统一六国的历史意义和影响一样吗",
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    _validate_envelope(payload, openapi_spec)
+
+    assert payload["ok"] is True
+    assert payload["answer"]["mode"] == "grounded"
+    assert payload["answer"]["comparison_analysis"] == {"text": analysis}
+    assert "刘邦建立汉朝" in payload["answer"]["markdown"]
+    assert "秦始皇统一六国" in payload["answer"]["markdown"]
+    assert payload["citations"]
+    assert payload["trace"]["sources"] == {"timeline": True, "graph": True}

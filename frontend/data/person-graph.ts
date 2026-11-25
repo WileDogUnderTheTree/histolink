@@ -330,6 +330,19 @@ const DONGJIN_EVENT_IDS: readonly string[] = [
   "weijin-wudoumi",
   "weijin-zhiguo",
   "weijin-canhebei",
+  "dongjin-beifangzaifenliehouyanhouqinbingli-09",
+  "dongjin-huanwenbeifafangtouzhizhan-06",
+  "dongjin-huanwenbeifaguanzhongbashangzhishi-05",
+  "dongjin-huanwenfeidilijianwen-07",
+  "dongjin-huanwenmiechenghan-02",
+  "dongjin-huanwensancibeifa-04",
+  "dongjin-liuyubeifa-12",
+  "dongjin-qianqintongyibeifang-08",
+  "dongjin-ranminmiehouzhao-03",
+  "dongjin-shilejianlihouzhao-01",
+  "dongjin-sunenluxunqiyi-11",
+  "dongjin-yaochangyishafujian-10",
+
 ];
 
 /** 南北朝期：南北朝 12 条 + 东晋末「讨灭桓玄」前史 + 人物关系补足事件。 */
@@ -362,6 +375,14 @@ const NANBEICHAO_EVENT_IDS: readonly string[] = [
   "nanbeichao-13",
   "nanbeichao-14",
   "nanbeichao-15",
+  "nanbeichao-chenbaxianxishawangsengbian-06",
+  "nanbeichao-fengtaihougaizhijuntianling-05",
+  "nanbeichao-liuyubeifamienanyan-02",
+  "nanbeichao-taiwudimiefo-03",
+  "nanbeichao-tuobaguiqiandupingcheng-01",
+  "nanbeichao-yungangshikukaizao-04",
+  "nanbeichao-zhouwudimiefo-07",
+
 ];
 
 /** 简阅「魏晋南北朝」：三期白名单去重合并。 */

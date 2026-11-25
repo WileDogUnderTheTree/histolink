@@ -12,7 +12,9 @@
  *  5) 引用 >3 默认折叠、「展开全部 N 条引用」、展开后全部可见；
  *  6) 引用点击打开史引副驾驶：左对话 40% / 右面板 60% 分屏，右面板高度锁定在视口内；
  *  7) 窄屏 820px：侧边栏默认收起、展开为浮层 + 遮罩、点击遮罩可收起、整页仍不滚动；
- *  8) （--live）真实提问：新问题 / 新回答自动滚动到底部 + 长回答 / 引用 / 史引自动分屏。
+ *  8) （--live）真实提问：新问题 / 新回答自动滚动到底部 + 长回答 / 引用 / 史引自动分屏；
+ *  9) （--live）V1.0.5.4 真实对比问答：/ask 回答卡片展示「💡 史令对比分析」独立卡片，
+ *     同一回答仍保留服务端事实实证（时间轴节）与脚注。
  *
  * 前置条件：
  *   - 前端已在 `--base-url`（默认 http://localhost:3000）运行（dev 或 next start 均可）；
@@ -943,6 +945,157 @@ async function main() {
       }
     } catch (error) {
       console.warn("  ! 真实问答场景失败（未阻断验收）:", error.message);
+    }
+
+    // =====================================================================
+    // 12) 真实对比问答（V1.0.5.4）：回答卡片必须展示「💡 史令对比分析」独立块
+    // =====================================================================
+    try {
+      await go("/ask", 2400);
+      const comparisonQuestion = "商鞅变法与王安石变法的区别";
+      const filled = await evaluate(`(() => {
+        const input = document.querySelector('textarea');
+        if (!input) return false;
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+        setter.call(input, ${JSON.stringify(comparisonQuestion)});
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        return true;
+      })()`);
+      if (!filled) console.warn("  ! 未找到问题输入框，跳过对比分析卡片场景");
+      await delay(300);
+      if (filled) {
+        await evaluate(`document.querySelector('form')?.requestSubmit()`);
+        let analysisState = null;
+        for (let i = 0; i < 150; i += 1) {
+          await delay(1000);
+          const state = await evaluate(`(() => {
+            const list = document.querySelector('ol[aria-live="polite"]');
+            const busy = list?.getAttribute('aria-busy') === 'true';
+            const block = document.querySelector('section[aria-label="史令对比分析"]');
+            const turns = list ? list.querySelectorAll(':scope > li').length : 0;
+            return {
+              busy,
+              turns,
+              hasAnalysis: Boolean(block),
+              analysisText: block ? block.textContent.slice(0, 60) : null,
+            };
+          })()`);
+          if (!state.busy && state.hasAnalysis) {
+            analysisState = state;
+            log("12-comparison-analysis", state);
+            break;
+          }
+          // 二次归纳会多一次模型调用；15s 内仍无分析且已不在检索中则判失败。
+          if (!state.busy && i > 15) {
+            analysisState = state;
+            break;
+          }
+          if (i % 10 === 0) console.log("  … waiting comparison analysis", i, JSON.stringify(state));
+        }
+        assert("真实对比问答结束后出现「史令对比分析」卡片", analysisState?.hasAnalysis === true, JSON.stringify(analysisState));
+
+        const comparisonMetrics = await evaluate(`(() => {
+          const block = document.querySelector('section[aria-label="史令对比分析"]');
+          const turn = block?.closest('li');
+          const heading = block?.querySelector('h3');
+          // 注意：分析正文本身由 MarkdownMessage 渲染（含 <p>），脚注要按专用 class 选择。
+          const note = block?.querySelector('p[class*="comparisonNote"]');
+          const facts = turn?.querySelector('div[class*="messageText"]');
+          return {
+            heading: heading ? heading.textContent.trim() : null,
+            note: note ? note.textContent.trim() : null,
+            factsText: facts ? facts.textContent.slice(0, 160) : null,
+            analysisChars: block ? block.textContent.length : 0,
+            blockBelowCitations: Boolean(block && turn && turn.querySelector('div[aria-label="回答引用"]')),
+          };
+        })()`);
+        log("12-comparison-analysis-metrics", comparisonMetrics);
+        assert("分析卡片标题为「史令对比分析」", comparisonMetrics.heading === "史令对比分析", JSON.stringify(comparisonMetrics));
+        assert("同一回答仍保留服务端事实实证（时间轴节）", String(comparisonMetrics.factsText ?? "").includes("时间轴·大事记"), JSON.stringify(comparisonMetrics));
+        assert("分析卡片有「事实实证为准」脚注", String(comparisonMetrics.note ?? "").includes("史料实证"), JSON.stringify(comparisonMetrics));
+        assert("分析卡片位于事实实证 / 引用之后（回答最后一层）", comparisonMetrics.blockBelowCitations === true, JSON.stringify(comparisonMetrics));
+        await shoot("12-comparison-analysis");
+        console.log("  ✓ 对比分析卡片截图完成");
+      }
+    } catch (error) {
+      console.warn("  ! 对比分析卡片场景失败（未阻断验收）:", error.message);
+    }
+
+    // =====================================================================
+    // 13) V1.0.5.4 修复验证：新窗口 / 冷启动对比问答
+    //     （清空 sessionStorage / localStorage 后重新载入 = 新窗口冷启动语义，
+    //       验证无历史上下文时仍能正确触发「史令对比分析」、不报错、不丢状态）
+    // =====================================================================
+    try {
+      await viewport(1600, 1000);
+      await go("/ask", 2600);
+      // 模拟「重新开一个窗口」：清空本标签页会话状态与偏好，再重新载入页面。
+      await evaluate(`(() => {
+        try {
+          sessionStorage.clear();
+          localStorage.clear();
+        } catch {}
+        location.reload();
+        return true;
+      })()`);
+      await delay(3200);
+      await waitFor(
+        'document.readyState === "complete" && Boolean(document.querySelector("textarea"))',
+        20000,
+      );
+      const coldQuestion = "刘邦统一汉朝和秦始皇统一六国的历史意义和影响一样吗";
+      const coldFilled = await evaluate(`(() => {
+        const input = document.querySelector('textarea');
+        if (!input) return false;
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+        setter.call(input, ${JSON.stringify(coldQuestion)});
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        return true;
+      })()`);
+      if (!coldFilled) console.warn("  ! 未找到问题输入框，跳过冷启动对比场景");
+      await delay(300);
+      if (coldFilled) {
+        await evaluate(`document.querySelector('form')?.requestSubmit()`);
+        let coldState = null;
+        for (let i = 0; i < 150; i += 1) {
+          await delay(1000);
+          const state = await evaluate(`(() => {
+            const list = document.querySelector('ol[aria-live="polite"]');
+            const busy = list?.getAttribute('aria-busy') === 'true';
+            const turns = list ? list.querySelectorAll(':scope > li').length : 0;
+            const items = [...(list?.querySelectorAll(':scope > li') ?? [])];
+            const last = items[items.length - 1];
+            const card = document.querySelector('section[aria-label="史令对比分析"]');
+            return {
+              busy,
+              turns,
+              hasError: Boolean(last?.querySelector('[data-error="true"]')),
+              mode: last?.querySelector('[data-mode]')?.getAttribute('data-mode') ?? null,
+              status: last?.querySelector('[class*="statusBadge"]')?.textContent?.trim() ?? null,
+              hasAnalysis: Boolean(card),
+              analysisChars: card ? card.textContent.length : 0,
+              textHead: last ? last.textContent.slice(0, 160) : null,
+              docScrollHeight: document.documentElement.scrollHeight,
+              innerHeight,
+            };
+          })()`);
+          if (!state.busy && state.turns >= 2) {
+            coldState = state;
+            break;
+          }
+          if (i % 15 === 0) console.log("  … waiting cold-start comparison answer", i, JSON.stringify(state));
+        }
+        await delay(1200);
+        log("13-cold-start-comparison", coldState);
+        assert("新窗口 / 冷启动提问正常返回回答（无异常报错）", Boolean(coldState) && coldState.turns >= 2 && coldState.hasError !== true, JSON.stringify(coldState));
+        assert("冷启动对比问答返回 grounded（不直接报资料不足）", coldState?.mode === "grounded" && coldState?.status === "已核验", JSON.stringify(coldState));
+        assert("冷启动对比问答触发「史令对比分析」", coldState?.hasAnalysis === true && coldState.analysisChars > 120, JSON.stringify(coldState));
+        assert("冷启动后整页仍无文档滚动", (coldState?.docScrollHeight ?? 0) <= (coldState?.innerHeight ?? 0) + 1, JSON.stringify({ doc: coldState?.docScrollHeight, viewport: coldState?.innerHeight }));
+        await shoot("13-cold-start-liubang-comparison");
+        console.log("  ✓ 新窗口 / 冷启动对比问答截图完成");
+      }
+    } catch (error) {
+      console.warn("  ! 冷启动对比场景失败（未阻断验收）:", error.message);
     }
     }
 

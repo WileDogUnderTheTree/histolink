@@ -1,14 +1,15 @@
 /**
- * Agent 数据层（V1.0.4；V1.0.5.2 模型注册表 + 请求级模型选择）。
+ * Agent 数据层（V1.0.4；V1.0.5.2 模型注册表 + 请求级模型选择；V1.0.5.4 对比分析块）。
  *
  * 只做「纯函数 + 一次 fetch」，不依赖 React：
  * - 把页面上下文 / transcript / 选中模型组装成 `POST /api/agent/ask` 请求体；
  * - 调用同源代理（`next.config.ts` 已把 `/api/*` 转发到 FastAPI）；
  * - 读取 `GET /api/agent/models` 模型注册表，供输入框左上角的模型切换窗口使用；
- * - 把 `AnswerEnvelope` 归一化成抽屉可直接渲染的 `AgentAnswerView`。
+ * - 把 `AnswerEnvelope` 归一化成抽屉可直接渲染的 `AgentAnswerView`（含可选对比分析块）。
  *
  * 安全约定：前端只展示服务端返回的 `answer.markdown` / 结构化字段；
- * 不拼接、不改写模型文本（服务端已在 V1.0.3 保证 markdown 由固定模板或工具原文生成）。
+ * 不拼接、不改写模型文本（服务端已在 V1.0.3 保证 markdown 由固定模板或工具原文生成；
+ * V1.0.5.4 的 `comparison_analysis` 也已通过服务端年份 / 人物白名单证据链校验）。
  */
 import type { components } from "@/lib/api-types";
 
@@ -20,6 +21,8 @@ export type Answer = components["schemas"]["Answer"];
 export type Citation = components["schemas"]["Citation"];
 export type Entity = components["schemas"]["Entity"];
 export type UIAction = components["schemas"]["UIAction"];
+/** V1.0.5.4：二次归纳对比分析块（仅对比 / 总结类 grounded 回答可能返回）。 */
+export type ComparisonAnalysis = components["schemas"]["ComparisonAnalysis"];
 /** V1.0.5.2：模型注册表条目（`GET /api/agent/models`）。 */
 export type ModelOption = components["schemas"]["ModelOptionResponse"];
 export type ModelsResponse = components["schemas"]["ModelsResponse"];
@@ -57,6 +60,13 @@ export interface AgentAnswerView {
   modelRequested: string | null;
   /** V1.0.5.2：双数据源覆盖观测（null 表示后端未上报）。 */
   sources: AnswerSources | null;
+  /**
+   * V1.0.5.4：服务端二次归纳产出的对比分析块（仅对比 / 总结类 grounded 回答可能非空）。
+   *
+   * 与 `markdown`（服务端写死的事实实证）严格分离：正文永不改写，分析作为独立卡片
+   * 追加展示；后端校验失败 / 二次模型调用失败时该字段为 null（前端不显示分析块）。
+   */
+  comparisonAnalysis: ComparisonAnalysis | null;
 }
 
 /** transcript 里可参与历史的最小结构（与 React 状态解耦）。 */
@@ -390,6 +400,21 @@ export async function postAsk(
   });
 }
 
+/**
+ * 归一化 `answer.comparison_analysis`（V1.0.5.4）。
+ *
+ * 只接受「非空 text 字符串」的合法对象；后端可能返回 null / 缺字段 / 异常结构，
+ * 一律回退 null（不显示分析块，也不影响事实实证渲染）。前端不写任何分析文本。
+ */
+export function normalizeComparisonAnalysis(value: unknown): ComparisonAnalysis | null {
+  if (!isRecord(value)) return null;
+  const text = value.text;
+  if (typeof text !== "string") return null;
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  return { text: trimmed };
+}
+
 /** 把成功信封里的 answer 归一化为抽屉可直接渲染的视图；澄清场景返回 null。 */
 export function answerViewFromEnvelope(
   envelope: AnswerEnvelope,
@@ -415,7 +440,78 @@ export function answerViewFromEnvelope(
       sources && typeof sources.timeline === "boolean" && typeof sources.graph === "boolean"
         ? { timeline: sources.timeline, graph: sources.graph }
         : null,
+    comparisonAnalysis: normalizeComparisonAnalysis(answer.comparison_analysis),
   };
+}
+
+/**
+ * 冷启动 / 刷新恢复时归一化 sessionStorage 里的历史回答（V1.0.5.4 修复三）。
+ *
+ * 旧版本（或异常中断）写入的 `answer` 可能缺少 `citations` / `uiActions` / `sources` /
+ * `comparisonAnalysis` 等字段；直接渲染会访问 undefined 造成「新窗口恢复会话即报错」。
+ * 这里只保留结构合法的回答，并把缺失的可选字段补成安全默认值；
+ * 事实实证正文（markdown）仍原样保留，不做任何改写。
+ */
+export function normalizeRestoredAnswerView(value: unknown): AgentAnswerView | null {
+  if (!isRecord(value)) return null;
+  const markdown = value.markdown;
+  if (typeof markdown !== "string" || !markdown.trim()) return null;
+  const mode: AgentAnswerView["mode"] =
+    value.mode === "grounded" || value.mode === "insufficient" || value.mode === "refusal"
+      ? value.mode
+      : "insufficient";
+  const sources = value.sources;
+  return {
+    mode,
+    markdown,
+    certainty:
+      value.certainty === "high" || value.certainty === "medium" || value.certainty === "low"
+        ? value.certainty
+        : null,
+    missing: Array.isArray(value.missing)
+      ? value.missing.filter((item): item is string => typeof item === "string")
+      : [],
+    reasonCode:
+      value.reasonCode === "OUT_OF_SCOPE" ||
+      value.reasonCode === "UNSAFE_REQUEST" ||
+      value.reasonCode === "NO_RELIABLE_BASIS"
+        ? value.reasonCode
+        : null,
+    citations: Array.isArray(value.citations) ? (value.citations as Citation[]) : [],
+    entities: Array.isArray(value.entities) ? (value.entities as Entity[]) : [],
+    uiActions: Array.isArray(value.uiActions) ? (value.uiActions as UIAction[]) : [],
+    snapshotVersion: typeof value.snapshotVersion === "string" ? value.snapshotVersion : "",
+    requestId: typeof value.requestId === "string" ? value.requestId : "",
+    modelUsed: typeof value.modelUsed === "string" ? value.modelUsed : null,
+    modelRequested: typeof value.modelRequested === "string" ? value.modelRequested : null,
+    sources:
+      isRecord(sources) &&
+      typeof sources.timeline === "boolean" &&
+      typeof sources.graph === "boolean"
+        ? { timeline: sources.timeline, graph: sources.graph }
+        : null,
+    comparisonAnalysis: normalizeComparisonAnalysis(value.comparisonAnalysis),
+  };
+}
+
+/**
+ * 冷启动请求的 model_id 选择策略（V1.0.5.4 修复三）。
+ *
+ * - 已选模型 → 直接使用；
+ * - 注册表已就绪 → 使用后端默认主模型（保证请求始终带上「最新」的 model_id）；
+ * - 注册表尚未返回（新窗口首个请求极早期）→ 返回 null，交给后端默认主模型，
+ *   避免把前端静态兜底 id 硬塞给后端（后端 .env 换成其他模型时会被判为未知模型 400）。
+ */
+export function resolveRequestModelId(
+  selectedModelId: string | null | undefined,
+  defaultModelId: string | null | undefined,
+  modelsReady: boolean,
+): string | null {
+  const selected = selectedModelId?.trim();
+  if (selected) return selected;
+  if (!modelsReady) return null;
+  const fallback = defaultModelId?.trim();
+  return fallback || null;
 }
 
 /** 澄清信封的展示文案（V1.0.3 后端暂不返回，保留兼容）。 */

@@ -20,9 +20,12 @@ import {
   isAnswerEnvelope,
   isErrorEnvelope,
   namespaceUiActions,
+  normalizeComparisonAnalysis,
+  normalizeRestoredAnswerView,
   postAsk,
   RATE_LIMIT_MESSAGE,
   readPageContext,
+  resolveRequestModelId,
   shouldShowModelFallbackHint,
   type AgentResponse,
   type AnswerEnvelope,
@@ -282,6 +285,46 @@ describe("answerViewFromEnvelope", () => {
   });
 });
 
+describe("answerViewFromEnvelope · 对比分析块（V1.0.5.4）", () => {
+  const ANALYSIS = "**背景**：商鞅变法发生于前359年，王安石变法发生于1069年。";
+
+  it("普通回答没有 comparison_analysis → 不显示分析块", () => {
+    const view = answerViewFromEnvelope(asAnswer());
+    expect(view?.comparisonAnalysis).toBeNull();
+  });
+
+  it("对比类回答归一化 comparison_analysis.text，且不改写事实实证 markdown", () => {
+    const envelope = {
+      ...ANSWER_ENVELOPE,
+      answer: {
+        ...ANSWER_ENVELOPE.answer,
+        comparison_analysis: { text: ANALYSIS },
+      },
+    } as unknown as AnswerEnvelope;
+    const view = answerViewFromEnvelope(envelope);
+    expect(view?.comparisonAnalysis?.text).toBe(ANALYSIS);
+    // 分析是独立字段：事实实证正文保持服务端返回的原样，不被分析文本替换 / 拼接。
+    expect(view?.markdown).toBe(ANSWER_ENVELOPE.answer.markdown);
+    expect(view?.markdown).not.toContain("背景");
+  });
+
+  it("异常结构 / 空文本 / null 一律回退 null（不阻塞事实实证渲染）", () => {
+    expect(normalizeComparisonAnalysis(null)).toBeNull();
+    expect(normalizeComparisonAnalysis(undefined)).toBeNull();
+    expect(normalizeComparisonAnalysis({ text: "   " })).toBeNull();
+    expect(normalizeComparisonAnalysis({ text: 123 })).toBeNull();
+    expect(normalizeComparisonAnalysis("纯文本")).toBeNull();
+    expect(normalizeComparisonAnalysis({ text: "  有效分析  " })).toEqual({
+      text: "有效分析",
+    });
+    const broken = {
+      ...ANSWER_ENVELOPE,
+      answer: { ...ANSWER_ENVELOPE.answer, comparison_analysis: { text: "" } },
+    } as unknown as AnswerEnvelope;
+    expect(answerViewFromEnvelope(broken)?.comparisonAnalysis).toBeNull();
+  });
+});
+
 describe("shouldShowModelFallbackHint", () => {
   it("未手动选模型时：非 35B（备用模型）才提示，主模型 / 未上报不提示", () => {
     expect(shouldShowModelFallbackHint("Qwen/Qwen3.5-8B-Instruct")).toBe(true);
@@ -339,5 +382,88 @@ describe("AgentResponse 联合类型", () => {
       { fetchImpl: mockFetch(ERROR_ENVELOPE, 500) },
     );
     expect(response.ok).toBe(false);
+  });
+});
+
+describe("冷启动 / 新窗口状态隔离（V1.0.5.4 修复三）", () => {
+  it("空 history + 无 model_id 可正常组装请求（首次提问 / 无历史上下文）", () => {
+    const request = buildAskRequest({
+      question: "  赤壁之战发生在哪一年？ ",
+      pathname: "/ask",
+      search: "",
+      sessionId: SESSION_ID,
+      history: [],
+      modelId: null,
+    });
+    expect(request.question).toBe("赤壁之战发生在哪一年？");
+    expect(request.history).toEqual([]);
+    expect(request.session_id).toBe(SESSION_ID);
+    expect(request.model_id).toBeUndefined();
+    expect(request.context.route).toBe("/ask");
+  });
+
+  it("注册表就绪后，冷启动请求始终带上最新的 model_id", () => {
+    const request = buildAskRequest({
+      question: "商鞅变法与王安石变法的区别",
+      pathname: "/ask",
+      search: "",
+      sessionId: SESSION_ID,
+      history: [],
+      modelId: resolveRequestModelId(null, "Qwen/Qwen3.5-35B-A3B", true),
+    });
+    expect(request.model_id).toBe("Qwen/Qwen3.5-35B-A3B");
+  });
+
+  it("model_id 选择策略：已选优先 / 未就绪不硬塞 / 就绪用默认", () => {
+    expect(resolveRequestModelId("Qwen/Qwen3.5-8B-Instruct", "Qwen/Qwen3.5-35B-A3B", true)).toBe(
+      "Qwen/Qwen3.5-8B-Instruct",
+    );
+    expect(resolveRequestModelId(null, "Qwen/Qwen3.5-35B-A3B", false)).toBeNull();
+    expect(resolveRequestModelId(null, "Qwen/Qwen3.5-35B-A3B", true)).toBe("Qwen/Qwen3.5-35B-A3B");
+    expect(resolveRequestModelId("   ", undefined, true)).toBeNull();
+  });
+
+  it("恢复旧版 sessionStorage 回答：缺失字段补安全默认值，不再触发空指针", () => {
+    // 模拟旧版本写入的 answer：没有 citations / uiActions / sources / comparisonAnalysis。
+    const legacy = {
+      markdown: "赤壁之战（东汉，208年）……",
+      mode: "grounded",
+      certainty: "high",
+      missing: [],
+      reasonCode: null,
+      snapshotVersion: "v1-old",
+      requestId: "req_old",
+      modelUsed: null,
+      modelRequested: null,
+    };
+    const view = normalizeRestoredAnswerView(legacy);
+    expect(view).not.toBeNull();
+    expect(view?.markdown).toBe(legacy.markdown);
+    expect(view?.citations).toEqual([]);
+    expect(view?.uiActions).toEqual([]);
+    expect(view?.entities).toEqual([]);
+    expect(view?.sources).toBeNull();
+    expect(view?.comparisonAnalysis).toBeNull();
+  });
+
+  it("恢复非法 / 损坏的回答 → null（回落欢迎语，不进入渲染层）", () => {
+    expect(normalizeRestoredAnswerView(null)).toBeNull();
+    expect(normalizeRestoredAnswerView("纯文本")).toBeNull();
+    expect(normalizeRestoredAnswerView({})).toBeNull();
+    expect(normalizeRestoredAnswerView({ markdown: "   " })).toBeNull();
+  });
+
+  it("恢复新版回答：保留对比分析块与双源覆盖观测", () => {
+    const view = normalizeRestoredAnswerView({
+      markdown: "事实实证",
+      mode: "grounded",
+      citations: [{ id: "c1" }],
+      uiActions: [],
+      sources: { timeline: true, graph: true },
+      comparisonAnalysis: { text: " 对比分析 " },
+    });
+    expect(view?.sources).toEqual({ timeline: true, graph: true });
+    expect(view?.comparisonAnalysis).toEqual({ text: "对比分析" });
+    expect(view?.citations).toHaveLength(1);
   });
 });

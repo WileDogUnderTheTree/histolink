@@ -44,6 +44,117 @@
 - `python backend/scripts/ingest_graph_data.py --check`：生成物与 docs 一致（幂等）。
 - `node scripts/validate-data.mjs`：21 期 / 7 组图谱、关系、别名、名人堂、人物主数据、结构化引用与快照全部通过；`/graph` 新增夏 / 商 / 西周 Tab，`/timeline` 简阅新增 7 条顶级事件。
 
+### 变更（基于事实的对比分析 · 2026-11-25 同版追加）
+
+> 背景：V1.0.3 为绝对防幻觉，禁用了模型生成用户可见文本，`grounded` 正文由服务端写死。前端测试
+> 「商鞅变法与王安石变法的区别」时只能罗列双方基础事实、没有对比总结。本补丁在不破坏防幻觉底座
+> 的前提下增加**受控二次归纳**：对比 / 总结类 `grounded` 回答额外生成一段「💡 史令对比分析」，
+> 作为**可选独立字段**下发，服务端事实实证正文（`answer.markdown`）完全不变。
+> 设计与口径见 [`docs/V1.0.5.4-对比分析设计.md`](docs/V1.0.5.4-对比分析设计.md)。
+
+- **新增 `backend/agent/comparison.py`**：纯函数实现「纯数据事实块构建 + 二次归纳响应解析 + 证据链校验」。
+  `build_comparison_facts()` 从本轮工具真实返回整理事件（标题 / 年份 / 描述 / 参与者 / 史料出处）、
+  人物（姓名 / 别名 / 朝代 / 活动年代）、关系、RAG 史料（出处 / 事件 / 年份区间 / 正文），
+  同时产出年份白名单与人物白名单（含事件参与者别名，如「赵顼（宋神宗）」）；事实块上限 8000 字。
+- **`backend/agent/prompts.py`**：新增二次归纳 System Prompt（需求原文：仅根据给定史料对比异同，
+  严禁自身知识，材料不足写「材料未提供」）与 `build_comparison_synthesis_messages()`；
+  输出协议要求唯一 JSON `{"analysis": "..."}`、≤800 字、只允许使用事实块内的年份 / 人物名。
+- **`backend/agent/orchestrator.py`**：新增 `_attach_comparison_analysis()`，仅在
+  「问题命中对比 / 区别 / 异同 / 总结 / 归纳」+「主回答 grounded 未降级」+「事实块非空」时
+  额外调用一次 Qwen（JSON 模式 / 关闭思考 / temperature=0 / max_tokens=1024，计入 token usage）；
+  主循环与收尾轮两个返回点行为一致。二次调用异常、非 JSON、校验失败一律只丢弃分析字段，
+  保留事实实证、不降级为 `insufficient`、不上抛 500。
+- **`backend/agent/validator.py`**：新增 `detect_comparison_intent()`（与 `detect_question_focus()` 分开维护，
+  只作二次归纳开关，不影响双源覆盖硬校验）；`ValidationOutcome` 新增 `evidence_entities` 供事实块复用。
+- **证据链校验（任务三）**：分析中带「公元前 / 前 / 公元」前缀的显式年份与 ≥3 位裸年份必须命中事实块
+  年份集合；分析中出现的已知人物名（快照 1,066 位人物正名 + 70 条别名词典）必须属于事实块人物白名单
+  （单字姓名不扫描、别名视为同一人物，避免正则 / 别名误杀）；空文本 / 超长（>1500 字）/
+  越狱指令标记清理后为空一律丢弃整段分析。
+- **契约（只增可选字段，向后兼容）**：`contracts/models.py` 新增 `ComparisonAnalysis{text}` 与
+  `Answer.comparison_analysis: ComparisonAnalysis | null`（仅 `grounded` 允许携带，Pydantic 强制）；
+  `SCHEMA_VERSION` 仍为 `1.0`，OpenAPI / 前端 `api-types.ts` 重新生成；`routers/agent.py` 输出该字段。
+- **前端 `/ask` 回答卡片**：`frontend/lib/agent-client.ts` 归一化 `comparison_analysis`（异常结构 / 空文本
+  回退 `null`）；`AnswerView` 新增 `comparisonAnalysis`；`app/ask/page.tsx` 在事实实证正文 + 状态徽标 +
+  引用列表之后渲染独立「💡 史令对比分析」卡片（暖金描边 + 脚注「事实与引用以上方史料实证为准」）；
+  非对比类问题 / 校验失败时不渲染该块。
+- **测试**：新增 `backend/tests/test_comparison_analysis.py`（24 条：对比触发 / 未证实年份丢弃 /
+  事实块外人物丢弃 / 非对比不触发 / 二次调用失败降级 / 非法 JSON / insufficient 不触发 /
+  收尾轮同样触发 / 事实块构建 / 年份-人物白名单 / JSON 协议 / 契约兼容），`test_agent_api.py` 新增 3 条
+  API 契约用例（含真实快照工具层的 `comparison_analysis` 下发与普通问题为 null），
+  `test_agent_rag_routing.py` 对比路由用例同步断言二次归纳；前端 `agent-client.test.ts` 新增 3 条归一化用例。
+
+#### 验证（对比分析同版追加）
+
+- `scripts/verify.ps1` **12/12 PASS**（tsc / next build / validate-data / 五个 `--check` /
+  pytest **390 passed** / vitest **177 passed** / evals contract **30/30** / validate-contract）。
+- 真实 LLM 冒烟（2026-11-25，Qwen/Qwen3.5-35B-A3B）：
+  - 「商鞅变法与王安石变法的区别」→ `grounded`，5 次模型调用（4 轮规划 + 1 次二次归纳），
+    7 条引用；正文为服务端双源事实实证；`answer.comparison_analysis` 含通过校验的
+    「背景 / 目的 / 结果 / 影响」四维对比，分析中出现的年份（前359年 / 1069年）与人物
+    （商鞅、秦孝公、甘龙、杜挚、王安石、宋神宗赵顼）全部命中事实块白名单；
+    多次复跑（含 HTTP 全链路）未出现 500：个别轮次二次归纳因模型写入了材料外的年份 / 人物，
+    被服务端按规则整段丢弃、事实实证照常返回，符合「校验失败只丢分析、不降级」的设计。
+  - 「赤壁之战发生在哪一年？」→ `grounded`，3 次模型调用，**不出现** `comparison_analysis`（不触发二次归纳）。
+  - 真实 HTTP 冒烟（`POST http://127.0.0.1:3000/api/agent/ask`，经 Next 同源代理）：
+    对比问题 `answer.mode=grounded` + `comparison_analysis.text` 非空（约 400 字），
+    事实问题 `comparison_analysis=null`；响应通过冻结 OpenAPI 契约。
+- `node scripts/health-check-ui.mjs --live` **26 个检查点 / 68 条断言全绿**（含 V1.0.5.4 新增对比分析
+  卡片场景：卡片出现、标题「史令对比分析」、同一回答仍含服务端事实实证时间轴节、脚注存在、
+  卡片位于引用之后）；默认模式 22 个检查点 / 58 条断言全绿；浏览器控制台 0 条产品级 error；
+  验收截图归档 [`docs/images/v1.0.5.4-comparison-analysis.png`](docs/images/v1.0.5.4-comparison-analysis.png)。
+
+### 修复（对比分析触发 / 冷启动补丁 · 2026-11-25 同版追加）
+
+> 背景：V1.0.5.4 对比分析上线后，真实测试发现「刘邦统一汉朝和秦始皇统一六国的历史意义和影响一样吗」
+> 不触发二次归纳、直接返回「资料不足」；新窗口 / 冷启动偶发异常报错。本补丁不改变三态语义与
+> 防幻觉底座（事实实证正文仍由服务端用工具真实返回重写），只修触发覆盖、对比兜底、校验口径与
+> 冷启动状态隔离。完整根因与验收证据见
+> [`docs/V1.0.5.4-对比分析触发与冷启动修复.md`](docs/V1.0.5.4-对比分析触发与冷启动修复.md)。
+
+- **修复一 · 对比意图全面覆盖**：`detect_comparison_intent()` 由 6 个硬编码关键词扩展为
+  「显式对比词 + 隐式句式」（一样吗 / 谁的影响更大 / 相比如何 / 差异 / 不同在哪 …），并与
+  `detect_question_focus()` 共用判定；「刘邦…和秦始皇…一样吗」这类隐式对比不再漏判。
+- **修复二 · `insufficient` 拦截门槛放开（对比兜底）**：新增 `orchestrator._try_comparison_rescue()`——
+  在模型自述资料不足 / 证据校验降级 / 收尾轮兜底之前，只要 `comparison.find_comparison_subjects()`
+  在本轮图谱事实中找到 A/B 双方实体，就由服务端用真实工具返回重写 grounded 正文并**立即触发二次归纳**；
+  二次归纳失败仍保留事实实证（不降级）；A/B 图谱实体都没查到才允许 `insufficient`。
+- **修复三 · 新窗口 / 冷启动状态隔离**：前端新增 `normalizeRestoredAnswerView()` 归一化
+  sessionStorage 旧版回答（补 `citations` / `uiActions` / `sources` / `comparisonAnalysis`，防空指针）；
+  `resolveRequestModelId()` 冷启动 `model_id` 策略（注册表就绪带默认主模型、未就绪交后端默认）；
+  `session_id` mount 时初始化；模型注册表读取增加 catch 兜底。后端工具结果预算
+  12000 / 24000 → **10000 / 16000** + 18000 最终裁剪，Orchestrator 对非 system 消息做 19000 字安全裁剪，
+  修复「messages[N].content 超过 20000 字 → 503 `LLM_NOT_CONFIGURED`」的冷启动异常报错。
+- **修复四 · 二次归纳证据校验兜底**：年份允许「公元前221年 ↔ 事实块 221年」纪年前缀模糊匹配；
+  人物放行名单并入本轮图谱实体人物名 / 别名（问题主体秦始皇、刘邦等不再因不在 evidence 子集被误杀）；
+  真正不同的年份 / 事实块外人物仍拦截。
+- **二次归纳 Prompt 补强**：追问历史意义 / 影响时要求分别说明 A、B 在事实块中能支撑的意义与影响
+  并指出异同；材料不足的维度写「材料未提供 / A 与 B 的对比信息不足」，不得整段空泛或拒答。
+
+#### 验证（对比分析触发 / 冷启动修复补丁）
+
+- `scripts/verify.ps1` **12/12 PASS**（tsc / next build / validate-data / 五个 `--check` /
+  pytest **414 passed** / vitest **183 passed** / evals contract **30/30** / validate-contract）。
+- 真实 LLM 冒烟（2026-11-25，Qwen/Qwen3.5-35B-A3B，HTTP 全链路）：
+  - 「刘邦统一汉朝和秦始皇统一六国的历史意义和影响一样吗」→ `grounded`，双源命中，
+    二次归纳 585 字；无历史上下文冷启动独立请求同样 `grounded`（605 字），未出现 503 / 空指针；
+  - 「商鞅变法与王安石变法的区别」→ `grounded`，二次归纳 701 字（基线保持）；
+  - 「秦始皇和刘邦有什么不同」→ `grounded`，二次归纳 549 字。
+- `node scripts/health-check-ui.mjs --live` **27 个检查点 / 72 条断言全绿**（新增场景 13
+  「新窗口 / 冷启动对比问答」：清空 storage 重载后提问刘邦问题 → grounded + 已核验 +
+  史令对比分析卡片 + 整页无滚动）；浏览器控制台 0 条产品级 error；验收截图归档
+  [`docs/images/v1.0.5.4-fix-cold-start-evidence.png`](docs/images/v1.0.5.4-fix-cold-start-evidence.png)、
+  [`docs/images/v1.0.5.4-fix-cold-start-comparison.png`](docs/images/v1.0.5.4-fix-cold-start-comparison.png)、
+  [`docs/images/v1.0.5.4-fix-shangyang-comparison.png`](docs/images/v1.0.5.4-fix-shangyang-comparison.png)。
+- 新增 / 更新自动化用例：隐式对比意图全覆盖、模型 `insufficient` 时图谱兜底 grounded、
+  兜底后分析非法仍 grounded、A/B 实体不足保持 `insufficient`、年份模糊匹配、图谱人物放行、
+  工具消息长度上限、空 history 冷启动、`model_id` 策略、旧版 sessionStorage 回答归一化。
+
+### 数据收尾与校验
+- 完成最新批次的数据文档入库合并，成功生成并挂载图谱节点与边。
+- 修复了图谱分期白名单的动态注入逻辑。
+- 清理了悬空关系边与非实体节点。
+- 全量门禁（12/12 PASS）与一致性检查（Consistency Check）通过。
+
 ---
 
 ## [1.0.5.3] - 2026-11-25（进行中 · 全面体检专项启动）

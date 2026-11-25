@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import pytest
@@ -215,6 +216,16 @@ def test_comparison_route_batches_both_dynasties(store: Any, toolkit: Any, fake_
             "reason_code": None,
             "ui_actions": [],
         }),
+        # V1.0.5.4：对比类问题在 grounded 之后会多一次「二次归纳」调用。
+        json.dumps(
+            {
+                "analysis": (
+                    "**背景**：商鞅变法发生于前359年，王安石变法发生于1069年。"
+                    "**目的**：两者都试图富国强兵。**结果**：材料未提供完整对比结论。"
+                )
+            },
+            ensure_ascii=False,
+        ),
     ])
 
     result = AgentOrchestrator(store, fake).run(
@@ -226,12 +237,17 @@ def test_comparison_route_batches_both_dynasties(store: Any, toolkit: Any, fake_
     assert [record.name for record in result.tools] == [
         "get_event", "get_event", "search_historical_text", "search_historical_text"
     ]
-    assert len(fake.calls) == 3
+    # 3 轮规划 + 1 次二次归纳（V1.0.5.4）。
+    assert len(fake.calls) == 4
+    assert result.answer.comparison_analysis is not None
+    assert "前359年" in result.answer.comparison_analysis.text
     assert {query for query, _ in rag_store.queries} == {
         "商鞅变法 战国 秦孝公 措施 影响",
         "王安石变法 北宋 宋神宗 措施 影响",
     }
+    # 对比分析是独立字段，事实实证正文仍由服务端写死（不被模型文本污染）。
     assert "商鞅变法" in result.answer.markdown and "王安石变法" in result.answer.markdown
+    assert result.answer.comparison_analysis.text not in result.answer.markdown
 
 
 def test_system_prompt_advertises_rag_tool_and_status(

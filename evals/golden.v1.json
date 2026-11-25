@@ -1,18 +1,18 @@
 {
   "$schema": "./schema.json",
   "version": "golden.v1",
-  "generated_at": "2026-11-23",
+  "generated_at": "2026-11-25",
   "snapshot": {
-    "version": "v1-42922a564324",
-    "hash": "sha256:871e8bfb2b18b8a15c4fd718b1dea9cf7ad17f94a03e10d1bc6df215a2bf3dc9",
+    "version": "v1-8fdf1b883355",
+    "hash": "sha256:24268ffa624698d94e69645a874f3f58be0d0f59b340a68b6b21442597a60db0",
     "counts": {
-      "events": 718,
-      "persons": 1066,
-      "relations": 652,
+      "events": 831,
+      "persons": 1164,
+      "relations": 787,
       "eras": 21,
       "scopes": 7,
       "groups": 7,
-      "aliases": 70
+      "aliases": 86
     }
   },
   "category_counts": {
@@ -294,14 +294,14 @@
       "context": { "route": "/graph", "mode": "detail", "era_id": "ming", "person_id": "p-wangyangming-7a98" },
       "expected": {
         "tool_calls": [
-          { "name": "get_relation", "args": { "person_id_a": "p-wangyangming-7a98", "person_id_b": "p-zhuxi-74b0" } },
+          { "name": "get_relation", "args": { "person_id_a": "p-wangyangming-7a98", "person_id_b": "p-zhuxi-10d0" } },
           { "name": "get_event", "args": { "event_id": "ming-07" } }
         ],
-        "entity_ids": ["p-wangyangming-7a98", "p-zhuxi-74b0"],
+        "entity_ids": ["p-wangyangming-7a98", "p-zhuxi-10d0"],
         "event_ids": ["ming-07"],
         "action_types": ["graph.focus_relation"],
         "action_target_surfaces": ["graph"],
-        "relation_pair": ["p-wangyangming-7a98", "p-zhuxi-74b0"],
+        "relation_pair": ["p-wangyangming-7a98", "p-zhuxi-10d0"],
         "relation_label": "思想对立",
         "answer_mode": "grounded",
         "citation_required": true,
@@ -615,7 +615,7 @@
       "context": { "route": "/graph", "mode": "detail", "era_id": "sanguo" },
       "expected": {
         "tool_calls": [{ "name": "resolve_entity", "args": { "query": "诸葛亮" } }],
-        "entity_ids": ["p-zhugeliang-b65a"],
+        "entity_ids": ["p-zhugeliang-c559"],
         "event_ids": [],
         "action_types": ["graph.focus_person"],
         "action_target_surfaces": ["graph"],

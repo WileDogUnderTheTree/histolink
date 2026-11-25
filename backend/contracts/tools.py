@@ -29,7 +29,9 @@ JsonSchema = dict[str, Any]
 STRING = {"type": "string", "minLength": 1}
 LIMIT = {"type": "integer", "minimum": 1, "maximum": 80, "default": 20}
 YEAR = {"type": "integer", "description": "史书纪年：公元前为负，不允许 0"}
-PERSON_ID = {"type": "string", "pattern": r"^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$"}
+# Outputs include ingested IDs with numeric suffixes; inputs mirror the current tool parser.
+PERSON_ID = {"type": "string", "pattern": r"^p-[a-z0-9]+(?:-[a-z0-9]+)*-[a-z0-9]{2,4}$"}
+PERSON_ID_INPUT = {"type": "string", "pattern": r"^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$"}
 EVENT_ID = {"type": "string", "pattern": r"^[a-z0-9][a-z0-9-]*$"}
 ERA_ID = {"type": "string", "minLength": 1}
 
@@ -315,13 +317,13 @@ TOOLS: list[dict[str, Any]] = [
     {
         "name": "get_person",
         "description": "按 person_id 取人物主数据 + 别名 + 所在分期/断代 + 一句话提示。",
-        "input": _object({"person_id": PERSON_ID}, ["person_id"]),
+        "input": _object({"person_id": PERSON_ID_INPUT}, ["person_id"]),
         "output": _tool_output("get_person", PERSON_DETAIL, PERSON_DETAIL),
     },
     {
         "name": "get_person_events",
         "description": "按 person_id 取参与事件（按年排序），并给出每人与谁同现。",
-        "input": _object({"person_id": PERSON_ID, "limit": LIMIT}, ["person_id"]),
+        "input": _object({"person_id": PERSON_ID_INPUT, "limit": LIMIT}, ["person_id"]),
         "output": _tool_output(
             "get_person_events",
             _object(
@@ -339,7 +341,7 @@ TOOLS: list[dict[str, Any]] = [
         "name": "get_relation",
         "description": "取两个人物的关系定性、共同事件与来龙去脉；关系引用不新增书目，只能用共同事件的 sourceRefs。",
         "input": _object(
-            {"person_id_a": PERSON_ID, "person_id_b": PERSON_ID},
+            {"person_id_a": PERSON_ID_INPUT, "person_id_b": PERSON_ID_INPUT},
             ["person_id_a", "person_id_b"],
         ),
         "output": _tool_output("get_relation", RELATION_DETAIL, RELATION_DETAIL),
@@ -351,7 +353,7 @@ TOOLS: list[dict[str, Any]] = [
             {
                 "era_id": ERA_ID,
                 "scope_id": ERA_ID,
-                "center_person_id": PERSON_ID,
+                "center_person_id": PERSON_ID_INPUT,
                 "limit": {**LIMIT, "maximum": 80},
             },
             [],
