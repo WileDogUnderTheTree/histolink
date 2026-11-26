@@ -1,0 +1,44 @@
+/* V1.0.6.3：回答气泡底部的双图联动按钮（人物图谱 / 时间轴）。 */
+.guideActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px dashed #eadfd3;
+}
+.guideAction {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #dcc9bb;
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: linear-gradient(180deg, #fffdf8, #fdf5ec);
+  color: #7a4a3b;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.guideAction[data-surface="graph"] {
+  border-color: #dfc2b4;
+  background: linear-gradient(180deg, #fffaf5, #fbf0e9);
+}
+.guideAction[data-surface="timeline"] {
+  border-color: #d9cdb4;
+  background: linear-gradient(180deg, #fffdf3, #f8f1de);
+}
+.guideAction:hover {
+  transform: translateY(-1px);
+  border-color: #b39584;
+  background: #fff6f0;
+  color: #8b0000;
+}
+.guideAction:active { transform: translateY(0); }
+.guideAction:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+.guideActions.compact { margin-top: 10px; padding-top: 9px; gap: 6px; }
+.guideActions.compact .guideAction { padding: 5px 10px; font-size: 10px; }

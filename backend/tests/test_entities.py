@@ -12,7 +12,9 @@ LIANG_XIXIA = "p-liangtaihou-xixia-0d0f"
 
 
 def _validate_against_contract(instance: Any, model: str, spec: dict[str, Any]) -> None:
-    validator = jsonschema.Draft202012Validator({**spec, "$ref": f"#/components/schemas/{model}"})
+    validator = jsonschema.Draft202012Validator(
+        {**spec, "$ref": f"#/components/schemas/{model}"}
+    )
     validator.validate(instance)
 
 
@@ -70,20 +72,27 @@ def test_graph_only_weijin_event_surface(client: TestClient) -> None:
     assert event["surface"] == {"timeline": False, "graph": True}
 
 
-def test_find_persons_returns_two_candidates(client: TestClient, openapi_spec: dict[str, Any]) -> None:
+def test_find_persons_returns_two_candidates(
+    client: TestClient, openapi_spec: dict[str, Any]
+) -> None:
     response = client.get("/api/entities/persons", params={"name": "梁太后"})
     assert response.status_code == 200
     payload = response.json()
     assert len(payload["candidates"]) == 2
     candidates = payload["candidates"]
-    assert {candidate["person_id"] for candidate in candidates} == {LIANG_HAN, LIANG_XIXIA}
+    assert {candidate["person_id"] for candidate in candidates} == {
+        LIANG_HAN,
+        LIANG_XIXIA,
+    }
     assert all(candidate["disambiguator"] for candidate in candidates)
     assert len({candidate["disambiguator"] for candidate in candidates}) == 2
     _validate_against_contract(payload, "PersonCandidatesResponse", openapi_spec)
 
 
 def test_find_persons_filters_by_era(client: TestClient) -> None:
-    payload = client.get("/api/entities/persons", params={"name": "梁太后", "era_id": "xixia"}).json()
+    payload = client.get(
+        "/api/entities/persons", params={"name": "梁太后", "era_id": "xixia"}
+    ).json()
     assert len(payload["candidates"]) == 1
     assert payload["candidates"][0]["person_id"] == LIANG_XIXIA
 
@@ -95,5 +104,7 @@ def test_find_persons_resolves_global_alias(client: TestClient) -> None:
 
 
 def test_find_persons_unknown_returns_empty(client: TestClient) -> None:
-    payload = client.get("/api/entities/persons", params={"name": "不存在的人物"}).json()
+    payload = client.get(
+        "/api/entities/persons", params={"name": "不存在的人物"}
+    ).json()
     assert payload["candidates"] == []

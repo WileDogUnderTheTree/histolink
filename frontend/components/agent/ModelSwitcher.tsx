@@ -4,11 +4,16 @@
  * 模型切换窗口（V1.0.5.2）。
  *
  * 摆放：对话输入框左上角、输入框外部左侧区域（由 `ask.module.css` 的 composerTools 行负责）。
- * 形态：圆角矩形下拉按钮 = 品牌图标 + 当前模型全称 + 向下箭头；
- *       展开后完整展示模型注册表（主模型 / 备用降级模型）。
+ * 形态：圆角矩形下拉按钮 = 品牌图标 + 当前模型展示名 + 向下箭头；
+ *       展开后展示模型注册表（主模型 / 备用降级模型）。
  * 交互：选择后立即生效、不清空已有对话历史；任意模型异常时后端仍会自动切换到另一款。
  *
  * 纯受控组件：模型列表与选中值由 `AgentContext` 统一提供，本组件不自己发请求。
+ *
+ * V1.0.6.2 修复：按产品要求精简为「模型名 + 角色徽标」两行信息——
+ * 不再渲染模型描述（如「主模型：默认用于回答所有历史问题。」）与降级提示
+ * （「所选模型异常时限流 / 超时会自动切换到另一款」）；模型展示名由后端
+ * `LLM_MODEL_DISPLAY_NAME` / 自动缩写提供（如 XiaoHong-v1），请求仍用真实模型 id。
  */
 
 import { useEffect, useId, useRef, useState } from "react";
@@ -190,9 +195,6 @@ export function ModelSwitcher({
                       {ROLE_LABEL[model.role] ?? model.role}
                     </span>
                   </span>
-                  {model.description ? (
-                    <span className={styles.optionDesc}>{model.description}</span>
-                  ) : null}
                   <span className={styles.optionCheck} aria-hidden="true">
                     {isSelected ? "✓" : ""}
                   </span>
@@ -200,9 +202,6 @@ export function ModelSwitcher({
               </li>
             );
           })}
-          <li className={styles.menuHint} aria-hidden="true">
-            所选模型异常时限流 / 超时会自动切换到另一款
-          </li>
         </ul>
       ) : null}
     </div>

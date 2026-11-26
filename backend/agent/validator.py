@@ -1,4 +1,5 @@
-"""证据校验器（V1.0.3 安全加固 / 审查报告 P0-1、P0-2、P0-3、P1-2；V1.0.5.2 双数据源分节）。
+"""证据校验器（V1.0.3 安全加固 / 审查报告 P0-1、P0-2、P0-3、P1-2；V1.0.5.2 双数据源分节；
+V1.0.6.1 双重事实核查的第一重）。
 
 职责：在模型给出最终回答后，回到**本轮工具真实返回的信封**做核对。
 V1.0.3 安全加固前的实现只把工具结果里的 ID 合并成 `set[str]`，无法区分
@@ -8,6 +9,14 @@ V1.0.3 安全加固前的实现只把工具结果里的 ID 合并成 `set[str]`�
 V1.0.5.2 起，grounded 正文按**双数据源**分节输出：`**[人物关系图]**`（person / relation）与
 `**[时间轴·大事记]**`（event / RAG 史料细节），节序由问题类型决定；人物/关系类问题必须有
 关系图证据、事件类问题必须有时间轴证据（硬校验，违反即降级），并在 trace 里回填双源覆盖状态。
+
+**V1.0.6.1**：用户可见正文的生成权交还模型（`ModelAnswer.markdown`），本模块变为
+**双重事实核查的第一重（证据级核查）**：
+
+- 仍负责 evidence / citation / 双源覆盖 / UI 动作的全部硬校验，不通过即降级；
+- 结构合法时，`_compose_grounded` 用工具原文生成的「事实实证」正文**降级为安全兜底**
+  （模型未写 markdown / 文本级核查连续不通过时使用，见 `agent.orchestrator`）；
+- 模型正文随后必须通过 `agent.factcheck` 的**第二重文本级核查**才会被采用。
 
 现在的模型是**带类型、来源、可用性与绑定的证据图**：
 
@@ -19,15 +28,20 @@ V1.0.5.2 起，grounded 正文按**双数据源**分节输出：`**[人物关系
 - ground 校验：evidence 必须是「有事实详情、fact_usable、且被 citation 绑定」的实体；
   claim 的每条 citation 必须能绑定到该 claim 的某个 evidence 实体；彩蛋事件、
   `fact_usable=false`、`source_status=easter_egg` 一律不得作为史实证据；
-- **服务端重写（P0-2）**：grounded 回答的 `claims[].text` 与 `markdown` 不再信任模型文本，
-  而是由服务端用工具返回值（citation 摘要 / 实体详情）重新生成。提示词注入最多让模型
-  “选错事实”，但无法把工具里不存在的内容写进最终回答；
+- **服务端事实实证（P0-2 保留为兜底）**：`claims[].text` 与兜底 `markdown` 不信任模型文本，
+  而是由服务端用工具返回值（citation 摘要 / 实体详情）重新生成；模型正文须过文本级核查；
 - **全模式固定文案（P0-3）**：`insufficient` 用服务端固定模板 + `missing_reasons` 枚举映射，
-  `refusal` 按 `reason_code` 使用绝对固定文案；`certainty` 与 `missing` 也由服务端写死，
-  模型提供的 `markdown` 在所有模式下都被完全废弃；
+  `refusal` 按 `reason_code` 使用绝对固定文案；`certainty` 与 `missing` 也由服务端写死；
 - UI 动作（P1-2）：仅 grounded 保留；最多 3 个；类型 ∈ V1 白名单且与 `target.surface`
   匹配；payload / target.params 中的 person / event / relation 引用必须在本轮真实出现；
   降级、拒答、资料不足统一清空。
+- **V1.0.6.2 专项修复**：
+  * **意图后置推断**：模型没返回 `ui_actions`（本地小模型常见）时，从已核验 evidence
+    实体推断 `timeline.focus_event` / `graph.focus_person` / `graph.focus_relation` /
+    `timeline.focus_dynasty`（见 `agent.intent`），保证有图谱命中的回答一定弹史引；
+  * **单正文来源**：`adopt_model_body()` 对模型正文做重复治理，循环复述比例过高时
+    **丢弃模型正文**、改用服务端事实实证正文；任何情况下都不会把两份正文拼接进同一气泡；
+  * 服务端拼装的正文同样过一遍重复治理（一个事实只出现一次）。
 
 降级不是异常：Orchestrator 会带着 `AgentResult.downgraded=True` 正常返回，便于观测与评测。
 """
@@ -41,6 +55,7 @@ from typing import Any, Literal
 
 from pydantic import ValidationError
 
+from agent.intent import infer_actions_from_evidence
 from agent.schemas import (
     MISSING_REASON_TEXT,
     Certainty,
@@ -51,6 +66,7 @@ from agent.schemas import (
 )
 from contracts.action_types import ACTION_LABEL, ACTION_SURFACE, V1_AVAILABLE_ACTIONS
 from contracts.models import Citation, Claim
+from text_hygiene import REPEATED_BODY_RATIO, sanitize_model_answer
 
 EntityKind = Literal["event", "person", "relation", "rag"]
 
@@ -61,7 +77,12 @@ _EXPOSURE_RANK: dict[str, int] = {
     "citation": 1,
     "list": 0,
 }
-_ENTITY_KIND_LABEL = {"event": "事件", "person": "人物", "relation": "关系", "rag": "史料"}
+_ENTITY_KIND_LABEL = {
+    "event": "事件",
+    "person": "人物",
+    "relation": "关系",
+    "rag": "史料",
+}
 
 #: ID 列表字段 → 实体类型。只有「在列表中顺带出现」的实体，不能直接作为证据。
 _LIST_ID_FIELDS: dict[str, str] = {
@@ -171,7 +192,9 @@ _DOWNGRADE_MARKDOWN = (
 )
 
 #: insufficient 的固定正文模板（P0-3）：只插入服务端枚举映射出的缺失原因。
-_INSUFFICIENT_MARKDOWN_TEMPLATE = "抱歉，现有的历史数据无法完整回答您的问题。缺少的信息：{missing}。"
+_INSUFFICIENT_MARKDOWN_TEMPLATE = (
+    "抱歉，现有的历史数据无法完整回答您的问题。缺少的信息：{missing}。"
+)
 _INSUFFICIENT_MISSING_FALLBACK = "工具结果没有覆盖问题所需的完整信息"
 
 #: refusal 的固定服务端文案（按 reason_code 写死，模型文本一律废弃）。
@@ -284,7 +307,17 @@ _COMPARISON_PATTERNS = (
 )
 #: V1.0.5.4 二次归纳（对比分析）的额外触发线索：总结 / 归纳类也算对比归纳问题。
 _COMPARISON_SUMMARY_CUES = (*_COMPARISON_CUES, "总结", "归纳")
-_EVENT_CUES = ("哪一年", "发生在", "经过", "经过与影响", "事件", "战役", "之变", "之乱", "变法")
+_EVENT_CUES = (
+    "哪一年",
+    "发生在",
+    "经过",
+    "经过与影响",
+    "事件",
+    "战役",
+    "之变",
+    "之乱",
+    "变法",
+)
 
 
 def _matches_comparison_cues(text: str) -> bool:
@@ -350,7 +383,9 @@ def check_dual_source_coverage(
     """
 
     observed_entities = list(entities)
-    has_graph = any(entity.kind in ("person", "relation") for entity in observed_entities)
+    has_graph = any(
+        entity.kind in ("person", "relation") for entity in observed_entities
+    )
     has_timeline = any(entity.kind in ("event", "rag") for entity in observed_entities)
     if focus in ("person", "relation") and not has_graph:
         return "人物/关系类问题缺少人物关系图证据：必须提交 person 或 relation evidence"
@@ -364,8 +399,12 @@ def source_coverage(entities: Iterable[ObservedEntity]) -> dict[str, bool]:
 
     observed_entities = list(entities)
     return {
-        SOURCE_TIMELINE: any(entity.kind in ("event", "rag") for entity in observed_entities),
-        SOURCE_GRAPH: any(entity.kind in ("person", "relation") for entity in observed_entities),
+        SOURCE_TIMELINE: any(
+            entity.kind in ("event", "rag") for entity in observed_entities
+        ),
+        SOURCE_GRAPH: any(
+            entity.kind in ("person", "relation") for entity in observed_entities
+        ),
     }
 
 
@@ -383,6 +422,20 @@ class ValidationOutcome:
     source_coverage: dict[str, bool] = field(default_factory=dict)
     #: V1.0.5.4：最终通过校验的 evidence 实体（二次归纳构建事实块时复用，避免重复核验）。
     evidence_entities: list[ObservedEntity] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class BodyAdoption:
+    """V1.0.6.2：模型正文的「单来源」采用结果。
+
+    - ``markdown``：最终用户可见正文（清洗后的模型正文，或服务端事实实证正文）；
+    - ``removed_chars``：重复段落折叠删除的字符数；
+    - ``repetitive``：是否判定为循环复述（True 时调用方必须**丢弃模型正文**、改用服务端正文）。
+    """
+
+    markdown: str
+    removed_chars: int
+    repetitive: bool
 
 
 @dataclass(frozen=True)
@@ -417,11 +470,7 @@ class ObservedEntity:
     def eligible_as_evidence(self) -> bool:
         """能否作为史实回答的证据：事实可用 + 不是裸 ID + 被 citation 绑定。"""
 
-        return (
-            self.fact_usable
-            and self.exposure != "list"
-            and bool(self.citation_ids)
-        )
+        return self.fact_usable and self.exposure != "list" and bool(self.citation_ids)
 
 
 class ObservedEvidence:
@@ -516,7 +565,9 @@ class ObservedEvidence:
         # entity_id = citation.id（chunk_id），证据与引用一一对应。
         if citation.kind == "rag":
             related_event_ids = (
-                (citation.event_id,) if isinstance(citation.event_id, str) and citation.event_id else ()
+                (citation.event_id,)
+                if isinstance(citation.event_id, str) and citation.event_id
+                else ()
             )
             self._touch(
                 "rag",
@@ -594,7 +645,8 @@ class ObservedEvidence:
             if not (isinstance(person_a, str) and isinstance(person_b, str)):
                 return
             related_events = set(
-                _strings(data.get("shared_event_ids")) + _strings(data.get("basis_event_ids"))
+                _strings(data.get("shared_event_ids"))
+                + _strings(data.get("basis_event_ids"))
             )
             event_citation_ids = [
                 item.id
@@ -669,9 +721,7 @@ class ObservedEvidence:
                 fact_texts=facts,
                 related_person_ids=_strings(mapping.get("person_ids")),
                 citation_ids=[
-                    item.id
-                    for item in citations
-                    if item.citation.event_id == event_id
+                    item.id for item in citations if item.citation.event_id == event_id
                 ],
             )
 
@@ -710,7 +760,14 @@ class ObservedEvidence:
         if isinstance(chunk_id, str) and chunk_id:
             facts = {
                 value
-                for key in ("text", "event_name", "title", "source_label", "record_type", "source")
+                for key in (
+                    "text",
+                    "event_name",
+                    "title",
+                    "source_label",
+                    "record_type",
+                    "source",
+                )
                 if isinstance((value := mapping.get(key)), str) and value
             }
             event_id = mapping.get("event_id")
@@ -744,7 +801,11 @@ class ObservedEvidence:
         related_person_ids: Iterable[str] = (),
         citation_ids: Iterable[str] = (),
     ) -> None:
-        if kind not in _ENTITY_KIND_LABEL or not isinstance(entity_id, str) or not entity_id:
+        if (
+            kind not in _ENTITY_KIND_LABEL
+            or not isinstance(entity_id, str)
+            or not entity_id
+        ):
             return
         if exposure not in _EXPOSURE_RANK:
             return
@@ -766,9 +827,15 @@ class ObservedEvidence:
             entity.fact_usable = entity.fact_usable and bool(usable)
         if detail:
             entity.detail.update(
-                {field_name: value for field_name, value in detail.items() if value is not None}
+                {
+                    field_name: value
+                    for field_name, value in detail.items()
+                    if value is not None
+                }
             )
-        entity.fact_texts.update(text for text in fact_texts if isinstance(text, str) and text)
+        entity.fact_texts.update(
+            text for text in fact_texts if isinstance(text, str) and text
+        )
         entity.related_event_ids.update(
             value for value in related_event_ids if isinstance(value, str) and value
         )
@@ -797,7 +864,9 @@ class EvidenceValidator:
     ) -> ValidationOutcome:
         related_event_ids = self._related_event_ids(answer.related_event_ids, observed)
         if answer.mode == "grounded":
-            return self._validate_grounded(answer, observed, related_event_ids, question)
+            return self._validate_grounded(
+                answer, observed, related_event_ids, question
+            )
         if answer.mode == "refusal":
             return self._refuse(answer, observed, related_event_ids)
         return self._insufficient(answer, observed, related_event_ids)
@@ -866,7 +935,9 @@ class EvidenceValidator:
         question: str = "",
     ) -> ValidationOutcome:
         if not answer.evidence:
-            return self._downgrade(related_event_ids, observed, "grounded 回答没有提供 evidence")
+            return self._downgrade(
+                related_event_ids, observed, "grounded 回答没有提供 evidence"
+            )
 
         evidence_entities, reason = self._resolve_evidence(answer, observed)
         if reason is not None:
@@ -890,6 +961,12 @@ class EvidenceValidator:
                 "grounded 回答没有可核验的 citation 可生成最终正文",
             )
         claims, citations, markdown = composed
+        ui_actions = self._filter_ui_actions(answer.ui_actions, observed)
+        if not answer.ui_actions:
+            # V1.0.6.2 专项修复（痛点 1 · 意图后置推断）：
+            # 模型没给任何 UI 动作（本地小模型常见）时，服务端从**已核验证据**推断联动动作，
+            # 保证「查到了具体事件 / 人物」的回答一定能弹出右侧史引，而不是纯文本。
+            ui_actions = infer_actions_from_evidence(question, evidence_entities, focus)
         final = FinalAnswer(
             mode="grounded",
             markdown=markdown,
@@ -899,7 +976,7 @@ class EvidenceValidator:
             related_event_ids=related_event_ids,
             missing=[],
             reason_code=None,
-            ui_actions=self._filter_ui_actions(answer.ui_actions, observed),
+            ui_actions=ui_actions,
         )
         return self._outcome(
             final,
@@ -909,6 +986,42 @@ class EvidenceValidator:
             source_coverage=source_coverage(evidence_entities),
             evidence_entities=evidence_entities,
         )
+
+    def adopt_model_body(
+        self, model_markdown: str, server_markdown: str
+    ) -> BodyAdoption:
+        """V1.0.6.2 专项修复（痛点 2）：「用户可见正文」只允许一个来源。
+
+        背景：本地小模型在生成层会陷入「结论 → 依据一/二/三 → 结论 → 依据一/二/三」的
+        循环复述，同一个事实在一轮回答里出现 2–4 次；旧链路虽然只下发一份正文，
+        但循环文本本身已经让气泡里出现「同一事实重复三遍」。
+
+        规则（服务端强制，模型无法绕过）：
+
+        1. 先对模型正文做重复治理（`text_hygiene.sanitize_model_answer`）：
+           小节重开 / 整句复述 / 近似重复行都只保留第一次出现；
+        2. 删除比例 ≥ `REPEATED_BODY_RATIO` → 判定循环复述，**丢弃模型正文**，
+           返回 ``markdown=server_markdown``（服务端用工具原文拼装的事实实证正文），
+           调用方据此标记 `fact_check.status=fallback`；
+        3. 其余情况返回清洗后的模型正文——绝不会把模型正文与服务端正文拼接在一起，
+           气泡里只有一个正文来源。
+
+        服务端正文只由工具原文拼装、本身就是可信单来源，原样使用（不做重复治理，
+        避免误删真实数据里的长列表 / 重复引用的同类事件）。
+        """
+
+        server_clean = server_markdown or ""
+        original = model_markdown or ""
+        sanitized, removed = sanitize_model_answer(original)
+        length = len(original)
+        repetitive = bool(length) and (removed / length) >= REPEATED_BODY_RATIO
+        if repetitive or not sanitized.strip():
+            return BodyAdoption(
+                markdown=server_clean or (server_markdown or ""),
+                removed_chars=removed,
+                repetitive=True,
+            )
+        return BodyAdoption(markdown=sanitized, removed_chars=removed, repetitive=False)
 
     def _outcome(
         self,
@@ -984,9 +1097,7 @@ class EvidenceValidator:
         evidence_entities: list[ObservedEntity],
     ) -> str | None:
         claimed_ids = [
-            citation_id
-            for claim in answer.claims
-            for citation_id in claim.citation_ids
+            citation_id for claim in answer.claims for citation_id in claim.citation_ids
         ]
         missing = [
             citation_id
@@ -1000,8 +1111,7 @@ class EvidenceValidator:
         for citation_id in claimed_ids:
             if not observed.citations[citation_id].fact_usable:
                 return (
-                    "claims.citation_ids 指向不可用于史实回答的工具结果："
-                    f"{citation_id}"
+                    f"claims.citation_ids 指向不可用于史实回答的工具结果：{citation_id}"
                 )
 
         for claim in answer.claims:
@@ -1023,7 +1133,11 @@ class EvidenceValidator:
         evidence_entities: list[ObservedEntity],
         focus: QuestionFocus = "event",
     ) -> tuple[list[Claim], list[Citation], str] | None:
-        """用工具返回的真实数据重写 claims / markdown（不信任模型文本）。
+        """用工具返回的真实数据重写 claims / markdown（**V1.0.6.1 起为安全兜底正文**）。
+
+        V1.0.6.1：用户可见正文改由模型 `markdown` 生成（须过 `agent.factcheck` 文本核查）；
+        本方法生成的正文只在「模型没写正文 / 文本级核查连续不通过」时作为兜底展示，
+        因此仍然只使用工具原文，保证兜底路径**绝不产生幻觉**。
 
         V1.0.5.2 双数据源：证据按来源拆成两节——
         - ``**[人物关系图]**``：person / relation 证据（人物主数据、关系定性、共同事件）；
@@ -1395,9 +1509,7 @@ def _compose_dual_source_markdown(
     graph_body = "\n\n".join(claim.text for claim in graph_claims)
     timeline_body = _compose_timeline_body(timeline_claims, conflicts)
 
-    graph_section = (
-        f"{_SOURCE_GRAPH_HEADING}\n{graph_body}" if graph_body else ""
-    )
+    graph_section = f"{_SOURCE_GRAPH_HEADING}\n{graph_body}" if graph_body else ""
     timeline_section = (
         f"{_SOURCE_TIMELINE_HEADING}\n{timeline_body}" if timeline_body else ""
     )
@@ -1423,7 +1535,9 @@ def _compose_rag_chunk_text(entity: ObservedEntity) -> str:
         return ""
     record_type = detail.get("record_type")
     prefix = f"{_LEGEND_TAG} " if record_type == _LEGEND_RECORD_TYPE else ""
-    source_label = _first_text(detail.get("source_label"), detail.get("book"), detail.get("source"))
+    source_label = _first_text(
+        detail.get("source_label"), detail.get("book"), detail.get("source")
+    )
     section = _first_text(detail.get("section"))
     suffix_parts = [part for part in (source_label, section) if part]
     suffix = f"（{'·'.join(suffix_parts)}）" if suffix_parts else ""
@@ -1476,7 +1590,9 @@ def _detect_year_conflicts(
             recorded = _year_label(year_min)
         else:
             recorded = f"{_year_label(year_min)}—{_year_label(year_max)}"
-        notes.append(f"图谱系「{title}」于{_year_label(graph_year)}，RAG 史料记载涉及{recorded}")
+        notes.append(
+            f"图谱系「{title}」于{_year_label(graph_year)}，RAG 史料记载涉及{recorded}"
+        )
     return notes
 
 
@@ -1550,7 +1666,9 @@ def _compose_event_text(
     citations: list[Citation],
 ) -> str:
     citation = citations[0] if citations else None
-    title = _first_text(detail.get("title"), citation.title if citation else None, entity.entity_id)
+    title = _first_text(
+        detail.get("title"), citation.title if citation else None, entity.entity_id
+    )
     dynasty = _first_text(detail.get("dynasty"), citation.dynasty if citation else None)
     year = detail.get("year")
     if not isinstance(year, int) or isinstance(year, bool):
@@ -1598,9 +1716,7 @@ def _compose_person_text(
         and isinstance(last_year, int)
         and not isinstance(last_year, bool)
     ):
-        details.append(
-            f"相关年代 {_year_label(first_year)}—{_year_label(last_year)}"
-        )
+        details.append(f"相关年代 {_year_label(first_year)}—{_year_label(last_year)}")
     aliases = _strings(detail.get("aliases"))
     if aliases:
         details.append("别名：" + "、".join(aliases[:5]))
@@ -1674,7 +1790,11 @@ def _result_fact_usable(data: Any, meta: Mapping[str, Any]) -> bool:
 
 
 def _pick(mapping: Mapping[str, Any], fields: Iterable[str]) -> dict[str, Any]:
-    return {field_name: mapping[field_name] for field_name in fields if field_name in mapping}
+    return {
+        field_name: mapping[field_name]
+        for field_name in fields
+        if field_name in mapping
+    }
 
 
 def _strings(value: Any) -> list[str]:
@@ -1775,6 +1895,7 @@ def _relation_fact_texts(mapping: Mapping[str, Any]) -> set[str]:
 __all__ = [
     "SOURCE_GRAPH",
     "SOURCE_TIMELINE",
+    "BodyAdoption",
     "EvidenceValidator",
     "ObservedCitation",
     "ObservedEntity",

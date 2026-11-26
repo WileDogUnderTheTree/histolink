@@ -81,12 +81,16 @@ ACTION_LABEL: dict[UIActionType, str] = {
 
 #: V1.0 冻结可用动作集合（报告 §5.4）。
 V1_AVAILABLE_ACTIONS: tuple[UIActionType, ...] = tuple(
-    action for action, availability in ACTION_AVAILABILITY.items() if availability == "available"
+    action
+    for action, availability in ACTION_AVAILABILITY.items()
+    if availability == "available"
 )
 
 #: 暂缓动作集合。
 V1_PLANNED_ACTIONS: tuple[UIActionType, ...] = tuple(
-    action for action, availability in ACTION_AVAILABILITY.items() if availability == "planned"
+    action
+    for action, availability in ACTION_AVAILABILITY.items()
+    if availability == "planned"
 )
 
 

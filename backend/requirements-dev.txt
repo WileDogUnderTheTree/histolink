@@ -4,5 +4,9 @@
 pytest>=8.3,<9
 jsonschema>=4.23,<5
 
+# V1.0.7：Starlette 1.10 起 TestClient 首选 httpx2，缺失时回退 httpx 并抛弃用警告。
+# 安装 httpx2 后 pytest 全量零 warning（业务代码仍使用 httpx，互不影响）。
+httpx2>=2.16,<3
+
 # Lint（TC-10 顺手清理未使用导入；不参与 verify.ps1 门禁）
 ruff>=0.7,<1

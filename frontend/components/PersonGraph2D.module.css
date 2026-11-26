@@ -41,6 +41,120 @@
   pointer-events: none;
 }
 
+/* ---------------------------------------------------------------------------
+   V1.0.6.2 专项修复（痛点 3）：史引副驾驶内的自适应高度 + 缩放 / 平移。
+   --------------------------------------------------------------------------- */
+
+/* 缩放 / 平移分组：D3 直接管理它的 transform（节点 / 连线都在里面）。 */
+.viewport {
+  /* 仅作为 D3 transform 挂载点，无静态样式。 */
+}
+
+.zoomControls {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+}
+
+.zoomControls button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0;
+  background: rgb(255 253 248 / 92%);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgb(73 42 35 / 10%);
+  transition: border-color 140ms ease, color 140ms ease, background 140ms ease;
+}
+
+.zoomControls button:hover {
+  border-color: var(--accent);
+  background: #fffdf8;
+  color: var(--accent);
+}
+
+.zoomControls button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* 填满容器（史引副驾驶 iframe，V1.0.6.3 布局专项）：
+   - 画布 `flex:1` 占满面板剩余宽度与高度（`min-height:0` 防止被内容撑破）；
+   - 底部「当前中心 / 人物关系」信息卡固定 120px，内部独立滚动，
+     不再按 34% 比例拉伸成一条横杠、也不允许它撑满剩余屏幕。 */
+.layoutFill {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  margin-top: 0;
+  gap: 10px;
+}
+
+.layoutFill .graphHost {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+}
+
+.layoutFill .graph {
+  height: 100%;
+  min-height: 0;
+}
+
+.layoutFill .panel {
+  flex: 0 0 120px;
+  height: 120px;
+  max-height: 120px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #cdbbab transparent;
+}
+
+.layoutFill .panelEyebrow {
+  margin-bottom: 4px;
+}
+
+.layoutFill .panelTitle {
+  font-size: 18px;
+}
+
+.layoutFill .panelLead {
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.layoutFill .relationBox {
+  margin-top: 8px;
+  padding: 8px 10px;
+}
+
+.layoutFill .eventList {
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.layoutFill .graphHint {
+  right: 8px;
+  bottom: 8px;
+  max-width: calc(100% - 130px);
+  font-size: 10px;
+}
+
 .link {
   stroke: #bdaea0;
   stroke-linecap: round;

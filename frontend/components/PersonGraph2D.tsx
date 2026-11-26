@@ -75,6 +75,14 @@ export interface PersonGraph2DProps {
    * V1.0.1 图节点仍以姓名为 id，`person_id` 迁移属 V1.1；语义与受控 prop 一致。
    */
   onPersonSelect?: (personId: string) => void;
+  /**
+   * V1.0.6.2 专项修复（痛点 3）：史引副驾驶 iframe 内使用。
+   *
+   * - `true`：图表填满父容器高度（父级给出确定高度），关系详情面板在窄容器下改为
+   *   底部固定高度区块，保证「整张图不用滚动就能看全」；
+   * - `false`（默认）：保持整页布局的原有高度策略。
+   */
+  fillContainer?: boolean;
 }
 
 function getOneHopView(data: PersonGraphData, centerPersonId: string) {
@@ -104,12 +112,25 @@ export function PersonGraph2D({
   highlightedPersonIds,
   selectedPersonId,
   onPersonSelect,
+  fillContainer = false,
 }: PersonGraph2DProps) {
   const graphHostRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const interactionRef = useRef<PointerInteraction | null>(null);
   const [size, setSize] = useState({ width: 860, height: 620 });
   const [selectedRelationship, setSelectedRelationship] = useState<SelectedRelationshipState | null>(null);
+  /**
+   * V1.0.6.2（痛点 3）：图表视图变换（缩放 / 平移）。
+   *
+   * D3 层持有实际 transform（`viewport <g>`），React 只渲染右下角缩放按钮；
+   * `zoomControlsRef` 暴露 zoomIn / zoomOut / reset 给按钮调用（effect 内重建时更新）。
+   */
+  const viewTransformRef = useRef({ k: 1, x: 0, y: 0 });
+  const zoomControlsRef = useRef<{
+    zoomIn: () => void;
+    zoomOut: () => void;
+    reset: () => void;
+  } | null>(null);
 
   /** 受控与否只看 prop 是否为 undefined：`null` 是「受控且无选中」，不是「没传」。 */
   const isSelectionControlled = selectedPersonId !== undefined;
@@ -150,7 +171,14 @@ export function PersonGraph2D({
 
     const observer = new ResizeObserver(([entry]) => {
       const width = Math.max(320, Math.round(entry.contentRect.width));
-      const height = width < 620 ? 520 : 620;
+      const observedHeight = Math.round(entry.contentRect.height);
+      // V1.0.6.2（痛点 3）/ V1.0.6.3：史引副驾驶中图表填满容器高度（不再回退固定 520/620），
+      // 普通页面仍沿用固定高度策略（窄图 520 / 宽图 620）。
+      const height = fillContainer
+        ? Math.max(240, observedHeight)
+        : width < 620
+          ? 520
+          : 620;
       setSize((current) =>
         current.width === width && current.height === height ? current : { width, height },
       );
@@ -158,7 +186,7 @@ export function PersonGraph2D({
 
     observer.observe(host);
     return () => observer.disconnect();
-  }, []);
+  }, [fillContainer]);
 
   useEffect(() => {
     const svgElement = svgRef.current;
@@ -200,8 +228,69 @@ export function PersonGraph2D({
     // SVG 子树只由 D3 管理；React 仅管理 svg 容器与关系详情面板。
     svg.selectAll("*").remove();
 
-    const linkLayer = svg.append("g").attr("aria-hidden", "true");
-    const nodeLayer = svg.append("g");
+    // V1.0.6.2（痛点 3）：缩放 / 平移作用在唯一的 viewport 分组上，节点 / 连线都在其内。
+    const viewport = svg.append("g").attr("class", styles.viewport);
+    const viewState = viewTransformRef.current;
+    viewState.k = 1;
+    viewState.x = 0;
+    viewState.y = 0;
+    const applyViewTransform = () => {
+      viewport.attr(
+        "transform",
+        `translate(${viewState.x},${viewState.y}) scale(${viewState.k})`,
+      );
+    };
+    applyViewTransform();
+
+    /**
+     * V1.0.6.3（布局专项）：把整张关系图（含节点半径与标签）自动适配进当前画布。
+     *
+     * 力导向图稳定后节点分布半径是未知的，之前固定 viewBox 导致图偏小、四周留大片白边。
+     * 这里按节点实际包围盒计算缩放 / 平移，让图尽可能撑满画布；「复位视图」也复用该逻辑。
+     */
+    const fitViewToNodes = () => {
+      if (nodes.length === 0) return;
+      const xs = nodes.map((node) => node.x ?? width / 2);
+      const ys = nodes.map((node) => node.y ?? height / 2);
+      const minX = Math.min(...xs) - NODE_RADIUS - 18;
+      const maxX = Math.max(...xs) + NODE_RADIUS + 18;
+      // 节点标签在圆点下方（dy = r + 15），底部多留一点空间避免文字被裁。
+      const minY = Math.min(...ys) - NODE_RADIUS - 18;
+      const maxY = Math.max(...ys) + NODE_RADIUS + 34;
+      const contentWidth = Math.max(1, maxX - minX);
+      const contentHeight = Math.max(1, maxY - minY);
+      const padding = Math.max(12, Math.min(width, height) * 0.04);
+      const fittedScale = Math.min(
+        (width - padding * 2) / contentWidth,
+        (height - padding * 2) / contentHeight,
+      );
+      const scale = Math.min(2.2, Math.max(0.5, fittedScale));
+      viewState.k = scale;
+      viewState.x = width / 2 - scale * ((minX + maxX) / 2);
+      viewState.y = height / 2 - scale * ((minY + maxY) / 2);
+      applyViewTransform();
+    };
+
+    /** 以 SVG 坐标系中的 (cx, cy) 为锚点缩放（滚轮 / 按钮共用）。 */
+    const zoomAt = (factor: number, cx: number, cy: number) => {
+      const nextScale = Math.min(3, Math.max(0.45, viewState.k * factor));
+      const ratio = nextScale / viewState.k;
+      viewState.x = cx - ratio * (cx - viewState.x);
+      viewState.y = cy - ratio * (cy - viewState.y);
+      viewState.k = nextScale;
+      applyViewTransform();
+    };
+    const resetView = () => {
+      fitViewToNodes();
+    };
+    zoomControlsRef.current = {
+      zoomIn: () => zoomAt(1.2, width / 2, height / 2),
+      zoomOut: () => zoomAt(1 / 1.2, width / 2, height / 2),
+      reset: resetView,
+    };
+
+    const linkLayer = viewport.append("g").attr("aria-hidden", "true");
+    const nodeLayer = viewport.append("g");
     const linkSelection = linkLayer
       .selectAll<SVGLineElement, ForceEdge>("line")
       .data(edges, (edge) => edge.id)
@@ -260,13 +349,73 @@ export function PersonGraph2D({
       interactionRef.current = null;
     };
 
-    const pointInSvg = (event: PointerEvent) => {
+    /** 屏幕坐标 → SVG viewBox 坐标（不受视图缩放影响，供滚轮锚点使用）。 */
+    const pointInViewBox = (event: { clientX: number; clientY: number }) => {
       const bounds = svgElement.getBoundingClientRect();
       return {
-        x: ((event.clientX - bounds.left) / bounds.width) * width,
-        y: ((event.clientY - bounds.top) / bounds.height) * height,
+        x: ((event.clientX - bounds.left) / Math.max(1, bounds.width)) * width,
+        y: ((event.clientY - bounds.top) / Math.max(1, bounds.height)) * height,
       };
     };
+
+    /** 屏幕坐标 → 视图变换后的 SVG 坐标（节点拖拽需要抵消缩放 / 平移）。 */
+    const pointInSvg = (event: PointerEvent) => {
+      const point = pointInViewBox(event);
+      return {
+        x: (point.x - viewState.x) / viewState.k,
+        y: (point.y - viewState.y) / viewState.k,
+      };
+    };
+
+    // V1.0.6.2（痛点 3）：滚轮缩放 + 空白处拖拽平移（图表内部交互，不滚动外层页面）。
+    svg.on("wheel.zoom", (event: WheelEvent) => {
+      event.preventDefault();
+      const anchor = pointInViewBox(event);
+      zoomAt(event.deltaY < 0 ? 1.15 : 1 / 1.15, anchor.x, anchor.y);
+    });
+
+    let panState: {
+      pointerId: number;
+      startClientX: number;
+      startClientY: number;
+      originX: number;
+      originY: number;
+    } | null = null;
+
+    svg
+      .on("pointerdown.pan", (event: PointerEvent) => {
+        if (event.button !== 0) return;
+        const target = event.target as Element | null;
+        if (target?.closest?.(`.${styles.node}`)) return;
+        panState = {
+          pointerId: event.pointerId,
+          startClientX: event.clientX,
+          startClientY: event.clientY,
+          originX: viewState.x,
+          originY: viewState.y,
+        };
+        svgElement.setPointerCapture(event.pointerId);
+      })
+      .on("pointermove.pan", (event: PointerEvent) => {
+        if (!panState || panState.pointerId !== event.pointerId) return;
+        const bounds = svgElement.getBoundingClientRect();
+        if (!bounds.width || !bounds.height) return;
+        viewState.x =
+          panState.originX + ((event.clientX - panState.startClientX) / bounds.width) * width;
+        viewState.y =
+          panState.originY + ((event.clientY - panState.startClientY) / bounds.height) * height;
+        applyViewTransform();
+      })
+      .on("pointerup.pan", (event: PointerEvent) => {
+        if (!panState || panState.pointerId !== event.pointerId) return;
+        if (svgElement.hasPointerCapture(event.pointerId)) {
+          svgElement.releasePointerCapture(event.pointerId);
+        }
+        panState = null;
+      })
+      .on("pointercancel.pan", () => {
+        panState = null;
+      });
 
     const selectRelationship = (node: ForceNode) => {
       const edge = findRelationship(sourceEdges, center.id, node.id);
@@ -377,18 +526,29 @@ export function PersonGraph2D({
     if (reduceMotion) {
       simulation.stop();
       for (let index = 0; index < 180; index += 1) simulation.tick();
+      fitViewToNodes();
       render();
     } else {
-      simulation.on("tick", render);
+      // V1.0.6.3：前 45 帧持续自适应视图——图从中心自然舒展到撑满画布，
+      // 之后的 45 帧内用户仍可滚轮缩放 / 拖拽平移，不会被自动视图覆盖。
+      let ticks = 0;
+      simulation.on("tick", () => {
+        render();
+        ticks += 1;
+        if (ticks <= 45) fitViewToNodes();
+      });
     }
 
     return () => {
       clearInteraction();
       simulation.stop();
       svg.on("contextmenu", null);
+      svg.on(".zoom", null);
+      svg.on(".pan", null);
       svg.selectAll("*").remove();
       nodeSelectionRef.current = null;
       applyNodeStatesRef.current = null;
+      zoomControlsRef.current = null;
     };
     // 注意：受控选中 / 高亮**故意不进入依赖**——它们只通过上面的独立 effect 更新 class，
     // 若放进来会在每次点击时重推力导向，破坏既有交互手感（TC-08 约束）。
@@ -401,13 +561,45 @@ export function PersonGraph2D({
   const { center } = oneHopView;
 
   return (
-    <section className={styles.layout} aria-label="人物关系网络">
-      <div ref={graphHostRef} className={styles.graphHost}>
+    <section
+      className={`${styles.layout}${fillContainer ? ` ${styles.layoutFill}` : ""}`}
+      aria-label="人物关系网络"
+    >
+      <div ref={graphHostRef} className={styles.graphHost} data-graph-host="true">
         <svg ref={svgRef} className={styles.graph} role="img" />
-        <p className={styles.graphHint}>单击人物查看两人关系与共同事件；长按约 0.5 秒切换中心；拖拽可调整位置。</p>
+        <div className={styles.zoomControls} role="group" aria-label="关系图缩放与平移">
+          <button
+            type="button"
+            aria-label="放大关系图"
+            title="放大"
+            onClick={() => zoomControlsRef.current?.zoomIn()}
+          >
+            ＋
+          </button>
+          <button
+            type="button"
+            aria-label="缩小关系图"
+            title="缩小"
+            onClick={() => zoomControlsRef.current?.zoomOut()}
+          >
+            －
+          </button>
+          <button
+            type="button"
+            aria-label="复位关系图视图"
+            title="复位视图"
+            onClick={() => zoomControlsRef.current?.reset()}
+          >
+            ⟲
+          </button>
+        </div>
+        <p className={styles.graphHint}>
+          单击人物查看两人关系与共同事件；长按约 0.5 秒切换中心；拖拽节点调整位置；
+          滚轮缩放、拖拽空白处平移。
+        </p>
       </div>
 
-      <aside className={styles.panel} aria-live="polite">
+      <aside className={styles.panel} aria-live="polite" data-graph-info-card="true">
         {activeRelationship ? (
           <>
             <p className={styles.panelEyebrow}>人物关系</p>

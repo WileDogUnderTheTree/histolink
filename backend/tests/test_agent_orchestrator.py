@@ -15,8 +15,8 @@ from agent_testkit import (
     grounded_answer,
     insufficient_answer,
     refusal_answer,
-    tool_call_step,
     tool_batch_step,
+    tool_call_step,
 )
 
 from agent.orchestrator import (
@@ -30,7 +30,9 @@ from agent.schemas import AgentResult
 CHIBI_CITATION = "cite-handong-chibi-0"
 
 
-def _run(store: Any, responses: list[Any], **kwargs: Any) -> tuple[AgentResult, FakeLLM]:
+def _run(
+    store: Any, responses: list[Any], **kwargs: Any
+) -> tuple[AgentResult, FakeLLM]:
     fake = FakeLLM(responses)
     result = AgentOrchestrator(store, fake, **kwargs).run(ask_request())
     return result, fake
@@ -62,18 +64,26 @@ def test_tool_then_grounded_answer(store: Any) -> None:
     second_round_messages = fake.calls[1]["messages"]
     assert any("【工具结果" in message["content"] for message in second_round_messages)
     assert any("仅数据" in message["content"] for message in second_round_messages)
-    assert any(CHIBI_CITATION in message["content"] for message in second_round_messages)
+    assert any(
+        CHIBI_CITATION in message["content"] for message in second_round_messages
+    )
 
 
 def test_parallel_tool_batch_preserves_results_and_evidence(store: Any) -> None:
     result, fake = _run(
         store,
         [
-            tool_batch_step([
-                {"tool": "get_event", "arguments": {"event_id": "handong-chibi"}},
-                {"tool": "get_event", "arguments": {"event_id": "xixia-09"}},
-            ]),
-            final_step(grounded_answer(citation_ids=[CHIBI_CITATION], entity_id="handong-chibi")),
+            tool_batch_step(
+                [
+                    {"tool": "get_event", "arguments": {"event_id": "handong-chibi"}},
+                    {"tool": "get_event", "arguments": {"event_id": "xixia-09"}},
+                ]
+            ),
+            final_step(
+                grounded_answer(
+                    citation_ids=[CHIBI_CITATION], entity_id="handong-chibi"
+                )
+            ),
         ],
     )
 
@@ -124,7 +134,11 @@ def test_finalize_round_grounds_with_accumulated_evidence(store: Any) -> None:
         [
             tool_call_step("get_event", {"event_id": "handong-chibi"}),
             tool_call_step("get_event", {"event_id": "xixia-09"}),
-            final_step(grounded_answer(citation_ids=[CHIBI_CITATION], entity_id="handong-chibi")),
+            final_step(
+                grounded_answer(
+                    citation_ids=[CHIBI_CITATION], entity_id="handong-chibi"
+                )
+            ),
         ],
         max_steps=2,
     )
@@ -176,13 +190,19 @@ def test_tool_call_budget_blocks_batch_flood(store: Any) -> None:
     assert result.answer.mode == "insufficient"
     assert result.downgraded is False
     # 超限拒绝的原因确实回传给了模型，供它改用 final 收尾。
-    assert any("安全上限" in message["content"] for message in fake.calls[3]["messages"])
+    assert any(
+        "安全上限" in message["content"] for message in fake.calls[3]["messages"]
+    )
 
 
 def test_invalid_evidence_forces_insufficient(store: Any) -> None:
     result, fake = _run(
         store,
-        [final_step(grounded_answer(citation_ids=["cite-fabricated-0"], entity_id="tang-04"))],
+        [
+            final_step(
+                grounded_answer(citation_ids=["cite-fabricated-0"], entity_id="tang-04")
+            )
+        ],
         max_steps=1,
     )
 
@@ -202,7 +222,11 @@ def test_validation_failure_triggers_final_repair(store: Any) -> None:
         [
             tool_call_step("get_event", {"event_id": "handong-chibi"}),
             final_step(grounded_answer(citation_ids=["cite-fabricated-0"])),
-            final_step(grounded_answer(citation_ids=[CHIBI_CITATION], entity_id="handong-chibi")),
+            final_step(
+                grounded_answer(
+                    citation_ids=[CHIBI_CITATION], entity_id="handong-chibi"
+                )
+            ),
         ],
     )
 
@@ -210,7 +234,9 @@ def test_validation_failure_triggers_final_repair(store: Any) -> None:
     assert result.downgraded is False
     assert result.steps == 3
     assert len(result.tools) == 1
-    assert any("未通过证据校验" in message["content"] for message in fake.calls[2]["messages"])
+    assert any(
+        "未通过证据校验" in message["content"] for message in fake.calls[2]["messages"]
+    )
     assert [citation.id for citation in result.citations] == [CHIBI_CITATION]
 
 
@@ -271,7 +297,11 @@ def test_finalize_round_repairs_invalid_json(store: Any) -> None:
             tool_call_step("get_event", {"event_id": "handong-chibi"}),
             tool_call_step("get_event", {"event_id": "xixia-09"}),
             "not-a-json-final",
-            final_step(grounded_answer(citation_ids=[CHIBI_CITATION], entity_id="handong-chibi")),
+            final_step(
+                grounded_answer(
+                    citation_ids=[CHIBI_CITATION], entity_id="handong-chibi"
+                )
+            ),
         ],
         max_steps=2,
     )
@@ -298,7 +328,9 @@ def test_invalid_tool_arguments_are_fed_back(store: Any) -> None:
     assert result.steps == 2
     assert result.answer.mode == "insufficient"
     # 第二轮 prompt 里回传了工具失败信封。
-    assert any("INVALID_REQUEST" in message["content"] for message in fake.calls[1]["messages"])
+    assert any(
+        "INVALID_REQUEST" in message["content"] for message in fake.calls[1]["messages"]
+    )
 
 
 def test_refusal_mode_passes_through(store: Any) -> None:
@@ -341,7 +373,18 @@ def test_ui_actions_are_filtered(store: Any) -> None:
     )
 
     assert result.answer.mode == "grounded"
-    assert [action.id for action in result.answer.ui_actions] == ["act-ok"]
+    # V1.0.6.3 双图联动：模型只给时间轴动作，服务端用快照补齐人物图动作；
+    # 模型给出的合法动作保持原顺序，非法动作仍被过滤。
+    assert result.answer.ui_actions[0].id == "act-ok"
+    action_types = [action.type.value for action in result.answer.ui_actions]
+    assert "timeline.focus_event" in action_types
+    assert "graph.focus_person" in action_types
+    graph_action = next(
+        action
+        for action in result.answer.ui_actions
+        if action.type.value == "graph.focus_person"
+    )
+    assert graph_action.payload["person_id"] == "p-caocao-b012"
 
 
 def test_system_prompt_and_context(store: Any) -> None:
@@ -359,10 +402,19 @@ def test_system_prompt_and_context(store: Any) -> None:
 
     assert messages[0]["role"] == "system"
     system_prompt = messages[0]["content"]
-    for tool_name in ("resolve_entity", "search_events", "get_relation", "timeline_span"):
+    for tool_name in (
+        "resolve_entity",
+        "search_events",
+        "get_relation",
+        "timeline_span",
+    ):
         assert tool_name in system_prompt
     assert "禁止幻觉" in system_prompt
-    assert "grounded" in system_prompt and "insufficient" in system_prompt and "refusal" in system_prompt
+    assert (
+        "grounded" in system_prompt
+        and "insufficient" in system_prompt
+        and "refusal" in system_prompt
+    )
 
     # 历史对话按顺序保留，最后一条是当前问题 + 页面上下文。
     assert messages[1]["content"] == "先问一句"
@@ -405,7 +457,9 @@ def test_max_steps_hard_limit_is_six(store: Any) -> None:
 
 
 def test_parse_model_step_accepts_pure_json_and_fence() -> None:
-    pure = '{"action":"tool_call","tool":"get_event","arguments":{"event_id":"xixia-09"}}'
+    pure = (
+        '{"action":"tool_call","tool":"get_event","arguments":{"event_id":"xixia-09"}}'
+    )
     assert parse_model_step(pure).tool == "get_event"
     fenced = f"```json\n{pure}\n```"
     assert parse_model_step(fenced).tool == "get_event"
@@ -430,11 +484,15 @@ def test_text_wrapped_json_triggers_repair_round(store: Any) -> None:
         '{"action":"final","thought":"结束","answer":{"mode":"insufficient",'
         '"markdown":"内部说明","missing_reasons":["INSUFFICIENT_DATA"]}}'
     )
-    result, fake = _run(store, [wrapped, final_step(insufficient_answer())], max_steps=2)
+    result, fake = _run(
+        store, [wrapped, final_step(insufficient_answer())], max_steps=2
+    )
 
     assert result.steps == 2
     assert result.downgraded is False
-    assert any("不是合法 JSON" in message["content"] for message in fake.calls[1]["messages"])
+    assert any(
+        "不是合法 JSON" in message["content"] for message in fake.calls[1]["messages"]
+    )
 
 
 def test_model_supplied_certainty_triggers_repair_round(store: Any) -> None:
@@ -449,5 +507,7 @@ def test_model_supplied_certainty_triggers_repair_round(store: Any) -> None:
 
     assert result.steps == 2
     assert result.downgraded is False
-    assert any("不是合法 JSON" in message["content"] for message in fake.calls[1]["messages"])
+    assert any(
+        "不是合法 JSON" in message["content"] for message in fake.calls[1]["messages"]
+    )
     assert "外星人" not in result.answer.markdown

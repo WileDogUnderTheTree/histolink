@@ -155,16 +155,26 @@ class InvalidToolArguments(ToolRegistryError):
 _DESCRIPTIONS = {tool["name"]: tool["description"] for tool in CONTRACT_TOOLS}
 
 SPECS: dict[str, ToolSpec] = {
-    "resolve_entity": ToolSpec("resolve_entity", _DESCRIPTIONS["resolve_entity"], ResolveEntityArgs),
-    "search_events": ToolSpec("search_events", _DESCRIPTIONS["search_events"], SearchEventsArgs),
+    "resolve_entity": ToolSpec(
+        "resolve_entity", _DESCRIPTIONS["resolve_entity"], ResolveEntityArgs
+    ),
+    "search_events": ToolSpec(
+        "search_events", _DESCRIPTIONS["search_events"], SearchEventsArgs
+    ),
     "get_event": ToolSpec("get_event", _DESCRIPTIONS["get_event"], GetEventArgs),
     "get_person": ToolSpec("get_person", _DESCRIPTIONS["get_person"], GetPersonArgs),
     "get_person_events": ToolSpec(
         "get_person_events", _DESCRIPTIONS["get_person_events"], GetPersonEventsArgs
     ),
-    "get_relation": ToolSpec("get_relation", _DESCRIPTIONS["get_relation"], GetRelationArgs),
-    "get_era_graph": ToolSpec("get_era_graph", _DESCRIPTIONS["get_era_graph"], GetEraGraphArgs),
-    "timeline_span": ToolSpec("timeline_span", _DESCRIPTIONS["timeline_span"], TimelineSpanArgs),
+    "get_relation": ToolSpec(
+        "get_relation", _DESCRIPTIONS["get_relation"], GetRelationArgs
+    ),
+    "get_era_graph": ToolSpec(
+        "get_era_graph", _DESCRIPTIONS["get_era_graph"], GetEraGraphArgs
+    ),
+    "timeline_span": ToolSpec(
+        "timeline_span", _DESCRIPTIONS["timeline_span"], TimelineSpanArgs
+    ),
     "search_historical_text": ToolSpec(
         "search_historical_text",
         _DESCRIPTIONS["search_historical_text"],
@@ -207,7 +217,9 @@ class ToolRegistry:
     def tool_catalog_json(self) -> str:
         return json.dumps(self.tool_catalog(), ensure_ascii=False, indent=2)
 
-    def validate_arguments(self, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+    def validate_arguments(
+        self, name: str, arguments: dict[str, Any]
+    ) -> dict[str, Any]:
         """白名单 + 严格 Schema 校验；返回可直接传参的 kwargs。"""
 
         spec = self._specs.get(name)
@@ -235,10 +247,14 @@ class ToolRegistry:
             kwargs = self.validate_arguments(name, arguments)
         except ToolRegistryError as exc:
             safe_name = (name or "unknown")[:100]
-            return failure(self._toolkit.context, safe_name, ErrorCode.INVALID_REQUEST, str(exc))
+            return failure(
+                self._toolkit.context, safe_name, ErrorCode.INVALID_REQUEST, str(exc)
+            )
         except Exception:
             safe_name = (name or "unknown")[:100]
-            logger.exception("工具 %s 参数校验内部异常，已转换为安全失败信封", safe_name)
+            logger.exception(
+                "工具 %s 参数校验内部异常，已转换为安全失败信封", safe_name
+            )
             return failure(
                 self._toolkit.context,
                 safe_name,

@@ -2,15 +2,18 @@
 /**
  * 史脉 · `/ask` 页面 UI / UX 无头浏览器体检（V1.0.5.3 全面体检专项 · 工具 1）。
  *
- * 覆盖（对照 V1.0.5.2 UI 呼吸感补丁 + V1.0.5.2-layout 布局与侧边栏修复补丁的验收口径）：
+ * 覆盖（对照 V1.0.5.2 UI 呼吸感补丁 + V1.0.5.2-layout 布局与侧边栏修复补丁的验收口径；
+ *       V1.0.6.2 发版收尾后：分屏比例改为左对话 60% / 右史引 40%，历史库为空时自动跳过
+ *       历史列表相关场景，会话持久化 / 测试隔离以 health-check-sessions.mjs 等新脚本为准）：
  *  1) 1600×1000 默认视图：100vh App Shell（无整页滚动）、侧边栏/聊天/史引三栏独立滚动、
  *     气泡 85% / 行高 1.8、模型按钮位置；
  *  2) 会话列表排序稳定性：点击最下面一条历史记录必须**原位变灰**、不重排；聊天列表自动到底部；
- *     中间 / 左侧滚轮互不联动且整页不动；
- *  3) 历史侧边栏交互：悬浮「⋯」菜单（置顶 / 重命名 / 删除）、新建对话清空回欢迎语；
+ *     中间 / 左侧滚轮互不联动且整页不动（无历史条目时整段 SKIP）；
+ *  3) 历史侧边栏交互：悬浮「⋯」菜单（置顶 / 重命名 / 删除）、新建对话清空回欢迎语
+ *     （无历史条目时整段 SKIP）；
  *  4) 侧边栏收起 + localStorage 持久化 + 刷新后保持收起 + 顶栏「展开历史对话」入口；
  *  5) 引用 >3 默认折叠、「展开全部 N 条引用」、展开后全部可见；
- *  6) 引用点击打开史引副驾驶：左对话 40% / 右面板 60% 分屏，右面板高度锁定在视口内；
+ *  6) 引用点击打开史引副驾驶：左对话 ~60% / 右面板 ~40% 分屏（V1.0.6.2 起）；
  *  7) 窄屏 820px：侧边栏默认收起、展开为浮层 + 遮罩、点击遮罩可收起、整页仍不滚动；
  *  8) （--live）真实提问：新问题 / 新回答自动滚动到底部 + 长回答 / 引用 / 史引自动分屏；
  *  9) （--live）V1.0.5.4 真实对比问答：/ask 回答卡片展示「💡 史令对比分析」独立卡片，
@@ -419,7 +422,18 @@ async function main() {
 
     // =====================================================================
     // 2) 排序稳定性 + 三栏独立滚动（矮窗口：两侧内容必须溢出才可验证）
+    //    V1.0.6.2：历史库默认是**干净**的（发版前已清理测试脏数据），
+    //    没有历史条目时本节无数据可验，整段跳过；history-check-* 三个 E2E
+    //    脚本用 e2e 测试会话覆盖会话持久化 / 列表隔离。
     // =====================================================================
+    const conversationCount = await evaluate(
+      `document.querySelectorAll('[data-conversation-id]').length`,
+    );
+    if (Number(conversationCount) === 0) {
+      console.log(
+        "  · SKIP 历史列表相关检查：用户正式历史为空（干净库预期状态，V1.0.6.2 发版收尾已清空测试脏数据）",
+      );
+    } else {
     await viewport(1600, 400);
     await go("/ask", 2800);
     const beforeClick = await evaluate(`(() => {
@@ -631,6 +645,7 @@ async function main() {
 
     // 刷新页面，回到干净的演示列表，供后续折叠 / 分屏场景使用
     await go("/ask", 2800);
+    } // 结束「历史列表相关检查」（无历史条目时整段跳过）
 
     // =====================================================================
     // 4) 侧边栏收起 → 宽版居中 → 持久化 → 刷新保持
@@ -726,7 +741,7 @@ async function main() {
     await shoot("07-citations-expanded");
 
     // =====================================================================
-    // 6) 史引副驾驶分屏：左对话 40% / 右面板 60%
+    // 6) 史引副驾驶分屏（V1.0.6.2 起：左对话 60% / 右面板 40%）
     // =====================================================================
     const citationClick = await evaluate(`(() => {
       const button = document.querySelector('div[aria-label="回答引用"] button[class*="citation"]');
@@ -760,7 +775,7 @@ async function main() {
     })()`);
     log("08-copilot-split", split);
     assert("史引面板已打开", split.panel !== false);
-    assert("分屏比例约 40% / 60%", Math.abs(split.ratio - 0.4) < 0.03, split.ratio);
+    assert("分屏比例约 60% / 40%（左对话 / 右史引，V1.0.6.2 痛点 3）", Math.abs(split.ratio - 0.6) < 0.04, split.ratio);
     assert("史引面板含时间轴 iframe", split.panelHasIframe === true);
     await shoot("08-copilot-split");
 
@@ -807,6 +822,10 @@ async function main() {
     await shoot("10-narrow-overlay");
 
     // 窄屏浮层内「⋯」菜单按视口定位（浮层动画 / transform 不能把 fixed 菜单带偏）
+    // V1.0.6.2：无历史条目时跳过（干净库没有条目可点）。
+    if (Number(conversationCount) === 0) {
+      console.log("  · SKIP 窄屏「⋯」菜单检查：用户正式历史为空");
+    } else {
     await evaluate(`(() => { document.querySelector('[data-conversation-id] [data-conversation-menu-trigger]')?.click(); return true; })()`);
     await waitFor(`Boolean(document.querySelector('[role="menu"][aria-label="历史对话操作"]'))`, 4000);
     const narrowMenu = await evaluate(`(() => {
@@ -827,6 +846,7 @@ async function main() {
     await delay(250);
     const narrowMenuClosed = await evaluate(`Boolean(document.querySelector('[role="menu"][aria-label="历史对话操作"]'))`);
     assert("点击外部关闭悬浮菜单", narrowMenuClosed === false);
+    }
 
     await evaluate(`document.querySelector('button[aria-label="关闭历史对话浮层"]').click()`);
     await delay(500);
@@ -921,7 +941,7 @@ async function main() {
         }
         if (realMetrics.copilot) {
           assert("真实回答触发史引时侧边栏自动让位", realMetrics.sidebar === false, JSON.stringify(realMetrics));
-          assert("真实回答分屏比例约 40% / 60%", Math.abs(realMetrics.split.ratio - 0.4) < 0.05, JSON.stringify(realMetrics.split));
+          assert("真实回答分屏比例约 60% / 40%（左对话 / 右史引）", Math.abs(realMetrics.split.ratio - 0.6) < 0.05, JSON.stringify(realMetrics.split));
           await shoot("11-real-answer-guide-split");
           await evaluate(`(() => {
             const btn = [...document.querySelectorAll('aside[aria-label="史引副驾驶"] button')].find((b) => b.textContent.includes('返回聊天'));

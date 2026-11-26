@@ -64,7 +64,7 @@ class SnapshotStore:
     # 加载与校验
     # ------------------------------------------------------------------
     @classmethod
-    def load(cls, snapshot_path: Path, meta_path: Path) -> "SnapshotStore":
+    def load(cls, snapshot_path: Path, meta_path: Path) -> SnapshotStore:
         if not snapshot_path.exists():
             raise SnapshotLoadError(
                 f"快照文件不存在：{snapshot_path}。请先运行 node scripts/export-snapshot.mjs"
@@ -78,17 +78,25 @@ class SnapshotStore:
         try:
             snapshot = json.loads(raw.decode("utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-            raise SnapshotLoadError(f"快照不是合法 UTF-8 JSON：{snapshot_path}（{exc}）") from exc
+            raise SnapshotLoadError(
+                f"快照不是合法 UTF-8 JSON：{snapshot_path}（{exc}）"
+            ) from exc
 
         try:
             meta = json.loads(meta_path.read_text(encoding="utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-            raise SnapshotLoadError(f"快照元数据不是合法 UTF-8 JSON：{meta_path}（{exc}）") from exc
+            raise SnapshotLoadError(
+                f"快照元数据不是合法 UTF-8 JSON：{meta_path}（{exc}）"
+            ) from exc
 
         if snapshot.get("schema_version") != "snapshot.v1":
-            raise SnapshotLoadError(f"快照 schema_version 非法：{snapshot.get('schema_version')}")
+            raise SnapshotLoadError(
+                f"快照 schema_version 非法：{snapshot.get('schema_version')}"
+            )
         if meta.get("schema_version") != "snapshot.v1":
-            raise SnapshotLoadError(f"元数据 schema_version 非法：{meta.get('schema_version')}")
+            raise SnapshotLoadError(
+                f"元数据 schema_version 非法：{meta.get('schema_version')}"
+            )
 
         actual_hash = hashlib.sha256(raw).hexdigest()
         if meta.get("content_hash") != actual_hash:
@@ -118,10 +126,16 @@ class SnapshotStore:
         ):
             actual = len(snapshot.get(payload_key) or [])
             if counts.get(key) != actual:
-                raise SnapshotLoadError(f"快照 counts.{key}={counts.get(key)} 与数组长度 {actual} 不一致")
+                raise SnapshotLoadError(
+                    f"快照 counts.{key}={counts.get(key)} 与数组长度 {actual} 不一致"
+                )
 
-        persons_by_id = {person["person_id"]: person for person in snapshot.get("persons") or []}
-        events_by_id = {event["event_id"]: event for event in snapshot.get("events") or []}
+        persons_by_id = {
+            person["person_id"]: person for person in snapshot.get("persons") or []
+        }
+        events_by_id = {
+            event["event_id"]: event for event in snapshot.get("events") or []
+        }
         if len(persons_by_id) != len(snapshot.get("persons") or []):
             raise SnapshotLoadError("快照 persons 存在重复 person_id")
         if len(events_by_id) != len(snapshot.get("events") or []):
@@ -136,11 +150,15 @@ class SnapshotStore:
         for event in events_by_id.values():
             for person_id in event.get("person_ids") or []:
                 if person_id not in persons_by_id:
-                    raise SnapshotLoadError(f"事件 {event['event_id']} 引用了不存在的人物 {person_id}")
+                    raise SnapshotLoadError(
+                        f"事件 {event['event_id']} 引用了不存在的人物 {person_id}"
+                    )
         for person in persons_by_id.values():
             for event_id in person.get("event_ids") or []:
                 if event_id not in events_by_id:
-                    raise SnapshotLoadError(f"人物 {person['person_id']} 引用了不存在的事件 {event_id}")
+                    raise SnapshotLoadError(
+                        f"人物 {person['person_id']} 引用了不存在的事件 {event_id}"
+                    )
 
         return cls(
             snapshot=snapshot,
@@ -193,7 +211,9 @@ class SnapshotStore:
     @staticmethod
     def _disambiguator(person: dict[str, Any]) -> str:
         disambiguator = person.get("disambiguator") or {}
-        period = disambiguator.get("period") or person.get("primary_dynasty") or "时期未详"
+        period = (
+            disambiguator.get("period") or person.get("primary_dynasty") or "时期未详"
+        )
         role = disambiguator.get("role")
         return f"{period}·{role}" if role else str(period)
 
@@ -230,7 +250,9 @@ class SnapshotStore:
                 scope_ids=list(person.get("scope_ids") or []),
                 first_year=person["first_year"],
                 last_year=person["last_year"],
-                events=[self._event_summary(event) for event in events[:PERSON_EVENT_LIMIT]],
+                events=[
+                    self._event_summary(event) for event in events[:PERSON_EVENT_LIMIT]
+                ],
             ),
         )
 
@@ -250,9 +272,14 @@ class SnapshotStore:
                 importance=event.get("importance"),
                 is_special=bool(event.get("is_special")),
                 person_ids=list(event.get("person_ids") or []),
-                source_refs=[SourceRefModel(**ref) for ref in event.get("source_refs") or []],
+                source_refs=[
+                    SourceRefModel(**ref) for ref in event.get("source_refs") or []
+                ],
                 source_status=event.get("source_status", "cited"),
-                surface=EventSurface(timeline=bool(surface.get("timeline")), graph=bool(surface.get("graph"))),
+                surface=EventSurface(
+                    timeline=bool(surface.get("timeline")),
+                    graph=bool(surface.get("graph")),
+                ),
             ),
         )
 
@@ -270,15 +297,19 @@ class SnapshotStore:
             person_id = person["person_id"]
             if person_id in seen:
                 continue
-            if era_id and era_id not in (person.get("era_ids") or []) and era_id not in (
-                person.get("scope_ids") or []
+            if (
+                era_id
+                and era_id not in (person.get("era_ids") or [])
+                and era_id not in (person.get("scope_ids") or [])
             ):
                 continue
             seen.add(person_id)
             first_event = None
             for event_id in person.get("event_ids") or []:
                 event = self.events_by_id.get(event_id)
-                if event and (first_event is None or event["year"] < first_event["year"]):
+                if event and (
+                    first_event is None or event["year"] < first_event["year"]
+                ):
                     first_event = event
             hint = (
                 f"{_format_year(first_event['year'])}·{first_event['title']}"

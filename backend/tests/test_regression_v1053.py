@@ -10,9 +10,10 @@
 1. **模型降级**：主模型 429 / 502 / 504 / 超时自动切换备用模型；`model_used` 与
    `trace.model_used` 反映实际模型；主备都失败时 502 / 504 错误 envelope；显式指定
    未注册模型时 API 400 与 LLMClient `LLMConfigError` 两层兜底；非降级状态码不重试。
-2. **会话隔离**：同一请求对象连续运行不累积对话状态；`history` 只影响本次请求；
-   并发 `AgentOrchestrator.run()` 互不串扰；`session_id` 仅作标识、不进入 Prompt /
-   服务端共享状态；工具结果与 UI 动作命名空间不跨请求复用。
+2. **会话隔离**：同一请求对象连续运行不累积对话状态（不传 session_context 时）；`history` 只在
+   本次请求生效、且首次请求会迁移进服务端会话；不同 `session_id` 的会话历史互相隔离，
+   `session_id` 本身不进入 Prompt；并发 `AgentOrchestrator.run()` 互不串扰；
+   工具结果与 UI 动作命名空间不跨请求复用。
 3. **边界兜底**：空问题 / 纯空白 / 超长问题 / 缺字段 / 非法 context / 非法 JSON 全部
    400 `INVALID_REQUEST` 且不进入问答链路；无可用工具结果时 grounded 降级为
    insufficient；RAG 不可用或空结果不导致 500；工具内部异常被吸收；模型配置缺失
@@ -153,7 +154,9 @@ class _EmptyRagStore:
     model = "fake-embedding-v1053"
 
     def search(self, query: str, top_k: int = 3) -> list[Any]:
-        assert isinstance(query, str) and query.strip(), "RAG 工具不得把空 query 传给向量库"
+        assert isinstance(query, str) and query.strip(), (
+            "RAG 工具不得把空 query 传给向量库"
+        )
         assert 1 <= top_k <= 3, "RAG 工具必须把 top_k 限制在 1..3"
         return []
 
@@ -162,7 +165,11 @@ class _SequencedModelUsedFakeLLM(FakeLLM):
     """按脚本逐轮返回不同的 `model_used`，用于验证 trace 记录的是**最后一轮实际模型**。"""
 
     def __init__(
-        self, responses: list[str | BaseException], *, model_used_sequence: list[str], **kwargs: Any
+        self,
+        responses: list[str | BaseException],
+        *,
+        model_used_sequence: list[str],
+        **kwargs: Any,
     ) -> None:
         super().__init__(responses, **kwargs)
         self._model_used_sequence = list(model_used_sequence)
@@ -203,7 +210,9 @@ def test_主模型可重试状态码自动切换备用模型(upstream_status: in
     def handler(request: httpx.Request) -> httpx.Response:
         models.append(json.loads(request.content)["model"])
         if len(models) == 1:
-            return httpx.Response(upstream_status, text="upstream busy", request=request)
+            return httpx.Response(
+                upstream_status, text="upstream busy", request=request
+            )
         return _ok_response(FALLBACK_MODEL)
 
     result = _client(handler).chat(MESSAGES)
@@ -211,10 +220,16 @@ def test_主模型可重试状态码自动切换备用模型(upstream_status: in
     assert models == [PRIMARY_MODEL, FALLBACK_MODEL], (
         f"HTTP {upstream_status} 应触发一次备用模型重试"
     )
-    assert result.model_used == FALLBACK_MODEL, "model_used 必须是最终完成回答的备用模型"
+    assert result.model_used == FALLBACK_MODEL, (
+        "model_used 必须是最终完成回答的备用模型"
+    )
     assert result.model == FALLBACK_MODEL, "备用模型成功时上游回显模型应为备用模型"
     assert "final" in result.content, "降级后应返回备用模型的正常内容"
-    assert result.usage == {"prompt_tokens": 9, "completion_tokens": 1, "total_tokens": 10}
+    assert result.usage == {
+        "prompt_tokens": 9,
+        "completion_tokens": 1,
+        "total_tokens": 10,
+    }
 
 
 def test_主模型超时自动切换备用模型() -> None:
@@ -264,7 +279,9 @@ def test_主备都失败_降级上下文与API错误信封(
 
     error = exc_info.value
     assert models == [PRIMARY_MODEL, FALLBACK_MODEL], "主备都必须被实际请求一次"
-    assert isinstance(error, LLMTimeoutError if failure_kind == "timeout" else LLMUpstreamError)
+    assert isinstance(
+        error, LLMTimeoutError if failure_kind == "timeout" else LLMUpstreamError
+    )
     assert PRIMARY_MODEL in str(error) and FALLBACK_MODEL in str(error)
     assert "已自动降级" in str(error), "主备都失败的异常必须保留降级上下文"
     if isinstance(error, LLMUpstreamError):
@@ -282,7 +299,9 @@ def test_主备都失败_降级上下文与API错误信封(
     assert payload["error"]["details"]["model"] == PRIMARY_MODEL
     if failure_kind == "upstream_502":
         assert payload["error"]["details"]["upstream_status"] == 502
-    assert "已自动降级" in payload["error"]["message"], "envelope 应保留可运维的降级上下文"
+    assert "已自动降级" in payload["error"]["message"], (
+        "envelope 应保留可运维的降级上下文"
+    )
 
 
 def test_手动选择备用模型遇超时仍降级回主模型() -> None:
@@ -298,7 +317,9 @@ def test_手动选择备用模型遇超时仍降级回主模型() -> None:
 
     result = _client(handler).chat(MESSAGES, model_id=FALLBACK_MODEL)
 
-    assert models == [FALLBACK_MODEL, PRIMARY_MODEL], "手动选择备用模型后主模型应成为降级目标"
+    assert models == [FALLBACK_MODEL, PRIMARY_MODEL], (
+        "手动选择备用模型后主模型应成为降级目标"
+    )
     assert result.model_used == PRIMARY_MODEL
     assert result.model == PRIMARY_MODEL
 
@@ -372,13 +393,17 @@ def test_trace_model_used_记录最后一轮实际模型(store: Any) -> None:
     assert result.answer.mode == "grounded"
     assert result.steps == 2
     assert result.model == PRIMARY_MODEL, "trace.model 沿用上游回显模型名"
-    assert result.model_used == FALLBACK_MODEL, "model_used 应是最后一轮实际完成回答的模型"
+    assert result.model_used == FALLBACK_MODEL, (
+        "model_used 应是最后一轮实际完成回答的模型"
+    )
 
     envelope = build_answer_envelope(result, request, store)
     assert envelope.trace is not None
     assert envelope.trace.model == PRIMARY_MODEL
     assert envelope.trace.model_used == FALLBACK_MODEL
-    assert envelope.trace.model_requested is None, "未显式选择模型时 model_requested 必须为 null"
+    assert envelope.trace.model_requested is None, (
+        "未显式选择模型时 model_requested 必须为 null"
+    )
 
 
 # ===========================================================================
@@ -406,15 +431,15 @@ def test_同一请求对象连续运行不累积对话状态(store: Any) -> None
         "同一请求两次运行的 Prompt 必须逐字一致（无共享可变对话状态）"
     )
     assert len(request.history) == 0, "运行不得回写请求对象"
-    assert all(message["role"] != "assistant" for message in fake.calls[1]["messages"]), (
-        "第二轮不得复用上一轮 assistant 消息"
-    )
+    assert all(
+        message["role"] != "assistant" for message in fake.calls[1]["messages"]
+    ), "第二轮不得复用上一轮 assistant 消息"
 
 
-def test_history_只影响本次请求不跨请求泄漏(
+def test_history_首次请求迁移进会话并对后续请求生效(
     client: TestClient, install_llm: Any
 ) -> None:
-    """API 层：携带 history 的请求只把 history 注入本次 Prompt，下一次请求不得看到。"""
+    """V1.0.6：首次请求携带的 history 会迁移进服务端会话，同一 session 的后续请求可见。"""
 
     fake = install_llm(
         FakeLLM(
@@ -433,26 +458,26 @@ def test_history_只影响本次请求不跨请求泄漏(
     second = client.post("/api/agent/ask", json=ASK_BODY)
 
     assert first.status_code == second.status_code == 200
-    first_messages = fake.calls[0]["messages"]
-    second_messages = fake.calls[1]["messages"]
-    assert [message["content"] for message in first_messages[1:3]] == [
+    first_texts = [message["content"] for message in fake.calls[0]["messages"]]
+    second_texts = [message["content"] for message in fake.calls[1]["messages"]]
+    assert first_texts[1:3] == [
         "上一轮问题：孔子是谁？",
         "上一轮回答：孔子是春秋时期的思想家。",
-    ], "本次请求的 history 必须按顺序进入 Prompt"
-    assert not any("上一轮" in message["content"] for message in second_messages), (
-        "下一次请求不得看到上一次请求携带的 history"
+    ], "首次请求迁移的 history 必须按顺序进入 Prompt"
+    assert "上一轮问题：孔子是谁？" in second_texts, (
+        "同一 session_id 的后续请求必须能看到上一轮历史（V1.0.6 多轮记忆）"
     )
-    assert len(first_messages) == len(second_messages) + 2
+    assert "上一轮回答：孔子是春秋时期的思想家。" in second_texts
     assert history == [
         {"role": "user", "content": "上一轮问题：孔子是谁？"},
         {"role": "assistant", "content": "上一轮回答：孔子是春秋时期的思想家。"},
     ], "服务端不得修改调用方传入的 history"
 
 
-def test_session_id_仅作标识不改变共享状态(
+def test_session_id_隔离不同会话不共享历史(
     client: TestClient, install_llm: Any
 ) -> None:
-    """session_id 只用于调用方标识，不进入 Prompt，也不在服务端产生会话缓存。"""
+    """V1.0.6：会话历史按 session_id 隔离；session_id 本身不进入 Prompt。"""
 
     fake = install_llm(
         FakeLLM(
@@ -463,20 +488,43 @@ def test_session_id_仅作标识不改变共享状态(
         )
     )
 
-    first = client.post("/api/agent/ask", json={**ASK_BODY, "session_id": "session-a"})
-    second = client.post("/api/agent/ask", json={**ASK_BODY, "session_id": "session-b"})
+    first = client.post(
+        "/api/agent/ask",
+        json={**ASK_BODY, "session_id": "session-a", "question": "孔子是谁？"},
+    )
+    second = client.post(
+        "/api/agent/ask",
+        json={**ASK_BODY, "session_id": "session-b", "question": "墨子是谁？"},
+    )
 
     assert first.status_code == second.status_code == 200
     first_payload = first.json()
     second_payload = second.json()
     assert first_payload["ok"] is True and second_payload["ok"] is True
-    assert first_payload["request_id"] != second_payload["request_id"], "每次请求必须独立 request_id"
-    assert first_payload["snapshot"] == second_payload["snapshot"], "快照引用不得因 session_id 变化"
-    assert fake.calls[0]["messages"] == fake.calls[1]["messages"], (
-        "session_id 不得进入 Prompt 或改变服务端共享状态"
+    assert first_payload["request_id"] != second_payload["request_id"], (
+        "每次请求必须独立 request_id"
     )
-    session_keys = [name for name in vars(client.app.state) if "session" in name.lower()]
-    assert session_keys == [], f"服务端不应存在 session 级缓存：{session_keys}"
+    assert first_payload["snapshot"] == second_payload["snapshot"], (
+        "快照引用不得因 session_id 变化"
+    )
+
+    second_texts = [message["content"] for message in fake.calls[1]["messages"]]
+    # 只检查「历史消息 + 当前问题」，System Prompt 里含有工具说明示例（可能提到孔子）。
+    second_context_texts = second_texts[1:]
+    assert not any("孔子" in text for text in second_context_texts), (
+        "session-a 的历史不得泄漏进 session-b 的 Prompt"
+    )
+    assert all(
+        "session-a" not in text and "session-b" not in text for text in second_texts
+    ), "session_id 不得进入 Prompt"
+
+    sessions = client.get("/api/sessions").json()["sessions"]
+    assert {item["session_id"] for item in sessions} == {"session-a", "session-b"}
+    # 两个会话各自独立记录了一轮问答。
+    for session_id in ("session-a", "session-b"):
+        detail = client.get(f"/api/sessions/{session_id}").json()["session"]
+        assert detail["turn_count"] == 2
+        assert detail["turns"][0]["role"] == "user"
 
 
 def test_并发运行的工具结果与引用互不串扰(store: Any, toolkit: Any) -> None:
@@ -539,7 +587,9 @@ def test_工具结果与动作命名空间不跨请求复用(store: Any) -> None
         [
             # 第 1 轮：真实取到赤壁事件。
             tool_call_step("get_event", {"event_id": CHIBI_EVENT}),
-            final_step(grounded_answer(citation_ids=[CHIBI_CITATION], entity_id=CHIBI_EVENT)),
+            final_step(
+                grounded_answer(citation_ids=[CHIBI_CITATION], entity_id=CHIBI_EVENT)
+            ),
             # 第 2 轮：只取西夏事件，却试图复用上一轮的 UI 动作。
             tool_call_step("get_event", {"event_id": XIXIA_EVENT}),
             final_step(
@@ -552,7 +602,9 @@ def test_工具结果与动作命名空间不跨请求复用(store: Any) -> None
             # 第 3 轮：不调用任何工具，直接复用第 1 轮的 citation / evidence → 必须降级。
             *[
                 final_step(
-                    grounded_answer(citation_ids=[CHIBI_CITATION], entity_id=CHIBI_EVENT)
+                    grounded_answer(
+                        citation_ids=[CHIBI_CITATION], entity_id=CHIBI_EVENT
+                    )
                 )
                 for _ in range(6)
             ],
@@ -605,7 +657,9 @@ def test_非法请求参数统一返回400且不触发模型调用(
 
     for label, body in invalid_bodies.items():
         response = client.post("/api/agent/ask", json=body)
-        assert response.status_code == 400, f"{label} 应返回 400，实际 {response.status_code}"
+        assert response.status_code == 400, (
+            f"{label} 应返回 400，实际 {response.status_code}"
+        )
         payload = response.json()
         assert payload["ok"] is False, f"{label} 必须返回错误 envelope"
         assert payload["error"]["code"] == "INVALID_REQUEST", f"{label} 错误码必须冻结"
@@ -615,9 +669,7 @@ def test_非法请求参数统一返回400且不触发模型调用(
     assert fake.calls == [], "非法请求不得调用模型"
 
 
-def test_非法JSON请求体返回400_envelope(
-    client: TestClient, install_llm: Any
-) -> None:
+def test_非法JSON请求体返回400_envelope(client: TestClient, install_llm: Any) -> None:
     """损坏的 JSON body 由统一错误处理器转 400 envelope，不得出现裸 500。"""
 
     fake = install_llm(FakeLLM([]))
@@ -646,7 +698,9 @@ def test_无可用工具结果时grounded被降级为insufficient(
                 tool_call_step("search_events", {"q": "秦始皇 西红柿"}),
                 *[
                     final_step(
-                        grounded_answer(citation_ids=[CHIBI_CITATION], entity_id=CHIBI_EVENT)
+                        grounded_answer(
+                            citation_ids=[CHIBI_CITATION], entity_id=CHIBI_EVENT
+                        )
                     )
                     for _ in range(5)
                 ],
@@ -713,7 +767,9 @@ def test_RAG不可用或空结果不导致500(
     assert record.name == "search_historical_text"
     if rag_mode == "unavailable":
         assert record.ok is False
-        assert record.error_code == "INSUFFICIENT_EVIDENCE", "RAG 未就绪应映射为证据不足"
+        assert record.error_code == "INSUFFICIENT_EVIDENCE", (
+            "RAG 未就绪应映射为证据不足"
+        )
     else:
         assert record.ok is True, "空结果不是错误"
         assert record.hits == 0, "空结果必须在审计记录里体现 hits=0"
@@ -785,7 +841,12 @@ def test_工具契约_注册表_实现三处一致且统一信封不漂移(
     exported_names = [tool["name"] for tool in schema["tools"]]
 
     assert len(exported_names) == 9, "工具契约基线是 9 个只读工具"
-    assert exported_names == list(TOOL_NAMES) == [tool["name"] for tool in TOOLS] == list(SPECS)
+    assert (
+        exported_names
+        == list(TOOL_NAMES)
+        == [tool["name"] for tool in TOOLS]
+        == list(SPECS)
+    )
     assert set(TOOL_FUNCTIONS) == set(TOOL_NAMES) == set(SPECS)
     assert ToolRegistry(toolkit).tool_names == TOOL_NAMES
 
@@ -831,11 +892,13 @@ def test_动作类型_可用性与导出物一致(contracts_dir: Path) -> None:
     assert set(schema["x-surfaces"]) == {surface.value for surface in UISurface}
 
     exported_available = {
-        action for action, availability in schema["x-availability"].items()
+        action
+        for action, availability in schema["x-availability"].items()
         if availability == "available"
     }
     exported_planned = {
-        action for action, availability in schema["x-availability"].items()
+        action
+        for action, availability in schema["x-availability"].items()
         if availability == "planned"
     }
     assert exported_available == {action.value for action in V1_AVAILABLE_ACTIONS}
@@ -857,7 +920,9 @@ def test_动作类型_可用性与导出物一致(contracts_dir: Path) -> None:
             assert entry["surface"] == schema["x-action-surface"][action]
 
 
-def test_契约版本与实现版本各自一致且解耦(contracts_dir: Path, client: TestClient) -> None:
+def test_契约版本与实现版本各自一致且解耦(
+    contracts_dir: Path, client: TestClient
+) -> None:
     """冻结 OpenAPI 的 info.version 跟 SCHEMA_VERSION；实现版本跟 API_VERSION / APP_VERSION。"""
 
     spec = json.loads(
@@ -869,7 +934,7 @@ def test_契约版本与实现版本各自一致且解耦(contracts_dir: Path, c
         "契约生成物 info.version 冻结为 1.0（README §3.3），不跟随 API_VERSION"
     )
     assert API_VERSION == APP_VERSION
-    assert API_VERSION.startswith("1.0.5"), f"当前实现版本基线异常：{API_VERSION}"
+    assert API_VERSION.startswith("1.0.7"), f"当前实现版本基线异常：{API_VERSION}"
     assert AnswerEnvelope.model_fields["schema_version"].default == SCHEMA_VERSION
     assert ModelsResponse.model_fields["api_version"].default == API_VERSION
 
@@ -887,15 +952,18 @@ def test_契约版本与实现版本各自一致且解耦(contracts_dir: Path, c
 
 
 def test_错误码_路径与Agent响应字段基线不漂移(
-    contracts_dir: Path, client: TestClient, openapi_spec: dict[str, Any], install_llm: Any
+    contracts_dir: Path,
+    client: TestClient,
+    openapi_spec: dict[str, Any],
+    install_llm: Any,
 ) -> None:
-    """错误码枚举、9 条冻结路径、运行实现路径差异与 AnswerEnvelope 字段均不得漂移。"""
+    """错误码枚举、11 条冻结路径、运行实现路径差异与 AnswerEnvelope 字段均不得漂移。"""
 
     spec = json.loads(
         (contracts_dir / "api-v1.openapi.json").read_text(encoding="utf-8")
     )
     error_codes = {code.value for code in ErrorCode}
-    assert len(error_codes) == 13, "错误码是冻结枚举，新增必须同步契约测试"
+    assert len(error_codes) == 14, "错误码是冻结枚举，新增必须同步契约测试"
     assert set(spec["components"]["schemas"]["ErrorCode"]["enum"]) == error_codes
     for required_code in (
         "LLM_TIMEOUT",
@@ -904,6 +972,7 @@ def test_错误码_路径与Agent响应字段基线不漂移(
         "INVALID_REQUEST",
         "ROUTE_NOT_FOUND",
         "SNAPSHOT_NOT_LOADED",
+        "SESSION_NOT_FOUND",
     ):
         assert required_code in error_codes
 
@@ -917,12 +986,27 @@ def test_错误码_路径与Agent响应字段基线不漂移(
         "/api/agent/models",
         "/api/agent/ping_llm",
         "/api/agent/ask",
+        # V1.0.6：会话管理（多轮记忆 / 前端历史记录真实持久化）。
+        "/api/sessions",
+        "/api/sessions/{session_id}",
+        # V1.0.6.2：本地 OpenAI 兼容模型流式直答（SSE）。
+        "/api/agent/chat_stream",
     }
     assert set(spec["paths"]) == expected_paths
-    assert len(expected_paths) == 9
+    assert len(expected_paths) == 12
+    expected_methods = {
+        "/api/agent/ask": {"post"},
+        "/api/agent/chat_stream": {"post"},
+        "/api/sessions": {"get", "post"},
+        "/api/sessions/{session_id}": {"get", "patch", "delete"},
+    }
     for path, path_item in spec["paths"].items():
-        methods = {method for method in path_item if method in {"get", "post", "put", "patch", "delete"}}
-        assert methods == ({"post"} if path == "/api/agent/ask" else {"get"}), path
+        methods = {
+            method
+            for method in path_item
+            if method in {"get", "post", "put", "patch", "delete"}
+        }
+        assert methods == expected_methods.get(path, {"get"}), path
 
     live_paths = set(client.app.openapi()["paths"])
     assert live_paths <= expected_paths, "运行实现不得暴露契约外路径"

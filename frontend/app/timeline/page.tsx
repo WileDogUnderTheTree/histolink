@@ -51,6 +51,11 @@ const STACK_STEP_MIN_PX = 14;
 const TRACK_MIN_HEIGHT = 148;
 const TRACK_MAX_HEIGHT = 440;
 
+/** V1.0.6.3：史引副驾驶嵌入模式下的错层步长上限（垂直空间富余时让圆点舒展）。 */
+const STACK_STEP_MAX_PX = 64;
+/** V1.0.6.3：嵌入模式按实际像素校准圆点最小水平间距（设计宽度之外的窄容器）。 */
+const MIN_POINT_GAP_PX = 18;
+
 /**
  * 轨道上下为圆点与悬停年份标签预留的空间（px）：
  * 圆点半高 15 + 标签位于圆点上方约 20—35px + 余量，保证 overflow 裁切不到。
@@ -136,16 +141,43 @@ interface TimelineLayout {
  *
  * 两步：
  * 1. 按天文纪年把年份线性映射到 PAD%—(100-PAD)%，再贪心分配层号
- *    （同一层相邻圆点必须拉开 STACK_GAP_PERCENT）。层号只取决于事件的相对位置，
+ *    （同一层相邻圆点必须拉开 `gapPercent`）。层号只取决于事件的相对位置，
  *    与轨道实际像素宽度无关，所以无需测量 DOM。
- * 2. 由最大层号反推错层步长，保证轨道高度不超过 TRACK_MAX_HEIGHT；
+ * 2. 由最大层号反推错层步长，保证轨道高度不超过 `TRACK_MAX_HEIGHT`；
  *    再据此算出每个点的垂直偏移和轨道总高度。
+ *
+ * V1.0.6.3（史引副驾驶嵌入模式）：传入 `targetHeight` 时按**实际可用高度**反推步长，
+ * 让圆点在垂直方向铺满整个轨道区域（不再被压成扁平一条），轨道高度直接等于目标高度；
+ * `gapPercent` 由实际宽度换算，保证窄容器下圆点水平方向也不重叠。
  *
  * 简阅模式传入的是「聚合断代 + 顶级事件」子集，布局算法本身与细览完全一致。
  */
-function buildLayout(events: readonly TimelineEvent[]): TimelineLayout {
+export interface TimelineLayoutOptions {
+  /** 嵌入模式的目标轨道高度（px）；null / 缺省时沿用固定高度策略。 */
+  targetHeight?: number | null;
+  /** 水平最小间距百分比；缺省时按设计宽度 680px 的 STACK_GAP_PERCENT。 */
+  gapPercent?: number;
+}
+
+function buildLayout(
+  events: readonly TimelineEvent[],
+  options: TimelineLayoutOptions = {},
+): TimelineLayout {
+  const gapPercent = options.gapPercent ?? STACK_GAP_PERCENT;
+  const targetHeight =
+    options.targetHeight !== null &&
+    options.targetHeight !== undefined &&
+    options.targetHeight > 0
+      ? Math.max(TRACK_MIN_HEIGHT, Math.round(options.targetHeight))
+      : null;
+
   if (events.length === 0) {
-    return { events: [], maxLevel: 0, step: STACK_STEP_PX, trackHeight: TRACK_MIN_HEIGHT };
+    return {
+      events: [],
+      maxLevel: 0,
+      step: STACK_STEP_PX,
+      trackHeight: targetHeight ?? TRACK_MIN_HEIGHT,
+    };
   }
 
   const entries = events.map((event) => ({ event, adjusted: toAstronomical(event.year) }));
@@ -166,7 +198,10 @@ function buildLayout(events: readonly TimelineEvent[]): TimelineLayout {
       const left = span === 0 ? 50 : PAD + ((adjusted - min) / span) * (100 - 2 * PAD);
 
       let level = 0;
-      while (level < lastLeftByLevel.length && left - lastLeftByLevel[level] < STACK_GAP_PERCENT) {
+      while (
+        level < lastLeftByLevel.length &&
+        left - lastLeftByLevel[level] < gapPercent
+      ) {
         level += 1;
       }
       lastLeftByLevel[level] = left;
@@ -176,6 +211,33 @@ function buildLayout(events: readonly TimelineEvent[]): TimelineLayout {
 
   const maxLevel = leveled.reduce((acc, item) => Math.max(acc, item.level), 0);
   const laneCount = Math.ceil(maxLevel / 2);
+
+  // ---- 嵌入模式：按可用高度反推错层步长，垂直方向铺满 ----
+  if (targetHeight !== null) {
+    const availableHalf = Math.max(
+      TRACK_VERTICAL_PADDING_PX + 1,
+      targetHeight / 2 - TRACK_VERTICAL_PADDING_PX,
+    );
+    let step =
+      laneCount === 0
+        ? STACK_STEP_PX
+        : Math.floor(availableHalf / laneCount);
+    step = Math.min(STACK_STEP_MAX_PX, Math.max(STACK_STEP_MIN_PX, step));
+    // 层数太多 → 允许低于最小步长，保证圆点不溢出轨道区域。
+    if (laneCount > 0 && step * laneCount > availableHalf) {
+      step = Math.max(8, Math.floor(availableHalf / laneCount));
+    }
+    return {
+      events: leveled.map(({ event, left, level }) => ({
+        ...event,
+        left,
+        offset: stackOffset(level, step),
+      })),
+      maxLevel,
+      step,
+      trackHeight: targetHeight,
+    };
+  }
 
   // 单侧可用空间（px）：轨道半高减去上下预留空间。
   const availableHalf = TRACK_MAX_HEIGHT / 2 - TRACK_VERTICAL_PADDING_PX;
@@ -234,9 +296,15 @@ function TimelinePageContent() {
 
   /** 是否渲染在史引副驾驶 iframe 里：嵌入时压缩页头，把高度让给轨道。 */
   const [isEmbedded, setIsEmbedded] = useState(false);
-  /** 轨道视口实测宽度：窄于设计宽度时改等比缩放，绝不出现横向滚动条（P3）。 */
+  /**
+   * 轨道视口实测尺寸（V1.0.6.2 痛点 3）：嵌入模式下轨道需要同时按**宽和高**等比缩放，
+   * 保证「上方 50%」区域内的圆点完整可见（不裁切、不出现横向滚动条）。
+   */
   const trackViewportRef = useRef<HTMLDivElement>(null);
-  const [trackViewportWidth, setTrackViewportWidth] = useState<number | null>(null);
+  const [trackViewportSize, setTrackViewportSize] = useState<{
+    width: number | null;
+    height: number | null;
+  }>({ width: null, height: null });
 
   useEffect(() => {
     setIsEmbedded(window.self !== window.top);
@@ -245,7 +313,15 @@ function TimelinePageContent() {
   useEffect(() => {
     const node = trackViewportRef.current;
     if (!node) return;
-    const measure = () => setTrackViewportWidth(node.clientWidth);
+    const measure = () => {
+      const width = node.clientWidth;
+      const height = node.clientHeight;
+      setTrackViewportSize((previous) =>
+        previous.width === width && previous.height === height
+          ? previous
+          : { width, height },
+      );
+    };
     measure();
     if (typeof ResizeObserver === "function") {
       const observer = new ResizeObserver(measure);
@@ -361,17 +437,42 @@ function TimelinePageContent() {
     return TIMELINE_EVENTS.filter((event) => event.dynasty === dynasty);
   }, [mode, group, dynasty]);
 
-  const layout = useMemo(() => buildLayout(events), [events]);
-  const positioned = layout.events;
-
   /**
-   * 轨道宽度与缩放（P3）：容器比设计宽度窄时，轨道保持 680px 布局并整体 scale 到容器宽度，
-   * 横坐标 / 错层 / 高度全部按比例缩放；容器比设计宽度宽时保持 100% 铺满。
+   * 轨道宽度 / 高度实测（V1.0.6.3）：
+   * - 普通页面：容器比设计宽度窄时，轨道保持 680px 布局并整体 scale 到容器宽度；
+   * - 史引嵌入模式：按**实际可用宽高**生成布局（窄容器加大水平间距、垂直按可用高度铺满），
+   *   不再做等比缩放，因此整个轨道区域被圆点充分利用（不会出现扁平一条 + 大片空白）。
    */
   const measuredWidth =
-    trackViewportWidth !== null && trackViewportWidth > 0 ? trackViewportWidth : TRACK_MIN_WIDTH;
+    trackViewportSize.width !== null && trackViewportSize.width > 0
+      ? trackViewportSize.width
+      : TRACK_MIN_WIDTH;
   const trackWidth = Math.max(measuredWidth, TRACK_MIN_WIDTH);
-  const trackScale = measuredWidth / trackWidth;
+  const widthScale = measuredWidth / trackWidth;
+  const embeddedHeight =
+    isEmbedded && trackViewportSize.height !== null && trackViewportSize.height > 0
+      ? trackViewportSize.height
+      : null;
+  const embeddedGapPercent =
+    embeddedHeight !== null
+      ? Math.max(
+          STACK_GAP_PERCENT,
+          (MIN_POINT_GAP_PX / Math.max(measuredWidth, 1)) * 100,
+        )
+      : undefined;
+
+  const layout = useMemo(
+    () =>
+      buildLayout(events, {
+        targetHeight: embeddedHeight !== null ? Math.max(TRACK_MIN_HEIGHT, embeddedHeight - 8) : null,
+        gapPercent: embeddedGapPercent,
+      }),
+    [events, embeddedHeight, embeddedGapPercent],
+  );
+  const positioned = layout.events;
+
+  // 普通页面保持「设计宽度 + 整体缩放」；嵌入模式直接使用实测宽度，不做缩放。
+  const trackScale = isEmbedded ? 1 : widthScale;
   const scaledTrackHeight = Math.ceil(layout.trackHeight * trackScale);
 
   // 事件多或错层深时缩小圆点，缓解密集年份的视觉拥挤（点击热区不变）。
@@ -456,12 +557,15 @@ function TimelinePageContent() {
     <main className={styles.page} data-embed={isEmbedded ? "true" : undefined}>
       <EasterEgg isOpen={showEgg} onClose={closeEgg} />
       <div className={styles.shell}>
+        {/* V1.0.6.3：上方「标题 + Tab + 时间轴轨道」占主区（flex:1，圆点垂直铺满），
+            下方「事件详情」自然高度、最高 40%，超长时在卡片区域内独立滚动。 */}
+        <div className={styles.stage} data-timeline-region="top">
         <div className={styles.topbar}>
           <Link className={styles.back} href="/">
             ← 返回首页
           </Link>
           <div className={styles.topbarRight}>
-            <p className={styles.eyebrow}>中国历史探索 · 时间轴 · V1.0.5.2</p>
+            <p className={styles.eyebrow}>中国历史探索 · 时间轴 · V1.0.7</p>
             {agentReturn ? (
               <button type="button" className={styles.returnChat} onClick={returnToChat}>
                 <span aria-hidden="true">💬</span> 返回聊天
@@ -505,16 +609,23 @@ function TimelinePageContent() {
           </div>
         </div>
 
-        <div className={styles.trackViewport} ref={trackViewportRef} style={{ height: `${scaledTrackHeight}px` }}>
+        <div className={styles.trackViewport} data-timeline-track="true" ref={trackViewportRef} style={isEmbedded ? undefined : { height: `${scaledTrackHeight}px` }}>
           <div
             className={styles.track}
             data-density={density}
-            style={{
-              width: `${trackWidth}px`,
-              height: `${layout.trackHeight}px`,
-              transform: `scale(${trackScale})`,
-              transformOrigin: "top left",
-            }}
+            style={
+              isEmbedded
+                ? {
+                    width: "100%",
+                    height: `${layout.trackHeight}px`,
+                  }
+                : {
+                    width: `${trackWidth}px`,
+                    height: `${layout.trackHeight}px`,
+                    transform: `scale(${trackScale})`,
+                    transformOrigin: "top left",
+                  }
+            }
             onClick={handleTrackClick}
           >
             <div
@@ -569,9 +680,11 @@ function TimelinePageContent() {
             </span>
           </div>
         </div>
+        </div>
 
+        <div className={styles.detailStage} data-timeline-region="detail">
         {selected ? (
-          <section className={styles.card} aria-live="polite">
+          <section className={styles.card} data-timeline-event-card="true" aria-live="polite">
             <p className={styles.cardMeta}>
               {selected.date ?? `${selected.dynasty} · ${formatYear(selected.year, { full: mixedEra })}`}
               {selected.importance === 3 ? " · 断代大势" : ""}
@@ -582,6 +695,7 @@ function TimelinePageContent() {
         ) : (
           <p className={styles.hint}>点击时间轴上的圆点查看事件详情</p>
         )}
+        </div>
 
         <footer className={styles.footer}>
           数据来源：

@@ -31,9 +31,7 @@ def _node_payload(node: Mapping[str, Any]) -> dict[str, Any]:
     return {"person_id": node["person_id"], "name": node["name"]}
 
 
-def _edge_payload(
-    ctx: ToolContext, edge: Mapping[str, Any]
-) -> dict[str, Any]:
+def _edge_payload(ctx: ToolContext, edge: Mapping[str, Any]) -> dict[str, Any]:
     payload: dict[str, Any] = {
         "person_id_a": edge["person_id_a"],
         "person_id_b": edge["person_id_b"],
@@ -67,9 +65,7 @@ def _ordered_node_ids(
     return [center_person_id, *(person_id for person_id, _ in neighbors)]
 
 
-def _graph_citations(
-    ctx: ToolContext, edges: Iterable[Mapping[str, Any]]
-) -> list[Any]:
+def _graph_citations(ctx: ToolContext, edges: Iterable[Mapping[str, Any]]) -> list[Any]:
     """边引用的共同事件书目；按边权顺序取到上限为止。"""
 
     events = []

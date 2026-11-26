@@ -1,8 +1,9 @@
-"""pytest 公共夹具（V1.0.1 / TC-04 起）。"""
+"""pytest 公共夹具（V1.0.1 / TC-04 起；V1.0.6 会话库隔离）。"""
 
 from __future__ import annotations
 
 import json
+import os
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -16,6 +17,46 @@ REPO_ROOT = BACKEND_DIR.parent
 # 让测试可以直接 `from contracts import ...`
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
+
+# 测试确定性（V1.0.6.2）：开发者本机 backend/.env 现在可能指向本地 Ollama
+# （MODELSCOPE_MODEL=hf.co/...），而 /api/agent/models 等端点会读取真实配置。
+# 这里在导入 main 之前钉死测试期望的「云端默认模型」配置（setdefault 不覆盖 CI 注入值），
+# 避免本机 .env 污染断言；需要验证缺失配置的用例会自行 monkeypatch.delenv。
+os.environ.setdefault("MODELSCOPE_API_KEY", "sk-test-local")
+os.environ.setdefault("MODELSCOPE_BASE_URL", "https://api-inference.modelscope.cn/v1")
+os.environ.setdefault("MODELSCOPE_MODEL", "Qwen/Qwen3.5-35B-A3B")
+os.environ.setdefault("MODELSCOPE_FALLBACK_MODEL", "Qwen/Qwen3.5-8B-Instruct")
+os.environ.setdefault("LLM_TIMEOUT_SECONDS", "30")
+os.environ.setdefault("LLM_REASONING_EFFORT", "")
+# 模型展示名（V1.0.6.2）：不让本机 .env 的 XiaoHong-v1 展示名污染「默认 Qwen 模型」断言。
+os.environ.setdefault("LLM_MODEL_DISPLAY_NAME", "")
+os.environ.setdefault("LLM_FALLBACK_MODEL_DISPLAY_NAME", "")
+os.environ.setdefault("ENABLE_STREAM_CHAT", "1")
+
+# V1.0.6：测试一律用内存会话库，避免把测试会话写进 backend/data/sessions.v1.sqlite。
+# 必须在导入 main / session_store 之前设置（conftest 最先被 pytest 加载）。
+# 这里**强制覆盖**（不用 setdefault）：即使开发者 shell / CI 注入了真实库路径，
+# 测试进程也绝不能写用户正式历史。
+os.environ["SESSION_DB_PATH"] = ":memory:"
+# V1.0.6.2：可丢弃会话（test_ / e2e_ 前缀）单独写测试库；单测同样固定为内存库，
+# 防止开发者本机 .env 配了 SESSION_TEST_DB_PATH 时测试写出落盘文件。
+os.environ["SESSION_TEST_DB_PATH"] = ":memory:"
+
+
+@pytest.fixture(autouse=True)
+def _reset_session_store() -> Any:
+    """每个用例前清空服务端会话库（V1.0.6 会话历史是跨请求的服务端状态）。
+
+    只清理**已经启动**的应用（`client` fixture 是 session 级，lifespan 首次使用时才创建
+    SessionStore）；不主动启动应用，因此纯单元测试不受影响。
+    """
+
+    from main import app
+
+    store = getattr(app.state, "session_store", None)
+    if store is not None:
+        store.clear()
+    yield
 
 
 @pytest.fixture(scope="session")
@@ -105,7 +146,9 @@ def toolkit(snapshot_store):
 def tool_contracts(contracts_dir: Path) -> dict[str, dict[str, Any]]:
     """按工具名索引的冻结出参 JSON Schema（读导出物，不读实现）。"""
 
-    schema = json.loads((contracts_dir / "tools-v1.schema.json").read_text(encoding="utf-8"))
+    schema = json.loads(
+        (contracts_dir / "tools-v1.schema.json").read_text(encoding="utf-8")
+    )
     return {tool["name"]: tool for tool in schema["tools"]}
 
 
@@ -149,4 +192,6 @@ def assert_tool_contract(tool_contracts: dict[str, dict[str, Any]], snapshot_sto
 def openapi_spec(contracts_dir: Path) -> dict[str, Any]:
     """OpenAPI 契约（用于校验 API 响应符合冻结 schema）。"""
 
-    return json.loads((contracts_dir / "api-v1.openapi.json").read_text(encoding="utf-8"))
+    return json.loads(
+        (contracts_dir / "api-v1.openapi.json").read_text(encoding="utf-8")
+    )

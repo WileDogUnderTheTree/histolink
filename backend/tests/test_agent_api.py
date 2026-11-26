@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 import jsonschema
@@ -125,7 +124,9 @@ def test_ask_insufficient_returns_200_with_missing(
     assert payload["answer"]["mode"] == "insufficient"
     # missing 由服务端枚举映射生成，不是模型自由文本。
     assert payload["answer"]["missing"] == ["没有检索到与问题匹配的人物或事件"]
-    assert payload["answer"]["markdown"].startswith("抱歉，现有的历史数据无法完整回答您的问题。")
+    assert payload["answer"]["markdown"].startswith(
+        "抱歉，现有的历史数据无法完整回答您的问题。"
+    )
     assert payload["citations"] == []
     assert payload["trace"]["tools"] == []
 
@@ -188,7 +189,13 @@ def test_ask_evidence_mismatch_is_downgraded(
 ) -> None:
     override_llm(
         FakeLLM(
-            [final_step(grounded_answer(citation_ids=["cite-fabricated-0"], entity_id="tang-04"))]
+            [
+                final_step(
+                    grounded_answer(
+                        citation_ids=["cite-fabricated-0"], entity_id="tang-04"
+                    )
+                )
+            ]
             * 6
         )
     )
@@ -239,7 +246,11 @@ def test_ask_maps_llm_timeout_to_504(
 def test_ask_maps_llm_upstream_error_to_502(
     client: TestClient, openapi_spec: dict[str, Any], override_llm
 ) -> None:
-    override_llm(FakeLLM([LLMUpstreamError("上游返回 HTTP 500", upstream_status=500, retryable=True)]))
+    override_llm(
+        FakeLLM(
+            [LLMUpstreamError("上游返回 HTTP 500", upstream_status=500, retryable=True)]
+        )
+    )
     response = client.post("/api/agent/ask", json=ASK_BODY)
     assert response.status_code == 502
     payload = response.json()
@@ -340,16 +351,17 @@ def test_ask_injected_legacy_text_is_not_returned(
     assert "赤壁之战" in payload["answer"]["markdown"]
 
 
-def test_ask_comparison_question_returns_optional_comparison_analysis(
+def test_ask_grounded_markdown_passes_fact_check_and_is_returned(
     client: TestClient,
     openapi_spec: dict[str, Any],
     override_llm,
     toolkit,
 ) -> None:
-    """V1.0.5.4：对比类 grounded 回答返回可选 comparison_analysis，事实实证正文不变。
+    """V1.0.6.1：模型 markdown 通过文本级核查后作为 `answer.markdown` 返回。
 
-    - 新增字段是可选的（非对比问题仍为 null），不改变既有必填字段与三态语义；
-    - 分析文本单独字段下发，不进入 `answer.markdown`（服务端写死的事实实证）。
+    - 正文里的年份 / 人物必须来自本轮工具结果（前359年 / 1069年）；
+    - 两节结构（史料实证 + 史令分析）齐备 → `trace.fact_check.status = passed`；
+    - 不再有第二次「二次归纳」调用（V1.0.5.4 对比分析层已废除）。
     """
 
     def _event_citation(event_id: str) -> str:
@@ -362,7 +374,14 @@ def test_ask_comparison_question_returns_optional_comparison_analysis(
 
     shang_citation = _event_citation("zhanguo-05")
     wang_citation = _event_citation("beisong-10")
-    analysis = "**背景**：商鞅变法发生于前359年，王安石变法发生于1069年。"
+    model_markdown = (
+        "### 📜 史料实证\n"
+        "- 商鞅变法（前359年）：废井田、开阡陌，奖励军功。\n"
+        "- 熙宁变法（1069年）：青苗法、募役法、保甲法。\n\n"
+        "### 💡 史令分析\n"
+        "两者都是针对国家能力的制度改革，但商鞅变法是战时体制重构，"
+        "熙宁变法是在成熟官僚体系内的财政修补，因此执行阻力与历史影响并不相同。"
+    )
 
     override_llm(
         FakeLLM(
@@ -376,6 +395,7 @@ def test_ask_comparison_question_returns_optional_comparison_analysis(
                 final_step(
                     {
                         "mode": "grounded",
+                        "markdown": model_markdown,
                         "claims": [
                             {"id": "c1", "citation_ids": [shang_citation]},
                             {"id": "c2", "citation_ids": [wang_citation]},
@@ -390,7 +410,6 @@ def test_ask_comparison_question_returns_optional_comparison_analysis(
                         "ui_actions": [],
                     }
                 ),
-                json.dumps({"analysis": analysis}, ensure_ascii=False),
             ]
         )
     )
@@ -403,10 +422,64 @@ def test_ask_comparison_question_returns_optional_comparison_analysis(
     _validate_envelope(payload, openapi_spec)
 
     assert payload["answer"]["mode"] == "grounded"
-    assert payload["answer"]["comparison_analysis"] == {"text": analysis}
-    assert analysis not in payload["answer"]["markdown"]
-    assert "商鞅变法" in payload["answer"]["markdown"]
-    assert "**[时间轴·大事记]**" in payload["answer"]["markdown"]
+    assert payload["answer"]["comparison_analysis"] is None
+    assert payload["answer"]["markdown"] == model_markdown
+    assert payload["trace"]["fact_check"]["status"] == "passed"
+
+
+def test_ask_grounded_markdown_repairs_when_fact_check_fails(
+    client: TestClient,
+    openapi_spec: dict[str, Any],
+    override_llm,
+    toolkit,
+) -> None:
+    """V1.0.6.1：模型正文含工具结果外年份 → 把问题清单发回重写，第二次通过后采用。
+
+    第一次 final 的正文里写了一个工具结果中不存在的年份（公元前1000年），
+    服务端文本级核查拦截 → 修复消息 → 模型改写后通过，`trace.fact_check.status = passed`。
+    """
+
+    result = toolkit.call("get_event", event_id="handong-chibi")
+    citation = next(
+        item["id"] for item in result["citations"] if item["kind"] == "event"
+    )
+    bad_markdown = (
+        "### 📜 史料实证\n赤壁之战发生于208年，曹操率大军南下，孙刘联军以火攻破敌。\n\n"
+        "### 💡 史令分析\n公元前1000年的史料也提到过类似战法，因此这次失败并不意外，"
+        "水战与火攻的结合是决定胜负的关键因素之一。"
+    )
+    valid_markdown = (
+        "### 📜 史料实证\n赤壁之战发生于208年，曹操率军南下，孙刘联军以火攻大破曹军。\n\n"
+        "### 💡 史令分析\n1. **战术层面**：火攻与水战结合，是孙刘联军以弱胜强的关键。\n"
+        "2. **战略层面**：此战阻止了曹操南下统一全国的进程，奠定了三国鼎立的基础。"
+    )
+
+    def _final(markdown: str) -> dict[str, Any]:
+        return {
+            "mode": "grounded",
+            "markdown": markdown,
+            "claims": [{"id": "c1", "citation_ids": [citation]}],
+            "evidence": [{"entity_type": "event", "entity_id": "handong-chibi"}],
+        }
+
+    override_llm(
+        FakeLLM(
+            [
+                tool_call_step("get_event", {"event_id": "handong-chibi"}),
+                final_step(_final(bad_markdown)),
+                # 核查修复轮：模型按问题清单改写，去掉了未证实年份。
+                final_step(_final(valid_markdown)),
+            ]
+        )
+    )
+    response = client.post("/api/agent/ask", json=ASK_BODY)
+    assert response.status_code == 200
+    payload = response.json()
+    _validate_envelope(payload, openapi_spec)
+
+    assert payload["answer"]["mode"] == "grounded"
+    assert payload["answer"]["markdown"] == valid_markdown
+    assert payload["trace"]["fact_check"]["status"] == "passed"
 
 
 def test_ask_non_comparison_question_has_no_comparison_analysis(
@@ -414,7 +487,7 @@ def test_ask_non_comparison_question_has_no_comparison_analysis(
     openapi_spec: dict[str, Any],
     override_llm,
 ) -> None:
-    """普通事实问答不触发二次归纳：comparison_analysis 为 null。"""
+    """V1.0.6.1：普通事实问答无 comparison_analysis（旧二次归纳字段不再产出）。"""
 
     override_llm(
         FakeLLM(
@@ -431,6 +504,8 @@ def test_ask_non_comparison_question_has_no_comparison_analysis(
 
     assert payload["answer"]["mode"] == "grounded"
     assert payload["answer"].get("comparison_analysis") is None
+    # 模型没写 markdown（旧协议脚本）→ 服务端事实实证兜底，并在 trace 标注。
+    assert payload["trace"]["fact_check"]["status"] == "server_fallback"
 
 
 def test_ask_comparison_rescue_when_model_reports_insufficient(
@@ -438,23 +513,22 @@ def test_ask_comparison_rescue_when_model_reports_insufficient(
     openapi_spec: dict[str, Any],
     override_llm,
 ) -> None:
-    """V1.0.5.4 修复二（API 出口）：模型直接 insufficient，但图谱已有 A/B 实体时兜底为 grounded。
+    """V1.0.5.4 修复二 / V1.0.6.1（API 出口）：模型 insufficient 但图谱已有 A/B 实体 → grounded。
 
     验收问题：「刘邦统一汉朝和秦始皇统一六国的历史意义和影响一样吗」——
-    不允许直接返回「资料不足」，必须由服务端事实 + 二次归纳给出 grounded 对比分析。
+    不允许直接返回「资料不足」，必须由服务端用真实事实给出 grounded 正文；
+    V1.0.6.1 起正文为服务端事实实证（`trace.fact_check.status = server_fallback`）。
     """
 
-    analysis = (
-        "**背景**：秦始皇统一六国发生于前221年，刘邦建立汉朝发生于前202年。"
-        "**历史意义**：前者建立中央集权王朝，后者恢复战乱后的社会经济。"
-        "**影响**：两者对后世制度与民生的影响并不相同；材料未提供完整评价对比。"
-    )
     override_llm(
         FakeLLM(
             [
                 tool_batch_step(
                     [
-                        {"tool": "get_person", "arguments": {"person_id": "p-liubang-f5be"}},
+                        {
+                            "tool": "get_person",
+                            "arguments": {"person_id": "p-liubang-f5be"},
+                        },
                         {
                             "tool": "get_person",
                             "arguments": {"person_id": "p-qinshihuang-f6c7"},
@@ -464,7 +538,6 @@ def test_ask_comparison_rescue_when_model_reports_insufficient(
                     ]
                 ),
                 final_step(insufficient_answer(["INSUFFICIENT_DATA"])),
-                json.dumps({"analysis": analysis}, ensure_ascii=False),
             ]
         )
     )
@@ -481,8 +554,9 @@ def test_ask_comparison_rescue_when_model_reports_insufficient(
 
     assert payload["ok"] is True
     assert payload["answer"]["mode"] == "grounded"
-    assert payload["answer"]["comparison_analysis"] == {"text": analysis}
+    assert payload["answer"]["comparison_analysis"] is None
     assert "刘邦建立汉朝" in payload["answer"]["markdown"]
     assert "秦始皇统一六国" in payload["answer"]["markdown"]
     assert payload["citations"]
     assert payload["trace"]["sources"] == {"timeline": True, "graph": True}
+    assert payload["trace"]["fact_check"]["status"] == "server_fallback"

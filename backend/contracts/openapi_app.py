@@ -1,4 +1,4 @@
-"""仅用于导出 OpenAPI 的桩应用（V1.0.1 / TC-04）。
+"""仅用于导出 OpenAPI 的桩应用（V1.0.1 / TC-04；V1.0.6 会话管理）。
 
 **这不是运行中的应用**：
 - 只声明路由与 Pydantic 响应模型，用于生成 `contracts/api-v1.openapi.json`；
@@ -23,6 +23,13 @@ from contracts.models import (
     PersonCandidatesResponse,
     PersonResponse,
     PingLLMResponse,
+    SessionCreateRequest,
+    SessionDeleteResponse,
+    SessionDetailResponse,
+    SessionListResponse,
+    SessionMutationResponse,
+    SessionPatchRequest,
+    StreamAskRequest,
 )
 
 app = FastAPI(
@@ -135,5 +142,96 @@ def ping_llm(
     tags=["agent"],
 )
 def ask(body: AskRequest) -> AgentResponse:
+    _not_implemented()
+    raise AssertionError("unreachable")
+
+
+# ---------------------------------------------------------------------------
+# V1.0.6.2 本地模型流式直答（SSE；响应不是 JSON，契约只冻结请求体与错误信封）
+# ---------------------------------------------------------------------------
+
+
+@app.post(
+    "/api/agent/chat_stream",
+    responses={
+        200: {"content": {"text/event-stream": {"schema": {"type": "string"}}}},
+        400: {"model": ErrorEnvelope},
+        503: {"model": ErrorEnvelope},
+    },
+    tags=["agent"],
+)
+def chat_stream(body: StreamAskRequest) -> None:
+    """流式直答：`data: {...}` SSE 事件（start → delta* → done / error）。"""
+
+    _not_implemented()
+    raise AssertionError("unreachable")
+
+
+# ---------------------------------------------------------------------------
+# V1.0.6 会话管理（多轮记忆 / 前端历史记录真实持久化）
+# ---------------------------------------------------------------------------
+
+
+_SESSION_NOT_FOUND = {404: {"model": ErrorEnvelope}}
+
+
+@app.get("/api/sessions", response_model=SessionListResponse, tags=["sessions"])
+def list_sessions() -> SessionListResponse:
+    """会话列表（置顶优先，其余按最后消息时间倒序）。"""
+
+    _not_implemented()
+    raise AssertionError("unreachable")
+
+
+@app.post("/api/sessions", response_model=SessionDetailResponse, tags=["sessions"])
+def create_session(body: SessionCreateRequest) -> SessionDetailResponse:
+    """新建会话（session_id 可由前端生成，刷新后保持稳定）。"""
+
+    _not_implemented()
+    raise AssertionError("unreachable")
+
+
+@app.get(
+    "/api/sessions/{session_id}",
+    response_model=SessionDetailResponse,
+    responses=_SESSION_NOT_FOUND,
+    tags=["sessions"],
+)
+def get_session(
+    session_id: str = Path(min_length=1, max_length=128),
+) -> SessionDetailResponse:
+    """会话详情（含全部轮次与实体记忆）。"""
+
+    _not_implemented()
+    raise AssertionError("unreachable")
+
+
+@app.patch(
+    "/api/sessions/{session_id}",
+    response_model=SessionMutationResponse,
+    responses=_SESSION_NOT_FOUND,
+    tags=["sessions"],
+)
+def patch_session(
+    body: SessionPatchRequest,
+    session_id: str = Path(min_length=1, max_length=128),
+) -> SessionMutationResponse:
+    """重命名 / 置顶会话。"""
+
+    _not_implemented()
+    raise AssertionError("unreachable")
+
+
+@app.delete(
+    "/api/sessions/{session_id}",
+    response_model=SessionDeleteResponse,
+    responses=_SESSION_NOT_FOUND,
+    tags=["sessions"],
+)
+def delete_session(
+    session_id: str = Path(min_length=1, max_length=128),
+) -> SessionDeleteResponse:
+    """删除会话。"""
+
     _not_implemented()
     raise AssertionError("unreachable")

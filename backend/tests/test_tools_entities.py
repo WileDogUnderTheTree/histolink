@@ -26,7 +26,10 @@ def test_resolve_entity_returns_all_candidates_without_context(
     assert len(candidates) == 2
     assert result["data"]["ambiguous"] is True
     assert result["truncated"] is False
-    assert {candidate["person_id"] for candidate in candidates} == {LIANG_HAN, LIANG_XIXIA}
+    assert {candidate["person_id"] for candidate in candidates} == {
+        LIANG_HAN,
+        LIANG_XIXIA,
+    }
     assert all(candidate["disambiguator"] for candidate in candidates)
     assert len({candidate["disambiguator"] for candidate in candidates}) == 2
     # 无上下文时不允许默认取第一条：两条候选都要在 items 中出现。

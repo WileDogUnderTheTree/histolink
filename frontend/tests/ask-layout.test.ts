@@ -90,14 +90,26 @@ describe("V1.0.5.3 /ask 三栏布局回归（源码契约）", () => {
     expect(appFrame).toMatch(/overflow:\s*hidden/);
   });
 
-  it("工作区用 grid 三栏布局，子列 min-height: 0 各自内部滚动", () => {
+  it("工作区改为严格 Flex Row 左右分屏（V1.0.6.3），子列 min-height: 0 各自内部滚动", () => {
     const workspace = ruleBody(askCss, ".workspaceLayout");
-    expect(workspace).toMatch(/display:\s*grid/);
-    expect(workspace).toMatch(/overflow:\s*hidden/);
+    expect(workspace).toMatch(/display:\s*flex/);
+    expect(workspace).toMatch(/flex-direction:\s*row/);
+    expect(workspace).toMatch(/height:\s*100%/);
     expect(workspace).toMatch(/min-height:\s*0/);
-    // 中间聊天列与右侧史引面板都必须自己滚动，不得撑开文档。
-    expect(ruleBody(askCss, ".chatCard")).toMatch(/overflow:\s*hidden/);
-    expect(ruleBody(askCss, ".copilotPanel")).toMatch(/overflow:\s*hidden/);
+    expect(workspace).toMatch(/overflow:\s*hidden/);
+    // 左侧聊天列自适应宽度；右侧史引面板固定 40% 宽（min/max 兜底）并由 App Shell 拉满高度。
+    const chatCard = ruleBody(askCss, ".chatCard");
+    expect(chatCard).toMatch(/flex:\s*1 1/);
+    expect(chatCard).toMatch(/overflow:\s*hidden/);
+    const copilot = ruleBody(askCss, ".copilotPanel");
+    expect(copilot).toMatch(/flex:\s*0 0 40%/);
+    expect(copilot).toMatch(/height:\s*100%/);
+    expect(copilot).toMatch(/flex-direction:\s*column/);
+    expect(copilot).toMatch(/overflow:\s*hidden/);
+    // iframe 区域 `flex: 1 + min-height: 0` 填满面板剩余高度。
+    const frameWrap = ruleBody(askCss, ".copilotFrameWrap");
+    expect(frameWrap).toMatch(/flex:\s*1 1 auto/);
+    expect(frameWrap).toMatch(/min-height:\s*0/);
   });
 
   it("左侧历史侧边栏独立滚动（scrollArea overflow-y: auto + min-height: 0）", () => {

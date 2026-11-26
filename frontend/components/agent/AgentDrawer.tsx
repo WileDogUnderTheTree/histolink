@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { BrandMark } from "@/components/BrandMark";
+import { GuideActionButtons } from "@/components/agent/GuideActionButtons";
 import { MarkdownMessage } from "@/components/agent/MarkdownMessage";
 import { ModelSwitcher } from "@/components/agent/ModelSwitcher";
 import { useAgentSession } from "@/contexts/AgentContext";
@@ -14,6 +15,7 @@ import {
   shouldShowModelFallbackHint,
   type Citation,
 } from "@/lib/agent-client";
+import { resolveAnswerGuideTargets } from "@/lib/agent-guide";
 import { graphHref, timelineHref } from "@/lib/routes";
 
 import styles from "./AgentDrawer.module.css";
@@ -85,7 +87,8 @@ function ActionPrompt({
 
 export function AgentDrawer() {
   const { isOpen, openDrawer, closeDrawer, transcript, isAsking, pendingActions, ask, cancelAction,
-    models, defaultModelId, selectedModelId, selectModel, modelsReady, modelsFromFallback } = useAgentSession();
+    models, defaultModelId, selectedModelId, selectModel, modelsReady, modelsFromFallback,
+    thinkingEnabled, streamingTurnId } = useAgentSession();
   const router = useRouter();
   const pathname = usePathname();
   const [draft, setDraft] = useState("");
@@ -126,6 +129,17 @@ export function AgentDrawer() {
     router.push("/ask");
   };
 
+  /**
+   * V1.0.6.3 双图联动（悬浮抽屉）：点击「查看人物图谱 / 查看时间轴」后，
+   * 关闭抽屉并带 `?panel=<surface>` 跳到完整对话页——/ask 会据此直接展开
+   * 对应视图的右侧史引面板（与页内按钮行为一致）。
+   */
+  const openGuideInFullChat = (surface: "timeline" | "graph") => {
+    pendingActions.forEach((action) => cancelAction(action.id));
+    closeDrawer();
+    router.push(`/ask?panel=${surface}`);
+  };
+
   // /ask 是完整对话页：页内已有「悬浮问答」入口，隐藏全局悬浮球，避免压住右侧史引副驾驶面板。
   const hideLauncher = pathname === "/ask";
 
@@ -155,24 +169,25 @@ export function AgentDrawer() {
               </div>
             </header>
 
-            <div className={styles.statusLine}><span className={styles.statusDot} aria-hidden="true" /><span>史脉数据已连接</span><span className={styles.statusVersion}>V1.0.5.2</span></div>
+            <div className={styles.statusLine}><span className={styles.statusDot} aria-hidden="true" /><span>史脉数据已连接</span><span className={styles.statusVersion}>{thinkingEnabled ? "V1.0.7 · 深度思考" : "V1.0.7"}</span></div>
 
             <ol className={styles.transcript} aria-live="polite" aria-busy={isAsking} ref={transcriptRef}>
-              {transcript.map((turn) => (
-                <li key={turn.id} className={turn.role === "user" ? styles.userTurn : styles.agentTurn} data-error={turn.isError === true ? "true" : undefined}>
-                  {turn.role === "user" ? <span className={styles.role}>你</span> : <Persona guide={Boolean(turn.answer?.uiActions.length || (pendingActions.length > 0 && turn.id === actionAnchorId))} />}
-                  <div className={styles.content}>{turn.role === "assistant" ? <MarkdownMessage content={turn.content} /> : turn.content}</div>
-                  {turn.role === "assistant" && turn.answer ? <CitationCards citations={turn.answer.citations} onNavigate={closeDrawer} /> : null}
-                  {turn.role === "assistant" && turn.answer && shouldShowModelFallbackHint(turn.answer.modelUsed, turn.answer.modelRequested) ? <p className={styles.modelFallbackHint}>{MODEL_FALLBACK_HINT}</p> : null}
-                  {turn.role === "assistant" && turn.id === actionAnchorId && pendingActions.length > 0 ? <ActionPrompt onOpenCopilot={openFullChat} /> : null}
-                </li>
-              ))}
-              {isAsking ? (
-                <li className={`${styles.agentTurn} ${styles.loadingTurn}`} aria-label="史脉正在检索史料">
-                  <span className={styles.role}>史脉</span>
-                  <div className={styles.loadingContent}><span>正在检索史料</span><span className={styles.loadingDots} aria-hidden="true"><i /><i /><i /></span></div>
-                </li>
-              ) : null}
+              {transcript.map((turn) => {
+                // V1.0.6.3 双图联动：每轮回答都可独立渲染「人物图谱 / 时间轴」双按钮。
+                const turnTargets = turn.role === "assistant"
+                  ? resolveAnswerGuideTargets(turn.answer, turn.id)
+                  : null;
+                return (
+                  <li key={turn.id} className={turn.role === "user" ? styles.userTurn : styles.agentTurn} data-error={turn.isError === true ? "true" : undefined} data-streaming={turn.id === streamingTurnId ? "true" : undefined}>
+                    {turn.role === "user" ? <span className={styles.role}>你</span> : <Persona guide={Boolean(turn.answer?.uiActions.length || (pendingActions.length > 0 && turn.id === actionAnchorId))} />}
+                    <div className={styles.content}>{turn.role === "assistant" ? <MarkdownMessage content={turn.content} /> : turn.content}{turn.id === streamingTurnId ? <span className={styles.streamCaret} aria-hidden="true" /> : null}</div>
+                    {turnTargets && turnTargets.targets.length > 0 ? <GuideActionButtons compact targets={turnTargets.targets} onOpen={(target) => openGuideInFullChat(target.surface)} /> : null}
+                    {turn.role === "assistant" && turn.answer ? <CitationCards citations={turn.answer.citations} onNavigate={closeDrawer} /> : null}
+                    {turn.role === "assistant" && turn.answer && shouldShowModelFallbackHint(turn.answer.modelUsed, turn.answer.modelRequested) ? <p className={styles.modelFallbackHint}>{MODEL_FALLBACK_HINT}</p> : null}
+                    {turn.role === "assistant" && turn.id === actionAnchorId && pendingActions.length > 0 ? <ActionPrompt onOpenCopilot={openFullChat} /> : null}
+                  </li>
+                );
+              })}
             </ol>
 
             <form className={styles.form} onSubmit={submit}>

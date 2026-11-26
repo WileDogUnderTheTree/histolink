@@ -32,7 +32,7 @@
 [CmdletBinding()]
 param(
     [switch]$SkipBuild,
-    [int[]]$Only
+    [string[]]$Only
 )
 
 $ErrorActionPreference = 'Stop'
@@ -42,6 +42,20 @@ $script:BackendDir = Join-Path $script:Root 'backend'
 $script:FrontendDir = Join-Path $script:Root 'frontend'
 $script:StartedAt = Get-Date
 $script:Results = @()
+
+# ``powershell -File scripts\verify.ps1 -Only 11,12`` 会把 "11,12" 当成一个字符串传给
+# [int[]]，旧实现会被绑定成 1112 从而静默跳过全部步骤（假绿）。这里统一按逗号 / 空白拆分。
+$script:OnlyIndexes = @()
+foreach ($raw in @($Only)) {
+    if (-not $raw) { continue }
+    foreach ($part in ($raw -split '[,\s]+')) {
+        if (-not $part) { continue }
+        if ($part -notmatch '^\d+$') {
+            throw ('非法的 -Only 参数：' + $part + '（应为步骤编号，如 1,3,11）')
+        }
+        $script:OnlyIndexes += [int]$part
+    }
+}
 
 # ---------------------------------------------------------------------------
 # 控制台
@@ -141,7 +155,7 @@ function Invoke-Check {
         [switch]$Skip
     )
 
-    if ($script:Only -and ($script:Only -notcontains $Index)) {
+    if ($script:OnlyIndexes.Count -gt 0 -and ($script:OnlyIndexes -notcontains $Index)) {
         Write-Dim ('[跳过] ' + $Name + '（-Only 未包含）')
         return
     }

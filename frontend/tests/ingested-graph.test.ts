@@ -12,6 +12,7 @@ import { describe, expect, it } from "vitest";
 
 import { INGESTED_EVENT_RECORDS, INGESTED_IMPORTANCE_OVERRIDES } from "@/data/ingested-graph-data.generated";
 import {
+  buildPersonGraph,
   ERA_TO_SCOPE,
   KEY_FIGURES,
   PERSON_GRAPH_ERAS,
@@ -115,6 +116,14 @@ describe("重要度映射：重要度 3 进简阅", () => {
     // 同一史实复用既有 id：文档里的「大禹治水 / 太康失国 / 伊尹放太甲」不重复造事件。
     expect(TIMELINE_EVENTS.filter((event) => event.title === "大禹治水")).toHaveLength(1);
     expect(TIMELINE_EVENTS.filter((event) => event.title === "伊尹放太甲")).toHaveLength(1);
+  });
+});
+
+describe("人物图：不展示孤立人物节点", () => {
+  it("单人事件仍保留在时间轴，但不会在关系图中产生无连线节点", () => {
+    const graph = buildPersonGraph([eventById("sanguo-lukangzu-19")], ["三国"]);
+    expect(graph.nodes).toEqual([]);
+    expect(graph.edges).toEqual([]);
   });
 });
 

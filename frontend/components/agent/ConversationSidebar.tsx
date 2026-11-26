@@ -18,8 +18,8 @@
  * - 重命名：行内输入框，Enter / ✓ 保存，Esc / ✕ 取消；
  * - 删除：点击后该项消失，其余项相对顺序不变（下面的项自然上补）。
  *
- * 数据：由 `AgentContext` 注入（v1.0.5.2 走 `lib/conversation-store.ts` 的内存实现 + 演示数据，
- * v1.0.6 接入真实持久化后本组件无需改动）。
+ * 数据：由 `AgentContext` 注入（V1.0.6 起为 `/api/sessions` 真实服务端持久化数据；
+ * 刷新页面 / 重新打开浏览器后历史对话仍在，点击即可恢复完整聊天记录）。
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -40,15 +40,15 @@ export interface ConversationSidebarProps {
   isCurrentConversationEmpty?: boolean;
   onNewConversation: () => void;
   onSelectConversation: (id: string) => void;
-  /** 重命名历史对话（本地内存状态更新）。 */
+  /** 重命名历史对话（PATCH /api/sessions/{id}）。 */
   onRenameConversation: (id: string, title: string) => void;
-  /** 删除历史对话（本地内存状态更新）。 */
+  /** 删除历史对话（DELETE /api/sessions/{id}）。 */
   onDeleteConversation: (id: string) => void;
-  /** 置顶 / 取消置顶历史对话（本地内存状态更新）。 */
+  /** 置顶 / 取消置顶历史对话（PATCH pinned）。 */
   onPinConversation: (id: string, pinned: boolean) => void;
   /** 收起侧边栏（把横向空间让给中间聊天区）。 */
   onCollapse: () => void;
-  /** 会话列表加载中（首屏读取演示数据时显示占位）。 */
+  /** 会话列表加载中（首屏读取服务端历史时显示占位）。 */
   loading?: boolean;
   disabled?: boolean;
 }
@@ -377,7 +377,7 @@ export function ConversationSidebar({
 
       <footer className={styles.footer}>
         <p className={styles.footerNote}>
-          V1.0.5.2 · 演示数据（置顶 / 重命名 / 删除仅在本地内存生效）
+          V1.0.7 · 历史对话已持久化（刷新后仍可恢复）
         </p>
       </footer>
 

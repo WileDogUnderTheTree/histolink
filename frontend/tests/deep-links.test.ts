@@ -159,4 +159,11 @@ describe("resolveGraphDeepLink", () => {
     ).toBeUndefined();
     expect(resolveGraphDeepLink("person=曹操&era=sanguo").selectedPersonId).toBeUndefined();
   });
+
+  it("同一人物跨多个分期时优先「默认中心 / 关系更完整」的分期（V1.0.6.3）", () => {
+    // 李世民同时出现在隋与唐：唐是其默认中心、关系网更完整（12 位邻居 vs 隋 3 位）。
+    const resolved = resolveGraphDeepLink("person=p-lishimin-7efd&mode=detail");
+    expect(resolved.eraId).toBe("tang");
+    expect(resolved.centerPersonId).toBe("李世民");
+  });
 });

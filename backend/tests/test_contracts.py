@@ -10,8 +10,9 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import pytest
 from jsonschema import Draft202012Validator
@@ -60,21 +61,27 @@ def test_ask_request_rejects_unknown_field(load_sample: Callable[[str], Any]) ->
         AskRequest.model_validate(payload)
 
 
-def test_ask_request_rejects_unknown_schema_version(load_sample: Callable[[str], Any]) -> None:
+def test_ask_request_rejects_unknown_schema_version(
+    load_sample: Callable[[str], Any],
+) -> None:
     payload = load_sample("ask-request.json")
     payload["client_schema_version"] = "0.9"
     with pytest.raises(ValidationError):
         AskRequest.model_validate(payload)
 
 
-def test_ask_request_rejects_orphan_selected_person(load_sample: Callable[[str], Any]) -> None:
+def test_ask_request_rejects_orphan_selected_person(
+    load_sample: Callable[[str], Any],
+) -> None:
     payload = load_sample("ask-request.json")
     payload["selected_person_id"] = "p-liangtaihou-handong-90be"
     with pytest.raises(ValidationError):
         AskRequest.model_validate(payload)
 
 
-def test_ask_request_rejects_overlong_history(load_sample: Callable[[str], Any]) -> None:
+def test_ask_request_rejects_overlong_history(
+    load_sample: Callable[[str], Any],
+) -> None:
     payload = load_sample("ask-request.json")
     payload["history"] = [{"role": "user", "content": "x"} for _ in range(21)]
     with pytest.raises(ValidationError):
@@ -86,7 +93,9 @@ def test_ask_request_rejects_overlong_history(load_sample: Callable[[str], Any])
 # ---------------------------------------------------------------------------
 
 
-def test_grounded_answer_envelope_accepts_sample(load_sample: Callable[[str], Any]) -> None:
+def test_grounded_answer_envelope_accepts_sample(
+    load_sample: Callable[[str], Any],
+) -> None:
     envelope = AnswerEnvelope.model_validate(load_sample("answer-grounded.json"))
     assert envelope.answer is not None
     assert envelope.answer.mode.value == "grounded"
@@ -101,7 +110,9 @@ def test_grounded_answer_requires_citation(load_sample: Callable[[str], Any]) ->
         AnswerEnvelope.model_validate(payload)
 
 
-def test_grounded_claim_must_reference_existing_citation(load_sample: Callable[[str], Any]) -> None:
+def test_grounded_claim_must_reference_existing_citation(
+    load_sample: Callable[[str], Any],
+) -> None:
     payload = load_sample("answer-grounded.json")
     payload["answer"]["claims"][0]["citation_ids"] = ["cite_missing"]
     with pytest.raises(ValidationError):
@@ -131,7 +142,9 @@ def test_refusal_answer_requires_reason_code() -> None:
         Answer(markdown="超出范围", mode="refusal")
 
 
-def test_envelope_requires_answer_or_clarification(load_sample: Callable[[str], Any]) -> None:
+def test_envelope_requires_answer_or_clarification(
+    load_sample: Callable[[str], Any],
+) -> None:
     payload = load_sample("answer-grounded.json")
     payload.pop("answer")
     with pytest.raises(ValidationError):
@@ -151,7 +164,9 @@ def test_clarification_accepts_sample(load_sample: Callable[[str], Any]) -> None
     assert envelope.clarification.candidates[0].disambiguator
 
 
-def test_clarification_requires_two_candidates(load_sample: Callable[[str], Any]) -> None:
+def test_clarification_requires_two_candidates(
+    load_sample: Callable[[str], Any],
+) -> None:
     payload = load_sample("clarification.json")
     payload["clarification"]["candidates"] = payload["clarification"]["candidates"][:1]
     with pytest.raises(ValidationError):
@@ -229,7 +244,9 @@ def test_action_availability_sets_are_frozen() -> None:
 
 
 def test_openapi_has_required_paths_and_models(contracts_dir: Path) -> None:
-    spec = json.loads((contracts_dir / "api-v1.openapi.json").read_text(encoding="utf-8"))
+    spec = json.loads(
+        (contracts_dir / "api-v1.openapi.json").read_text(encoding="utf-8")
+    )
     assert spec["openapi"].startswith("3.1")
     assert spec["info"]["version"] == "1.0"
     for api_path in [
@@ -267,7 +284,9 @@ def test_ping_llm_sample_validates(load_sample: Callable[[str], Any]) -> None:
 
 
 def test_tools_schema_is_valid_jsonschema(contracts_dir: Path) -> None:
-    schema = json.loads((contracts_dir / "tools-v1.schema.json").read_text(encoding="utf-8"))
+    schema = json.loads(
+        (contracts_dir / "tools-v1.schema.json").read_text(encoding="utf-8")
+    )
     assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
     tools = schema["tools"]
     assert len(tools) == 9
@@ -288,8 +307,12 @@ def test_tools_schema_is_valid_jsonschema(contracts_dir: Path) -> None:
 
 
 def test_action_policy_covers_every_action_type(contracts_dir: Path) -> None:
-    policy = json.loads((contracts_dir / "action-policy.json").read_text(encoding="utf-8"))
-    action_schema = json.loads((contracts_dir / "actions-v1.schema.json").read_text(encoding="utf-8"))
+    policy = json.loads(
+        (contracts_dir / "action-policy.json").read_text(encoding="utf-8")
+    )
+    action_schema = json.loads(
+        (contracts_dir / "actions-v1.schema.json").read_text(encoding="utf-8")
+    )
     assert set(policy["actions"]) == set(action_schema["x-action-types"])
     assert set(policy["surfaces"]) == {"timeline", "graph", "ask"}
     for action_type, entry in policy["actions"].items():
@@ -307,5 +330,6 @@ def test_export_contracts_check_passes(repo_root: Path) -> None:
         capture_output=True,
         text=True,
         encoding="utf-8",
+        check=False,
     )
     assert result.returncode == 0, result.stderr or result.stdout

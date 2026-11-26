@@ -1,43 +1,46 @@
-# 依赖
+# ── 依赖 ─────────────────────────────────────────────────────────────
 node_modules/
 .venv/
 __pycache__/
 *.py[cod]
 
-# Next.js 构建产物
+# ── Next.js 构建产物 ────────────────────────────────────────────────
 .next/
+.next-build/
 out/
 next-env.d.ts
 *.tsbuildinfo
 
-# 环境变量
+# ── 环境变量与密钥（绝不入库）────────────────────────────────────────
 .env
 .env.local
+.env.*
 .env.*.local
 
-# 本地验证产物
+# ── 本地验证 / 运行时产物 ───────────────────────────────────────────
 .tmp/
-
-# V1.0.5 RAG 向量库（构建产物，不入库；重建：backend/.venv/Scripts/python backend/scripts/ingest_rag.py）
-backend/data/chroma_db/
-
-# V1.0.5 RAG 本地 embedding 模型缓存（fastembed 首次运行自动下载，不入库）
+.run/
+pytest-of-*/
+.pytest_cache/
+.ruff_cache/
+fastembed_cache/
 backend/fastembed_cache/
 
-# 启动器运行时日志
-.run/
+# ── V1.0.5 RAG 向量库（构建产物，不入库；重建：backend/.venv/Scripts/python backend/scripts/ingest_rag.py）──
+backend/data/chroma_db/
 
-# 编辑器与系统文件
+# ── V1.0.6 会话数据库（本地持久化产物，不入库）──────────────────────
+backend/data/sessions.v1.sqlite*
+backend/data/sessions.v1.sqlite.bak-*
+
+# ── V1.0.5.4 图谱入库报告（ingest_graph_data.py 每次运行自动覆盖，不入库）──
+docs/图谱数据入库报告.md
+
+# ── 内部开发记录（AI 助手工作记忆，不随开源仓库发布）────────────────
+.workbuddy/
+
+# ── 编辑器与系统文件 ────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
-
-# 忽略环境变量文件，保护密钥
-.env
-.env.local
-.env.*
-
-# pytest 临时目录
-pytest-of-*/
-.pytest_cache/

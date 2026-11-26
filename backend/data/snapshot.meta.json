@@ -1,12 +1,12 @@
 {
   "schema_version": "snapshot.v1",
-  "snapshot_version": "v1-8fdf1b883355",
-  "generated_at": "2026-11-25T12:38:09.926Z",
-  "content_hash": "24268ffa624698d94e69645a874f3f58be0d0f59b340a68b6b21442597a60db0",
+  "snapshot_version": "v1-961b63160c79",
+  "generated_at": "2026-11-26T06:59:29.529Z",
+  "content_hash": "246ccd04387adce266e301897d585ca5f2490336ab7954889c2f393a032c05ea",
   "counts": {
-    "events": 831,
-    "persons": 1164,
-    "relations": 787,
+    "events": 896,
+    "persons": 1217,
+    "relations": 840,
     "eras": 21,
     "scopes": 7,
     "groups": 7,
@@ -16,6 +16,6 @@
   "attribution": "数据依据 shiji-kb（CC BY-NC-SA 4.0）与史脉人工校订；非商用。",
   "files": {
     "snapshot": "snapshot.v1.json",
-    "size_bytes": 3401293
+    "size_bytes": 3640921
   }
 }

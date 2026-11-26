@@ -67,9 +67,7 @@ def _dedupe_persons(persons: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return unique
 
 
-def _resolve_citations(
-    ctx: ToolContext, candidates: list[dict[str, Any]]
-) -> list[Any]:
+def _resolve_citations(ctx: ToolContext, candidates: list[dict[str, Any]]) -> list[Any]:
     """候选的引用素材：人物取最早一条事件，事件取自身书目。"""
 
     events = []
@@ -121,7 +119,9 @@ def resolve_entity(
 
     if exact_persons:
         truncated = len(exact_persons) > MAX_CANDIDATES
-        candidates = [_person_candidate(person) for person in exact_persons[:MAX_CANDIDATES]]
+        candidates = [
+            _person_candidate(person) for person in exact_persons[:MAX_CANDIDATES]
+        ]
     else:
         # 2) 姓名 / 别名子串（容忍「唐太宗李世民」这类带前缀的提问）
         substring_persons = [
@@ -135,11 +135,14 @@ def resolve_entity(
             )
         ]
         substring_persons = _dedupe_persons(substring_persons)
-        substring_persons.sort(key=lambda person: (person["first_year"], person["person_id"]))
+        substring_persons.sort(
+            key=lambda person: (person["first_year"], person["person_id"])
+        )
         if substring_persons:
             truncated = len(substring_persons) > MAX_CANDIDATES
             candidates = [
-                _person_candidate(person) for person in substring_persons[:MAX_CANDIDATES]
+                _person_candidate(person)
+                for person in substring_persons[:MAX_CANDIDATES]
             ]
 
     # 3) 人物解析不到时，回退到事件标题（如「赤壁之战」）

@@ -1,21 +1,21 @@
 /**
- * 历史对话数据层单测（V1.0.5.2；V1.0.5.2-layout 补丁）。
+ * 历史对话数据层单测（V1.0.5.2；V1.0.5.2-layout 补丁；V1.0.6 真实持久化仓库）。
  *
  * 覆盖：时间分组 / 标题生成 / 内存仓库增改查；
  * 布局修复补丁重点回归：**点击查看不得改变列表物理顺序**（syncTurns 不刷新 updatedAt）、
- * 置顶进入最上方「置顶」组、重命名锁定标题、删除后其余项顺序不变；v1.0.6 预留接口占位。
+ * 置顶进入最上方「置顶」组、重命名锁定标题、删除后其余项顺序不变；
+ * V1.0.6 重点：HTTP 仓库（/api/sessions）列表 / 详情 / 新建 / PATCH / DELETE 映射与失败兜底。
  */
-
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
 import type { StoredConversationTurn } from "@/lib/conversation-store";
 import {
   createConversationId,
+  createHttpConversationRepository,
   createInMemoryConversationRepository,
   groupConversationsByTime,
+  recordFromRemoteSession,
   titleFromTurns,
   type ConversationSummary,
 } from "@/lib/conversation-store";
@@ -288,29 +288,173 @@ describe("会话排序稳定性（V1.0.5.2-layout 回归）", () => {
   });
 });
 
-describe("v1.0.6 预留占位（持久化与跨会话上下文）", () => {
-  it("跨会话上下文 / 持久化接口保持空实现，不假装已接入", async () => {
-    const repository = createInMemoryConversationRepository();
-    expect(await repository.buildCrossSessionContext("x")).toBe("");
-    expect(await repository.loadPersisted()).toEqual([]);
-    await expect(repository.persist({
-      id: "x",
-      title: "x",
-      createdAt: 0,
-      updatedAt: 0,
+describe("v1.0.6 真实持久化仓库（createHttpConversationRepository）", () => {
+  /** 简易 fetch mock：按 method + URL 返回预设 JSON / 记录请求。 */
+  function mockFetch(
+    handler: (url: string, init?: RequestInit) => Response,
+  ): { fetchImpl: typeof fetch; requests: Array<{ url: string; init?: RequestInit }> } {
+    const requests: Array<{ url: string; init?: RequestInit }> = [];
+    const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      requests.push({ url, init });
+      return handler(url, init);
+    }) as typeof fetch;
+    return { fetchImpl, requests };
+  }
+
+  function jsonResponse(body: unknown, status = 200): Response {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const SESSION_PAYLOAD = {
+    ok: true,
+    schema_version: "1.0",
+    api_version: "1.0.6",
+    session: {
+      session_id: "session_x",
+      title: "曹操和刘备是什么关系？",
+      created_at: 1,
+      updated_at: 2,
       pinned: false,
-      turns: [],
-    })).resolves.toBeUndefined();
+      turn_count: 2,
+      entity_memory: {
+        person_ids: ["p-caocao-b012"],
+        person_names: { "p-caocao-b012": "曹操" },
+        event_ids: ["handong-chibi"],
+      },
+      turns: [
+        { role: "user", content: "曹操和刘备是什么关系？", created_at: 1, answer: null },
+        {
+          role: "assistant",
+          content: "**根据本轮工具返回的可核验资料：**",
+          created_at: 2,
+          answer: {
+            answer: {
+              mode: "grounded",
+              markdown: "**根据本轮工具返回的可核验资料：**",
+              certainty: "high",
+              claims: [],
+              missing: [],
+              reason_code: null,
+              related_event_ids: [],
+              comparison_analysis: null,
+            },
+            citations: [{ id: "cite-handong-chibi-0", kind: "event" }],
+            entities: [],
+            ui_actions: [],
+            trace: { model_used: "fake-qwen", model_requested: null, sources: { timeline: true, graph: true } },
+            request_id: "req_1",
+            snapshot_version: "v1-x",
+          },
+        },
+      ],
+    },
+  };
+
+  it("list 读取 /api/sessions 并映射为侧边栏摘要（置顶优先）", async () => {
+    const { fetchImpl, requests } = mockFetch(() =>
+      jsonResponse({
+        ok: true,
+        sessions: [
+          { session_id: "a", title: "会话 A", created_at: 10, updated_at: 20, pinned: false, turn_count: 2 },
+          { session_id: "b", title: "会话 B", created_at: 11, updated_at: 12, pinned: true, turn_count: 4 },
+        ],
+      }),
+    );
+    const repository = createHttpConversationRepository({ fetchImpl });
+    const list = await repository.list();
+    expect(repository.kind).toBe("remote");
+    expect(requests[0].url).toContain("/api/sessions");
+    expect(list.map((item) => item.id)).toEqual(["b", "a"]);
+    expect(list[0]).toMatchObject({ title: "会话 B", pinned: true });
   });
 
-  it("数据层源码保留 v1.0.6 持久化 / 跨会话 TODO 注释（至少 3 处）", () => {
-    const source = readFileSync(
-      fileURLToPath(new URL("../lib/conversation-store.ts", import.meta.url)),
-      "utf8",
-    );
-    const marker = "// TODO v1.0.6 多轮历史对话记忆模块 - 功能待实现";
-    const occurrences = source.split(marker).length - 1;
-    expect(occurrences).toBeGreaterThanOrEqual(3);
+  it("get 读取会话详情并恢复完整轮次 + 结构化回答视图", async () => {
+    const { fetchImpl } = mockFetch(() => jsonResponse(SESSION_PAYLOAD));
+    const repository = createHttpConversationRepository({ fetchImpl });
+    const record = await repository.get("session_x");
+    expect(record).not.toBeNull();
+    expect(record?.turns).toHaveLength(2);
+    expect(record?.turns[0]).toMatchObject({ role: "user", content: "曹操和刘备是什么关系？" });
+    expect(record?.turns[1].answer?.mode).toBe("grounded");
+    expect(record?.turns[1].answer?.citations[0].id).toBe("cite-handong-chibi-0");
+    expect(record?.turns[1].answer?.sources).toEqual({ timeline: true, graph: true });
+  });
+
+  it("create 用前端生成的 session_id POST 新会话", async () => {
+    const { fetchImpl, requests } = mockFetch(() => jsonResponse(SESSION_PAYLOAD));
+    const repository = createHttpConversationRepository({ fetchImpl });
+    const record = await repository.create({ id: "session_new", turns: [] });
+    expect(record.id).toBe("session_x");
+    expect(requests[0].init?.method).toBe("POST");
+    expect(JSON.parse(String(requests[0].init?.body))).toEqual({ session_id: "session_new" });
+  });
+
+  it("save / syncTurns 在 HTTP 仓库中是安全空操作（服务端负责写入轮次）", async () => {
+    const { fetchImpl, requests } = mockFetch(() => jsonResponse({ ok: true }));
+    const repository = createHttpConversationRepository({ fetchImpl });
+    expect(await repository.save("session_x", [])).toBeNull();
+    expect(await repository.syncTurns("session_x", [])).toBeNull();
+    expect(requests).toHaveLength(0);
+  });
+
+  it("rename / pin 走 PATCH，remove 走 DELETE", async () => {
+    const { fetchImpl, requests } = mockFetch((_url, init) => {
+      if (init?.method === "DELETE") {
+        return jsonResponse({ ok: true, session_id: "session_x" });
+      }
+      return jsonResponse({
+        ok: true,
+        session: { session_id: "session_x", title: "新标题", created_at: 1, updated_at: 2, pinned: true, turn_count: 2 },
+      });
+    });
+    const repository = createHttpConversationRepository({ fetchImpl });
+    await repository.rename("session_x", "新标题");
+    await repository.pin("session_x", true);
+    await repository.remove("session_x");
+    expect(requests.map((request) => request.init?.method)).toEqual([
+      "PATCH",
+      "PATCH",
+      "DELETE",
+    ]);
+    expect(JSON.parse(String(requests[0].init?.body))).toEqual({ title: "新标题" });
+    expect(JSON.parse(String(requests[1].init?.body))).toEqual({ pinned: true });
+  });
+
+  it("后端不可达时 list 返回空列表、get 返回 null（页面不崩溃）", async () => {
+    const fetchImpl = (async () => {
+      throw new Error("ECONNREFUSED");
+    }) as typeof fetch;
+    const repository = createHttpConversationRepository({ fetchImpl });
+    expect(await repository.list()).toEqual([]);
+    expect(await repository.get("session_x")).toBeNull();
+    // 写操作不抛异常（创建除外，由调用方回退）。
+    await expect(repository.rename("session_x", "标题")).resolves.toBeUndefined();
+    await expect(repository.remove("session_x")).resolves.toBeUndefined();
+  });
+
+  it("recordFromRemoteSession 生成稳定轮次 id，供 React key / transcript 使用", () => {
+    const detail = {
+      id: "session_x",
+      title: "标题",
+      createdAt: 1,
+      updatedAt: 2,
+      pinned: false,
+      turnCount: 2,
+      entityMemory: { personIds: [], personNames: {}, eventIds: [] },
+      turns: [
+        { role: "user" as const, content: "问题", createdAt: 1, answer: null },
+        { role: "assistant" as const, content: "回答", createdAt: 2, answer: null },
+      ],
+    };
+    const record = recordFromRemoteSession(detail);
+    expect(record.turns.map((turn) => turn.id)).toEqual([
+      "session_x-turn-0",
+      "session_x-turn-1",
+    ]);
   });
 });
 

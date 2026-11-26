@@ -31,7 +31,9 @@ def _data_counts_lock(repo_root: Path) -> dict:
 
 def test_load_real_snapshot(repo_root: Path) -> None:
     data_dir = repo_root / "backend" / "data"
-    store = SnapshotStore.load(data_dir / "snapshot.v1.json", data_dir / "snapshot.meta.json")
+    store = SnapshotStore.load(
+        data_dir / "snapshot.v1.json", data_dir / "snapshot.meta.json"
+    )
     expected = _data_counts_lock(repo_root)["counts"]
     assert store.meta["counts"]["events"] == expected["events"]
     assert store.snapshot_meta.hash.startswith("sha256:")
@@ -41,7 +43,9 @@ def test_load_real_snapshot(repo_root: Path) -> None:
 
 def test_missing_snapshot_fails_fast(tmp_path: Path) -> None:
     with pytest.raises(SnapshotLoadError, match="不存在"):
-        SnapshotStore.load(tmp_path / "snapshot.v1.json", tmp_path / "snapshot.meta.json")
+        SnapshotStore.load(
+            tmp_path / "snapshot.v1.json", tmp_path / "snapshot.meta.json"
+        )
 
 
 def test_tampered_snapshot_is_rejected(repo_root: Path, tmp_path: Path) -> None:
@@ -50,7 +54,9 @@ def test_tampered_snapshot_is_rejected(repo_root: Path, tmp_path: Path) -> None:
 
     payload = json.loads(snapshot.read_text(encoding="utf-8"))
     payload["events"][0]["title"] = payload["events"][0]["title"] + "（被手改）"
-    snapshot.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    snapshot.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
 
     with pytest.raises(SnapshotLoadError, match="hash"):
         SnapshotStore.load(snapshot, meta)
@@ -62,7 +68,9 @@ def test_counts_mismatch_is_rejected(repo_root: Path, tmp_path: Path) -> None:
 
     meta_payload = json.loads(meta.read_text(encoding="utf-8"))
     meta_payload["counts"]["events"] = 999
-    meta.write_text(json.dumps(meta_payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    meta.write_text(
+        json.dumps(meta_payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
 
     with pytest.raises(SnapshotLoadError, match="counts"):
         SnapshotStore.load(snapshot, meta)

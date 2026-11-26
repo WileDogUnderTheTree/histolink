@@ -27,7 +27,7 @@ for _stream in (sys.stdout, sys.stderr):
     if hasattr(_stream, "reconfigure"):
         _stream.reconfigure(encoding="utf-8")
 
-from llm_client import (  # noqa: E402  （先补 sys.path 再导入）
+from llm_client import (
     DEFAULT_PING_MESSAGE,
     LLMClient,
     LLMConfigError,
@@ -44,7 +44,11 @@ def emit(payload: dict[str, Any]) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="史脉 V1.0.1 / TC-10 LLM 连通性探针")
-    parser.add_argument("--message", default=DEFAULT_PING_MESSAGE, help="发给模型的测试语句（默认：请回复 OK）")
+    parser.add_argument(
+        "--message",
+        default=DEFAULT_PING_MESSAGE,
+        help="发给模型的测试语句（默认：请回复 OK）",
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -57,7 +61,14 @@ def main(argv: list[str] | None = None) -> int:
     try:
         result = client.ping(args.message)
     except LLMTimeoutError as exc:
-        emit({"ok": False, "stage": "timeout", "model": settings.model, "error": str(exc)})
+        emit(
+            {
+                "ok": False,
+                "stage": "timeout",
+                "model": settings.model,
+                "error": str(exc),
+            }
+        )
         return 4
     except LLMUpstreamError as exc:
         emit(

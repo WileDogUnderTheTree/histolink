@@ -26,7 +26,9 @@ from .base import (
 
 
 @tool("get_relation")
-def get_relation(ctx: ToolContext, person_id_a: str, person_id_b: str) -> dict[str, Any]:
+def get_relation(
+    ctx: ToolContext, person_id_a: str, person_id_b: str
+) -> dict[str, Any]:
     """取两个人物之间的关系定性、共同事件与来龙去脉。"""
 
     person_a_id = parse_person_id(person_id_a, "person_id_a")
@@ -55,7 +57,12 @@ def get_relation(ctx: ToolContext, person_id_a: str, person_id_b: str) -> dict[s
         background = relation_background(relation)
         citations = [relation_citation(relation)]
         citations = _merge_event_citations(
-            citations, [ctx.events_by_id[event_id] for event_id in basis_event_ids if event_id in ctx.events_by_id]
+            citations,
+            [
+                ctx.events_by_id[event_id]
+                for event_id in basis_event_ids
+                if event_id in ctx.events_by_id
+            ],
         )
     else:
         basis_event_ids = []

@@ -120,7 +120,9 @@ def test_insufficient_and_refusal_are_not_marked_downgraded(toolkit: Any) -> Non
     assert outcome.answer.mode == "insufficient"
     assert outcome.answer.certainty == "low"
     assert outcome.answer.missing == ["没有检索到与问题匹配的人物或事件"]
-    assert outcome.answer.markdown.startswith("抱歉，现有的历史数据无法完整回答您的问题。")
+    assert outcome.answer.markdown.startswith(
+        "抱歉，现有的历史数据无法完整回答您的问题。"
+    )
 
     refusal = ModelAnswer(
         mode="refusal",
@@ -140,15 +142,16 @@ def test_ui_actions_are_filtered_by_whitelist_and_observed_ids(toolkit: Any) -> 
     valid_subset = _model_action("act-ok")
     unobserved_target = _model_action("act-bad-id")
     unobserved_target["payload"] = {"event_id": "tang-04"}
-    unobserved_target["target"] = {"surface": "timeline", "params": {"event_id": "tang-04"}}
+    unobserved_target["target"] = {
+        "surface": "timeline",
+        "params": {"event_id": "tang-04"},
+    }
     planned_type = _model_action("act-planned")
     planned_type["type"] = "timeline.highlight_events"
     planned_type["payload"] = {}
     planned_type["target"] = {"surface": "timeline", "params": {}}
 
-    answer = _grounded(
-        ui_actions=[valid_subset, unobserved_target, planned_type]
-    )
+    answer = _grounded(ui_actions=[valid_subset, unobserved_target, planned_type])
     outcome = EvidenceValidator().validate(answer, observed)
     assert outcome.downgraded is False
     assert [action.id for action in outcome.answer.ui_actions] == ["act-ok"]

@@ -175,7 +175,7 @@ class RagStore:
         manifest = load_manifest(directory)
         path = directory or rag_dir()
         try:
-            import chromadb
+            import chromadb  # noqa: F401 - 仅用于探测依赖是否安装，实际客户端由 create_chroma_client 创建
         except ImportError as exc:  # pragma: no cover - 依赖缺失
             raise RagUnavailableError(
                 "未安装 chromadb，无法检索 RAG 向量库；请 pip install -r requirements.txt"

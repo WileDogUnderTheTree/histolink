@@ -351,7 +351,7 @@ function GraphPageContent() {
             ← 返回首页
           </Link>
           <div className={styles.topbarRight}>
-            <p className={styles.eyebrow}>史脉 HistoLink · V1.0.5.2</p>
+            <p className={styles.eyebrow}>史脉 HistoLink · V1.0.7</p>
             {agentReturn ? (
               <button type="button" className={styles.returnChat} onClick={returnToChat}>
                 <span aria-hidden="true">💬</span> 返回聊天
@@ -504,6 +504,8 @@ function GraphPageContent() {
               onCenterPersonChange={applyCenterPerson}
               selectedPersonId={controlledSelection}
               onPersonSelect={handlePersonSelect}
+              // V1.0.6.2（痛点 3）/ V1.0.6.3（布局专项）：史引副驾驶 iframe 内让图表填满容器高度。
+              fillContainer={isEmbedded}
             />
           </div>
         </div>

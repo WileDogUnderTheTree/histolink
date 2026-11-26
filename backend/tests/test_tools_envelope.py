@@ -37,7 +37,9 @@ TOOL_CALLS: list[tuple[str, dict[str, Any]]] = [
 ]
 
 
-def test_registry_matches_frozen_contract(tool_contracts: dict[str, dict[str, Any]]) -> None:
+def test_registry_matches_frozen_contract(
+    tool_contracts: dict[str, dict[str, Any]],
+) -> None:
     assert len(TOOL_NAMES) == 9
     assert "search_historical_text" in TOOL_NAMES
     assert set(TOOL_NAMES) == set(TOOL_FUNCTIONS) == set(tool_contracts)
@@ -107,9 +109,7 @@ def test_tool_failure_keeps_unified_fields(
     assert result["snapshot_version"] == tool_context.snapshot_version
 
 
-def test_toolkit_snapshot_version(
-    toolkit: Any, snapshot_store: Any
-) -> None:
+def test_toolkit_snapshot_version(toolkit: Any, snapshot_store: Any) -> None:
     assert toolkit.snapshot_version == snapshot_store.meta["snapshot_version"]
     assert toolkit.call("get_event", event_id="xixia-09")["snapshot_version"] == (
         toolkit.snapshot_version

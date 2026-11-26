@@ -16,7 +16,7 @@ router = APIRouter(tags=["meta"])
     response_model=MetaResponse,
     responses={503: {"model": ErrorEnvelope}},
 )
-def get_meta(store: SnapshotStore = Depends(get_store)) -> MetaResponse:
+def get_meta(store: SnapshotStore = Depends(get_store)) -> MetaResponse:  # noqa: B008 - FastAPI 依赖注入惯用法
     """返回快照版本、数据统计与 V1.0 动作能力（只读，无数据库）。"""
 
     return store.get_meta()

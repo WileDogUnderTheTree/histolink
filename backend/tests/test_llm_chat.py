@@ -59,8 +59,14 @@ def test_chat_sends_enable_thinking_false_and_json_mode() -> None:
             200,
             json={
                 "model": "Qwen/Qwen3.5-35B-A3B",
-                "choices": [{"message": {"role": "assistant", "content": '{"action":"final"}'}}],
-                "usage": {"prompt_tokens": 20, "completion_tokens": 8, "total_tokens": 28},
+                "choices": [
+                    {"message": {"role": "assistant", "content": '{"action":"final"}'}}
+                ],
+                "usage": {
+                    "prompt_tokens": 20,
+                    "completion_tokens": 8,
+                    "total_tokens": 28,
+                },
             },
         )
 
@@ -71,7 +77,11 @@ def test_chat_sends_enable_thinking_false_and_json_mode() -> None:
     assert result.model == "Qwen/Qwen3.5-35B-A3B"
     assert result.model_used == PRIMARY_MODEL
     assert result.latency_ms >= 0
-    assert result.usage == {"prompt_tokens": 20, "completion_tokens": 8, "total_tokens": 28}
+    assert result.usage == {
+        "prompt_tokens": 20,
+        "completion_tokens": 8,
+        "total_tokens": 28,
+    }
     assert captured["enable_thinking"] is False
 
 
@@ -116,9 +126,11 @@ def test_chat_rejects_too_many_messages() -> None:
 
 
 def test_chat_rejects_overlong_message() -> None:
+    from llm_client import MAX_CHAT_MESSAGE_CHARS
+
     with pytest.raises(LLMConfigError):
         make_client(lambda _request: httpx.Response(200)).chat(
-            [{"role": "user", "content": "x" * 20001}]
+            [{"role": "user", "content": "x" * (MAX_CHAT_MESSAGE_CHARS + 1)}]
         )
 
 
@@ -158,7 +170,9 @@ def test_chat_upstream_error_redacts_key() -> None:
 
 def test_chat_missing_content_raises() -> None:
     def handler(_request: httpx.Request) -> httpx.Response:
-        return httpx.Response(200, json={"choices": [{"message": {"role": "assistant"}}]})
+        return httpx.Response(
+            200, json={"choices": [{"message": {"role": "assistant"}}]}
+        )
 
     with pytest.raises(LLMUpstreamError, match="content"):
         make_client(handler).chat(MESSAGES)
@@ -191,7 +205,9 @@ def test_chat_does_not_follow_redirects() -> None:
 # ---------------------------------------------------------------------------
 
 
-def _fallback_success(model: str = FALLBACK_MODEL, content: str = '{"action":"final"}') -> httpx.Response:
+def _fallback_success(
+    model: str = FALLBACK_MODEL, content: str = '{"action":"final"}'
+) -> httpx.Response:
     return httpx.Response(
         200,
         json={"model": model, "choices": [{"message": {"content": content}}]},

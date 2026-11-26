@@ -31,7 +31,10 @@ LIMIT = {"type": "integer", "minimum": 1, "maximum": 80, "default": 20}
 YEAR = {"type": "integer", "description": "史书纪年：公元前为负，不允许 0"}
 # Outputs include ingested IDs with numeric suffixes; inputs mirror the current tool parser.
 PERSON_ID = {"type": "string", "pattern": r"^p-[a-z0-9]+(?:-[a-z0-9]+)*-[a-z0-9]{2,4}$"}
-PERSON_ID_INPUT = {"type": "string", "pattern": r"^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$"}
+PERSON_ID_INPUT = {
+    "type": "string",
+    "pattern": r"^p-[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{4}$",
+}
 EVENT_ID = {"type": "string", "pattern": r"^[a-z0-9][a-z0-9-]*$"}
 ERA_ID = {"type": "string", "minLength": 1}
 
@@ -164,7 +167,15 @@ EVENT_DETAIL = _object(
             ["timeline", "graph"],
         ),
     },
-    ["event_id", "title", "dynasty", "year", "description", "person_ids", "source_refs"],
+    [
+        "event_id",
+        "title",
+        "dynasty",
+        "year",
+        "description",
+        "person_ids",
+        "source_refs",
+    ],
 )
 PERSON_DETAIL = _object(
     {
@@ -193,7 +204,14 @@ RELATION_DETAIL = _object(
         "basis_event_ids": _array(EVENT_ID, 50),
         "attribution": {"type": "string"},
     },
-    ["person_id_a", "person_id_b", "label", "shared_event_ids", "basis_event_ids", "attribution"],
+    [
+        "person_id_a",
+        "person_id_b",
+        "label",
+        "shared_event_ids",
+        "basis_event_ids",
+        "attribution",
+    ],
 )
 GRAPH_NODE = _object(
     {"person_id": PERSON_ID, "name": {"type": "string"}},
@@ -210,7 +228,9 @@ GRAPH_EDGE = _object(
 )
 
 
-def _tool_output(tool_name: str, data_schema: JsonSchema, items_schema: JsonSchema) -> JsonSchema:
+def _tool_output(
+    tool_name: str, data_schema: JsonSchema, items_schema: JsonSchema
+) -> JsonSchema:
     """统一返回信封（V1.0.2）：成功 / 失败两个 oneOf 变体。
 
     - 成功：`{ok:true, tool, data, items, citations, truncated, snapshot_version, error:null, meta}`
@@ -377,7 +397,10 @@ TOOLS: list[dict[str, Any]] = [
     {
         "name": "timeline_span",
         "description": "取年份区间内的事件（史书纪年，含负数），返回总数与代表事件。",
-        "input": _object({"start_year": YEAR, "end_year": YEAR, "limit": LIMIT}, ["start_year", "end_year"]),
+        "input": _object(
+            {"start_year": YEAR, "end_year": YEAR, "limit": LIMIT},
+            ["start_year", "end_year"],
+        ),
         "output": _tool_output(
             "timeline_span",
             _object(

@@ -10,6 +10,9 @@ from typing import Any
 import jsonschema
 from fastapi.testclient import TestClient
 
+from contracts.models import API_VERSION
+from main import APP_VERSION
+
 EXPECTED_ACTIONS = {
     "timeline.focus_event",
     "timeline.focus_dynasty",
@@ -20,7 +23,9 @@ EXPECTED_ACTIONS = {
 
 
 def _validate_against_contract(instance: Any, model: str, spec: dict[str, Any]) -> None:
-    validator = jsonschema.Draft202012Validator({**spec, "$ref": f"#/components/schemas/{model}"})
+    validator = jsonschema.Draft202012Validator(
+        {**spec, "$ref": f"#/components/schemas/{model}"}
+    )
     validator.validate(instance)
 
 
@@ -29,20 +34,24 @@ def test_health(client: TestClient) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["ok"] is True
-    assert payload["version"] == "1.0.5.2"
+    assert payload["version"] == APP_VERSION
 
 
 def test_meta_counts_and_hash_match_snapshot_meta(
     client: TestClient, repo_root: Path, openapi_spec: dict[str, Any]
 ) -> None:
-    meta = json.loads((repo_root / "backend" / "data" / "snapshot.meta.json").read_text(encoding="utf-8"))
+    meta = json.loads(
+        (repo_root / "backend" / "data" / "snapshot.meta.json").read_text(
+            encoding="utf-8"
+        )
+    )
     response = client.get("/api/meta")
     assert response.status_code == 200
     payload = response.json()
 
     assert payload["ok"] is True
     assert payload["schema_version"] == "1.0"
-    assert payload["api_version"] == "1.0.5.2"
+    assert payload["api_version"] == API_VERSION
     assert payload["snapshot"]["version"] == meta["snapshot_version"]
     assert payload["snapshot"]["hash"] == f"sha256:{meta['content_hash']}"
     assert payload["snapshot"]["counts"] == meta["counts"]
@@ -50,12 +59,20 @@ def test_meta_counts_and_hash_match_snapshot_meta(
     # V1.0.5.4 起：计数基线只有一个来源（export-snapshot 生成的 data-counts.lock.json），
     # 数据扩充时由 backend/scripts/ingest_graph_data.py 统一刷新，测试不再硬编码魔法数字。
     counts_lock = json.loads(
-        (
-            repo_root / "frontend" / "data" / "locks" / "data-counts.lock.json"
-        ).read_text(encoding="utf-8")
+        (repo_root / "frontend" / "data" / "locks" / "data-counts.lock.json").read_text(
+            encoding="utf-8"
+        )
     )
     expected_counts = counts_lock["counts"]
-    for key in ("events", "persons", "relations", "eras", "scopes", "groups", "aliases"):
+    for key in (
+        "events",
+        "persons",
+        "relations",
+        "eras",
+        "scopes",
+        "groups",
+        "aliases",
+    ):
         assert payload["snapshot"]["counts"][key] == expected_counts[key], (
             f"快照 counts.{key} 与 data-counts 锁不一致"
         )

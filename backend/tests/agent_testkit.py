@@ -27,7 +27,11 @@ class FakeLLM:
         #: 模拟「主模型降级后由备用模型完成回答」：默认与 model 一致。
         self.model_used = model_used or model
         self.latency_ms = latency_ms
-        self.usage = usage if usage is not None else {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}
+        self.usage = (
+            usage
+            if usage is not None
+            else {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}
+        )
         self.calls: list[dict[str, Any]] = []
         self.settings = SimpleNamespace(model=model)
 
@@ -37,7 +41,9 @@ class FakeLLM:
 
     def chat(self, messages: list[dict[str, str]], **kwargs: Any) -> LLMChatResult:
         # 快照式保存，避免 Orchestrator 后续 append 影响前面轮次的断言。
-        self.calls.append({"messages": [dict(message) for message in messages], **kwargs})
+        self.calls.append(
+            {"messages": [dict(message) for message in messages], **kwargs}
+        )
         if not self._responses:
             raise AssertionError("FakeLLM 脚本已耗尽，Orchestrator 调用次数超出预期")
         item = self._responses.pop(0)
@@ -76,14 +82,17 @@ def tool_call_step(
     tool: str, arguments: dict[str, Any], thought: str = "调用工具"
 ) -> str:
     return json.dumps(
-        {"action": "tool_call", "thought": thought, "tool": tool, "arguments": arguments},
+        {
+            "action": "tool_call",
+            "thought": thought,
+            "tool": tool,
+            "arguments": arguments,
+        },
         ensure_ascii=False,
     )
 
 
-def tool_batch_step(
-    calls: list[dict[str, Any]], thought: str = "并行调用工具"
-) -> str:
+def tool_batch_step(calls: list[dict[str, Any]], thought: str = "并行调用工具") -> str:
     return json.dumps(
         {"action": "tool_batch", "thought": thought, "calls": calls}, ensure_ascii=False
     )
@@ -103,13 +112,17 @@ def grounded_answer(
     claims: list[dict[str, Any]] | None = None,
     related_event_ids: list[str] | None = None,
     ui_actions: list[dict[str, Any]] | None = None,
+    markdown: str | None = None,
 ) -> dict[str, Any]:
-    """构造模型提议的 grounded answer（ModelAnswer；不含任何用户可见文本）。"""
+    """构造模型提议的 grounded answer（ModelAnswer）。
 
-    return {
+    V1.0.6.1：``markdown`` 为模型生成的用户可见正文（可选；缺省时服务端回退事实实证正文），
+    提供后会先经过 `agent.factcheck` 文本级事实核查再被采用。
+    """
+
+    payload: dict[str, Any] = {
         "mode": "grounded",
-        "claims": claims
-        or [{"id": "c1", "citation_ids": citation_ids}],
+        "claims": claims or [{"id": "c1", "citation_ids": citation_ids}],
         "evidence": [
             {"entity_type": entity_type, "entity_id": entity_id, "note": None}
         ],
@@ -118,6 +131,9 @@ def grounded_answer(
         "reason_code": None,
         "ui_actions": ui_actions or [],
     }
+    if markdown is not None:
+        payload["markdown"] = markdown
+    return payload
 
 
 def insufficient_answer(missing_reasons: list[str] | None = None) -> dict[str, Any]:

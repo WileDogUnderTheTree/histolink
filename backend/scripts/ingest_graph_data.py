@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """《史脉》图谱数据全自动清洗与合并脚本（V1.0.5.4）。
 
 用途
@@ -53,9 +52,10 @@ import json
 import re
 import subprocess
 import sys
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS_DIR = ROOT / "docs"
@@ -70,6 +70,19 @@ PERSON_LOCK_PATH = DATA_DIR / "locks" / "person-ids.lock.json"
 HELPER = ROOT / "scripts" / "ingest-data-helper.mjs"
 DEFAULT_REPORT = DOCS_DIR / "图谱数据入库报告.md"
 CONSISTENCY_SCRIPT = ROOT / "scripts" / "check_consistency.py"
+
+# 三国分表名称只用于来源文档标注，入库时统一归入现有「三国」时间轴。
+DYNASTY_NORMALIZATION = {
+    "三国·魏": "三国",
+    "三国·蜀": "三国",
+    "三国·吴": "三国",
+    "三国-魏": "三国",
+    "三国-蜀": "三国",
+    "三国-吴": "三国",
+    "曹魏": "三国",
+    "蜀汉": "三国",
+    "东吴": "三国",
+}
 
 
 class IngestError(RuntimeError):
@@ -102,7 +115,9 @@ def find_node() -> str:
     for runtimes in (dsh_home / "dsh-runtimes", Path.home() / ".dsh" / "runtimes"):
         if runtimes.is_dir():
             for runtime in sorted(runtimes.iterdir()):
-                candidates.append(runtime / "dependencies" / "node" / "bin" / "node.exe")
+                candidates.append(
+                    runtime / "dependencies" / "node" / "bin" / "node.exe"
+                )
                 candidates.append(runtime / "dependencies" / "node" / "node.exe")
     candidates.extend(
         [
@@ -126,7 +141,9 @@ class NodeRunner:
     def __init__(self) -> None:
         self.node = find_node()
 
-    def run(self, args: list[str], *, stdin: str | None = None, cwd: Path = ROOT) -> str:
+    def run(
+        self, args: list[str], *, stdin: str | None = None, cwd: Path = ROOT
+    ) -> str:
         command = [self.node, *args]
         process = subprocess.run(
             command,
@@ -136,6 +153,7 @@ class NodeRunner:
             text=True,
             encoding="utf-8",
             errors="replace",
+            check=False,
         )
         if process.returncode != 0:
             raise IngestError(
@@ -149,7 +167,9 @@ class NodeRunner:
         try:
             return json.loads(output)
         except json.JSONDecodeError as exc:  # pragma: no cover - 防御性
-            raise IngestError(f"Node 辅助脚本输出不是合法 JSON：{exc}\n{output[:500]}") from exc
+            raise IngestError(
+                f"Node 辅助脚本输出不是合法 JSON：{exc}\n{output[:500]}"
+            ) from exc
 
 
 # ---------------------------------------------------------------------------
@@ -190,9 +210,7 @@ class ParseResult:
 
 YEAR_RE = re.compile(r"前\s*(\d+)")
 YEAR_AD_RE = re.compile(r"(\d{1,4})\s*年?")
-CENTURY_RE = re.compile(
-    r"(前)?\s*(\d+)(?:\s*[-—–~至]\s*(前)?\s*(\d+))?\s*世纪"
-)
+CENTURY_RE = re.compile(r"(前)?\s*(\d+)(?:\s*[-—–~至]\s*(前)?\s*(\d+))?\s*世纪")
 
 
 def _century_midpoint(number: int, before: bool) -> int:
@@ -250,10 +268,8 @@ def split_cell_list(cell: str) -> list[str]:
 
 def split_table_row(line: str) -> list[str]:
     stripped = line.strip()
-    if stripped.startswith("|"):
-        stripped = stripped[1:]
-    if stripped.endswith("|"):
-        stripped = stripped[:-1]
+    stripped = stripped.removeprefix("|")
+    stripped = stripped.removesuffix("|")
     return [cell.strip() for cell in stripped.split("|")]
 
 
@@ -382,9 +398,13 @@ def parse_document(path: Path) -> ParseResult:
             desc_col = column_index(header, "事件简述", "简述")
             people_col = column_index(header, "参与人物")
             importance_col = column_index(header, "重要度")
-            source_col = column_index(header, "参考史料", "史料出处", "史料来源", "史源")
+            source_col = column_index(
+                header, "参考史料", "史料出处", "史料来源", "史源"
+            )
             if title_col is None or people_col is None:
-                raise IngestError(f"{path.name}：表一缺少「事件名称 / 参与人物」列（章节：{heading}）")
+                raise IngestError(
+                    f"{path.name}：表一缺少「事件名称 / 参与人物」列（章节：{heading}）"
+                )
             for row in rows:
                 title = cell_at(row, title_col).strip()
                 if not title or title in {"事件名称", "事件名"}:
@@ -409,7 +429,12 @@ def parse_document(path: Path) -> ParseResult:
                         source_hint=cell_at(row, source_col).strip(),
                     )
                 )
-        elif is_special_doc and "时间" in joined and "事件" in joined and "正史内容" in joined:
+        elif (
+            is_special_doc
+            and "时间" in joined
+            and "事件" in joined
+            and "正史内容" in joined
+        ):
             year_col = column_index(header, "时间")
             title_col = column_index(header, "事件")
             desc_col = column_index(header, "正史内容")
@@ -443,7 +468,9 @@ def parse_document(path: Path) -> ParseResult:
             event_col = column_index(header, "共同参与事件")
             desc_col = column_index(header, "关系简述", "简述", "正史内容")
             if a_col is None or b_col is None:
-                raise IngestError(f"{path.name}：表二缺少「人物A / 人物B」列（章节：{heading}）")
+                raise IngestError(
+                    f"{path.name}：表二缺少「人物A / 人物B」列（章节：{heading}）"
+                )
             for row in rows:
                 person_a = cell_at(row, a_col).strip()
                 person_b = cell_at(row, b_col).strip()
@@ -549,9 +576,13 @@ class FinalEvent:
 class GraphIngestor:
     def __init__(self, args: argparse.Namespace) -> None:
         self.args = args
-        self.config: dict[str, Any] = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        self.config: dict[str, Any] = json.loads(
+            CONFIG_PATH.read_text(encoding="utf-8")
+        )
         if self.config.get("schema_version") != "graph-ingest-config.v1":
-            raise IngestError("backend/data/ingest/config.json 的 schema_version 非法。")
+            raise IngestError(
+                "backend/data/ingest/config.json 的 schema_version 非法。"
+            )
         self.runner = NodeRunner()
         self.warnings: list[str] = []
         self.report_lines: list[str] = []
@@ -562,7 +593,10 @@ class GraphIngestor:
         self.base_relation_pairs: dict[str, dict[str, Any]] = {}
         self.base_alias_keys: set[str] = set()
         self.roman: dict[str, str] = {}
-        self.pins_state: dict[str, Any] = {"schema_version": "person-id-pins.v1", "persons": {}}
+        self.pins_state: dict[str, Any] = {
+            "schema_version": "person-id-pins.v1",
+            "persons": {},
+        }
         self.merged_events: list[MergedEvent] = []
         self.final_events: dict[str, FinalEvent] = {}
         self.new_events: list[FinalEvent] = []
@@ -577,7 +611,9 @@ class GraphIngestor:
         self.person_pins: dict[str, str] = {}
         self.dynasty_aliases: dict[str, str] = {
             str(alias): str(target)
-            for alias, target in (self.config.get("canonical_dynasty_names") or {}).items()
+            for alias, target in (
+                self.config.get("canonical_dynasty_names") or {}
+            ).items()
         }
         self.excluded_person_names: set[str] = {
             str(name) for name in (self.config.get("person_name_exclusions") or [])
@@ -607,7 +643,9 @@ class GraphIngestor:
         )
 
     def resolve_doc_paths(self) -> list[Path]:
-        patterns = [self.args.pattern] if self.args.pattern else self.config["doc_globs"]
+        patterns = (
+            [self.args.pattern] if self.args.pattern else self.config["doc_globs"]
+        )
         excludes = self.config.get("doc_exclude_patterns") or []
         from fnmatch import fnmatch
 
@@ -663,6 +701,10 @@ class GraphIngestor:
     def canonical_dynasty(self, name: str) -> str:
         """朝代归一（魏晋两批文档用「曹魏 / 北魏 / 十六国」等细分名，统一到时间轴 23 朝）。"""
         cleaned = name.strip()
+        if cleaned in DYNASTY_NORMALIZATION:
+            return DYNASTY_NORMALIZATION[cleaned]
+        if re.fullmatch(r"三国[·・.\-—－](?:魏|蜀|吴)", cleaned):
+            return "三国"
         return self.dynasty_aliases.get(cleaned, cleaned)
 
     def _dedupe_parsed(self) -> None:
@@ -693,14 +735,11 @@ class GraphIngestor:
                 if event.importance and (existing.importance or 0) < event.importance:
                     existing.importance = event.importance
                 if event.source_doc in SPECIAL_DOC_NAMES:
-                    if (
-                        event.description
-                        and (
-                            not existing.description
-                            or (
-                                event.description not in existing.description
-                                and existing.description not in event.description
-                            )
+                    if event.description and (
+                        not existing.description
+                        or (
+                            event.description not in existing.description
+                            and existing.description not in event.description
                         )
                     ):
                         existing.description = (
@@ -717,7 +756,9 @@ class GraphIngestor:
                     )
                     existing.source_hint = "；".join(source_hints)
             for relation in parsed.relations:
-                self.original_person_names.update([relation.person_a, relation.person_b])
+                self.original_person_names.update(
+                    [relation.person_a, relation.person_b]
+                )
                 key = "__".join(sorted([relation.person_a, relation.person_b]))
                 if key not in relations_by_pair:
                     relations_by_pair[key] = relation
@@ -728,14 +769,11 @@ class GraphIngestor:
                         if relation.description and relation.label != existing.label
                         else relation.description
                     )
-                    if (
-                        supplement
-                        and (
-                            not existing.description
-                            or (
-                                supplement not in existing.description
-                                and existing.description not in supplement
-                            )
+                    if supplement and (
+                        not existing.description
+                        or (
+                            supplement not in existing.description
+                            and existing.description not in supplement
                         )
                     ):
                         existing.description = (
@@ -779,7 +817,9 @@ class GraphIngestor:
         pending = sorted({text for text in texts if text and text not in self.roman})
         if not pending:
             return
-        mapping = self.runner.helper("romanize", stdin=json.dumps(pending, ensure_ascii=False))
+        mapping = self.runner.helper(
+            "romanize", stdin=json.dumps(pending, ensure_ascii=False)
+        )
         self.roman.update({key: value for key, value in mapping.items() if value})
 
     # -- 事件合并 -----------------------------------------------------------
@@ -788,23 +828,31 @@ class GraphIngestor:
         title_map = self._normalized_event_title_map()
         base_title_index: dict[str, list[str]] = {}
         for event_id, event in self.base_events.items():
-            base_title_index.setdefault(self._normalize_title(event["title"]), []).append(event_id)
+            base_title_index.setdefault(
+                self._normalize_title(event["title"]), []
+            ).append(event_id)
 
         # 先归一化 + 收集候选，再批量罗马化。
         prepared: list[ParsedEvent] = []
         for event in self.doc_events:
             event.participants = [
                 canonical
-                for canonical in (self.canonical_person(name) for name in event.participants)
+                for canonical in (
+                    self.canonical_person(name) for name in event.participants
+                )
                 if canonical
             ]
             # 去重且保持顺序
             seen: set[str] = set()
             event.participants = [
-                name for name in event.participants if not (name in seen or seen.add(name))
+                name
+                for name in event.participants
+                if not (name in seen or seen.add(name))
             ]
             excluded = [
-                name for name in event.participants if name in self.excluded_canonical_person_names
+                name
+                for name in event.participants
+                if name in self.excluded_canonical_person_names
             ]
             if excluded:
                 warn(
@@ -821,9 +869,9 @@ class GraphIngestor:
         # 来源表里只列了主角、但史料明确共同参与的人物（如《史记》载祭公谋父谏穆王征犬戎），
         # 由 config 人工补全，避免单参与者事件产生孤立节点。
         for event in prepared:
-            for extra_name in (self.config.get("event_participant_additions") or {}).get(
-                event.title, []
-            ):
+            for extra_name in (
+                self.config.get("event_participant_additions") or {}
+            ).get(event.title, []):
                 canonical_extra = self.canonical_person(extra_name)
                 if canonical_extra in self.excluded_canonical_person_names:
                     warn(
@@ -842,7 +890,10 @@ class GraphIngestor:
         self.batch_romanize([*new_titles, *[event.title for event in prepared]])
 
         # 新事件按「朝代顺序 → 年份 → 标题」排序后编号，保证 ID 稳定。
-        dynasty_rank = {dynasty: index for index, dynasty in enumerate(self.base_index["dynasty_order"])}
+        dynasty_rank = {
+            dynasty: index
+            for index, dynasty in enumerate(self.base_index["dynasty_order"])
+        }
         unknown_new = [
             event
             for event in prepared
@@ -860,7 +911,9 @@ class GraphIngestor:
         ordinal_by_dynasty: dict[str, int] = {}
         new_id_by_title: dict[str, str] = {}
         for event in unknown_new:
-            dynasty_key = dynasty_prefix.get(event.dynasty) or self.roman.get(event.dynasty, "dynasty")
+            dynasty_key = dynasty_prefix.get(event.dynasty) or self.roman.get(
+                event.dynasty, "dynasty"
+            )
             ordinal_by_dynasty[dynasty_key] = ordinal_by_dynasty.get(dynasty_key, 0) + 1
             roman_title = self.roman.get(event.title, "event")
             new_id_by_title[self._normalize_title(event.title)] = (
@@ -897,7 +950,11 @@ class GraphIngestor:
                     raise IngestError(
                         f"event_title_map 把「{event.title}」映射到了不存在的事件 {base_id}。"
                     )
-                additions = [name for name in event.participants if name not in base["participants"]]
+                additions = [
+                    name
+                    for name in event.participants
+                    if name not in base["participants"]
+                ]
                 if additions:
                     bucket = self.base_additions.setdefault(base_id, [])
                     for name in additions:
@@ -905,7 +962,10 @@ class GraphIngestor:
                             bucket.append(name)
                 base_importance = base.get("importance")
                 if event.importance and (base_importance or 2) < event.importance:
-                    self.importance_overrides[base_id] = [base_importance, event.importance]
+                    self.importance_overrides[base_id] = [
+                        base_importance,
+                        event.importance,
+                    ]
                 self.merged_events.append(
                     MergedEvent(
                         title=base["title"],
@@ -1017,7 +1077,10 @@ class GraphIngestor:
     # -- 关系合并 -----------------------------------------------------------
     def merge_relations(self) -> None:
         log("[4/7] 合并人物关系（共同事件锚点 / 参与人兜底 / 关系补丁）…")
-        dynasty_rank = {dynasty: index for index, dynasty in enumerate(self.base_index["dynasty_order"])}
+        dynasty_rank = {
+            dynasty: index
+            for index, dynasty in enumerate(self.base_index["dynasty_order"])
+        }
         relation_records: list[ParsedRelation] = []
         for relation in self.doc_relations:
             relation.person_a = self.canonical_person(relation.person_a)
@@ -1099,14 +1162,19 @@ class GraphIngestor:
                     f"关系「{a} × {b}」（{relation.dynasty}）找不到可用的共同事件锚点，已跳过。",
                 )
                 continue
-            if not (event_has(self.final_events[primary], a) and event_has(self.final_events[primary], b)):
+            if not (
+                event_has(self.final_events[primary], a)
+                and event_has(self.final_events[primary], b)
+            ):
                 add_participant(primary, a)
                 add_participant(primary, b)
 
             pair_key = "__".join(sorted([a, b]))
             summary = relation.description or relation.label
             if pair_key in self.base_relation_pairs:
-                base_summaries = set(self.base_relation_pairs[pair_key].get("event_summaries") or [])
+                base_summaries = set(
+                    self.base_relation_pairs[pair_key].get("event_summaries") or []
+                )
                 if primary in base_summaries:
                     continue
                 self.relation_patches.append(
@@ -1135,7 +1203,7 @@ class GraphIngestor:
             participants = sorted(set(event.participants))
             for source_index, source in enumerate(participants):
                 for target in participants[source_index + 1 :]:
-                    valid_pairs.add("__".join([source, target]))
+                    valid_pairs.add(f"{source}__{target}")
 
         before = len(self.new_relations) + len(self.relation_patches)
         self.new_relations = [
@@ -1148,7 +1216,9 @@ class GraphIngestor:
         ]
         removed = before - len(self.new_relations) - len(self.relation_patches)
         if removed:
-            warn(self.warnings, f"已清理 {removed} 条不再有共同事件锚点的悬空关系/补丁。")
+            warn(
+                self.warnings, f"已清理 {removed} 条不再有共同事件锚点的悬空关系/补丁。"
+            )
 
     def _resolve_event_title(self, title: str) -> str | None:
         key = self._normalize_title(title)
@@ -1212,20 +1282,32 @@ class GraphIngestor:
                 )
             body = match.group("body")
             existing_ids = set(re.findall(r"""["']([^"']+)["']""", body))
-            missing_ids = [event_id for event_id in event_ids if event_id not in existing_ids]
+            missing_ids = [
+                event_id for event_id in event_ids if event_id not in existing_ids
+            ]
             if not missing_ids:
                 continue
-            updated_body = body.rstrip() + "\n" + "\n".join(
-                f'  "{event_id}",' for event_id in missing_ids
-            ) + "\n"
-            content = content[: match.start("body")] + updated_body + content[match.end("body") :]
+            updated_body = (
+                body.rstrip()
+                + "\n"
+                + "\n".join(f'  "{event_id}",' for event_id in missing_ids)
+                + "\n"
+            )
+            content = (
+                content[: match.start("body")]
+                + updated_body
+                + content[match.end("body") :]
+            )
             log(f"   {array_name} 追加事件 {missing_ids}")
         self.person_graph_content = content
 
     # -- 图谱分期 / 别名 / 名人堂 -------------------------------------------
     def build_eras(self) -> None:
         log("[5/7] 生成新图谱分期 / 别名 / 名人堂配置…")
-        dynasty_rank = {dynasty: index for index, dynasty in enumerate(self.base_index["dynasty_order"])}
+        dynasty_rank = {
+            dynasty: index
+            for index, dynasty in enumerate(self.base_index["dynasty_order"])
+        }
         existing_era_dynasties: set[str] = set()
         for era in self.base_index["eras"]:
             existing_era_dynasties.update(era["dynasties"])
@@ -1243,27 +1325,46 @@ class GraphIngestor:
         for dynasty in batch_dynasties:
             if dynasty in existing_era_dynasties:
                 continue
-            extra_dynasties = [item for item in era_extra.get(dynasty, []) if item in self.base_index["dynasty_start_years"]]
+            extra_dynasties = [
+                item
+                for item in era_extra.get(dynasty, [])
+                if item in self.base_index["dynasty_start_years"]
+            ]
             graph_dynasties = extra_dynasties + [dynasty]
-            graph_dynasties.sort(key=lambda item: (dynasty_rank.get(item, len(dynasty_rank)), item))
+            graph_dynasties.sort(
+                key=lambda item: (dynasty_rank.get(item, len(dynasty_rank)), item)
+            )
             default = era_defaults.get(dynasty) or {}
-            era_id = default.get("id") or self.config.get("dynasty_ids", {}).get(dynasty)
+            era_id = default.get("id") or self.config.get("dynasty_ids", {}).get(
+                dynasty
+            )
             if not era_id:
-                era_id = self.roman.get(dynasty) or self.runner.helper(
-                    "romanize", stdin=json.dumps([dynasty], ensure_ascii=False)
-                )[dynasty]
+                era_id = (
+                    self.roman.get(dynasty)
+                    or self.runner.helper(
+                        "romanize", stdin=json.dumps([dynasty], ensure_ascii=False)
+                    )[dynasty]
+                )
             event_ids = sorted(
                 event.event_id
                 for event in self.final_events.values()
                 if event.dynasty in graph_dynasties
             )
             if not event_ids:
-                warn(self.warnings, f" dynasty「{dynasty}」没有任何事件，跳过图谱分期生成。")
+                warn(
+                    self.warnings,
+                    f" dynasty「{dynasty}」没有任何事件，跳过图谱分期生成。",
+                )
                 continue
-            center = default.get("default_center_person_id") or self._top_figures(
-                event_ids, 1, main_dynasty=dynasty
-            )[0]
-            participants = {name for event_id in event_ids for name in self.final_events[event_id].participants}
+            center = (
+                default.get("default_center_person_id")
+                or self._top_figures(event_ids, 1, main_dynasty=dynasty)[0]
+            )
+            participants = {
+                name
+                for event_id in event_ids
+                for name in self.final_events[event_id].participants
+            }
             if center not in participants:
                 raise IngestError(
                     f"图谱分期「{dynasty}」默认中心「{center}」不在该期事件参与者中："
@@ -1279,15 +1380,21 @@ class GraphIngestor:
                 }
             )
             figures = self._top_figures(
-                event_ids, int(self.config.get("key_figure_size", 8)), main_dynasty=dynasty
+                event_ids,
+                int(self.config.get("key_figure_size", 8)),
+                main_dynasty=dynasty,
             )
             if center not in figures:
-                figures = [center, *figures][: int(self.config.get("key_figure_size", 8))]
+                figures = [center, *figures][
+                    : int(self.config.get("key_figure_size", 8))
+                ]
             self.key_figures[dynasty] = figures
             scope = era_scope.get(dynasty)
             if scope:
                 self.era_scope_map[era_id] = scope
-        log(f"   新增图谱分期 {len(self.new_eras)} 个：{[era['label'] for era in self.new_eras]}")
+        log(
+            f"   新增图谱分期 {len(self.new_eras)} 个：{[era['label'] for era in self.new_eras]}"
+        )
 
     def _top_figures(
         self, event_ids: list[str], limit: int, main_dynasty: str | None = None
@@ -1345,7 +1452,10 @@ class GraphIngestor:
             self.aliases[original] = canonical
         for alias, target in (self.config.get("extra_person_aliases") or {}).items():
             if target not in participant_names:
-                warn(self.warnings, f"额外别名「{alias}」→「{target}」的目标不是事件参与者，已跳过。")
+                warn(
+                    self.warnings,
+                    f"额外别名「{alias}」→「{target}」的目标不是事件参与者，已跳过。",
+                )
                 continue
             if alias in participant_names:
                 warn(self.warnings, f"额外别名「{alias}」本身是人物姓名，已跳过。")
@@ -1384,24 +1494,30 @@ class GraphIngestor:
                 lock = json.loads(PERSON_LOCK_PATH.read_text(encoding="utf-8"))
                 existing_ids.update(entry["id"] for entry in lock.get("persons") or [])
             except json.JSONDecodeError:
-                warn(self.warnings, f"{PERSON_LOCK_PATH} 不是合法 JSON，ID 冲突检测可能不完整。")
+                warn(
+                    self.warnings,
+                    f"{PERSON_LOCK_PATH} 不是合法 JSON，ID 冲突检测可能不完整。",
+                )
         participant_names = {
             name for event in self.final_events.values() for name in event.participants
         }
         new_persons = sorted(participant_names - self.base_participants)
         claimed = set(manual_pins.values()) | set(state_persons.values())
-        dynasty_rank = {dynasty: index for index, dynasty in enumerate(self.base_index["dynasty_order"])}
         for name in new_persons:
             if name in manual_pins or name in state_persons:
                 continue
             related = sorted(
-                (event for event in self.final_events.values() if name in event.participants),
+                (
+                    event
+                    for event in self.final_events.values()
+                    if name in event.participants
+                ),
                 key=lambda event: (event.year, event.event_id),
             )
             dynasty = related[0].dynasty if related else "未知"
-            dynasty_prefix = self.config.get("dynasty_ids", {}).get(dynasty) or self.roman.get(
-                dynasty, "dynasty"
-            )
+            dynasty_prefix = self.config.get("dynasty_ids", {}).get(
+                dynasty
+            ) or self.roman.get(dynasty, "dynasty")
             roman = self.roman.get(name) or self.runner.helper(
                 "romanize", stdin=json.dumps([name], ensure_ascii=False)
             ).get(name, "unknown")
@@ -1429,7 +1545,8 @@ class GraphIngestor:
             "persons": dict(sorted(state_persons.items())),
         }
         self.pins_content = (
-            json.dumps(self.pins_state, ensure_ascii=False, indent=2, sort_keys=False) + "\n"
+            json.dumps(self.pins_state, ensure_ascii=False, indent=2, sort_keys=False)
+            + "\n"
         )
         log(
             f"   新增人物 {len(new_persons)} 位：{new_persons}；人物 ID 固定 {len(self.person_pins)} 条"
@@ -1443,7 +1560,9 @@ class GraphIngestor:
         def ts_object(entries: Iterable[tuple[str, Any]]) -> str:
             lines = []
             for key, value in entries:
-                lines.append(f"  {json.dumps(key, ensure_ascii=False)}: {ts_json(value)},")
+                lines.append(
+                    f"  {json.dumps(key, ensure_ascii=False)}: {ts_json(value)},"
+                )
             return "{\n" + "\n".join(lines) + "\n}"
 
         doc_files = sorted({parsed.path.name for parsed in self.parsed})
@@ -1589,7 +1708,9 @@ class GraphIngestor:
         )
         lines.append("")
 
-        lines.append("export const INGESTED_RELATIONS: readonly PersonRelationRecord[] = [")
+        lines.append(
+            "export const INGESTED_RELATIONS: readonly PersonRelationRecord[] = ["
+        )
         for relation in sorted(
             self.new_relations,
             key=lambda item: "__".join(sorted([item["a"], item["b"]])),
@@ -1606,13 +1727,17 @@ class GraphIngestor:
         lines.append("];")
         lines.append("")
 
-        lines.append("export const INGESTED_RELATION_PATCHES: readonly IngestedRelationPatch[] = [")
+        lines.append(
+            "export const INGESTED_RELATION_PATCHES: readonly IngestedRelationPatch[] = ["
+        )
         for patch in sorted(self.relation_patches, key=lambda item: item["pairKey"]):
             lines.append("  " + json.dumps(patch, ensure_ascii=False) + ",")
         lines.append("];")
         lines.append("")
 
-        lines.append("export const INGESTED_GRAPH_ERAS: readonly IngestedGraphEraSpec[] = [")
+        lines.append(
+            "export const INGESTED_GRAPH_ERAS: readonly IngestedGraphEraSpec[] = ["
+        )
         for era in self.new_eras:
             lines.append(
                 "  "
@@ -1717,15 +1842,21 @@ class GraphIngestor:
         lines: list[str] = []
         lines.append("# 《史脉》图谱数据入库报告（V1.0.5.4）")
         lines.append("")
-        lines.append("> 本文件由 `backend/scripts/ingest_graph_data.py` 自动生成：解析 docs 图谱扩充表、")
+        lines.append(
+            "> 本文件由 `backend/scripts/ingest_graph_data.py` 自动生成：解析 docs 图谱扩充表、"
+        )
         lines.append("> 去重合并进数据层并重新生成快照后的结果留档。重新运行即可覆盖。")
         lines.append("")
         lines.append("## 1. 扫描与解析")
         lines.append("")
         lines.append(f"- 文档：{len(self.parsed)} 份")
         for parsed in self.parsed:
-            lines.append(f"  - `{parsed.path.name}`：事件 {len(parsed.events)} / 关系 {len(parsed.relations)}")
-        lines.append(f"- 去重后事件：{len(self.doc_events)} 条；人物关系：{len(self.doc_relations)} 条")
+            lines.append(
+                f"  - `{parsed.path.name}`：事件 {len(parsed.events)} / 关系 {len(parsed.relations)}"
+            )
+        lines.append(
+            f"- 去重后事件：{len(self.doc_events)} 条；人物关系：{len(self.doc_relations)} 条"
+        )
         lines.append("")
         lines.append("## 2. 事件合并")
         lines.append("")
@@ -1738,13 +1869,19 @@ class GraphIngestor:
         mapped = [item for item in self.merged_events if item.base_id]
         lines.append(f"- 复用既有事件：**{len(mapped)}** 条（标题同题 / 已登记同史实）")
         for merged in mapped:
-            addition = "、".join(merged.additions) if merged.additions else "无新增参与人"
-            lines.append(f"  - 「{merged.doc_title}」→ `{merged.base_id}`（{addition}）")
+            addition = (
+                "、".join(merged.additions) if merged.additions else "无新增参与人"
+            )
+            lines.append(
+                f"  - 「{merged.doc_title}」→ `{merged.base_id}`（{addition}）"
+            )
         if self.importance_overrides:
             lines.append("")
             lines.append("- 重要度覆盖（简阅 / 细览分级按来源表就高）：")
             for event_id, (base, applied) in sorted(self.importance_overrides.items()):
-                lines.append(f"  - `{event_id}`：{base if base is not None else '—'} → {applied}")
+                lines.append(
+                    f"  - `{event_id}`：{base if base is not None else '—'} → {applied}"
+                )
         lines.append("")
         lines.append("## 3. 人物关系")
         lines.append("")
@@ -1754,15 +1891,21 @@ class GraphIngestor:
             lines.append(
                 f"  - {relation['a']} × {relation['b']}（{relation['label']}，锚点 `{summaries}`）"
             )
-        lines.append(f"- 合并进既有关系的事件简述补丁：**{len(self.relation_patches)}** 对")
+        lines.append(
+            f"- 合并进既有关系的事件简述补丁：**{len(self.relation_patches)}** 对"
+        )
         if self.relation_patches:
             for patch in self.relation_patches:
-                lines.append(f"  - `{patch['pairKey']}`：补齐 {', '.join(patch['eventSummaries'])}")
+                lines.append(
+                    f"  - `{patch['pairKey']}`：补齐 {', '.join(patch['eventSummaries'])}"
+                )
         lines.append("")
         lines.append("## 4. 人物、别名与 ID 固定")
         lines.append("")
         new_persons = sorted(set(self.person_pins) - set(self.base_participants))
-        lines.append(f"- 人物 ID 固定表：{len(self.person_pins)} 条；本批新增人物 {len(new_persons)} 位")
+        lines.append(
+            f"- 人物 ID 固定表：{len(self.person_pins)} 条；本批新增人物 {len(new_persons)} 位"
+        )
         for name in new_persons:
             lines.append(f"  - {name} → `{self.person_pins[name]}`")
         lines.append(f"- 别名映射：{len(self.aliases)} 条")
@@ -1804,11 +1947,15 @@ class GraphIngestor:
         if not report_path.is_absolute():
             report_path = ROOT / report_path
         if self.args.dry_run or self.args.check:
-            log(f"   报告（未写盘）：{report_path.relative_to(ROOT) if report_path.is_relative_to(ROOT) else report_path}")
+            log(
+                f"   报告（未写盘）：{report_path.relative_to(ROOT) if report_path.is_relative_to(ROOT) else report_path}"
+            )
         else:
             report_path.parent.mkdir(parents=True, exist_ok=True)
             report_path.write_text(report, encoding="utf-8")
-            log(f"   已写入 {report_path.relative_to(ROOT) if report_path.is_relative_to(ROOT) else report_path}")
+            log(
+                f"   已写入 {report_path.relative_to(ROOT) if report_path.is_relative_to(ROOT) else report_path}"
+            )
 
     # -- 流水线 -------------------------------------------------------------
     def run_pipeline(self) -> None:
@@ -1833,6 +1980,7 @@ class GraphIngestor:
                 text=True,
                 encoding="utf-8",
                 errors="replace",
+                check=False,
             )
             for line in (process.stdout or "").strip().splitlines()[-14:]:
                 log(f"     {line}")
@@ -1883,13 +2031,25 @@ def build_arg_parser() -> argparse.ArgumentParser:
         description="《史脉》图谱扩充数据全自动清洗与合并脚本（V1.0.5.4）",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--pattern", help="覆盖 config.json 的 doc_globs（相对 docs/ 的 glob）")
-    parser.add_argument("--report", help="入库报告输出路径（默认 docs/图谱数据入库报告.md）")
-    parser.add_argument("--dry-run", action="store_true", help="只解析并打印汇总，不写盘、不跑流水线")
-    parser.add_argument("--check", action="store_true", help="只校验生成物是否最新（CI 用）")
-    parser.add_argument("--skip-node", action="store_true", help="只写生成物，不运行 Node 流水线")
     parser.add_argument(
-        "--skip-consistency", action="store_true", help="跳过 scripts/check_consistency.py"
+        "--pattern", help="覆盖 config.json 的 doc_globs（相对 docs/ 的 glob）"
+    )
+    parser.add_argument(
+        "--report", help="入库报告输出路径（默认 docs/图谱数据入库报告.md）"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="只解析并打印汇总，不写盘、不跑流水线"
+    )
+    parser.add_argument(
+        "--check", action="store_true", help="只校验生成物是否最新（CI 用）"
+    )
+    parser.add_argument(
+        "--skip-node", action="store_true", help="只写生成物，不运行 Node 流水线"
+    )
+    parser.add_argument(
+        "--skip-consistency",
+        action="store_true",
+        help="跳过 scripts/check_consistency.py",
     )
     return parser
 

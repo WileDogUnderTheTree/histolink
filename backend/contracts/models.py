@@ -24,7 +24,11 @@ from contracts.action_types import UIActionType, UISurface
 #: 当前 API 契约版本；`AskRequest.client_schema_version` 必须与之一致。
 SCHEMA_VERSION = "1.0"
 #: API 版本（与 backend/main.py 的 APP_VERSION 对应关系见 contracts/README.md）。
-API_VERSION = "1.0.5.2"
+#: V1.0.6：多轮记忆（服务端会话存储 + 实体状态追踪）+ 前端真实历史记录。
+#: V1.0.6.1：markdown 生成权解绑给模型 + 双重事实核查（证据级 + 文本级 FactCheck）。
+#: V1.0.6.2：本地 OpenAI 兼容模型流式直答（POST /api/agent/chat_stream，SSE）。
+#: V1.0.7：终极发版基线（测试依赖告警清理 / 文档重构 / 版本号统一，无业务契约变更）。
+API_VERSION = "1.0.7"
 
 #: 引用许可（Q6）：非商用，沿用 shiji-kb 的 CC BY-NC-SA。
 ATTRIBUTION_TEXT = "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）"
@@ -94,6 +98,33 @@ class AskRequest(StrictModel):
         if self.clarification_id is None and self.selected_person_id is not None:
             raise ValueError("selected_person_id 必须与 clarification_id 一起提交")
         return self
+
+
+class StreamAskRequest(StrictModel):
+    """`POST /api/agent/chat_stream` 的请求体（V1.0.6.2 · 本地模型流式直答）。
+
+    与 `AskRequest` 的差异：
+    - 不需要页面上下文 `context`（直答模式不注入图谱实体）；
+    - `session_id` 可选：为空时服务端创建新会话，回答仍会写入会话库（刷新后可见）；
+    - `history` 仅用于「服务端会话为空时的一次性迁移」，已有服务端历史时以服务端为准。
+
+    响应不是 JSON，而是 `text/event-stream`（SSE）：
+    `{"type":"start"}` → 若干 `{"type":"delta","text":...}` → `{"type":"done", ...}`
+    或 `{"type":"error","code":...,"message":...}`；思考过程不会下发。
+    """
+
+    question: str = Field(min_length=1, max_length=2000)
+    session_id: str | None = Field(default=None, min_length=1, max_length=128)
+    history: list[ConversationTurn] = Field(default_factory=list, max_length=20)
+    #: V1.0.5.2 兼容：请求级模型选择（必须是 `GET /api/agent/models` 白名单内的 id）。
+    model_id: str | None = Field(default=None, max_length=200)
+    #: V1.0.6.2「深度思考」开关：默认关闭（直答链路不开启思考，速度最快）；
+    #: 开启后允许上游思考并追加「先推理再给结论」的 System Prompt 约束，
+    #: 思考过程仍由服务端过滤，前端只看到最终答案。
+    enable_thinking: bool = Field(
+        default=False,
+        description="是否开启深度思考（默认关闭；开启后模型先推理再输出最终答案）。",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -188,7 +219,9 @@ class Answer(StrictModel):
     #: insufficient 专用：缺什么资料。
     missing: list[str] = Field(default_factory=list, max_length=10)
     #: refusal 专用：固定拒答码。
-    reason_code: Literal["OUT_OF_SCOPE", "UNSAFE_REQUEST", "NO_RELIABLE_BASIS"] | None = None
+    reason_code: (
+        Literal["OUT_OF_SCOPE", "UNSAFE_REQUEST", "NO_RELIABLE_BASIS"] | None
+    ) = None
     #: insufficient 专用：相关但不是答案的条目（前端须明确标注）。
     related_event_ids: list[str] = Field(default_factory=list, max_length=5)
     #: V1.0.5.4 新增可选：对比 / 总结类 grounded 回答的「二次归纳」分析块（向后兼容）。
@@ -257,17 +290,25 @@ class UIActionTarget(StrictModel):
     """动作目标；前端据此判定同页 / 跨页（Q2），不信任后端 auto。"""
 
     surface: UISurface
-    params: dict[str, str | int | float | bool | None] = Field(default_factory=dict, max_length=30)
+    params: dict[str, str | int | float | bool | None] = Field(
+        default_factory=dict, max_length=30
+    )
 
 
 class UIAction(StrictModel):
     """动作信封（冻结字段：id/type/payload/target/auto/label/reason）。"""
 
-    id: str = Field(min_length=1, max_length=128, description="幂等键：同一次 request_id 内只执行一次")
+    id: str = Field(
+        min_length=1,
+        max_length=128,
+        description="幂等键：同一次 request_id 内只执行一次",
+    )
     type: UIActionType
     payload: dict[str, Any] = Field(default_factory=dict)
     target: UIActionTarget
-    auto: bool = Field(default=False, description="仅建议值；跨页由前端强制覆盖为需确认")
+    auto: bool = Field(
+        default=False, description="仅建议值；跨页由前端强制覆盖为需确认"
+    )
     label: str = Field(min_length=1, max_length=200)
     reason: str | None = Field(default=None, max_length=300)
 
@@ -284,6 +325,31 @@ class ToolTrace(StrictModel):
     ms: int | None = Field(default=None, ge=0)
 
 
+class FactCheckTrace(StrictModel):
+    """V1.0.6.1 新增可选：文本级事实核查（`FactCheck`）观测。
+
+    对应 `agent.factcheck.FactCheckReport`；仅作为 `trace.fact_check` 下发，不改变回答语义：
+
+    - `passed`：模型 markdown 通过文本级核查，已作为 `answer.markdown` 展示；
+    - `fallback`：核查连续不通过，已回退服务端事实实证正文；
+    - `server_fallback`：模型未提供 markdown / 对比兜底等，使用服务端事实实证正文；
+    - `skipped`：本轮未执行文本级核查（insufficient / refusal / 兜底降级）。
+    """
+
+    status: Literal["passed", "failed", "fallback", "server_fallback", "skipped"] = (
+        "skipped"
+    )
+    #: blocking 问题（触发重写 / 回退的原因；最多 10 条）。
+    issues: list[str] = Field(default_factory=list, max_length=10)
+    #: 非阻断提示（如未加限定词的量化估算），供后续观测与评测。
+    warnings: list[str] = Field(default_factory=list, max_length=10)
+    checked_years: int = Field(default=0, ge=0)
+    checked_persons: int = Field(default=0, ge=0)
+    checked_books: int = Field(default=0, ge=0)
+    checked_quotes: int = Field(default=0, ge=0)
+    checked_numbers: int = Field(default=0, ge=0)
+
+
 class Trace(StrictModel):
     tools: list[ToolTrace] = Field(default_factory=list, max_length=20)
     model: str | None = Field(default=None, max_length=100)
@@ -297,6 +363,8 @@ class Trace(StrictModel):
     #: grounded 回答据此证明「时间轴·大事记」与「人物关系图」两源各覆盖到哪些；
     #: insufficient / refusal / 兜底降级时为 false。
     sources: dict[str, bool] | None = None
+    #: V1.0.6.1 文本级事实核查观测（只增可选）：模型 markdown 是否通过第二重核查。
+    fact_check: FactCheckTrace | None = None
     latency_ms: int | None = Field(default=None, ge=0)
 
 
@@ -325,9 +393,15 @@ class AnswerEnvelope(StrictModel):
                 raise ValueError("grounded 回答必须至少包含 1 条 citation")
             citation_ids = {citation.id for citation in self.citations}
             for claim in self.answer.claims:
-                missing = [citation_id for citation_id in claim.citation_ids if citation_id not in citation_ids]
+                missing = [
+                    citation_id
+                    for citation_id in claim.citation_ids
+                    if citation_id not in citation_ids
+                ]
                 if missing:
-                    raise ValueError(f"claim {claim.id} 引用了不存在的 citation：{missing}")
+                    raise ValueError(
+                        f"claim {claim.id} 引用了不存在的 citation：{missing}"
+                    )
         if self.clarification is not None and not self.ui_actions:
             # 澄清不是页面动作，ui_actions 应保持为空；留此分支只为显式允许空列表。
             pass
@@ -354,6 +428,9 @@ class ErrorCode(str, Enum):
     # ---- V1.0.1 LLM 连通性探测（TC-10） ----
     LLM_NOT_CONFIGURED = "LLM_NOT_CONFIGURED"
     LLM_UPSTREAM_ERROR = "LLM_UPSTREAM_ERROR"
+
+    # ---- V1.0.6 会话管理（多轮记忆 / 历史记录真实持久化） ----
+    SESSION_NOT_FOUND = "SESSION_NOT_FOUND"
 
 
 class ErrorInfo(StrictModel):
@@ -394,7 +471,9 @@ class PingLLMResponse(StrictModel):
     reply: str = Field(min_length=1, max_length=2000, description="模型真实回复")
     model: str = Field(min_length=1, max_length=200, description="实际使用的模型名")
     latency_ms: int = Field(ge=0, description="端到端耗时（毫秒）")
-    usage: dict[str, int] | None = Field(default=None, description="上游返回的 token 用量（若有）")
+    usage: dict[str, int] | None = Field(
+        default=None, description="上游返回的 token 用量（若有）"
+    )
 
 
 class ModelOptionResponse(StrictModel):
@@ -530,6 +609,113 @@ class EventSearchResponse(StrictModel):
     snapshot: SnapshotMeta
     query: str = Field(min_length=1, max_length=200)
     results: list[ApiEvent] = Field(default_factory=list, max_length=50)
+
+
+# ---------------------------------------------------------------------------
+# 会话管理（V1.0.6：多轮记忆 / 前端历史记录真实持久化）
+# ---------------------------------------------------------------------------
+#
+# 版本规则（V1.0 内只增可选字段）：
+# - 新增 4 条 `/api/sessions` 相关接口（list / create / detail / patch / delete），
+#   不改动既有 AnswerEnvelope / AskRequest 字段；
+# - `AskRequest.history` 继续保留（客户端兜底 + 老会话迁移），服务端 SessionStore 成为
+#   多轮上下文的权威来源；同一 session_id 的后续请求自动带上前几轮上下文。
+
+
+class SessionTurn(StrictModel):
+    """会话中的单轮消息（服务端持久化；前端刷新后据此恢复聊天记录）。"""
+
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=10000)
+    created_at: int = Field(ge=0, description="该轮消息创建时间（epoch 毫秒）")
+    #: assistant 轮次携带的结构化回答快照（answer / citations / entities / ui_actions / trace）。
+    #: user 轮次为 null；结构由服务端写入，前端只读消费，不参与任何指令执行。
+    answer: dict[str, Any] | None = None
+
+
+class SessionEntityMemory(StrictModel):
+    """会话实体状态（V1.0.6 指代消解）：上一轮真实工具结果里出现过的人物 / 事件 ID。"""
+
+    #: 按「最近一轮出现顺序」排列；最多保留 8 个，供「他们 / 这两人 / 双方」等代词解析。
+    person_ids: list[str] = Field(default_factory=list, max_length=8)
+    #: person_id → 人物正名（服务端从快照解析，前端仅展示）。
+    person_names: dict[str, str] = Field(default_factory=dict, max_length=8)
+    #: 最近一轮涉及的 event_id（最多 8 个）。
+    event_ids: list[str] = Field(default_factory=list, max_length=8)
+
+
+class SessionSummary(StrictModel):
+    """侧边栏列表用的会话摘要（不含完整 turns，避免列表过重）。"""
+
+    session_id: str = Field(min_length=1, max_length=128)
+    title: str = Field(min_length=1, max_length=100)
+    created_at: int = Field(ge=0, description="创建时间（epoch 毫秒）")
+    updated_at: int = Field(ge=0, description="最后一条消息时间（epoch 毫秒）")
+    pinned: bool = False
+    turn_count: int = Field(default=0, ge=0)
+
+
+class SessionDetail(SessionSummary):
+    """完整会话（点击历史记录 / 刷新页面恢复时使用）。"""
+
+    entity_memory: SessionEntityMemory = Field(default_factory=SessionEntityMemory)
+    turns: list[SessionTurn] = Field(default_factory=list, max_length=200)
+
+
+class SessionListResponse(StrictModel):
+    """`GET /api/sessions`：真实历史会话列表（置顶优先，其余按最后消息时间倒序）。"""
+
+    ok: Literal[True] = True
+    schema_version: Literal["1.0"] = SCHEMA_VERSION
+    api_version: str = API_VERSION
+    sessions: list[SessionSummary] = Field(default_factory=list, max_length=100)
+
+
+class SessionDetailResponse(StrictModel):
+    """`GET /api/sessions/{session_id}` / `POST /api/sessions` 的响应。"""
+
+    ok: Literal[True] = True
+    schema_version: Literal["1.0"] = SCHEMA_VERSION
+    api_version: str = API_VERSION
+    session: SessionDetail
+
+
+class SessionCreateRequest(StrictModel):
+    """`POST /api/sessions`：新建会话（session_id 可由前端生成以保证刷新后一致）。"""
+
+    session_id: str | None = Field(default=None, min_length=1, max_length=128)
+    title: str | None = Field(default=None, min_length=1, max_length=100)
+
+
+class SessionPatchRequest(StrictModel):
+    """`PATCH /api/sessions/{session_id}`：重命名 / 置顶（至少提供一个字段）。"""
+
+    title: str | None = Field(default=None, min_length=1, max_length=100)
+    pinned: bool | None = None
+
+    @model_validator(mode="after")
+    def validate_patch_fields(self) -> SessionPatchRequest:
+        if self.title is None and self.pinned is None:
+            raise ValueError("PATCH 至少需要提供 title 或 pinned 之一")
+        return self
+
+
+class SessionMutationResponse(StrictModel):
+    """`PATCH /api/sessions/{session_id}` 的响应（返回更新后的摘要）。"""
+
+    ok: Literal[True] = True
+    schema_version: Literal["1.0"] = SCHEMA_VERSION
+    api_version: str = API_VERSION
+    session: SessionSummary
+
+
+class SessionDeleteResponse(StrictModel):
+    """`DELETE /api/sessions/{session_id}` 的响应。"""
+
+    ok: Literal[True] = True
+    schema_version: Literal["1.0"] = SCHEMA_VERSION
+    api_version: str = API_VERSION
+    session_id: str = Field(min_length=1, max_length=128)
 
 
 # ---------------------------------------------------------------------------

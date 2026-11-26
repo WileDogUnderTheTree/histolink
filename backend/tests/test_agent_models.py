@@ -13,8 +13,9 @@ from llm_client import (
     DEFAULT_FALLBACK_MODEL,
     DEFAULT_MODEL,
     list_model_options,
-    resolve_model_pair,
     load_llm_settings,
+    model_display_name,
+    resolve_model_pair,
 )
 from routers.deps import get_llm_client
 
@@ -57,6 +58,48 @@ def test_list_model_options_merges_same_model() -> None:
     )
     assert len(options) == 1
     assert options[0].role == "primary"
+
+
+# ---------------------------------------------------------------------------
+# V1.0.6.2：模型切换窗口展示名（id 保持真实模型名，name 短而通俗）
+# ---------------------------------------------------------------------------
+
+
+def test_model_display_name_shortens_hf_gguf_models() -> None:
+    assert (
+        model_display_name("hf.co/mradermacher/XiaoHong-v1-GGUF:Q4_K_M")
+        == "XiaoHong-v1"
+    )
+    assert model_display_name("hf.co/foo/Bar-7B-GGUF:Q5_K_M") == "Bar-7B"
+    # 非 GGUF 的云端模型名保持原样（避免误伤 Qwen/... 命名）。
+    assert model_display_name("Qwen/Qwen3.5-35B-A3B") == "Qwen/Qwen3.5-35B-A3B"
+
+
+def test_list_model_options_uses_display_name_env_override() -> None:
+    model_id = "hf.co/mradermacher/XiaoHong-v1-GGUF:Q4_K_M"
+    options = list_model_options(
+        {
+            "MODELSCOPE_MODEL": model_id,
+            "MODELSCOPE_FALLBACK_MODEL": model_id,
+            "LLM_MODEL_DISPLAY_NAME": "XiaoHong-v1",
+        },
+        load_env_file=False,
+    )
+    assert len(options) == 1
+    # id 用于请求上游，必须保持真实模型名。
+    assert options[0].id == model_id
+    assert options[0].name == "XiaoHong-v1"
+    assert options[0].role == "primary"
+
+
+def test_list_model_options_auto_shortens_hf_gguf_without_override() -> None:
+    model_id = "hf.co/mradermacher/XiaoHong-v1-GGUF:Q4_K_M"
+    options = list_model_options(
+        {"MODELSCOPE_MODEL": model_id, "MODELSCOPE_FALLBACK_MODEL": model_id},
+        load_env_file=False,
+    )
+    assert options[0].id == model_id
+    assert options[0].name == "XiaoHong-v1"
 
 
 def test_resolve_model_pair_bidirectional() -> None:

@@ -6,6 +6,9 @@ pydantic>=2.9,<3
 httpx>=0.27,<1
 python-dotenv>=1.0,<2
 
+# V1.0.6.2：本地 Ollama 流式直答（OpenAI SDK；/api/agent/chat_stream + scripts/test_ollama_stream.py）
+openai>=1.60,<2
+
 # Chroma 1.5.9 hit SQLite code 14 on Windows; 0.4.24 requires NumPy <2.
 # V1.0.5 RAG 混合检索: 本地持久化向量库 + bge-small-zh-v1.5（ONNX，CPU 推理，无需 torch）
 chromadb==0.4.24

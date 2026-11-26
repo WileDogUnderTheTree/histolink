@@ -16,11 +16,13 @@ import {
   clarificationTextFromEnvelope,
   createSessionId,
   errorMessageFromEnvelope,
+  factCheckHint,
   historyFromTranscript,
   isAnswerEnvelope,
   isErrorEnvelope,
   namespaceUiActions,
   normalizeComparisonAnalysis,
+  normalizeFactCheck,
   normalizeRestoredAnswerView,
   postAsk,
   RATE_LIMIT_MESSAGE,
@@ -423,6 +425,15 @@ describe("冷启动 / 新窗口状态隔离（V1.0.5.4 修复三）", () => {
     expect(resolveRequestModelId("   ", undefined, true)).toBeNull();
   });
 
+  it("注册表来自静态兜底时不发送 model_id（避免本地 Ollama 将 Qwen 判为未知模型 400）", () => {
+    expect(
+      resolveRequestModelId(null, "Qwen/Qwen3.5-35B-A3B", true, true),
+    ).toBeNull();
+    expect(
+      resolveRequestModelId("Qwen/Qwen3.5-8B-Instruct", "Qwen/Qwen3.5-35B-A3B", true, true),
+    ).toBeNull();
+  });
+
   it("恢复旧版 sessionStorage 回答：缺失字段补安全默认值，不再触发空指针", () => {
     // 模拟旧版本写入的 answer：没有 citations / uiActions / sources / comparisonAnalysis。
     const legacy = {
@@ -465,5 +476,66 @@ describe("冷启动 / 新窗口状态隔离（V1.0.5.4 修复三）", () => {
     expect(view?.sources).toEqual({ timeline: true, graph: true });
     expect(view?.comparisonAnalysis).toEqual({ text: "对比分析" });
     expect(view?.citations).toHaveLength(1);
+  });
+});
+
+describe("V1.0.6.1 双重事实核查观测", () => {
+  it("normalizeFactCheck 只接受已知状态并过滤 issues", () => {
+    expect(normalizeFactCheck(null)).toBeNull();
+    expect(normalizeFactCheck("passed")).toBeNull();
+    expect(normalizeFactCheck({ status: "unknown", issues: [] })).toBeNull();
+    expect(normalizeFactCheck({ status: "passed", issues: ["x", 1] })).toEqual({
+      status: "passed",
+      issues: ["x"],
+    });
+    expect(normalizeFactCheck({ status: "server_fallback" })?.status).toBe("server_fallback");
+  });
+
+  it("factCheckHint 只对通过 / 回退给出提示文案", () => {
+    expect(factCheckHint(null)).toBeNull();
+    expect(factCheckHint({ status: "skipped", issues: [] })).toBeNull();
+    expect(factCheckHint({ status: "passed", issues: [] })).toBe("双重事实核查通过");
+    expect(factCheckHint({ status: "fallback", issues: ["x"] })).toBe("已回退服务端实证正文");
+    expect(factCheckHint({ status: "server_fallback", issues: [] })).toBe("已回退服务端实证正文");
+  });
+
+  it("answerViewFromEnvelope 读取 trace.fact_check（旧信封缺字段时为 null）", () => {
+    const legacy = answerViewFromEnvelope(ANSWER_ENVELOPE as unknown as AnswerEnvelope);
+    expect(legacy?.factCheck).toBeNull();
+
+    const withFactCheck = answerViewFromEnvelope({
+      ...(ANSWER_ENVELOPE as unknown as AnswerEnvelope),
+      trace: {
+        tools: [],
+        model: "fake-qwen",
+        model_used: "fake-qwen",
+        model_requested: null,
+        sources: { timeline: true, graph: false },
+        fact_check: {
+          status: "passed",
+          issues: [],
+          warnings: [],
+          checked_years: 1,
+          checked_persons: 2,
+          checked_books: 1,
+          checked_quotes: 0,
+          checked_numbers: 0,
+        },
+        latency_ms: 12,
+      },
+    } as unknown as AnswerEnvelope);
+    expect(withFactCheck?.factCheck).toEqual({ status: "passed", issues: [] });
+  });
+
+  it("normalizeRestoredAnswerView 保留刷新后的核查状态（旧快照缺省为 null）", () => {
+    const restored = normalizeRestoredAnswerView({
+      markdown: "事实实证",
+      mode: "grounded",
+      factCheck: { status: "fallback", issues: ["正文未通过"] },
+    });
+    expect(restored?.factCheck).toEqual({ status: "fallback", issues: ["正文未通过"] });
+
+    const legacy = normalizeRestoredAnswerView({ markdown: "旧事实", mode: "grounded" });
+    expect(legacy?.factCheck).toBeNull();
   });
 });

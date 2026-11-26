@@ -1,9 +1,12 @@
-"""Agent Core 的 Pydantic 数据结构（V1.0.3）。
+"""Agent Core 的 Pydantic 数据结构（V1.0.3；V1.0.6.1 解绑 markdown 生成权）。
 
 这些模型是**模型输出 / 工具调用 / 最终回答**之间唯一的数据契约：
-- 模型只能输出 `ToolCallStep` 或 `FinalStep` 两种 JSON，最终回答用 `ModelAnswer`；
-- `FinalAnswer` 是**服务端生成的输出结构**（markdown / certainty / missing / UIAction.label 均由服务端写死），
-  模型无法直接提供；`EvidenceValidator` 负责把 `ModelAnswer` 转换成 `FinalAnswer`；
+- 模型只能输出 `ToolCallStep` / `ToolBatchStep` / `FinalStep` 三种 JSON，最终回答用 `ModelAnswer`；
+- **V1.0.6.1**：`ModelAnswer.markdown` 恢复为用户可见正文的唯一来源（模型生成）；
+  该正文在 `EvidenceValidator` 通过后，还要经过 `agent.factcheck` 的**文本级事实核查**，
+  通过后才会写入 `FinalAnswer.markdown`；核查不通过 → 退回重写 / 回退服务端事实实证；
+- `FinalAnswer` 的 `certainty` / `missing` / `claims[].text` / `UIAction.label` 仍由服务端写死，
+  模型无法决定；`EvidenceValidator` 负责把 `ModelAnswer` 转换成 `FinalAnswer`；
 - `Evidence` 的 `entity_id` 必须能在工具结果中找到（由 `validator.EvidenceValidator` 校验）；
 - `UIAction` 直接复用冻结的 `contracts.models.UIAction`，不另造协议。
 
@@ -122,16 +125,22 @@ class ModelClaim(AgentModel):
 class ModelAnswer(AgentModel):
     """**模型提议**的最终回答（三态）。
 
-    V1.0.3 复审整改（P0-3）与放行后清理后，模型不再能决定任何用户可见文本：
+    V1.0.3 复审整改（P0-3）要求模型不能决定用户可见文本；**V1.0.6.1 解绑生成权**：
 
-    - 没有 `markdown`（服务端按模式生成正文）；
+    - `markdown`（V1.0.6.1 新增）：grounded 时模型生成的用户可见正文，
+      必须是「### 📜 史料实证」+「### 💡 史令分析」两节结构；
+      服务端先做证据级校验，再做文本级事实核查（`agent.factcheck`），通过后才采用；
+      未提供 / 核查不通过时回退服务端事实实证正文（安全兜底，绝不把未核验文本上屏）；
     - 没有 `certainty`（服务端按模式 / 证据形态写死）；
     - 没有 `missing` 自由文本，改为枚举 `missing_reasons`；
-    - `claims` 只保留 `id + citation_ids`（不写 claim 文本）；
+    - `claims` 只保留 `id + citation_ids`（不写 claim 文本，服务端按 citation 生成引用面板文案）；
     - `ui_actions` 不提供 `label`（服务端按动作类型写死）。
     """
 
     mode: AnswerMode
+    #: V1.0.6.1：用户可见正文（模型生成 + 服务端双重事实核查后采用）。
+    #: 长度上限与 `FinalAnswer.markdown` 一致（10000），实际由 FactCheck 收紧到 2000 字左右。
+    markdown: str | None = Field(default=None, max_length=10000)
     claims: list[ModelClaim] = Field(default_factory=list, max_length=50)
     evidence: list[Evidence] = Field(default_factory=list, max_length=50)
     related_event_ids: list[str] = Field(default_factory=list, max_length=5)
@@ -167,15 +176,16 @@ class ModelAnswer(AgentModel):
 
 
 class ComparisonAnalysis(AgentModel):
-    """**二次归纳**产出的对比分析（V1.0.5.4，模型生成 + 服务端证据链校验）。
+    """**二次归纳**产出的对比分析（V1.0.5.4；V1.0.6.1 起不再产出，仅保留契约兼容）。
 
-    与 `FinalAnswer.markdown` 严格分离：
+    V1.0.6.1 已把「💡 史令分析」并入模型生成的 `FinalAnswer.markdown`，
+    因此独立的二次归纳调用与 `COMPARISON_SYNTHESIS_SYSTEM_PROMPT` 一并废除；
+    本结构只用于保证旧会话快照 / 旧契约数据仍能反序列化（新回答该字段恒为 None）。
 
-    - `markdown` 是服务端根据工具真实返回写死的「史料实证」，**不含任何模型文本**；
-    - `text` 是模型仅根据本轮事实块做的对比归纳，单独作为「💡 史令对比分析」下发；
+    - `markdown` 是最终正文（模型生成 + 服务端双重事实核查）；
+    - `text` 是 V1.0.5.4 的模型归纳文本，单独作为「💡 史令对比分析」下发；
     - 只有通过 `agent.comparison.validate_comparison_analysis` 的年份 / 人物白名单校验
-      才会被挂到 `FinalAnswer` 上；校验失败或二次调用失败时该字段为 `None`，
-      正文仍保留完整的事实实证（不降级为 insufficient）。
+      才会被挂到 `FinalAnswer` 上；新链路不再调用该层。
     """
 
     text: str = Field(min_length=1, max_length=1500)
@@ -185,17 +195,20 @@ class ComparisonAnalysis(AgentModel):
 
 
 class FinalAnswer(AgentModel):
-    """**服务端生成**的最终回答（进入 `AgentResult` / `AnswerEnvelope`）。
+    """**服务端组装**的最终回答（进入 `AgentResult` / `AnswerEnvelope`）。
 
     与 `ModelAnswer` 的关键区别：
 
-    - `markdown` 由服务端写死：grounded 用工具原文重写，insufficient / refusal 用固定模板；
+    - `markdown`：V1.0.6.1 起 = 模型生成正文（通过 `FactCheck` 双重事实核查后采用）；
+      模型未提供 / 核查不通过时回退为服务端用工具原文重写的「史料实证 + 事实罗列」正文；
+      insufficient / refusal 仍用服务端固定模板；
     - `certainty` 由服务端按模式写死（grounded high/medium、insufficient low、refusal null）；
     - `missing` 由服务端生成（insufficient 用枚举映射文案，降级用服务端诊断原因）；
-    - `comparison_analysis`（V1.0.5.4 可选）只承载二次归纳的对比分析，与事实实证分字段下发，
-      不参与 `markdown` 的生成，也不改变三态语义。
+    - `claims[].text` 由服务端按 citation 原文生成（模型只提供 citation 绑定）；
+    - `comparison_analysis`（V1.0.5.4 遗留可选字段）V1.0.6.1 起恒为 None，仅为契约兼容保留。
 
-    模型无法构造这个结构，也就无法把任意历史陈述带进用户可见回答（P0-3）。
+    模型无法自行构造这个结构：`markdown` 必须经过证据级 + 文本级双重核查，
+    `certainty` / `missing` / `claims[].text` 均由服务端写死。
     """
 
     mode: AnswerMode
@@ -207,7 +220,7 @@ class FinalAnswer(AgentModel):
     missing: list[str] = Field(default_factory=list, max_length=10)
     reason_code: RefusalReason | None = None
     ui_actions: list[UIAction] = Field(default_factory=list, max_length=3)
-    #: V1.0.5.4：仅 grounded 且对比 / 总结类问题可能携带；服务端已完成证据链校验。
+    #: V1.0.5.4 遗留：V1.0.6.1 起不再产出（史令分析已并入 markdown），仅为契约向后兼容保留。
     comparison_analysis: ComparisonAnalysis | None = None
 
     @model_validator(mode="after")
@@ -274,6 +287,14 @@ class AgentResult(AgentModel):
     downgraded: bool = False
     downgrade_reason: str | None = Field(default=None, max_length=500)
     usage: dict[str, int] | None = None
+    #: V1.0.6.1：文本级事实核查结果（映射到 API `trace.fact_check`）。
+    #: 形如 ``{"status": "passed", "issues": [], "checked_years": 2, ...}``；
+    #: status ∈ passed / rewritten / fallback / server_fallback / skipped。
+    fact_check: dict[str, Any] | None = None
+    #: V1.0.6：本轮真实工具结果里出现过的人物 / 事件 ID（会话实体状态）。
+    #: 路由层把它合并进 SessionStore，供下一轮「他们 / 这两人」等代词解析使用；
+    #: 不进入用户可见回答，也不属于 API 契约字段。
+    entity_memory: dict[str, Any] | None = None
 
 
 __all__ = [

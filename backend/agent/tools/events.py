@@ -32,7 +32,17 @@ from .base import (
 _EMBEDDED_NAME_QUERY_MAX = 30
 #: 允许做「人物名 + 事件词」扩展的事件词后缀（如「王安石变法」→「王安石」）。
 #: 只限定在这些明确的事件名词上，避免把「秦始皇 西红柿」这类问题扩展成大量无关人物事件。
-_EVENT_TOPIC_SUFFIXES = ("变法", "改革", "新政", "起义", "之变", "之战", "之乱", "之役", "改制")
+_EVENT_TOPIC_SUFFIXES = (
+    "变法",
+    "改革",
+    "新政",
+    "起义",
+    "之变",
+    "之战",
+    "之乱",
+    "之役",
+    "改制",
+)
 
 
 def _search_terms(ctx: ToolContext, query: str) -> set[str]:
@@ -129,7 +139,10 @@ def search_events(
             continue
         if bounds is not None and not (bounds[0] <= event["year"] <= bounds[1]):
             continue
-        if importance_floor is not None and int(event.get("importance") or 2) < importance_floor:
+        if (
+            importance_floor is not None
+            and int(event.get("importance") or 2) < importance_floor
+        ):
             continue
         score = _score_event(event, terms)
         if score > 0:
@@ -180,7 +193,8 @@ def get_event(ctx: ToolContext, event_id: str) -> dict[str, Any]:
         "is_special": bool(event.get("is_special")),
         "person_ids": list(event.get("person_ids") or [])[:50],
         "source_refs": [
-            _source_ref_dict(reference) for reference in (event.get("source_refs") or [])[:10]
+            _source_ref_dict(reference)
+            for reference in (event.get("source_refs") or [])[:10]
         ],
         "source_status": event.get("source_status", "cited"),
         "surface": {

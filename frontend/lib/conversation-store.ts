@@ -1,26 +1,30 @@
 /**
- * 历史对话数据层（V1.0.5.2；V1.0.5.2-layout 补丁扩展）。
+ * 历史对话数据层（V1.0.5.2；V1.0.6 接入真实服务端持久化）。
  *
- * v1.0.5.2 实现范围：
- * - 定义 `ConversationRepository` / `ConversationStorage` 接口与数据形状；
- * - 提供**内存实现 + 演示数据**（页面刷新后回到演示数据，不接真实持久化）；
- * - `/ask` 左侧历史对话侧边栏的「置顶 / 今天 / 过去 30 天」分组、点击加载、新建对话都基于本模块。
+ * V1.0.6 实现范围（替换 V1.0.5.2 的「内存 + 演示数据」）：
+ * - `createHttpConversationRepository()`：走 `/api/sessions` 真实持久化（默认实现），
+ *   列表 / 详情 / 新建 / 重命名 / 置顶 / 删除全部由服务端 SessionStore 承载；
+ * - 保留 `createInMemoryConversationRepository()` 供单测与离线兜底；
+ * - 侧边栏分组（「置顶 / 今天 / 过去 30 天」）、标题生成、排序语义保持不变：
+ *   列表顺序只由「创建时间 / 最后一条消息时间」决定，点击查看不改变顺序。
  *
- * v1.0.5.2-layout 补丁（布局与侧边栏修复）：
- * - `save()` 只在**新消息进入会话**时刷新 `updatedAt`（最后一条消息时间）；
- * - 新增 `syncTurns()`：只同步正文、不改变排序时间——加载 / 切换 / 离开会话时使用，
- *   修掉「点击历史记录即被当成最新活跃并弹到列表顶部」的体验 Bug；
- * - `rename()` / `remove()` / `pin()` 落地为**本地内存状态更新**（重命名锁定标题、
- *   删除后其余项顺序不变、置顶后由 `groupConversationsByTime` 放进最上方「置顶」组）。
- *
- * v1.0.6 预留（本版本只留接口与注释，**不实现业务逻辑**）：
- * - 历史对话持久化存储（localStorage / IndexedDB / 服务端会话库）；
- * - 跨会话上下文关联（把 earlier 会话摘要拼进新一轮 history）。
- * 预留位置带 `// TODO v1.0.6 多轮历史对话记忆模块 - 功能待实现`，
- * 后续版本可直接替换实现，不需要改动 `/ask` 页面与 `AgentContext` 的调用方式。
+ * 数据流（V1.0.6）：
+ * - 对话轮次由 `POST /api/agent/ask` 在服务端**原子写入**（提问成功才落库）；
+ *   前端不再用 `save()` 回写正文，`save` / `syncTurns` 在 HTTP 仓库中是安全空操作；
+ * - 页面刷新后：从 `localStorage` 取 `session_id` → `GET /api/sessions/{id}` 恢复完整聊天记录；
+ * - 新建对话 = `POST /api/sessions` 创建空会话（更新链接 / 列表最上方）。
  */
 
 import type { AgentAnswerView } from "@/lib/agent-client";
+import {
+  createSession as createRemoteSession,
+  deleteSession as deleteRemoteSession,
+  fetchSessionDetail,
+  fetchSessions,
+  patchSession as patchRemoteSession,
+  type RemoteSessionDetail,
+  type SessionFetchOptions,
+} from "@/lib/session-client";
 
 /** 持久化到仓库的单轮对话（与 AgentContext.AgentTurn 结构兼容）。 */
 export interface StoredConversationTurn {
@@ -49,36 +53,37 @@ export interface ConversationRecord extends ConversationSummary {
   /**
    * 标题是否已被用户手动锁定（重命名后为 true）。
    *
-   * 未锁定时标题由首条用户消息自动生成；锁定后 `save` 不允许再用首问覆盖自定义标题。
-   * 该字段只在数据层内部使用，`ConversationSummary` 不暴露，避免污染侧边栏渲染模型。
+   * 未锁定时标题由首条用户消息自动生成；服务端 SessionStore 负责持久化该状态，
+   * 前端只在内存实现里使用它，`ConversationSummary` 不暴露。
    */
   titleLocked?: boolean;
 }
 
-/** v1.0.6 预留：真实持久化存储接口（当前版本不使用）。 */
-export interface ConversationStorage {
-  readAll(): Promise<ConversationRecord[]>;
-  writeAll(records: readonly ConversationRecord[]): Promise<void>;
-}
+/** 仓库实现类型：`remote` 走真实 API，`memory` 供单测 / 离线兜底。 */
+export type ConversationRepositoryKind = "remote" | "memory";
 
 /**
- * 历史对话仓库接口（v1.0.5.2 只实现内存版）。
+ * 历史对话仓库接口。
  *
- * 页面/Context 只依赖本接口，v1.0.6 接入真实持久化时替换实现即可。
+ * 页面 / Context 只依赖本接口；V1.0.6 默认实现为 HTTP 仓库。
+ * 注意：`save` / `syncTurns` 仅内存实现会真正写入；真实持久化由服务端问答接口负责，
+ * HTTP 实现返回 null（安全空操作），调用方不得据此判断会话是否存在。
  */
 export interface ConversationRepository {
+  readonly kind: ConversationRepositoryKind;
   list(): Promise<ConversationSummary[]>;
   get(id: string): Promise<ConversationRecord | null>;
   create(init?: {
+    /** 指定会话 id（前端生成，保证刷新后 id 稳定）。 */
+    id?: string;
     title?: string;
     turns?: StoredConversationTurn[];
     now?: number;
   }): Promise<ConversationRecord>;
   /**
-   * 保存正文并刷新 `updatedAt`（= 最后一条消息的发送时间）。
+   * 保存正文并刷新 `updatedAt`（仅内存实现；HTTP 仓库为空操作）。
    *
-   * 只允许在**会话里真的产生了新消息**时调用；加载 / 切换会话请用 `syncTurns`，
-   * 否则会把「点击查看」误当成「最新活跃」，历史记录会被重新排序。
+   * 只允许在**会话里真的产生了新消息**时调用；加载 / 切换会话请用 `syncTurns`。
    */
   save(
     id: string,
@@ -86,10 +91,9 @@ export interface ConversationRepository {
     title?: string,
   ): Promise<ConversationSummary | null>;
   /**
-   * 同步正文但**不改变排序时间**（V1.0.5.2-layout 补丁）。
+   * 同步正文但**不改变排序时间**（仅内存实现；HTTP 仓库为空操作）。
    *
-   * 用于加载历史会话、切换会话前保存当前会话等「查看」场景：
-   * 列表顺序只由创建时间 / 最后一条消息时间决定，查看行为绝不移动条目位置。
+   * 用于加载历史会话、切换会话前保存当前会话等「查看」场景。
    */
   syncTurns(
     id: string,
@@ -102,12 +106,6 @@ export interface ConversationRepository {
   remove(id: string): Promise<void>;
   /** 置顶 / 取消置顶历史对话：置顶项由侧边栏放进最上方「置顶」组。 */
   pin(id: string, pinned: boolean): Promise<void>;
-  /** v1.0.6 预留：跨会话上下文关联（把 earlier 会话摘要拼进新一轮 history）。 */
-  buildCrossSessionContext(sessionId: string): Promise<string>;
-  /** v1.0.6 预留：历史对话持久化写入。 */
-  persist(record: ConversationRecord): Promise<void>;
-  /** v1.0.6 预留：启动时读取已持久化的历史对话。 */
-  loadPersisted(): Promise<ConversationRecord[]>;
 }
 
 /** 侧边栏分组（置顶优先，其次按创建 / 最后消息时间倒序分「今天 / 过去 30 天」）。 */
@@ -117,9 +115,9 @@ export interface ConversationGroup {
   items: ConversationSummary[];
 }
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 /** 历史对话标题的最大展示长度（侧边栏单行省略）。 */
 export const MAX_CONVERSATION_TITLE_LENGTH = 28;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** 取会话标题：优先已有标题，其次首条用户消息，最后兜底「新的历史对话」。 */
 export function titleFromTurns(
@@ -135,15 +133,14 @@ export function titleFromTurns(
 }
 
 /**
- * 按「置顶 / 今天 / 过去 30 天」分组并倒序排列（V1.0.5.2-layout 补丁）。
+ * 按「置顶 / 今天 / 过去 30 天」分组并倒序排列（V1.0.5.2-layout 补丁语义，V1.0.6 保留）。
  *
  * 排序口径（用户验收口径）：
  * 1. 用户主动「置顶」的会话进入最上方独立「置顶」组（没有置顶项时不渲染该组）；
  * 2. 其余会话严格按【最后一条消息发送时间】倒序，仅做「今天 / 过去 30 天」分组；
- * 3. 点击查看 / 切换会话不改变上述顺序（数据层用 `syncTurns` 不刷新 `updatedAt`）。
+ * 3. 点击查看 / 切换会话不改变上述顺序（查看行为不写 `updatedAt`）。
  *
- * 返回的 today / past30 两组始终存在（可能为空），由侧边栏过滤空组；
- * 「置顶」组只在存在置顶会话时出现，避免空标题占位。
+ * 返回的 today / past30 两组始终存在（可能为空），由侧边栏过滤空组。
  */
 export function groupConversationsByTime(
   conversations: readonly ConversationSummary[],
@@ -167,8 +164,7 @@ export function groupConversationsByTime(
     } else if (conversation.updatedAt >= todayStart) {
       today.push(conversation);
     } else {
-      // V1.0.5.2 侧边栏只有两组：更早的会话归入「过去 30 天」组尾部，
-      // v1.0.6 接入真实持久化后再补「更早」分组与分页。
+      // V1.0.6 侧边栏仍只有两组：更早的会话归入「过去 30 天」组尾部。
       past30.push(conversation);
     }
   }
@@ -187,15 +183,116 @@ export function createConversationId(now: () => number = Date.now): string {
   return `conv_${now().toString(36)}_${random}`;
 }
 
+/** 远程会话详情 → 仓库记录（服务端轮次没有前端 id，这里按位置生成稳定 id）。 */
+export function recordFromRemoteSession(detail: RemoteSessionDetail): ConversationRecord {
+  return {
+    id: detail.id,
+    title: detail.title,
+    createdAt: detail.createdAt,
+    updatedAt: detail.updatedAt,
+    pinned: detail.pinned,
+    turns: detail.turns.map((turn, index) => ({
+      id: `${detail.id}-turn-${index}`,
+      role: turn.role,
+      content: turn.content,
+      answer: turn.answer,
+    })),
+  };
+}
+
+/**
+ * 真实持久化仓库（V1.0.6 默认）：全部操作走 `/api/sessions`。
+ *
+ * - 读取失败（后端未启动 / 网络异常）：`list()` 返回空列表、`get()` 返回 null，
+ *   页面进入「暂无历史对话」而不是崩溃；
+ * - 写入失败：创建会话抛 `SessionClientError`（调用方回退为纯本地新会话），
+ *   重命名 / 置顶 / 删除静默失败，随后 `refreshConversations()` 以服务端状态为准。
+ */
+export function createHttpConversationRepository(
+  options: SessionFetchOptions = {},
+): ConversationRepository {
+  const toSummary = (detail: RemoteSessionDetail | null): ConversationSummary | null =>
+    detail
+      ? {
+          id: detail.id,
+          title: detail.title,
+          createdAt: detail.createdAt,
+          updatedAt: detail.updatedAt,
+          pinned: detail.pinned,
+        }
+      : null;
+
+  const repository: ConversationRepository = {
+    kind: "remote",
+
+    async list() {
+      const sessions = await fetchSessions(options);
+      if (!sessions) return [];
+      return sessions
+        .map((session) => ({
+          id: session.id,
+          title: session.title,
+          createdAt: session.createdAt,
+          updatedAt: session.updatedAt,
+          pinned: session.pinned,
+        }))
+        .sort(
+          (a, b) =>
+            Number(b.pinned) - Number(a.pinned) || b.updatedAt - a.updatedAt,
+        );
+    },
+
+    async get(id: string) {
+      const detail = await fetchSessionDetail(id, options);
+      return detail ? recordFromRemoteSession(detail) : null;
+    },
+
+    async create(init = {}) {
+      const detail = await createRemoteSession({
+        ...options,
+        sessionId: init.id,
+        title: init.title,
+      });
+      return recordFromRemoteSession(detail);
+    },
+
+    // 服务端在 `POST /api/agent/ask` 成功后原子写入轮次；前端不再回写正文。
+    async save() {
+      return null;
+    },
+
+    async syncTurns() {
+      return null;
+    },
+
+    async rename(id: string, title: string) {
+      await patchRemoteSession(id, { title }, options);
+    },
+
+    async remove(id: string) {
+      await deleteRemoteSession(id, options);
+    },
+
+    async pin(id: string, pinned: boolean) {
+      await patchRemoteSession(id, { pinned }, options);
+    },
+  };
+  return repository;
+}
+
+// ---------------------------------------------------------------------------
+// 内存仓库（单测 / 离线兜底）
+// ---------------------------------------------------------------------------
+
 interface InMemoryOptions {
   seed?: ReadonlyArray<Omit<ConversationRecord, "id"> & { id?: string }>;
   now?: () => number;
 }
 
 /**
- * 内存仓库实现（v1.0.5.2 默认实现）。
+ * 内存仓库实现（单测 / 离线兜底；V1.0.6 默认实现已换成 HTTP 仓库）。
  *
- * 数据只活在当前标签页内存里：刷新页面回到演示数据，符合「暂不接入真实持久化」。
+ * 数据只活在当前进程内存里，排序语义与 HTTP 仓库保持一致。
  */
 export function createInMemoryConversationRepository(
   options: InMemoryOptions = {},
@@ -242,6 +339,8 @@ export function createInMemoryConversationRepository(
   };
 
   const repository: ConversationRepository = {
+    kind: "memory",
+
     async list() {
       return [...records.values()]
         .map(toSummary)
@@ -258,7 +357,7 @@ export function createInMemoryConversationRepository(
       const turns = [...(init.turns ?? [])];
       const explicitTitle = init.title?.trim();
       const record: ConversationRecord = {
-        id: createConversationId(now),
+        id: init.id?.trim() || createConversationId(now),
         title: explicitTitle || titleFromTurns(turns),
         createdAt: timestamp,
         updatedAt: timestamp,
@@ -308,129 +407,16 @@ export function createInMemoryConversationRepository(
       const record = records.get(id);
       if (record) record.pinned = pinned;
     },
-
-    async buildCrossSessionContext(sessionId: string) {
-      // TODO v1.0.6 多轮历史对话记忆模块 - 功能待实现
-      void sessionId;
-      return "";
-    },
-
-    async persist(record: ConversationRecord) {
-      // TODO v1.0.6 多轮历史对话记忆模块 - 功能待实现
-      void record;
-    },
-
-    async loadPersisted() {
-      // TODO v1.0.6 多轮历史对话记忆模块 - 功能待实现
-      return [];
-    },
   };
   return repository;
 }
 
-/** 演示数据构造：让侧边栏首屏有「今天 / 过去 30 天」两组真实排布。 */
-function buildDemoSeed(now: number): Array<Omit<ConversationRecord, "id">> {
-  const hour = 60 * 60 * 1000;
-  const demoConversations: Array<{
-    title: string;
-    ageMs: number;
-    question: string;
-    answer: string;
-  }> = [
-    {
-      title: "赤壁之战发生在哪一年？",
-      ageMs: 26 * 60 * 1000,
-      question: "赤壁之战发生在哪一年？",
-      answer:
-        "**根据本轮工具返回的可核验资料：**\n\n**[时间轴·大事记]**\n赤壁之战（东汉，208年）：曹操南下荆州，孙权与刘备联军于赤壁大败曹军……（据《三国志·吴书·周瑜传》）\n\n（演示会话：v1.0.5.2 数据层为内存演示数据，不接真实持久化。）",
-    },
-    {
-      title: "武则天是哪个朝代的人物？",
-      ageMs: 4 * hour,
-      question: "武则天是哪个朝代的人物？",
-      answer:
-        "**[人物关系图]**\n武则天：主要活动于唐……\n\n**[时间轴·大事记]**\n相关事件：武则天称帝（690年）……\n\n（演示会话：仅用于验证侧边栏点击加载。）",
-    },
-    {
-      title: "孔子和老子是什么关系？",
-      ageMs: 2 * DAY_MS,
-      question: "孔子和老子是什么关系？",
-      answer:
-        "**[人物关系图]**\n关系：孔子 × 老子……\n\n（演示会话：v1.0.6 将接入跨会话上下文与真实持久化。）",
-    },
-    {
-      title: "商鞅变法为什么能成功？",
-      ageMs: 9 * DAY_MS,
-      question: "商鞅变法为什么能成功？",
-      answer:
-        "**[时间轴·大事记]**\n商鞅变法（战国，前359年）：……\n\n（演示会话：可点击加载查看历史布局。）",
-    },
-    {
-      title: "安史之乱的经过与影响",
-      ageMs: 18 * DAY_MS,
-      question: "安史之乱的经过与影响",
-      // V1.0.5.2-layout 补丁：演示数据里保留一条**长回答**会话，
-      // 用于验证「点击历史对话 → 加载完毕后自动滚动到底部」与中间列独立滚动。
-      answer: [
-        "**[时间轴·大事记]**",
-        "安史之乱（唐，755年—763年）：平卢、范阳、河东三镇节度使安禄山以「清君侧」为名起兵，唐廷仓促应战，战火自河北蔓延至关中、河南，最终在回鹘与唐军联合反攻下平定，但唐朝由盛转衰。",
-        "",
-        "### 一、起因",
-        "开元天宝之际，节度使权力膨胀，边镇掌握兵、财、民三权；中央府兵制瓦解后依赖募兵，形成「外重内轻」格局。天宝后期，宰相杨国忠与安禄山互相倾轧，又逢关中饥荒与朝廷财政紧张，叛乱一触即发。",
-        "",
-        "### 二、经过",
-        "755年冬，安禄山自范阳起兵，迅速攻陷洛阳；756年正月称帝，国号大燕。唐玄宗杀高仙芝、封常清后命哥舒翰守潼关，潼关失守，长安沦陷，玄宗入蜀。肃宗即位灵武，借回鹘兵反攻；757年郭子仪、李光弼收复两京，安庆绪退守邺城。759年史思明再叛，杀安庆绪自立；761年史朝义杀史思明。763年史朝义兵败自缢，乱事告终。",
-        "",
-        "### 三、影响",
-        "- 人口与经济：北方户口锐减，关中、河南财政凋敝，经济重心进一步南移；",
-        "- 政治格局：中央集权削弱，藩镇割据合法化，宦官专权与党争加剧；",
-        "- 军事制度：府兵彻底退出，藩镇兵与神策军并立，边防体系重组；",
-        "- 社会文化：士人南迁、南方城市兴起，唐诗中「感时伤乱」题材成为主流。",
-        "",
-        "### 四、史评",
-        "《资治通鉴》以「由是祸乱继起，兵革不息」概括安史之乱后的唐朝困局；后世多认为其根源不在单一人物，而在边防—财政—政治结构的长期失衡。",
-        "",
-        "（演示会话：本条为长文本占位，用于验证加载历史对话后聊天列表自动滚动到底部，以及中间聊天区独立滚动。）",
-      ].join("\n"),
-    },
-  ];
-
-  return demoConversations.map((demo) => {
-    const timestamp = now - demo.ageMs;
-    const turns: StoredConversationTurn[] = [
-      {
-        id: `demo-user-${demo.ageMs}`,
-        role: "user",
-        content: demo.question,
-      },
-      {
-        id: `demo-assistant-${demo.ageMs}`,
-        role: "assistant",
-        content: demo.answer,
-        answer: null,
-      },
-    ];
-    return {
-      title: demo.title,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-      pinned: false,
-      // 演示数据标题是策展值，视为已锁定：后续 sync 不会被首问标题覆盖。
-      titleLocked: true,
-      turns,
-    };
-  });
-}
-
 let defaultRepository: ConversationRepository | null = null;
 
-/** 全局默认仓库（内存实现 + 演示数据；V1.0.6 换成真实持久化实现）。 */
+/** 全局默认仓库（V1.0.6：真实服务端持久化；测试可注入内存实现）。 */
 export function getDefaultConversationRepository(): ConversationRepository {
   if (defaultRepository === null) {
-    const now = Date.now();
-    defaultRepository = createInMemoryConversationRepository({
-      seed: buildDemoSeed(now),
-    });
+    defaultRepository = createHttpConversationRepository();
   }
   return defaultRepository;
 }
@@ -441,3 +427,6 @@ export function resetDefaultConversationRepository(
 ): void {
   defaultRepository = repository ?? null;
 }
+
+/** 「今天」分组的毫秒基准（导出便于测试 / 侧边栏时间文案复用）。 */
+export const ONE_DAY_MS = DAY_MS;

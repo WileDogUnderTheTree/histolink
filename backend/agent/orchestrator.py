@@ -1,24 +1,23 @@
-"""Agent Orchestrator（V1.0.3 核心循环 / V1.0.5 RAG 混合路由 / V1.0.5.2 双数据源 + 模型选择 / V1.0.5.4 对比分析）。
+"""Agent Orchestrator（V1.0.3 核心循环 / V1.0.5 RAG 混合路由 / V1.0.5.2 双数据源 + 模型选择 /
+V1.0.6 多轮记忆 / V1.0.6.1 markdown 生成权解绑 + 双重事实核查）。
 
 流程（**硬上限 6 个工具轮 + 至多 1 次只收尾调用**，防死循环）：
-1. 组装 System Prompt（工具目录由 ToolRegistry 生成 + RAG 向量库状态）+ 历史 + 当前问题/页面上下文；
+1. 组装 System Prompt（工具目录由 ToolRegistry 生成 + RAG 向量库状态 + Few-Shot 优秀回答示例）
+   + 历史 + 当前问题/页面上下文；
 2. 调 Qwen（`enable_thinking=False` + JSON 模式），拿到一个**完整且唯一**的 JSON 对象；
-   V1.0.5.2 起支持请求级 `model_id`：手动选择主模型 / 备用模型，异常时自动切到另一款；
-3. 解析为 `tool_call`：白名单 + 严格参数校验 → 执行工具 → 把统一信封回传模型；
-   V1.0.5.1 增加受限的 `tool_batch`：同一轮最多并行执行 2–4 个**彼此独立的只读工具**，
-   用于对比任务「双方图谱 / 双方 RAG」并行检索；总工具调用数仍有独立硬上限；
-   - V1.0.5：图谱工具（search_events / get_event / get_person…）先给「基础事实」，
-     模型再调 `search_historical_text`（query = 用户问题 + 图谱实体/年份）取「史料细节」；
-   - V1.0.5.2：所有历史类提问必须同时覆盖「时间轴·大事记」与「人物关系图」两个数据源；
-4. 解析为 `final`：交给 `EvidenceValidator` 核对 evidence / citation / UI 动作 + 双源覆盖，
-   并由服务端用工具真实数据重写 grounded 正文（V1.0.5.2 按 **[人物关系图]** / **[时间轴·大事记]**
-   分节，节序由问题类型决定；RAG 与图谱年份冲突时标注「史料记载有异」，传说 chunk 句首加 `[传说]`）；
-5. **V1.0.5.4 二次归纳（仅对比 / 总结类 + grounded）**：把「用户问题 + 本轮真实事实块（纯数据）」
-   再发给 Qwen 一次，生成「💡 史令对比分析」；结果必须通过年份 / 人物白名单证据链校验后才挂到
-   `FinalAnswer.comparison_analysis`，校验失败或二次调用失败时**整段丢弃**、只保留事实实证，
-   绝不降级为 insufficient，也绝不把模型文本写进服务端事实实证正文；
-6. 证据不可核验 / 双源覆盖不足 → 强制降级 `insufficient`；轮次预算耗尽时额外做**一次**「只收尾」
-   调用（不允许执行工具），收尾仍失败 / JSON 始终非法 → 兜底 `insufficient`。
+3. 解析为 `tool_call` / `tool_batch`：白名单 + 严格参数校验 → 执行工具 → 把统一信封回传模型；
+4. 解析为 `final`：
+   - **第一重 · 证据级核查**（`EvidenceValidator`）：evidence / citation 真实、绑定、双源覆盖；
+   - **第二重 · 文本级核查**（V1.0.6.1 `agent.factcheck`）：模型 `answer.markdown` 中的
+     年份 / 人物 / 书名 / 引文必须能在本轮工具结果中核验，且必须包含「史料实证 + 史令分析」两节；
+   - 通过 → 采用模型正文作为 `FinalAnswer.markdown`（用户可见正文的生成权归模型）；
+   - 不通过 → 把问题清单发回模型只重写正文（最多 `MAX_FACT_CHECK_REPAIRS` 次）；
+   - 仍不通过 / 模型没写 markdown → 回退服务端用工具原文拼装的「事实实证」正文（安全兜底，
+     未核验文本永不展示）；
+5. 证据不可核验 / 双源覆盖不足 → 强制降级 `insufficient`；轮次预算耗尽时额外做**一次**「只收尾」
+   调用（不允许执行工具），收尾仍失败 / JSON 始终非法 → 兜底 `insufficient`；
+6. V1.0.6.1 已废除 V1.0.5.4 的「二次归纳」独立调用：💡 史令分析已并入模型 `markdown` 的
+   「史令分析」节，不再额外调用模型、也不再产出 `comparison_analysis`。
 
 LLM 429/502/504/超时由 `LLMClient.chat()` 内部先自动降级到另一款模型重试一次；
 两次都失败才上抛，由 API 层映射成 502/503/504 envelope（`trace.model_used` 记录最终模型）。
@@ -32,20 +31,24 @@ import re
 import time
 from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from typing import Any
 
 from pydantic import ValidationError
 
 from agent.comparison import (
-    build_comparison_facts,
     collect_rescue_entities,
     find_comparison_subjects,
-    observed_graph_person_names,
-    parse_comparison_analysis,
-    validate_comparison_analysis,
 )
+from agent.factcheck import (
+    build_fact_check_facts,
+    check_markdown,
+    clean_markdown,
+    server_fallback_trace,
+)
+from agent.intent import infer_actions_for_question, infer_actions_from_evidence
 from agent.prompts import (
-    build_comparison_synthesis_messages,
+    build_fact_check_repair_message,
     build_finalize_message,
     build_repair_message,
     build_system_prompt,
@@ -54,14 +57,16 @@ from agent.prompts import (
 )
 from agent.schemas import (
     AgentResult,
-    ComparisonAnalysis,
     Evidence,
     FinalAnswer,
     FinalStep,
+    ModelAnswer,
     ToolBatchStep,
     ToolCallRecord,
     ToolCallStep,
+    UIAction,
 )
+from agent.session_memory import SessionContext, build_session_memory_block
 from agent.tool_registry import ToolRegistry
 from agent.tools import Toolkit
 from agent.validator import (
@@ -78,6 +83,7 @@ from contracts.action_types import V1_AVAILABLE_ACTIONS
 from contracts.models import AskRequest
 from llm_client import LLMChatResult, LLMClient
 from snapshot_store import SnapshotStore
+from text_hygiene import sanitize_model_answer
 
 logger = logging.getLogger("histolink.agent")
 
@@ -95,13 +101,14 @@ MAX_TOOL_CALLS = 10
 MAX_FINALIZE_ROUNDS = 1
 #: 收尾轮可以因「模型 JSON 格式错误」重试的次数（每次仍不允许调用工具）。
 MAX_FINALIZE_RETRIES = 1
+#: V1.0.6.1：文本级事实核查不通过时，允许把问题清单发回模型重写正文的次数（每次消耗 1 个轮次）。
+#: 连续不通过后回退服务端事实实证正文，避免无限重写 / 幻觉文本上屏。
+MAX_FACT_CHECK_REPAIRS = 2
 #: 规划 / 回答都用 temperature=0，追求稳定与可复现。
 AGENT_TEMPERATURE = 0.0
-#: 可见输出上限（关闭思考后 2048 足够中文 150–400 字回答 + JSON 结构）。
-AGENT_MAX_TOKENS = 2048
-#: V1.0.5.4 二次归纳（对比分析）：最多 800 字分析正文，1024 tokens 足够。
-COMPARISON_MAX_TOKENS = 1024
-COMPARISON_TEMPERATURE = 0.0
+#: 可见输出上限（关闭思考后 4096 足够：中文 300–1200 字两节正文 + thought + JSON 结构）。
+#: V1.0.6.1 从 2048 提升到 4096：模型现在要写完整「史料实证 + 史令分析」，2048 容易截断。
+AGENT_MAX_TOKENS = 4096
 #: 单条消息进入 LLM 前的安全字符上限（V1.0.5.4 修复）：
 #: 必须小于 `llm_client.MAX_CHAT_MESSAGE_CHARS = 20000`，否则消息组装偶发超限会抛
 #: LLMConfigError，被 API 层映射成 503（用户侧表现为冷启动 / 对比问答异常报错）。
@@ -121,6 +128,21 @@ class AgentProtocolError(ValueError):
     """模型输出不是合法的 JSON / 不符合两态协议。"""
 
 
+@dataclass(frozen=True)
+class _MarkdownDecision:
+    """V1.0.6.1 文本级事实核查的决策结果。
+
+    - ``answer`` 非空：可以直接采用（模型正文通过核查 / 回退服务端事实实证正文）；
+    - ``answer`` 为空：核查不通过且还有重写机会，调用方应把问题清单发回模型；
+    - ``trace``：写进 `AgentResult.fact_check`（映射到 API `trace.fact_check`）。
+    """
+
+    answer: FinalAnswer | None
+    trace: dict[str, Any]
+    downgraded: bool = False
+    downgrade_reason: str | None = None
+
+
 def parse_model_step(content: str) -> ToolCallStep | ToolBatchStep | FinalStep:
     """把模型文本解析成单工具、批量工具或最终回答；失败抛 `AgentProtocolError`。"""
 
@@ -135,7 +157,9 @@ def parse_model_step(content: str) -> ToolCallStep | ToolBatchStep | FinalStep:
             return FinalStep.model_validate(data)
     except ValidationError as exc:
         raise AgentProtocolError(_format_validation_error(exc)) from exc
-    raise AgentProtocolError("缺少 action 字段（必须是 tool_call、tool_batch 或 final）")
+    raise AgentProtocolError(
+        "缺少 action 字段（必须是 tool_call、tool_batch 或 final）"
+    )
 
 
 def _extract_json_object(content: str) -> dict[str, Any]:
@@ -173,7 +197,9 @@ def _format_validation_error(error: ValidationError) -> str:
     return "；".join(parts)[:500]
 
 
-def _merge_usage(total: dict[str, int] | None, usage: Mapping[str, int] | None) -> dict[str, int] | None:
+def _merge_usage(
+    total: dict[str, int] | None, usage: Mapping[str, int] | None
+) -> dict[str, int] | None:
     if not usage:
         return total
     merged = dict(total or {})
@@ -214,9 +240,22 @@ class AgentOrchestrator:
     def registry(self) -> ToolRegistry:
         return self._registry
 
-    def run(self, request: AskRequest) -> AgentResult:
+    def run(
+        self,
+        request: AskRequest,
+        *,
+        session_context: SessionContext | None = None,
+    ) -> AgentResult:
+        """执行一次问答。
+
+        ``session_context``（V1.0.6）由 API 路由从 `SessionStore` 读取：
+        - 非空时用它的 `history` 作为多轮历史（服务端权威），并把实体记忆 / 代词解析
+          注入本轮 user message；
+        - 为空时退回 `request.history`（保持 V1.0.5.4 及更早的直接调用方式与测试语义）。
+        """
+
         started = time.perf_counter()
-        messages = self._initial_messages(request)
+        messages = self._initial_messages(request, session_context)
         observed = ObservedEvidence()
         records: list[ToolCallRecord] = []
         usage: dict[str, int] | None = None
@@ -224,6 +263,8 @@ class AgentOrchestrator:
         #: V1.0.5 高可用补丁：最终完成回答的模型（主模型被限流时由备用模型接管）。
         model_used: str | None = None
         last_error: str | None = None
+        #: V1.0.6.1：本轮已消耗的「文本级事实核查重写」次数（硬上限 `MAX_FACT_CHECK_REPAIRS`）。
+        fact_check_repairs = 0
 
         for step in range(1, self._max_steps + 1):
             chat = self._chat(messages, request.model_id)
@@ -238,7 +279,9 @@ class AgentOrchestrator:
                 last_error = str(exc)
                 if step == self._max_steps:
                     break
-                messages.append({"role": "user", "content": build_repair_message(last_error)})
+                messages.append(
+                    {"role": "user", "content": build_repair_message(last_error)}
+                )
                 continue
 
             if isinstance(parsed, (ToolCallStep, ToolBatchStep)):
@@ -251,15 +294,21 @@ class AgentOrchestrator:
                     last_error = f"工具调用总数超过安全上限（{MAX_TOOL_CALLS}）"
                     if step == self._max_steps:
                         break
-                    messages.append({"role": "user", "content": build_repair_message(last_error)})
+                    messages.append(
+                        {"role": "user", "content": build_repair_message(last_error)}
+                    )
                     continue
 
                 tool_results = self._execute_tool_calls(calls)
                 tool_ms = int((time.perf_counter() - tool_started) * 1000)
                 result_messages: list[tuple[str, dict[str, Any], dict[str, Any]]] = []
-                for (tool_name, arguments), tool_result in zip(calls, tool_results, strict=True):
+                for (tool_name, arguments), tool_result in zip(
+                    calls, tool_results, strict=True
+                ):
                     observed.absorb(tool_result)
-                    records.append(_record_from_result(tool_name, arguments, tool_result, tool_ms))
+                    records.append(
+                        _record_from_result(tool_name, arguments, tool_result, tool_ms)
+                    )
                     result_messages.append((tool_name, arguments, tool_result))
                 messages.append(
                     {
@@ -273,8 +322,8 @@ class AgentOrchestrator:
                 parsed.answer, observed, question=request.question
             )
             # V1.0.5.4 修复二：对比类问题在返回 insufficient / 降级之前，先做「图谱兜底」——
-            # 只要本轮图谱返回了 A / B 的实体数据，就由服务端用真实事实重新合成 grounded 正文
-            # 并触发二次归纳，绝不允许在二次归纳前直接判定资料不足。
+            # 只要本轮图谱返回了 A / B 的实体数据，就由服务端用真实事实重新合成 grounded 正文，
+            # 绝不允许在 A/B 实体已查到时直接判定资料不足。
             if outcome.answer.mode == "insufficient":
                 rescued = self._try_comparison_rescue(
                     request=request,
@@ -306,15 +355,58 @@ class AgentOrchestrator:
                 )
                 continue
 
-            answer = outcome.answer
-            # V1.0.5.4 二次归纳：仅对比 / 总结类 + grounded 时多调一次模型；
-            # 失败 / 校验不通过只丢弃分析字段，三态语义与事实实证保持不变。
-            answer, usage = self._attach_comparison_analysis(
-                request, outcome, observed, usage
-            )
+            # ---- V1.0.6.1 第二重核查：文本级事实核查（markdown） ----
+            if outcome.answer.mode == "grounded":
+                decision = self._decide_markdown(
+                    parsed.answer,
+                    outcome,
+                    observed,
+                    repair_available=(
+                        fact_check_repairs < MAX_FACT_CHECK_REPAIRS
+                        and step < self._max_steps
+                    ),
+                )
+                if decision.answer is None:
+                    # 还有重写机会：把问题清单发回模型，只重写正文（允许先补工具调用）。
+                    fact_check_repairs += 1
+                    last_error = "markdown 未通过文本级事实核查"
+                    messages.append(
+                        {
+                            "role": "user",
+                            "content": build_fact_check_repair_message(
+                                decision.trace.get("issues") or [],
+                                attempt=fact_check_repairs,
+                            ),
+                        }
+                    )
+                    continue
+                return AgentResult(
+                    question=request.question,
+                    answer=decision.answer.model_copy(
+                        update={
+                            "ui_actions": self._pair_ui_actions(
+                                request.question, list(decision.answer.ui_actions)
+                            )
+                        }
+                    ),
+                    citations=outcome.citations,
+                    tools=records,
+                    model=model_name,
+                    model_used=model_used,
+                    model_requested=request.model_id,
+                    source_coverage=outcome.source_coverage,
+                    latency_ms=_elapsed_ms(started),
+                    steps=step,
+                    downgraded=outcome.downgraded or decision.downgraded,
+                    downgrade_reason=decision.downgrade_reason or outcome.reason,
+                    usage=usage,
+                    fact_check=decision.trace,
+                    entity_memory=_extract_entity_memory(self._store, observed),
+                )
+
             return AgentResult(
                 question=request.question,
-                answer=answer,
+                answer=outcome.answer,
                 citations=outcome.citations,
                 tools=records,
                 model=model_name,
@@ -326,6 +418,8 @@ class AgentOrchestrator:
                 downgraded=outcome.downgraded,
                 downgrade_reason=outcome.reason,
                 usage=usage,
+                fact_check={"status": "skipped", "issues": [], "warnings": []},
+                entity_memory=_extract_entity_memory(self._store, observed),
             )
 
         return self._finalize(
@@ -343,7 +437,9 @@ class AgentOrchestrator:
     # ------------------------------------------------------------------
     # 内部
     # ------------------------------------------------------------------
-    def _chat(self, messages: list[dict[str, str]], model_id: str | None = None) -> LLMChatResult:
+    def _chat(
+        self, messages: list[dict[str, str]], model_id: str | None = None
+    ) -> LLMChatResult:
         return self._llm.chat(
             _shrink_messages(messages),
             temperature=AGENT_TEMPERATURE,
@@ -379,6 +475,7 @@ class AgentOrchestrator:
             return self._fallback(
                 request=request,
                 records=records,
+                observed=observed,
                 model_name=model_name,
                 model_used=model_used,
                 usage=usage,
@@ -423,7 +520,9 @@ class AgentOrchestrator:
 
             if not isinstance(parsed, FinalStep):
                 action = getattr(parsed, "action", "unknown")
-                failure_reason = f"收尾轮仍尝试调用工具（{action}），已终止，避免无限循环"
+                failure_reason = (
+                    f"收尾轮仍尝试调用工具（{action}），已终止，避免无限循环"
+                )
                 break
 
             outcome = self._validator.validate(
@@ -443,13 +542,55 @@ class AgentOrchestrator:
                 )
                 if rescued is not None:
                     return rescued
-            answer = outcome.answer
-            answer, usage = self._attach_comparison_analysis(
-                request, outcome, observed, usage
-            )
+
+            # ---- V1.0.6.1 文本级事实核查（收尾轮同样必须过第二重核查） ----
+            if outcome.answer.mode == "grounded":
+                decision = self._decide_markdown(
+                    parsed.answer,
+                    outcome,
+                    observed,
+                    repair_available=_attempt + 1 < max_attempts,
+                )
+                if decision.answer is None:
+                    failure_reason = "收尾轮 markdown 未通过文本级事实核查"
+                    finalize_messages = [
+                        *finalize_messages,
+                        {"role": "assistant", "content": chat.content},
+                        {
+                            "role": "user",
+                            "content": build_fact_check_repair_message(
+                                decision.trace.get("issues") or [], attempt=2
+                            ),
+                        },
+                    ]
+                    continue
+                return AgentResult(
+                    question=request.question,
+                    answer=decision.answer.model_copy(
+                        update={
+                            "ui_actions": self._pair_ui_actions(
+                                request.question, list(decision.answer.ui_actions)
+                            )
+                        }
+                    ),
+                    citations=outcome.citations,
+                    tools=records,
+                    model=model_name,
+                    model_used=model_used,
+                    model_requested=request.model_id,
+                    source_coverage=outcome.source_coverage,
+                    latency_ms=_elapsed_ms(started),
+                    steps=rounds,
+                    downgraded=outcome.downgraded or decision.downgraded,
+                    downgrade_reason=decision.downgrade_reason or outcome.reason,
+                    usage=usage,
+                    fact_check=decision.trace,
+                    entity_memory=_extract_entity_memory(self._store, observed),
+                )
+
             return AgentResult(
                 question=request.question,
-                answer=answer,
+                answer=outcome.answer,
                 citations=outcome.citations,
                 tools=records,
                 model=model_name,
@@ -461,6 +602,8 @@ class AgentOrchestrator:
                 downgraded=outcome.downgraded,
                 downgrade_reason=outcome.reason,
                 usage=usage,
+                fact_check={"status": "skipped", "issues": [], "warnings": []},
+                entity_memory=_extract_entity_memory(self._store, observed),
             )
 
         # V1.0.5.4 修复二：即使收尾轮始终没有给出合法 final，对比类问题只要图谱已返回
@@ -480,6 +623,7 @@ class AgentOrchestrator:
         return self._fallback(
             request=request,
             records=records,
+            observed=observed,
             model_name=model_name,
             model_used=model_used,
             usage=usage,
@@ -489,105 +633,178 @@ class AgentOrchestrator:
         )
 
     # ------------------------------------------------------------------
-    # V1.0.5.4 二次归纳（对比分析）
+    # V1.0.6.1 文本级事实核查（markdown）
     # ------------------------------------------------------------------
-    def _attach_comparison_analysis(
+    def _decide_markdown(
         self,
-        request: AskRequest,
+        model_answer: ModelAnswer,
         outcome: ValidationOutcome,
         observed: ObservedEvidence,
-        usage: dict[str, int] | None,
-    ) -> tuple[FinalAnswer, dict[str, int] | None]:
-        """对比 / 总结类 grounded 回答的受控二次归纳（失败只丢弃分析字段）。
-
-        触发前提（**全部满足**才会多调一次模型，普通事实问答不会触发）：
-        1. 问题命中 `detect_comparison_intent`（对比 / 区别 / 异同 / 总结 / 归纳…）；
-        2. 主回答已经是 grounded 且未降级；
-        3. 本轮证据能整理出非空「纯数据事实块」。
-
-        结果处理：
-        - 模型调用异常 / 非 JSON / 证据链校验失败 → 返回原 `FinalAnswer`（只保留事实实证），
-          不抛异常、不降级为 insufficient；
-        - 通过校验 → `FinalAnswer.comparison_analysis` 单独携带分析文本，`markdown` 保持不变。
-        """
-
-        answer = outcome.answer
-        if outcome.downgraded or answer.mode != "grounded":
-            return answer, usage
-        if not detect_comparison_intent(request.question):
-            return answer, usage
-        facts = build_comparison_facts(observed, outcome.evidence_entities, self._store)
-        if facts is None or not facts.block:
-            return answer, usage
-
-        checked, usage = self._request_comparison_analysis(
-            request.question,
-            facts,
-            observed,
-            usage,
-            model_id=request.model_id,
-        )
-        if checked is None:
-            return answer, usage
-        comparison = ComparisonAnalysis(
-            text=checked,
-            verified_year_count=len(facts.years),
-            verified_person_count=len(facts.person_names),
-        )
-        return answer.model_copy(update={"comparison_analysis": comparison}), usage
-
-    def _request_comparison_analysis(
-        self,
-        question: str,
-        facts: Any,
-        observed: ObservedEvidence,
-        usage: dict[str, int] | None,
         *,
-        model_id: str | None = None,
-    ) -> tuple[str | None, dict[str, int] | None]:
-        """调用一次二次归纳并做证据链校验；任何失败都返回 ``(None, usage)``，绝不抛异常。
+        repair_available: bool,
+    ) -> _MarkdownDecision:
+        """对模型 `markdown` 做文本级事实核查，并决定「采用 / 重写 / 回退服务端正文」。
 
-        人物校验放行两类名单（V1.0.5.4 修复四）：
-        - 事实块人物白名单（`facts.person_names`）；
-        - 本轮**图谱实体**里出现过的人物名（`observed_graph_person_names`）——
-          避免时间轴 / 人物图文本提取不全时，把问题主体（秦始皇、刘邦等）误杀。
-        年份校验允许「公元前221年」↔ 事实块「221年」的纪年前缀模糊匹配。
+        三种出口：
+
+        1. **通过**：沿用 `EvidenceValidator` 已核验的 claims / citations / certainty，
+           只把正文替换为清洗后的模型正文（`fact_check.status = "passed"`）；
+        2. **不通过且还有重写机会**：返回 `answer=None`，调用方把问题清单发回模型；
+        3. **不通过且无重写机会 / 模型没写正文**：回退服务端用工具原文拼装的事实实证正文
+           （`status = "fallback"` / `"server_fallback"`），并标记 `downgraded=True`，
+           保证未核验文本永不展示给用户。
+
+        模型正文在核查前一律先过 `clean_markdown`（去控制字符 / 剥代码围栏 /
+        还原字面量换行 / 中和越狱标记）——核查与展示使用同一份清洗后文本。
         """
 
-        try:
-            chat = self._llm.chat(
-                build_comparison_synthesis_messages(question, facts.block),
-                temperature=COMPARISON_TEMPERATURE,
-                max_tokens=COMPARISON_MAX_TOKENS,
-                response_format={"type": "json_object"},
-                enable_thinking=False,
-                model_id=model_id,
+        model_markdown = clean_markdown(model_answer.markdown)
+        if not model_markdown:
+            # 旧协议 / 离线脚本 / 模型漏字段：服务端事实实证正文（V1.0.6 既有行为，安全兜底）。
+            logger.info(
+                "模型未提供 markdown，回退服务端事实实证正文（V1.0.6.1 安全兜底）"
             )
-        except Exception as exc:  # noqa: BLE001 - 二次归纳失败不得影响已 grounded 的事实回答
-            # 二次归纳是受控附加层：调用失败只丢弃分析，绝不影响事实实证与三态语义。
-            logger.warning("二次归纳模型调用失败，已丢弃对比分析、保留事实实证：%s", exc)
-            return None, usage
+            return _MarkdownDecision(
+                answer=outcome.answer,
+                trace=server_fallback_trace(
+                    "模型未提供 markdown，已回退服务端事实实证正文",
+                    status="server_fallback",
+                ),
+            )
 
-        usage = _merge_usage(usage, chat.usage)
-        analysis_text = parse_comparison_analysis(chat.content)
-        if analysis_text is None:
-            logger.info("二次归纳输出不是合法 JSON 协议，已丢弃对比分析")
-            return None, usage
-        checked, reason = validate_comparison_analysis(
-            analysis_text,
-            facts,
-            self._known_person_names(),
-            observed_graph_person_names(observed, self._store),
+        # ---- V1.0.6.2 专项修复（痛点 2）：单正文来源 + 重复治理 ----
+        # 本地小模型会循环复述（同一事实 2–4 遍），先把重复段落折叠；删除比例过高则判定为
+        # 循环复述 → **丢弃模型正文**、改用服务端事实实证正文，绝不把两份正文拼进同一气泡。
+        adoption = self._validator.adopt_model_body(
+            model_markdown, outcome.answer.markdown
         )
-        if checked is None:
-            logger.info("二次归纳未通过证据链校验，已丢弃对比分析：%s", reason)
-            return None, usage
+        if adoption.repetitive:
+            logger.info(
+                "模型正文存在循环复述，已丢弃并回退服务端事实实证正文（删除 %d 字）",
+                adoption.removed_chars,
+            )
+            trace = server_fallback_trace(
+                "模型正文存在重复段落/循环复述，已丢弃并回退服务端事实实证正文",
+                status="fallback",
+            )
+            if adoption.removed_chars:
+                trace["warnings"] = [f"重复内容治理删除 {adoption.removed_chars} 字"]
+            return _MarkdownDecision(
+                answer=outcome.answer.model_copy(
+                    update={"markdown": adoption.markdown}
+                ),
+                trace=trace,
+                downgraded=True,
+                downgrade_reason="模型正文存在重复段落，已回退服务端事实实证正文",
+            )
+        if adoption.removed_chars:
+            logger.info("模型正文重复段落已折叠：删除 %d 字", adoption.removed_chars)
+        model_markdown = adoption.markdown
+
+        facts = build_fact_check_facts(observed, outcome.evidence_entities, self._store)
+        if facts is None:
+            logger.info("本轮证据无法构建核查事实块，回退服务端事实实证正文")
+            return _MarkdownDecision(
+                answer=outcome.answer,
+                trace=server_fallback_trace(
+                    "本轮证据无法构建核查事实块，已回退服务端事实实证正文",
+                    status="skipped",
+                ),
+            )
+
+        report = check_markdown(model_markdown, facts)
+        if report.passed:
+            logger.info(
+                "markdown 已通过文本级事实核查（年份 %d / 人物 %d / 书名 %d / 引文 %d）",
+                report.checked_years,
+                report.checked_persons,
+                report.checked_books,
+                report.checked_quotes,
+            )
+            return _MarkdownDecision(
+                answer=outcome.answer.model_copy(update={"markdown": model_markdown}),
+                trace=report.to_trace("passed"),
+            )
+
         logger.info(
-            "对比分析已通过证据链校验（可核验年份 %d / 人物 %d）",
-            len(facts.years),
-            len(facts.person_names),
+            "markdown 未通过文本级事实核查：%s",
+            "；".join(report.blocking_messages()[:3]),
         )
-        return checked, usage
+        if repair_available:
+            return _MarkdownDecision(answer=None, trace=report.to_trace("failed"))
+
+        # 连续重写仍不通过 → 回退服务端事实实证正文（不展示未核验文本）。
+        trace = report.to_trace("fallback")
+        return _MarkdownDecision(
+            answer=outcome.answer,
+            trace=trace,
+            downgraded=True,
+            downgrade_reason="markdown 未通过文本级事实核查，已回退服务端事实实证正文",
+        )
+
+    # ------------------------------------------------------------------
+    # V1.0.6.3 双图联动：同一次提问同时下发时间轴 + 人物图动作
+    # ------------------------------------------------------------------
+    def _pair_ui_actions(
+        self, question: str, actions: list[UIAction]
+    ) -> list[UIAction]:
+        """保证「一句提问同时命中时间轴与人物图谱」时两类联动动作都在 `ui_actions` 里。
+
+        背景（V1.0.6.3）：云端模型往往只输出问题焦点一侧的动作（例如事件题只给
+        `timeline.focus_event`），前端于是只能渲染一个按钮；本地小模型则经常整段省略。
+        本方法在**模型已给出部分合法动作**时，用快照做确定性补齐：
+
+        - 已有时间轴动作、缺人物图动作 → 从问题命中的事件补 `graph.focus_person`；
+        - 已有人物图动作、缺时间轴动作 → 从问题命中的人物补 `timeline.focus_event`；
+        - 两侧都有 / 问题没有其他可匹配实体 → 原样返回，绝不伪造联动目标。
+
+        只补「缺的那一侧」，不覆盖模型给出的动作，也不超过契约上限 3 条。
+        """
+
+        if not actions:
+            # 模型完全没给动作时由 `EvidenceValidator` 的意图后置推断负责（同一对补齐逻辑），
+            # 这里不重复造动作，避免把「无实体命中」的问题也弹史引。
+            return actions
+
+        def surfaces(items: list[UIAction]) -> set[str]:
+            result: set[str] = set()
+            for item in items:
+                value = item.type.value
+                if value.startswith("timeline."):
+                    result.add("timeline")
+                elif value.startswith("graph."):
+                    result.add("graph")
+            return result
+
+        present = surfaces(actions)
+        if {"timeline", "graph"} <= present:
+            return actions
+
+        merged = list(actions)
+        seen = {
+            (item.type.value, tuple(sorted(item.payload.items()))) for item in merged
+        }
+        try:
+            candidates = infer_actions_for_question(self._store, question)
+        except Exception:  # pragma: no cover - 推断失败绝不能影响已完成的回答
+            logger.exception("双图联动动作补齐失败（不影响回答）")
+            return actions
+
+        for candidate in candidates:
+            surface = (
+                "timeline" if candidate.type.value.startswith("timeline.") else "graph"
+            )
+            if surface in present:
+                continue
+            key = (candidate.type.value, tuple(sorted(candidate.payload.items())))
+            if key in seen:
+                continue
+            seen.add(key)
+            merged.append(candidate)
+            present.add(surface)
+            if len(merged) >= 3:
+                break
+        return merged
 
     def _try_comparison_rescue(
         self,
@@ -610,8 +827,8 @@ class AgentOrchestrator:
 
         接管后：
         - 正文 / claims / citations 全部由服务端用本轮工具真实返回重写（不信任模型文本）；
-        - 立即触发二次归纳，把「图 1 中的那些基础事实」交给模型分析两者的异同；
-        - 二次归纳失败 / 校验不过时仍返回 grounded 事实实证（不降级 insufficient）；
+        - V1.0.6.1 起不再单独做二次归纳（史令分析已并入模型正文）；兜底正文是
+          「事实实证 + 事实罗列」，并在 `trace.fact_check` 标记 `status=server_fallback`；
         - 只有 A / B 图谱实体都没查到时才返回 None，让原 insufficient 逻辑生效。
         """
 
@@ -634,28 +851,17 @@ class AgentOrchestrator:
                 "、".join(subjects.matched_names),
             )
             return None
-        claims, citations, markdown, _focus = composed
+        claims, citations, markdown, focus = composed
+        # V1.0.6.2 专项修复（痛点 1）：兜底路径的模型没有机会给 UI 动作，由服务端推断。
+        inferred_actions = infer_actions_from_evidence(
+            request.question, rescue_entities, focus
+        )
+        # V1.0.6.3 双图联动：命中事件 + 人物两侧时，同时下发时间轴与人物图动作。
+        inferred_actions = self._pair_ui_actions(request.question, inferred_actions)
         # 契约 `Answer.markdown` 上限 10000 字：兜底正文由多条真实事实拼成，做一次安全裁剪，
         # 避免极端长事件描述把 Pydantic 校验撑爆（用户侧表现为 500）。
         if len(markdown) > 9800:
             markdown = markdown[:9800].rstrip() + "\n…（正文过长，已截断）"
-
-        comparison: ComparisonAnalysis | None = None
-        facts = build_comparison_facts(observed, rescue_entities, self._store)
-        if facts is not None and facts.block:
-            checked, usage = self._request_comparison_analysis(
-                request.question,
-                facts,
-                observed,
-                usage,
-                model_id=request.model_id,
-            )
-            if checked is not None:
-                comparison = ComparisonAnalysis(
-                    text=checked,
-                    verified_year_count=len(facts.years),
-                    verified_person_count=len(facts.person_names),
-                )
 
         answer = FinalAnswer(
             mode="grounded",
@@ -666,13 +872,12 @@ class AgentOrchestrator:
             related_event_ids=_rescue_related_event_ids(rescue_entities, observed),
             missing=[],
             reason_code=None,
-            ui_actions=[],
-            comparison_analysis=comparison,
+            ui_actions=inferred_actions,
+            comparison_analysis=None,
         )
         logger.info(
-            "对比兜底成功：用本轮真实图谱事实合成 grounded 正文（主体 %s；二次归纳 %s）",
+            "对比兜底成功：用本轮真实图谱事实合成 grounded 事实实证正文（主体 %s）",
             "、".join(subjects.matched_names) or "A/B",
-            "已附加" if comparison is not None else "未附加",
         )
         return AgentResult(
             question=request.question,
@@ -688,13 +893,12 @@ class AgentOrchestrator:
             downgraded=False,
             downgrade_reason=None,
             usage=usage,
+            fact_check=server_fallback_trace(
+                "对比兜底：模型未给出可核验正文，使用服务端事实实证正文",
+                status="server_fallback",
+            ),
+            entity_memory=_extract_entity_memory(self._store, observed),
         )
-
-    def _known_person_names(self) -> set[str]:
-        """快照全部人物正名 + 别名（白名单正向校验的已知人名词典）。"""
-
-        names = getattr(self._store, "persons_by_name", None)
-        return set(names) if isinstance(names, dict) else set()
 
     def _execute_tool_calls(
         self, calls: list[tuple[str, dict[str, Any]]]
@@ -703,11 +907,30 @@ class AgentOrchestrator:
         if len(calls) == 1:
             tool, arguments = calls[0]
             return [self._registry.execute(tool, arguments)]
-        with ThreadPoolExecutor(max_workers=len(calls), thread_name_prefix="agent-tool") as pool:
-            futures = [pool.submit(self._registry.execute, tool, arguments) for tool, arguments in calls]
+        with ThreadPoolExecutor(
+            max_workers=len(calls), thread_name_prefix="agent-tool"
+        ) as pool:
+            futures = [
+                pool.submit(self._registry.execute, tool, arguments)
+                for tool, arguments in calls
+            ]
             return [future.result() for future in futures]
 
-    def _initial_messages(self, request: AskRequest) -> list[dict[str, str]]:
+    def _initial_messages(
+        self,
+        request: AskRequest,
+        session_context: SessionContext | None = None,
+    ) -> list[dict[str, str]]:
+        """组装首轮 messages（V1.0.6：服务端会话历史 + 会话实体记忆）。
+
+        历史来源优先级：
+        1. `session_context.history`（服务端 `SessionStore`，权威，已按最近 N 轮截断）；
+        2. 否则退回 `request.history`（客户端兜底 / 直接调用 Orchestrator 的旧语义）。
+
+        实体记忆块只在本轮有会话实体状态时注入 user message；没有记忆时消息结构与
+        V1.0.5.4 完全一致（保持既有直调测试稳定）。
+        """
+
         from rag.store import rag_status_text
 
         system_prompt = build_system_prompt(
@@ -716,9 +939,31 @@ class AgentOrchestrator:
             rag_status=rag_status_text(),
         )
         messages: list[dict[str, str]] = [{"role": "system", "content": system_prompt}]
-        for turn in request.history:
-            messages.append({"role": turn.role, "content": turn.content})
-        messages.append({"role": "user", "content": build_user_message(request)})
+
+        history: list[dict[str, str]] = []
+        if session_context is not None and session_context.history:
+            history = _sanitize_history_turns(
+                dict(turn) for turn in session_context.history
+            )
+        else:
+            history = _sanitize_history_turns(
+                {"role": turn.role, "content": turn.content} for turn in request.history
+            )
+        messages.extend(history)
+
+        memory_block = (
+            build_session_memory_block(request.question, session_context.entity_memory)
+            if session_context is not None
+            else None
+        )
+        messages.append(
+            {
+                "role": "user",
+                "content": build_user_message(
+                    request, entity_memory_block=memory_block
+                ),
+            }
+        )
         return messages
 
     def _fallback(
@@ -726,6 +971,7 @@ class AgentOrchestrator:
         *,
         request: AskRequest,
         records: list[ToolCallRecord],
+        observed: ObservedEvidence,
         model_name: str | None,
         model_used: str | None,
         usage: dict[str, int] | None,
@@ -758,7 +1004,86 @@ class AgentOrchestrator:
             downgraded=True,
             downgrade_reason=reason,
             usage=usage,
+            fact_check={"status": "skipped", "issues": [reason[:300]], "warnings": []},
+            entity_memory=_extract_entity_memory(self._store, observed),
         )
+
+
+def _extract_entity_memory(
+    store: SnapshotStore, observed: ObservedEvidence
+) -> dict[str, Any]:
+    """从本轮真实工具结果提取「会话实体状态」（V1.0.6 多轮记忆）。
+
+    - 人物：按工具结果出现顺序记录 person_id + 正名（正名优先取工具详情里的
+      `display_name`，否则回查快照人物主数据）；这些 ID 会进入 SessionStore，
+      供下一轮「他们 / 这两人 / 双方」代词解析；
+    - 事件：记录本轮出现过的事件 ID（最多 8 个）；
+    - 只收录**结构化的真实工具结果**（`ObservedEvidence` 已过滤失败信封 / 伪造历史），
+      因此不会把用户输入里的任意文本写进会话实体状态。
+    """
+
+    persons_by_id = getattr(store, "persons_by_id", None)
+    persons_lookup = persons_by_id if isinstance(persons_by_id, Mapping) else {}
+
+    person_ids: list[str] = []
+    person_names: dict[str, str] = {}
+    for entity in observed.entities.values():
+        if entity.kind != "person" or entity.entity_id in person_ids:
+            continue
+        name = ""
+        detail = entity.detail
+        if isinstance(detail, Mapping):
+            display = detail.get("display_name")
+            if isinstance(display, str) and display.strip():
+                name = display.strip()
+        if not name:
+            person = persons_lookup.get(entity.entity_id)
+            if isinstance(person, Mapping):
+                display = person.get("display_name")
+                if isinstance(display, str) and display.strip():
+                    name = display.strip()
+        if not name:
+            continue
+        person_ids.append(entity.entity_id)
+        person_names[entity.entity_id] = name
+        if len(person_ids) >= 8:
+            break
+
+    event_ids: list[str] = []
+    for entity in observed.entities.values():
+        if entity.kind != "event" or entity.entity_id in event_ids:
+            continue
+        event_ids.append(entity.entity_id)
+        if len(event_ids) >= 8:
+            break
+
+    return {
+        "person_ids": person_ids,
+        "person_names": person_names,
+        "event_ids": event_ids,
+    }
+
+
+def _sanitize_history_turns(
+    turns: Any,
+) -> list[dict[str, str]]:
+    """V1.0.6.2：历史里的 assistant 正文先做重复治理再注入模型（防循环逐轮放大）。
+
+    旧会话可能已经存下「同一事实三遍」的循环回答；若原样注入历史，小模型会模仿这种
+    重复结构并逐轮放大。这里只对 assistant 正文做确定性去重，user 消息原样保留。
+    """
+
+    sanitized: list[dict[str, str]] = []
+    for turn in turns:
+        message = dict(turn)
+        content = message.get("content")
+        if message.get("role") == "assistant" and isinstance(content, str):
+            cleaned, removed = sanitize_model_answer(content)
+            if removed:
+                logger.info("会话历史中的重复段落已折叠：删除 %d 字", removed)
+            message["content"] = cleaned
+        sanitized.append(message)
+    return sanitized
 
 
 def _shrink_messages(messages: list[dict[str, str]]) -> list[dict[str, str]]:
@@ -842,9 +1167,8 @@ def _elapsed_ms(started: float) -> int:
 __all__ = [
     "AGENT_MAX_TOKENS",
     "AGENT_TEMPERATURE",
-    "COMPARISON_MAX_TOKENS",
-    "COMPARISON_TEMPERATURE",
     "DEFAULT_MAX_STEPS",
+    "MAX_FACT_CHECK_REPAIRS",
     "MAX_FINALIZE_RETRIES",
     "MAX_FINALIZE_ROUNDS",
     "MAX_ITERATIONS",

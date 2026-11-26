@@ -35,7 +35,9 @@ def _ok_response(model: str) -> httpx.Response:
         200,
         json={
             "model": model,
-            "choices": [{"message": {"role": "assistant", "content": '{"action":"final"}'}}],
+            "choices": [
+                {"message": {"role": "assistant", "content": '{"action":"final"}'}}
+            ],
         },
     )
 
@@ -115,7 +117,9 @@ def test_default_path_does_not_fall_back_on_400() -> None:
 
     def handler(request: httpx.Request) -> httpx.Response:
         models.append(json.loads(request.content)["model"])
-        return httpx.Response(400, json={"error": {"message": "bad request"}}, request=request)
+        return httpx.Response(
+            400, json={"error": {"message": "bad request"}}, request=request
+        )
 
     client = LLMClient(SETTINGS, transport=httpx.MockTransport(handler))
     with pytest.raises(LLMUpstreamError):

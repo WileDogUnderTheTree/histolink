@@ -432,7 +432,8 @@
                       "ROUTE_NOT_FOUND",
                       "SNAPSHOT_NOT_LOADED",
                       "LLM_NOT_CONFIGURED",
-                      "LLM_UPSTREAM_ERROR"
+                      "LLM_UPSTREAM_ERROR",
+                      "SESSION_NOT_FOUND"
                     ]
                   },
                   "message": {
@@ -971,7 +972,8 @@
                       "ROUTE_NOT_FOUND",
                       "SNAPSHOT_NOT_LOADED",
                       "LLM_NOT_CONFIGURED",
-                      "LLM_UPSTREAM_ERROR"
+                      "LLM_UPSTREAM_ERROR",
+                      "SESSION_NOT_FOUND"
                     ]
                   },
                   "message": {
@@ -1591,7 +1593,8 @@
                       "ROUTE_NOT_FOUND",
                       "SNAPSHOT_NOT_LOADED",
                       "LLM_NOT_CONFIGURED",
-                      "LLM_UPSTREAM_ERROR"
+                      "LLM_UPSTREAM_ERROR",
+                      "SESSION_NOT_FOUND"
                     ]
                   },
                   "message": {
@@ -2233,7 +2236,8 @@
                       "ROUTE_NOT_FOUND",
                       "SNAPSHOT_NOT_LOADED",
                       "LLM_NOT_CONFIGURED",
-                      "LLM_UPSTREAM_ERROR"
+                      "LLM_UPSTREAM_ERROR",
+                      "SESSION_NOT_FOUND"
                     ]
                   },
                   "message": {
@@ -2798,7 +2802,8 @@
                       "ROUTE_NOT_FOUND",
                       "SNAPSHOT_NOT_LOADED",
                       "LLM_NOT_CONFIGURED",
-                      "LLM_UPSTREAM_ERROR"
+                      "LLM_UPSTREAM_ERROR",
+                      "SESSION_NOT_FOUND"
                     ]
                   },
                   "message": {
@@ -3323,7 +3328,8 @@
                       "ROUTE_NOT_FOUND",
                       "SNAPSHOT_NOT_LOADED",
                       "LLM_NOT_CONFIGURED",
-                      "LLM_UPSTREAM_ERROR"
+                      "LLM_UPSTREAM_ERROR",
+                      "SESSION_NOT_FOUND"
                     ]
                   },
                   "message": {
@@ -3871,7 +3877,8 @@
                       "ROUTE_NOT_FOUND",
                       "SNAPSHOT_NOT_LOADED",
                       "LLM_NOT_CONFIGURED",
-                      "LLM_UPSTREAM_ERROR"
+                      "LLM_UPSTREAM_ERROR",
+                      "SESSION_NOT_FOUND"
                     ]
                   },
                   "message": {
@@ -4383,7 +4390,8 @@
                       "ROUTE_NOT_FOUND",
                       "SNAPSHOT_NOT_LOADED",
                       "LLM_NOT_CONFIGURED",
-                      "LLM_UPSTREAM_ERROR"
+                      "LLM_UPSTREAM_ERROR",
+                      "SESSION_NOT_FOUND"
                     ]
                   },
                   "message": {
@@ -4977,7 +4985,8 @@
                       "ROUTE_NOT_FOUND",
                       "SNAPSHOT_NOT_LOADED",
                       "LLM_NOT_CONFIGURED",
-                      "LLM_UPSTREAM_ERROR"
+                      "LLM_UPSTREAM_ERROR",
+                      "SESSION_NOT_FOUND"
                     ]
                   },
                   "message": {

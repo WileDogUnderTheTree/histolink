@@ -23,3 +23,51 @@
 .tableWrap th, .tableWrap td { padding: 8px 10px; border-bottom: 1px solid #eee7de; text-align: left; vertical-align: top; }
 .tableWrap th { background: #f8f1e9; color: #71382e; font-weight: 700; }
 .tableWrap tr:last-child td { border-bottom: 0; }
+
+/* V1.0.6.3：内联文字关系树默认折叠（只留一句提示 + 可展开文字版），
+   完整可交互关系图由右侧史引面板承载。 */
+.relationTree {
+  margin: 0 0 11px;
+  padding: 10px 12px;
+  border: 1px dashed #dfc7b7;
+  border-left: 3px solid #8b0000;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #fffaf3, #fffdf8);
+}
+.relationTreeText {
+  margin: 0;
+  color: #6f4a3c;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+.relationTreeToggle {
+  margin-top: 6px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #8b0000;
+  font: inherit;
+  font-size: 10.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.relationTreeToggle:hover { color: #650000; }
+.relationTreeToggle:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+.relationTreePre {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 8px 0 0;
+  padding: 9px 11px;
+  border: 1px solid #e6ddd2;
+  border-radius: 7px;
+  background: #f7f2ea;
+  white-space: pre;
+}
+.relationTreePre code {
+  padding: 0;
+  background: transparent;
+  color: #55483d;
+  font-size: .85em;
+  line-height: 1.65;
+}

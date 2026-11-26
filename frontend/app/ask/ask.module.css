@@ -26,7 +26,7 @@
 /* V1.0.5.2 UI 呼吸感补丁：侧边栏收起 / 预览模式（左侧没有占位）时，
    对话区放宽到视口 60%–70% 并居中，避免长回答被压成细长条。 */
 .appFrame.sidebarCollapsed .shell:not(.copilotMode) { width: min(100%, clamp(760px, 68vw, 1280px)); }
-/* 史引副驾驶分屏：借满可用宽度，左对话 40% / 右面板 60%（见 workspaceLayout 网格）。 */
+/* 史引副驾驶分屏（V1.0.6.2 痛点 3）：左对话 60% / 右史引 40%（两张卡片在同一网格里）。 */
 .shell.copilotMode { width: 100%; max-width: 1720px; }
 .topbarLead { display: flex; min-width: 0; align-items: center; gap: 12px; }
 /* 侧边栏收起后的「展开历史对话」按钮：常驻顶栏左侧，样式与导航保持同一套纸感语言。 */
@@ -57,11 +57,14 @@
 .suggestionChip:focus-visible { outline: 2px solid #8b0000; outline-offset: 3px; }
 
 /* V1.0.5.2-layout 补丁：工作区占据剩余高度并锁进 App Shell；
-   子列（对话卡片 / 史引面板）各自 min-height: 0 + 内部滚动，绝不撑开文档。 */
-.workspaceLayout { min-height: 0; flex: 1 1 auto; display: grid; grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 18px; overflow: hidden; }
-/* 分屏比例自适应（V1.0.5.2 UI 呼吸感补丁）：右侧史引面板出现时，左对话固定 40% / 右面板 60%。 */
-.shell.copilotMode .workspaceLayout { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
-.chatCard { position: relative; min-width: 0; min-height: 0; height: 100%; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #ded4c7; border-radius: 16px 16px 0 0; background: rgb(255 253 248 / 78%); box-shadow: 0 18px 46px rgb(87 56 31 / 8%); }
+   子列（对话卡片 / 史引面板）各自 min-height: 0 + 内部滚动，绝不撑开文档。
+   V1.0.6.3：左右分屏改为严格 Flex Row（左对话自适应 + 右史引固定 40% 宽），
+   两列 height:100%，图表在右侧区域内完整居中。 */
+.workspaceLayout { display: flex; flex-direction: row; height: 100%; min-height: 0; flex: 1 1 auto; align-items: stretch; gap: 18px; overflow: hidden; }
+/* 分屏比例（V1.0.6.2 痛点 3 / V1.0.6.3）：右史引面板出现时，左对话自适应剩余宽度、
+   右面板 40%（min/max 兜底），两个面板高度都由 App Shell 统一拉伸到 100%。 */
+.shell.copilotMode .workspaceLayout { gap: 16px; }
+.chatCard { position: relative; flex: 1 1 60%; min-width: 0; min-height: 0; height: 100%; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #ded4c7; border-radius: 16px 16px 0 0; background: rgb(255 253 248 / 78%); box-shadow: 0 18px 46px rgb(87 56 31 / 8%); }
 .chatHeader { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 14px; padding: 7px 22px 6px; border-bottom: 1px solid #ece5da; }
 .chatHeader h2 { margin: 0; color: #3b2d28; font-family: "Songti SC", "STSong", serif; font-size: 16px; font-weight: 600; }
 .chatHeaderMeta { display: inline-flex; min-width: 0; flex: 0 0 auto; align-items: center; gap: 12px; }
@@ -80,6 +83,10 @@
 .transcript { min-width: 0; min-height: 0; flex: 1 1 auto; list-style: none; display: flex; flex-direction: column; gap: 22px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 26px 30px 32px; scrollbar-width: thin; scrollbar-color: #cdbbab transparent; }
 /* 右侧史引联动栏：与聊天列并排、自身独立滚动（内部内容绝不撑开文档）。 */
 .guideRail { flex: 0 0 180px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 30px 18px; border-left: 1px solid #eee4d9; background: linear-gradient(180deg, #fffaf4, #f8f1e9); color: #7d6d62; }
+/* V1.0.6.3：史引联动栏内的双图入口（人物图谱 / 时间轴）。 */
+.guideRailActions { margin-top: 14px; }
+.guideRailActions > div { margin-top: 0; padding-top: 0; border-top: 0; flex-direction: column; align-items: stretch; }
+.guideRailActions button { justify-content: center; width: 100%; }
 .guideSeal { display: grid; width: 34px; height: 34px; place-items: center; margin-bottom: 14px; border: 1px solid #b98b7d; border-radius: 9px; background: #8b0000; color: #fffaf2; font-family: "Songti SC", "STSong", serif; font-size: 18px; }
 .guideLabel { display: block; margin-bottom: 8px; color: #8b0000; font-size: 9px; font-weight: 700; letter-spacing: .14em; }
 .guideRail strong { display: block; color: #3c2d28; font-family: "Songti SC", "STSong", serif; font-size: 18px; font-weight: 600; }
@@ -104,6 +111,9 @@
 .statusBadge { display: inline-flex; align-items: center; border: 1px solid #c5d9c8; border-radius: 999px; padding: 3px 7px; background: #f2faf3; color: #47784f; font-weight: 700; }
 .answerMeta[data-mode="insufficient"] .statusBadge { border-color: #e4c9a6; background: #fff8ed; color: #9c6a2f; }
 .answerMeta[data-mode="refusal"] .statusBadge { border-color: #e5bdb6; background: #fff4f2; color: #a2493c; }
+/* V1.0.6.2：逐字直答（无证据校验）用中性色徽标，不冒充「已核验」。 */
+.answerMeta[data-mode="streamed"] .statusBadge { border-color: #d9c9b0; background: #fffaf0; color: #8a6c45; }
+.factCheckHint { display: inline-flex; align-items: center; border: 1px dashed #d9c9b0; border-radius: 999px; padding: 3px 7px; background: #fffdf8; color: #8a6c45; }
 .previewNotice { align-self: stretch; border: 1px dashed #d8c2a7; border-radius: 10px; padding: 9px 12px; background: #fffaf0; color: #97785c; font-size: 11px; line-height: 1.6; }
 .markdown > :first-child { margin-top: 0; }
 .markdown > :last-child { margin-bottom: 0; }
@@ -116,11 +126,6 @@
 .markdown ul, .markdown ol { margin: 0 0 12px; padding-left: 23px; }
 .markdown li + li { margin-top: 6px; }
 .markdown li::marker { color: #8b0000; }
-.loadingTurn { min-width: 260px; }
-.loading { display: flex; align-items: center; gap: 5px; color: #887b70; font-size: 13px; }
-.loading i { width: 4px; height: 4px; border-radius: 50%; background: #8b0000; animation: blink 1s infinite ease-in-out; }
-.loading i:nth-of-type(2) { animation-delay: 140ms; }
-.loading i:nth-of-type(3) { animation-delay: 280ms; }
 
 .citations { margin-top: 16px; padding-top: 14px; border-top: 1px solid #eee7de; }
 .citationsHeading { display: flex; align-items: center; gap: 7px; margin-bottom: 9px; color: #957c70; font-size: 10px; font-weight: 700; letter-spacing: .1em; }
@@ -173,31 +178,67 @@ button.citation { width: 100%; cursor: pointer; }
 .comparisonBody > :first-child { margin-top: 0; }
 .comparisonBody > :last-child { margin-bottom: 0; }
 .comparisonNote { margin: 9px 0 0; padding-top: 7px; border-top: 1px dashed #eadcc2; color: #a08a68; font-size: 10px; line-height: 1.5; }
-/* 史引副驾驶（V1.0.5.1；V1.0.5.2-layout 补丁）：桌面端与对话列并排、
-   高度 = 工作区高度（App Shell 内 100%），iframe 内部独立滚动；
-   不随长对话拉伸，避免出现「整页滚动 + iframe 内滚动」两层滚动条。 */
-.copilotPanel { position: relative; min-width: 0; min-height: 0; height: 100%; align-self: stretch; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #d9c9bb; border-radius: 16px 16px 0 0; background: #f8f5ee; box-shadow: 0 18px 46px rgb(87 56 31 / 10%); animation: copilotIn 220ms ease both; }
-.copilotHeader { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 16px 9px; border-bottom: 1px solid #e4d9ce; background: #fffdf8; }
+/* 史引副驾驶（V1.0.6.3 · 右侧面板 Flex 自适应）：
+   - 桌面端是 `.workspaceLayout` 的第二列：左对话自适应，右面板固定 40% 宽（min/max 兜底）；
+   - 面板自身严格 flex-col：头部固定、iframe 区域 flex:1 填满剩余高度，`height:100%`；
+   - 内部时间轴 / 关系图由各自 `[data-embed]` 布局负责上下比例与内部滚动。 */
+.copilotPanel {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 40%;
+  width: 40%;
+  min-width: 380px;
+  max-width: 760px;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  container-type: inline-size;
+  border: 1px solid #d9c9bb;
+  border-radius: 16px 16px 0 0;
+  background: #f8f5ee;
+  box-shadow: 0 18px 46px rgb(87 56 31 / 12%);
+  animation: copilotIn 220ms ease both;
+}
+.copilotHeader { display: flex; flex: 0 0 auto; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px 7px; border-bottom: 1px solid #e4d9ce; background: #fffdf8; }
 .copilotTitle { min-width: 0; }
 .copilotKicker { display: block; margin-bottom: 2px; color: #9d7568; font-size: 9px; font-weight: 700; letter-spacing: .16em; }
-.copilotHeader h2 { margin: 0; color: #3a2924; font-family: "Songti SC", "STSong", serif; font-size: 18px; font-weight: 600; }
+.copilotHeader h2 { margin: 0; color: #3a2924; font-family: "Songti SC", "STSong", serif; font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .copilotActions { display: flex; flex: 0 0 auto; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 7px; }
-.copilotExternal { display: inline-flex; align-items: center; gap: 5px; border: 1px solid #dcc9bb; border-radius: 9px; padding: 7px 10px; background: #fffdf8; color: #7a5346; font: inherit; font-size: 10.5px; white-space: nowrap; cursor: pointer; transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease; }
+/* V1.0.6.3：副驾驶面板头部的「人物图谱 / 时间轴」视图切换（与气泡双按钮同源）。 */
+.copilotViewSwitch { display: inline-flex; align-items: center; gap: 2px; border: 1px solid #e0cfc0; border-radius: 999px; padding: 2px; background: #fffdf8; }
+.copilotViewTab { display: inline-flex; align-items: center; border: 0; border-radius: 999px; padding: 4px 9px; background: transparent; color: #8a6a58; font: inherit; font-size: 10px; line-height: 1.4; white-space: nowrap; cursor: pointer; transition: background 160ms ease, color 160ms ease; }
+.copilotViewTab:hover { color: #8b0000; background: #fbf0e9; }
+.copilotViewTab[data-active="true"] { background: #8b0000; color: #fffaf2; font-weight: 600; }
+.copilotViewTab:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+.copilotExternal { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #dcc9bb; border-radius: 9px; padding: 6px 9px; background: #fffdf8; color: #7a5346; font: inherit; font-size: 10px; white-space: nowrap; cursor: pointer; transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease; }
 .copilotExternal span { color: #b98b7d; font-size: 12px; line-height: 1; transition: transform 160ms ease, color 160ms ease; }
 .copilotExternal:hover { transform: translateY(-1px); border-color: #c08f80; background: #fdf3ed; color: #8b0000; }
 .copilotExternal:hover span { transform: translate(1px, -1px); color: #8b0000; }
 .copilotExternal[data-active="true"] { border-color: #c08f80; background: #f8eae4; color: #8b0000; font-weight: 600; }
 .copilotExternal[data-active="true"] span { color: #8b0000; }
 .copilotExternal:focus-visible, .closeCopilot:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
-.closeCopilot { flex: 0 0 auto; border: 1px solid #b98b7d; border-radius: 9px; padding: 8px 11px; background: #fff8f3; color: #8b0000; font: inherit; font-size: 11px; white-space: nowrap; cursor: pointer; transition: background 160ms ease, border-color 160ms ease; }
+.closeCopilot { flex: 0 0 auto; border: 1px solid #b98b7d; border-radius: 8px; padding: 5px 9px; background: #fff8f3; color: #8b0000; font: inherit; font-size: 15px; line-height: 1; white-space: nowrap; cursor: pointer; transition: background 160ms ease, border-color 160ms ease; }
 .closeCopilot:hover { border-color: #9f5449; background: #f8e8e3; }
-.copilotFrameWrap { min-height: 0; flex: 1; overflow: hidden; background: #f6f2e9; }
+/* 面板本身是窄容器（副驾驶 40% 宽）：用容器查询压缩头部，把高度让给 iframe 内的图表。 */
+@container (max-width: 520px) {
+  .copilotHeader { gap: 8px; padding: 8px 10px 7px; }
+  .copilotKicker { font-size: 8px; letter-spacing: .12em; }
+  .copilotHeader h2 { font-size: 15px; }
+  .copilotActions { gap: 5px; }
+  .copilotViewTab { padding: 3px 7px; font-size: 9.5px; }
+  .copilotExternal { padding: 5px 7px; font-size: 9.5px; }
+  .closeCopilot { padding: 4px 7px; font-size: 13px; }
+}
+/* iframe 区域填满面板剩余高度；iframe 内部页面用 100vh（= iframe 高度）做 App Shell，
+   时间轴 / 关系图在受限高度内自行分配「轨道 + 详情卡」比例，不再把面板撑高。 */
+.copilotFrameWrap { min-height: 0; flex: 1 1 auto; height: auto; overflow: hidden; background: #f6f2e9; }
 .copilotFrame { display: block; width: 100%; height: 100%; border: 0; background: #f6f2e9; }
 .loadingPage { padding-top: 120px; color: #8b0000; text-align: center; }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 @keyframes messageIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes copilotIn { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes blink { 0%, 80%, 100% { opacity: .3; transform: scale(.8); } 40% { opacity: 1; transform: scale(1); } }
 @keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
 @media (max-width: 1280px) {
   .page { padding: 0 22px; }
@@ -208,9 +249,11 @@ button.citation { width: 100%; cursor: pointer; }
   /* 侧边栏改为浮层后主内容独占整宽，宽版对话区跟随视口放宽。 */
   .shell { width: min(100%, 980px); }
   .appFrame.sidebarCollapsed .shell:not(.copilotMode) { width: 100%; }
+  /* 中等宽度：史引分屏退化为自适应对半开，避免两侧都过窄。 */
+  .copilotPanel { flex-basis: 50%; width: 50%; min-width: 340px; }
 }
 @media (max-width: 900px) {
-  .shell.copilotMode .workspaceLayout { grid-template-columns: minmax(0, 44fr) minmax(0, 56fr); }
+  .copilotPanel { flex-basis: 50%; width: 50%; min-width: 320px; }
   .copilotHeader { flex-wrap: wrap; }
   .copilotActions { flex-basis: 100%; justify-content: flex-start; }
   .sidebarToggle span:last-child { display: none; }
@@ -233,7 +276,6 @@ button.citation { width: 100%; cursor: pointer; }
   .messageText { font-size: 14.5px; }
   .guideRail { flex-basis: auto; padding: 18px 14px; border-top: 1px solid #eee4d9; border-left: 0; }
   .guideRail p { margin-bottom: 10px; font-size: 10px; }
-  .guideOpen { font-size: 10px; }
   .chatHeader { padding: 7px 16px 6px; }
   .syncNote { display: none; }
   .composerDock { padding: 10px 14px 12px; }
@@ -241,13 +283,15 @@ button.citation { width: 100%; cursor: pointer; }
   .copilotHeader { padding: 12px 14px; }
   .copilotHeader h2 { font-size: 17px; }
   .copilotExternal { font-size: 10px; padding: 6px 8px; }
-  .shell.copilotMode .workspaceLayout { grid-template-columns: minmax(0, 1fr); }
+  .shell.copilotMode .workspaceLayout { flex-direction: column; }
   .shell.copilotMode .chatCard { display: none; }
-  .copilotPanel { height: 100%; }
+  /* 窄屏：史引面板铺满视口（浮层固定定位），对话卡片让位。 */
+  .copilotPanel { position: fixed; top: 60px; right: 8px; bottom: 8px; left: 8px; flex: none; width: auto; max-width: none; min-width: 0; z-index: 40; border-radius: 14px; }
+  .copilotFrameWrap { height: auto; }
   .composerTopNote { display: none; }
   .composer .composerIconButton { width: 32px; height: 32px; }
 }
-@media (prefers-reduced-motion: reduce) { .shell, .userTurn, .agentTurn, .loading i, .copilotPanel, .sidebarBackdrop { animation: none; transition: none; } }
+@media (prefers-reduced-motion: reduce) { .shell, .userTurn, .agentTurn, .copilotPanel, .sidebarBackdrop { animation: none; transition: none; } }
 /* V1.0.5.2 UI 呼吸感补丁：模型切换下拉框贴住输入框正上方左侧，圆角胶囊 + 轻边框，
    弱化「工具条」存在感；说明文字降为辅助级灰。 */
 .composerTop { display: flex; min-width: 0; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 6px; padding: 0 2px; }
@@ -258,3 +302,19 @@ button.citation { width: 100%; cursor: pointer; }
 .composer .composerIconButton:disabled { cursor: not-allowed; opacity: .45; }
 .composer .composerIconButton:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
 @media (max-width: 720px) { .composerTopNote { display: none; } .composer .composerIconButton { width: 32px; height: 32px; } }
+
+/* V1.0.6.2 深度思考开关（替换原「逐字回答」）：输入区胶囊 + 直答输出光标。
+   默认关闭 = 快速直答；开启 = 请求 enable_thinking=true，思考过程只在服务端过滤、不上屏。 */
+.thinkingToggle { display: inline-flex; min-width: 0; align-items: center; gap: 8px; }
+.thinkingToggleButton { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; border: 1px solid #dccdc2; border-radius: 999px; padding: 4px 10px; background: #fffdf8; color: #85776c; font: inherit; font-size: 10px; cursor: pointer; transition: border-color 160ms ease, background 160ms ease, color 160ms ease; }
+.thinkingToggleButton:hover:not(:disabled) { border-color: #c99c91; color: #8b0000; }
+.thinkingToggleButton[data-active="true"] { border-color: #c99c91; background: #fff3ee; color: #8b0000; }
+.thinkingToggleButton:disabled { cursor: not-allowed; opacity: .55; }
+.thinkingToggleButton:focus-visible { outline: 2px solid #8b0000; outline-offset: 2px; }
+.thinkingToggleDot { width: 6px; height: 6px; flex: 0 0 auto; border-radius: 50%; background: currentColor; opacity: .5; }
+.thinkingToggleButton[data-active="true"] .thinkingToggleDot { opacity: 1; animation: streamPulse 1.4s ease-in-out infinite; }
+.streamingTurn { position: relative; }
+.streamCaret { display: inline-block; width: 2px; height: 1em; margin-left: 3px; vertical-align: -0.15em; background: #8b0000; animation: streamCaretBlink 900ms steps(1, end) infinite; }
+@keyframes streamPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(.7); opacity: .45; } }
+@keyframes streamCaretBlink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .streamCaret, .thinkingToggleButton[data-active="true"] .thinkingToggleDot { animation: none; } }

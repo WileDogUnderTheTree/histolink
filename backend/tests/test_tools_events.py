@@ -115,7 +115,9 @@ def test_search_events_excludes_special_easter_egg(
 def test_search_events_invalid_year_range(
     tool_context: Any, assert_tool_contract: Callable[[dict[str, Any], str], None]
 ) -> None:
-    result = search_events(tool_context, q="赤壁", year_range={"start": 220, "end": 200})
+    result = search_events(
+        tool_context, q="赤壁", year_range={"start": 220, "end": 200}
+    )
     assert_tool_contract(result, "search_events")
 
     assert result["ok"] is False

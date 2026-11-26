@@ -65,9 +65,14 @@ def test_validate_rejects_extra_argument(registry: ToolRegistry) -> None:
 def test_validate_rejects_wrong_types_strictly(registry: ToolRegistry) -> None:
     # strict=True：字符串 "20" 不会被静默转换成整数。
     with pytest.raises(InvalidToolArguments):
-        registry.validate_arguments("get_person_events", {"person_id": "p-liangtaihou-xixia-0d0f", "limit": "20"})
+        registry.validate_arguments(
+            "get_person_events",
+            {"person_id": "p-liangtaihou-xixia-0d0f", "limit": "20"},
+        )
     with pytest.raises(InvalidToolArguments):
-        registry.validate_arguments("timeline_span", {"start_year": "-260", "end_year": -221})
+        registry.validate_arguments(
+            "timeline_span", {"start_year": "-260", "end_year": -221}
+        )
 
 
 def test_validate_rejects_out_of_range_limit(registry: ToolRegistry) -> None:
@@ -77,7 +82,9 @@ def test_validate_rejects_out_of_range_limit(registry: ToolRegistry) -> None:
 
 def test_validate_enforces_era_scope_exclusive(registry: ToolRegistry) -> None:
     with pytest.raises(InvalidToolArguments):
-        registry.validate_arguments("get_era_graph", {"era_id": "xixia", "scope_id": "songliaojinxia"})
+        registry.validate_arguments(
+            "get_era_graph", {"era_id": "xixia", "scope_id": "songliaojinxia"}
+        )
     with pytest.raises(InvalidToolArguments):
         registry.validate_arguments("get_era_graph", {})
 
@@ -98,7 +105,9 @@ def test_validate_enforces_rag_top_k_limit(registry: ToolRegistry) -> None:
     )
     assert kwargs == {"query": "商鞅变法 秦孝公 前356年", "top_k": 3}
     with pytest.raises(InvalidToolArguments):
-        registry.validate_arguments("search_historical_text", {"query": "赤壁", "top_k": 4})
+        registry.validate_arguments(
+            "search_historical_text", {"query": "赤壁", "top_k": 4}
+        )
     with pytest.raises(InvalidToolArguments):
         registry.validate_arguments("search_historical_text", {"query": ""})
 
@@ -110,7 +119,9 @@ def test_execute_valid_call(registry: ToolRegistry) -> None:
     assert result["data"]["event_id"] == XIXIA09
 
 
-def test_execute_invalid_arguments_returns_failure_envelope(registry: ToolRegistry) -> None:
+def test_execute_invalid_arguments_returns_failure_envelope(
+    registry: ToolRegistry,
+) -> None:
     result = registry.execute("get_event", {"event_id": "Bad Event ID"})
     assert result["ok"] is False
     assert result["error"]["code"] == "INVALID_REQUEST"

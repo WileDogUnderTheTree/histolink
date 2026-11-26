@@ -73,14 +73,31 @@ def _envelope(
 
 
 def read_only_violation_response() -> JSONResponse:
-    """`/api` 除问答入口 `/api/agent/ask` 外不提供写接口：写方法统一返回 405 envelope。"""
+    """`/api` 除问答与会话管理外不提供写接口：写方法统一返回 405 envelope。"""
 
     return _envelope(
         status_code=405,
         code=ErrorCode.METHOD_NOT_ALLOWED,
-        message="该接口不支持此 HTTP 方法（/api 除问答入口外均为只读）",
+        message="该接口不支持此 HTTP 方法（/api 除问答入口与会话管理外均为只读）",
         headers={"Allow": "GET"},
     )
+
+
+def _json_safe(value: Any) -> Any:
+    """把 Pydantic 校验错误里的异常对象（`ctx.error`）转成可 JSON 序列化的字符串。
+
+    V1.0.6：`SessionPatchRequest` 等带 `model_validator` 的请求体，校验失败时
+    `exc.errors()` 的 `ctx` 里会带 `ValueError` 实例；直接塞进 JSONResponse 会抛
+    `TypeError: Object of type ValueError is not JSON serializable`，导致 400 变成 500。
+    """
+
+    if isinstance(value, dict):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    return str(value)
 
 
 def install_error_handlers(app: FastAPI) -> None:
@@ -98,16 +115,20 @@ def install_error_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(RequestValidationError)
-    async def _handle_validation_error(_request: Request, exc: RequestValidationError) -> JSONResponse:
+    async def _handle_validation_error(
+        _request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
         return _envelope(
             status_code=400,
             code=ErrorCode.INVALID_REQUEST,
             message="请求参数不合法",
-            details={"errors": exc.errors()},
+            details={"errors": _json_safe(exc.errors())},
         )
 
     @app.exception_handler(StarletteHTTPException)
-    async def _handle_http_error(_request: Request, exc: StarletteHTTPException) -> JSONResponse:
+    async def _handle_http_error(
+        _request: Request, exc: StarletteHTTPException
+    ) -> JSONResponse:
         if exc.status_code == 405:
             code = ErrorCode.METHOD_NOT_ALLOWED
             message = "该接口不支持此 HTTP 方法（只读 API 无写接口）"

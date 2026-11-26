@@ -51,7 +51,9 @@ MAX_COMPARISON_SUBJECTS = 6
 #: 二次归纳输出的 JSON 协议：整段响应允许被 ```json fence 包裹，但必须是唯一对象。
 _JSON_FENCE_RE = re.compile(r"^```(?:json)?\s*(.*?)\s*```$", re.DOTALL | re.IGNORECASE)
 #: 零宽字符 / 控制字符（模型偶尔会带出来，展示前清掉）。
-_CONTROL_CHARS_RE = re.compile(r"[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f\u200b-\u200f\u2060\ufeff]")
+_CONTROL_CHARS_RE = re.compile(
+    r"[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f\u200b-\u200f\u2060\ufeff]"
+)
 
 #: 年份表达式（单次扫描，避免「公元前356年」同时命中无前缀规则造成自相矛盾）：
 #: - `公元前356年` / `前356年` / `前356`（BC 年，显式，必须校验）；
@@ -283,7 +285,9 @@ def find_comparison_subjects(
         if key in seen:
             continue
         seen.add(key)
-        matched.append((text.find(title) if title in text else len(text), title, observed_entity))
+        matched.append(
+            (text.find(title) if title in text else len(text), title, observed_entity)
+        )
 
     if len(matched) >= 2:
         matched.sort(key=lambda item: (item[0], -len(item[1])))
@@ -320,7 +324,8 @@ def find_comparison_subjects(
         return ComparisonSubjects(
             entities=tuple(subjects),
             matched_names=tuple(
-                _first_text(entity.detail.get("title"), entity.entity_id) for entity in subjects
+                _first_text(entity.detail.get("title"), entity.entity_id)
+                for entity in subjects
             ),
         )
     return None
@@ -366,7 +371,11 @@ def collect_rescue_entities(
         key = (entity.kind, entity.entity_id)
         if key in seen or len(ordered) >= limit:
             return
-        if not entity.fact_usable or entity.exposure == "list" or not entity.citation_ids:
+        if (
+            not entity.fact_usable
+            or entity.exposure == "list"
+            or not entity.citation_ids
+        ):
             return
         seen.add(key)
         ordered.append(entity)
@@ -443,7 +452,11 @@ def _event_participants_mentioned(
     for person_id in _strings(entity.detail.get("person_ids")):
         display, aliases = _person_name_and_aliases(store, person_id)
         for name in (display, *aliases):
-            if isinstance(name, str) and len(name) >= MIN_PERSON_NAME_LEN and name in text:
+            if (
+                isinstance(name, str)
+                and len(name) >= MIN_PERSON_NAME_LEN
+                and name in text
+            ):
                 return True
     return False
 
@@ -518,18 +531,24 @@ def _event_fact_line(
         years.add(year)
 
     header_parts = [title]
-    suffix = [part for part in (dynasty, _year_label(year) if year is not None else None) if part]
+    suffix = [
+        part
+        for part in (dynasty, _year_label(year) if year is not None else None)
+        if part
+    ]
     if suffix:
         header_parts.append(f"（{'，'.join(suffix)}）")
     text = "".join(header_parts) + "："
-    text += _truncate(description, MAX_EVENT_DESCRIPTION_CHARS) if description else "（工具未返回事件描述）"
+    text += (
+        _truncate(description, MAX_EVENT_DESCRIPTION_CHARS)
+        if description
+        else "（工具未返回事件描述）"
+    )
 
     participants = _participant_names(detail.get("person_ids"), store)
     if participants:
         text += f"\n   参与者：{'、'.join(participants[:MAX_EVENT_PARTICIPANTS])}"
-        names.update(
-            _participant_whitelist_names(detail.get("person_ids"), store)
-        )
+        names.update(_participant_whitelist_names(detail.get("person_ids"), store))
 
     source_labels = _source_labels(detail.get("source_refs"))
     if source_labels:
@@ -617,7 +636,9 @@ def _rag_fact_line(entity: ObservedEntity, index: int) -> tuple[str, set[int]]:
         if year_min == year_max:
             meta_parts.append(f"年份区间 {_year_label(year_min)}")
         else:
-            meta_parts.append(f"年份区间 {_year_label(year_min)}—{_year_label(year_max)}")
+            meta_parts.append(
+                f"年份区间 {_year_label(year_min)}—{_year_label(year_max)}"
+            )
     meta = f"（{'；'.join(meta_parts)}）" if meta_parts else ""
     body = _truncate(text, MAX_RAG_TEXT_CHARS)
     return f"{index}. 史料{meta}：{body}", years
@@ -689,8 +710,7 @@ def validate_comparison_analysis(
     invalid_years = find_unverified_years(cleaned, facts)
     if invalid_years:
         return None, (
-            "对比分析含事实块外年份："
-            + "、".join(_format_year_labels(invalid_years))
+            "对比分析含事实块外年份：" + "、".join(_format_year_labels(invalid_years))
         )
 
     invalid_persons = find_unverified_person_names(
@@ -782,7 +802,9 @@ def extract_year_tokens(text: str) -> list[YearToken]:
         elif match.group("ad_prefix"):
             digits = match.group("ad_num")
             tokens.append(
-                YearToken(year=int(digits), label=_year_label(int(digits)), explicit=True)
+                YearToken(
+                    year=int(digits), label=_year_label(int(digits)), explicit=True
+                )
             )
         elif match.group("bare_num"):
             digits = match.group("bare_num")

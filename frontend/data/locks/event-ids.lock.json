@@ -1,6 +1,6 @@
 {
   "schema_version": "event-ids.v1",
-  "event_count": 831,
+  "event_count": 896,
   "events": [
     {
       "id": "beisong-01",
@@ -4403,6 +4403,36 @@
       }
     },
     {
+      "id": "sanguo-caoshuangluoguzhiyi-06",
+      "title": "曹爽骆谷之役",
+      "dynasty": "三国",
+      "year": 244,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-guanqiujianwenqinzhipanhuainanerpan-15",
+      "title": "毌丘俭文钦之叛（淮南二叛）",
+      "dynasty": "三国",
+      "year": 255,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-guanqiujianzhenggaojuli-07",
+      "title": "毌丘俭征高句丽",
+      "dynasty": "三国",
+      "year": 246,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
       "id": "sanguo-jiupinzhongzhengzhichuangli-01",
       "title": "九品中正制创立",
       "dynasty": "三国",
@@ -4423,10 +4453,30 @@
       }
     },
     {
-      "id": "sanguo-mieshudaiweimiewu-05",
+      "id": "sanguo-lukangzu-19",
+      "title": "陆抗卒",
+      "dynasty": "三国",
+      "year": 274,
+      "surface": {
+        "timeline": true,
+        "graph": false
+      }
+    },
+    {
+      "id": "sanguo-mieshudaiweimiewu-18",
       "title": "灭蜀、代魏、灭吴",
       "dynasty": "三国",
       "year": 263,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-simashifeicaofanglicaomao-13",
+      "title": "司马师废曹芳立曹髦",
+      "dynasty": "三国",
+      "year": 254,
       "surface": {
         "timeline": true,
         "graph": true
@@ -4437,6 +4487,96 @@
       "title": "司马懿平定辽东",
       "dynasty": "三国",
       "year": 238,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-simayizusimashijizheng-09",
+      "title": "司马懿卒·司马师继政",
+      "dynasty": "三国",
+      "year": 251,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-simazhaojizhangweizheng-14",
+      "title": "司马昭继掌魏政",
+      "dynasty": "三国",
+      "year": 255,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-sunchenfeilianglixiusunxiuzhuchen-17",
+      "title": "孙綝废亮立休·孙休诛綝",
+      "dynasty": "三国",
+      "year": 258,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-sunquanergongzhizhengliaojie-08",
+      "title": "孙权二宫之争了结",
+      "dynasty": "三国",
+      "year": 250,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-sunquanzuzhugekefuzheng-11",
+      "title": "孙权卒·诸葛恪辅政",
+      "dynasty": "三国",
+      "year": 252,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-wanglingzhipan-10",
+      "title": "王凌之叛",
+      "dynasty": "三国",
+      "year": 251,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-weimingdituogu-05",
+      "title": "魏明帝托孤",
+      "dynasty": "三国",
+      "year": 239,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-zhugedanzhipanhuainansanpan-16",
+      "title": "诸葛诞之叛（淮南三叛）",
+      "dynasty": "三国",
+      "year": 257,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "sanguo-zhugekexinchengbaisunjunzhuke-12",
+      "title": "诸葛恪新城败·孙峻诛恪",
+      "dynasty": "三国",
+      "year": 253,
       "surface": {
         "timeline": true,
         "graph": true
@@ -6303,10 +6443,80 @@
       }
     },
     {
+      "id": "xia-bomibenyougeshouxiazhong-10",
+      "title": "伯靡奔有鬲收夏众",
+      "dynasty": "夏",
+      "year": -1955,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-bujiangfajiuyuan-26",
+      "title": "不降伐九苑",
+      "dynasty": "夏",
+      "year": -1865,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-bujiangjiwei-25",
+      "title": "不降即位",
+      "dynasty": "夏",
+      "year": -1870,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-bujiangrangweidijiong-27",
+      "title": "不降让位弟扃",
+      "dynasty": "夏",
+      "year": -1858,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-fajiweizhuhouyipan-35",
+      "title": "发即位·诸侯益叛",
+      "dynasty": "夏",
+      "year": -1805,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-gaojiwei-34",
+      "title": "皋即位",
+      "dynasty": "夏",
+      "year": -1812,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
       "id": "xia-hanzhuocuanxia-05",
       "title": "寒浞篡夏",
       "dynasty": "夏",
       "year": -1980,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-hanzhuomiexiang-06",
+      "title": "寒浞灭相",
+      "dynasty": "夏",
+      "year": -1978,
       "surface": {
         "timeline": true,
         "graph": true
@@ -6323,10 +6533,210 @@
       }
     },
     {
+      "id": "xia-houzhumieyiyuge-13",
+      "title": "后杼灭豷于戈",
+      "dynasty": "夏",
+      "year": -1940,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-huaijiwei-19",
+      "title": "槐即位",
+      "dynasty": "夏",
+      "year": -1913,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-huaishijiuyilaichao-20",
+      "title": "槐时九夷来朝",
+      "dynasty": "夏",
+      "year": -1910,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-jiefayoushidemoxi-37",
+      "title": "桀伐有施·得妺喜",
+      "dynasty": "夏",
+      "year": -1640,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-jiejiweizhuqinggong-36",
+      "title": "桀即位·筑倾宫",
+      "dynasty": "夏",
+      "year": -1645,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-jieshaguanlongpang-38",
+      "title": "桀杀关龙逄",
+      "dynasty": "夏",
+      "year": -1633,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-jinjiwei-28",
+      "title": "廑即位",
+      "dynasty": "夏",
+      "year": -1848,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-jinqianxihe-29",
+      "title": "廑迁西河",
+      "dynasty": "夏",
+      "year": -1843,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-kongjiachulongliuleihuanlong-32",
+      "title": "孔甲畜龙·刘累豢龙",
+      "dynasty": "夏",
+      "year": -1825,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-kongjiajiwei-30",
+      "title": "孔甲即位",
+      "dynasty": "夏",
+      "year": -1835,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-kongjialuanxiazhuhoushipan-31",
+      "title": "孔甲乱夏·诸侯始叛",
+      "dynasty": "夏",
+      "year": -1830,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-liuleijutao-33",
+      "title": "刘累惧逃",
+      "dynasty": "夏",
+      "year": -1818,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-mangchenbiyuhe-22",
+      "title": "芒沉璧于河",
+      "dynasty": "夏",
+      "year": -1895,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-mangjiwei-21",
+      "title": "芒即位",
+      "dynasty": "夏",
+      "year": -1900,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
       "id": "xia-qijianxiajuntaizhixiang-01",
       "title": "启建夏·钧台之享",
       "dynasty": "夏",
       "year": -2070,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-shaokangbenyouyu-08",
+      "title": "少康奔有虞",
+      "dynasty": "夏",
+      "year": -1965,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-shaokangchusheng-07",
+      "title": "少康出生",
+      "dynasty": "夏",
+      "year": -1975,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-shaokangfengwuyuyuhuiji-15",
+      "title": "少康封无余于会稽",
+      "dynasty": "夏",
+      "year": -1932,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-shaokangmiejiaoyuguo-12",
+      "title": "少康灭浇于过",
+      "dynasty": "夏",
+      "year": -1945,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-shaokangshinvaidiejiao-11",
+      "title": "少康使女艾谍浇",
+      "dynasty": "夏",
+      "year": -1950,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-shaokangzhongxing-14",
+      "title": "少康中兴",
+      "dynasty": "夏",
+      "year": -1935,
       "surface": {
         "timeline": true,
         "graph": true
@@ -6343,10 +6753,30 @@
       }
     },
     {
-      "id": "xia-xiajiebaozheng-06",
+      "id": "xia-xiajiebaozheng-39",
       "title": "夏桀暴政",
       "dynasty": "夏",
       "year": -1620,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-xiejiajiuyijueming-24",
+      "title": "泄加九夷爵命",
+      "dynasty": "夏",
+      "year": -1880,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-xiejiwei-23",
+      "title": "泄即位",
+      "dynasty": "夏",
+      "year": -1885,
       "surface": {
         "timeline": true,
         "graph": true
@@ -6357,6 +6787,46 @@
       "title": "禹伐三苗",
       "dynasty": "夏",
       "year": -2070,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-yusiqishaokang-09",
+      "title": "虞思妻少康",
+      "dynasty": "夏",
+      "year": -1960,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-zhujiweixiadaofuxing-16",
+      "title": "杼即位·夏道复兴",
+      "dynasty": "夏",
+      "year": -1930,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-zhuzhengdongyi-17",
+      "title": "杼征东夷",
+      "dynasty": "夏",
+      "year": -1925,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xia-zhuzuojiadun-18",
+      "title": "杼作甲盾",
+      "dynasty": "夏",
+      "year": -1920,
       "surface": {
         "timeline": true,
         "graph": true
@@ -6927,6 +7397,186 @@
       "title": "西晋灭亡",
       "dynasty": "西晋",
       "year": 316,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-changshawangyizhujiongyizhuanzheng-17",
+      "title": "长沙王乂诛冏·乂专政",
+      "dynasty": "西晋",
+      "year": 303,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-chengduwangyingxiedizhangfangruluo-18",
+      "title": "成都王颖挟帝·张方入洛",
+      "dynasty": "西晋",
+      "year": 304,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-dafengzongshimaibawangzhihuo-08",
+      "title": "大封宗室·埋八王之祸",
+      "dynasty": "西晋",
+      "year": 289,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-jiahoufeitaizisimayu-13",
+      "title": "贾后废太子司马遹",
+      "dynasty": "西晋",
+      "year": 299,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-jiahouzhuanzhengzhanghuafuzheng-10",
+      "title": "贾后专政·张华辅政",
+      "dynasty": "西晋",
+      "year": 291,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-jiahouzhuyangjunbawangzhiluanxumu-11",
+      "title": "贾后诛杨骏（八王之乱序幕）",
+      "dynasty": "西晋",
+      "year": 291,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-jinmiewusanjiaguijin-06",
+      "title": "晋灭吴·三家归晋",
+      "dynasty": "西晋",
+      "year": 280,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-qiwangjiongzhuanzheng-16",
+      "title": "齐王冏专政",
+      "dynasty": "西晋",
+      "year": 302,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-qiwannianfanjinzhouchuzhansi-12",
+      "title": "齐万年反晋·周处战死",
+      "dynasty": "西晋",
+      "year": 296,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-taikangzhizhibanzhantianzhi-07",
+      "title": "太康之治·颁占田制",
+      "dynasty": "西晋",
+      "year": 281,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-taishigaizhibanongguanweijunxian-01",
+      "title": "泰始改制·罢农官为郡县",
+      "dynasty": "西晋",
+      "year": 266,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-tufashujinengfanjin-02",
+      "title": "秃发树机能反晋",
+      "dynasty": "西晋",
+      "year": 270,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-wudizuhuidijiweiyangjunfuzheng-09",
+      "title": "武帝卒·惠帝即位·杨骏辅政",
+      "dynasty": "西晋",
+      "year": 290,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-yanghududujingzhou-03",
+      "title": "羊祜都督荆州",
+      "dynasty": "西晋",
+      "year": 272,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-yanghushangpingwushu-04",
+      "title": "羊祜上平吴疏",
+      "dynasty": "西晋",
+      "year": 276,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-yanghuzuduyudaizhenjingzhou-05",
+      "title": "羊祜卒·杜预代镇荆州",
+      "dynasty": "西晋",
+      "year": 278,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-zhaowangluncuanweisanwangqiyi-15",
+      "title": "赵王伦篡位·三王起义",
+      "dynasty": "西晋",
+      "year": 301,
+      "surface": {
+        "timeline": true,
+        "graph": true
+      }
+    },
+    {
+      "id": "xijin-zhaowanglunzhujiahoushataizi-14",
+      "title": "赵王伦诛贾后·杀太子",
+      "dynasty": "西晋",
+      "year": 300,
       "surface": {
         "timeline": true,
         "graph": true

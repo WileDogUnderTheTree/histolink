@@ -108,8 +108,12 @@ class ToolContext:
             persons_by_id=store.persons_by_id,
             events_by_id=events_by_id,
             era_by_id={era["era_id"]: era for era in snapshot.get("eras") or []},
-            scope_by_id={scope["scope_id"]: scope for scope in snapshot.get("scopes") or []},
-            group_by_id={group["group_id"]: group for group in snapshot.get("groups") or []},
+            scope_by_id={
+                scope["scope_id"]: scope for scope in snapshot.get("scopes") or []
+            },
+            group_by_id={
+                group["group_id"]: group for group in snapshot.get("groups") or []
+            },
             relations_by_pair=relations_by_pair,
             events_by_person=events_by_person,
         )
@@ -166,7 +170,9 @@ def event_priority_key(event: Mapping[str, Any]) -> tuple[int, int, str]:
 # ---------------------------------------------------------------------------
 
 
-def _event_citation(event: Mapping[str, Any], reference_index: int, reference: Mapping[str, Any]) -> Citation:
+def _event_citation(
+    event: Mapping[str, Any], reference_index: int, reference: Mapping[str, Any]
+) -> Citation:
     return Citation(
         id=f"cite-{event['event_id']}-{reference_index}",
         kind="event",
@@ -309,10 +315,14 @@ def failure(
     return payload.model_dump(mode="json")
 
 
-def tool(name: str) -> Callable[[Callable[..., dict[str, Any]]], Callable[..., dict[str, Any]]]:
+def tool(
+    name: str,
+) -> Callable[[Callable[..., dict[str, Any]]], Callable[..., dict[str, Any]]]:
     """把入参/实体异常统一翻译成 `ToolResult` 失败信封；内部错误继续抛出。"""
 
-    def decorator(function: Callable[..., dict[str, Any]]) -> Callable[..., dict[str, Any]]:
+    def decorator(
+        function: Callable[..., dict[str, Any]],
+    ) -> Callable[..., dict[str, Any]]:
         @wraps(function)
         def wrapper(ctx: ToolContext, *args: Any, **kwargs: Any) -> dict[str, Any]:
             try:
@@ -350,7 +360,9 @@ def parse_optional_text(value: Any, field: str, *, max_length: int = 200) -> str
     return parse_text(value, field, max_length=max_length)
 
 
-def parse_limit(value: Any, *, default: int = DEFAULT_LIMIT, maximum: int = MAX_LIMIT) -> int:
+def parse_limit(
+    value: Any, *, default: int = DEFAULT_LIMIT, maximum: int = MAX_LIMIT
+) -> int:
     if value is None:
         return default
     if isinstance(value, bool) or not isinstance(value, int):
@@ -423,9 +435,7 @@ def ensure_event(ctx: ToolContext, event_id: str) -> dict[str, Any]:
     return event
 
 
-def resolve_period(
-    ctx: ToolContext, period_id: str
-) -> tuple[str, set[str] | None]:
+def resolve_period(ctx: ToolContext, period_id: str) -> tuple[str, set[str] | None]:
     """解析 era / scope / group 三类时期 ID。
 
     返回 `(kind, dynasties)`；`dynasties=None` 表示该时期无法直接映射到 `event.dynasty`
@@ -444,7 +454,9 @@ def resolve_period(
     raise ToolEntityNotFound(f"未知的时期 ID：{period_id}")
 
 
-def person_in_period(person: Mapping[str, Any], period_id: str | None, dynasties: set[str] | None) -> bool:
+def person_in_period(
+    person: Mapping[str, Any], period_id: str | None, dynasties: set[str] | None
+) -> bool:
     """人物是否属于给定时期：先看 `era_ids/scope_ids`，group 再按朝代归属兜底。"""
 
     if period_id is None:

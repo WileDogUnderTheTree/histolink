@@ -1,15 +1,23 @@
-"""史脉 HistoLink · FastAPI 后端入口（V1.0.1 只读数据服务 + V1.0.3 问答入口）。
+"""史脉 HistoLink · FastAPI 后端入口（V1.0.1 只读数据服务 + V1.0.3 问答入口 + V1.0.6 会话管理
++ V1.0.6.1 生成权解绑 + V1.0.6.2 本地 Ollama 流式直答 / 日志脱敏）。
 
 V1.0.1 职责：
 - 启动时一次性加载 `backend/data/snapshot.v1.json`（schema/counts/hash 校验失败即拒绝启动）；
 - 提供只读接口：`/api/health`、`/api/meta`、`/api/entities/*`、`/api/agent/ping_llm`；
-- **唯一写入口是 `POST /api/agent/ask`（V1.0.3）**，其余 `/api` 写方法仍统一 405；
+- **写入口**：`POST /api/agent/ask`（V1.0.3）与 `/api/sessions` 会话管理（V1.0.6），
+  其余 `/api` 写方法仍统一 405；
 - 错误统一走 `{ok:false, request_id, error:{code,message,retryable}}` envelope；
 - 保留 `main:app` 入口，`scripts/launch.ps1` 无需改动。
 
 V1.0.3 问答：
 - `POST /api/agent/ask` 由 `AgentOrchestrator` 执行「规划 → 工具 → 证据校验 → 回答」循环，
   返回冻结的 `AnswerEnvelope`；LLM 未配置 503、超时 504、上游错误 502。
+
+V1.0.6 多轮记忆 / 会话管理：
+- lifespan 启动 `SessionStore`（SQLite：默认 `backend/data/sessions.v1.sqlite`，
+  `SESSION_DB_PATH=:memory:` 可用于测试）并挂到 `app.state.session_store`；
+- `/api/sessions` GET / POST / GET detail / PATCH / DELETE 提供真实历史记录持久化；
+- `/api/agent/ask` 按 `session_id` 读取最近 N 轮历史 + 实体状态，并在回答后写回会话库。
 
 LLM 连通性（TC-10）：
 - `/api/agent/ping_llm` 读取 `backend/.env`（或环境变量）调用 ModelScope / OpenAI 兼容服务，
@@ -31,6 +39,7 @@ CORS 说明（内测分享的关键）：
 
 环境变量（可选）：
 - `SNAPSHOT_PATH` / `SNAPSHOT_META_PATH`：覆盖默认快照路径（默认 backend/data/snapshot.v1.json）。
+- `SESSION_DB_PATH`：覆盖会话 SQLite 路径（默认 backend/data/sessions.v1.sqlite；`:memory:` 为内存库）。
 """
 
 from __future__ import annotations
@@ -47,12 +56,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 
 from errors import install_error_handlers, read_only_violation_response
+from log_safety import install_log_redaction
 from routers import register_routes
+from session_store import SessionStore
 from snapshot_store import SnapshotLoadError, SnapshotStore
 
 logger = logging.getLogger("histolink.main")
 
-APP_VERSION = "1.0.5.2"
+APP_VERSION = "1.0.7"
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_SNAPSHOT_PATH = BASE_DIR / "data" / "snapshot.v1.json"
@@ -84,14 +95,18 @@ def _split_env(name: str) -> list[str]:
 
 
 def _snapshot_paths() -> tuple[Path, Path]:
-    snapshot = Path(os.environ.get("SNAPSHOT_PATH", str(DEFAULT_SNAPSHOT_PATH))).expanduser()
-    meta = Path(os.environ.get("SNAPSHOT_META_PATH", str(DEFAULT_SNAPSHOT_META_PATH))).expanduser()
+    snapshot = Path(
+        os.environ.get("SNAPSHOT_PATH", str(DEFAULT_SNAPSHOT_PATH))
+    ).expanduser()
+    meta = Path(
+        os.environ.get("SNAPSHOT_META_PATH", str(DEFAULT_SNAPSHOT_META_PATH))
+    ).expanduser()
     return snapshot, meta
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """启动时加载快照；失败即拒绝启动（fail-fast），避免“看似健康但数据为空”。"""
+    """启动时加载快照 + 初始化会话存储；快照失败即拒绝启动（fail-fast）。"""
 
     snapshot_path, meta_path = _snapshot_paths()
     try:
@@ -101,11 +116,17 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     app.state.store = store
     app.state.snapshot_path = snapshot_path
+    # V1.0.6：会话存储（SQLite；会话历史 / 实体记忆跨请求、跨刷新持久化）。
+    session_store = SessionStore()
+    app.state.session_store = session_store
+    logger.info("会话存储已就绪：%s", session_store.db_path)
     _warm_up_rag()
     try:
         yield
     finally:
         app.state.store = None
+        app.state.session_store = None
+        session_store.close()
 
 
 def _warm_up_rag() -> None:
@@ -122,7 +143,9 @@ def _warm_up_rag() -> None:
             get_rag_store()
             logger.info("RAG 向量库预热完成：%s", rag_status_text())
         except Exception as exc:  # noqa: BLE001 - 预热失败不影响主服务，工具层会提示
-            logger.info("RAG 向量库未预热（%s）；search_historical_text 将返回失败信封", exc)
+            logger.info(
+                "RAG 向量库未预热（%s）；search_historical_text 将返回失败信封", exc
+            )
 
     threading.Thread(target=_load, name="rag-warmup", daemon=True).start()
 
@@ -133,13 +156,20 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title="史脉 HistoLink API",
         version=APP_VERSION,
-        description="V1.0.3 Agent 问答服务：快照 API 与基于证据校验的问答。",
+        description="V1.0.7 Agent 问答服务：快照 API、基于证据校验 + 文本级 FactCheck 的问答、"
+        "会话管理（多轮记忆）、本地 OpenAI 兼容模型流式直答（SSE，思考过程过滤）。",
         lifespan=lifespan,
     )
 
+    # V1.0.6.2：日志脱敏（密钥 / Bearer token；LOG_REDACT_PII=1 时额外脱敏 PII）。
+    # 在 uvicorn 配置好 logging 之后执行，因此能覆盖访问日志与异常 traceback。
+    install_log_redaction()
+
     allow_origins = _split_env("ALLOW_ORIGINS") or list(DEFAULT_ALLOW_ORIGINS)
     # 显式设置为空字符串即关闭「私有网段通配」放行
-    allow_origin_regex = os.environ.get("ALLOW_ORIGIN_REGEX", DEFAULT_ALLOW_ORIGIN_REGEX).strip()
+    allow_origin_regex = os.environ.get(
+        "ALLOW_ORIGIN_REGEX", DEFAULT_ALLOW_ORIGIN_REGEX
+    ).strip()
 
     application.add_middleware(
         CORSMiddleware,
@@ -152,10 +182,18 @@ def create_app() -> FastAPI:
 
     install_error_handlers(application)
 
-    # 只读闸门：`/api` 除问答入口 `/api/agent/ask` 外不提供任何写接口。
+    # 只读闸门：`/api` 仅放行三类写入口——问答 `/api/agent/ask`、
+    # 流式直答 `/api/agent/chat_stream`（V1.0.6.2）与会话管理 `/api/sessions*`。
     # 放在路由之前统一拦截，保证 405 也走 ErrorEnvelope，而不是 Starlette 默认 detail。
     read_only_methods = {"POST", "PUT", "PATCH", "DELETE"}
-    write_allowlist = {"/api/agent/ask"}
+    write_allowlist = {"/api/agent/ask", "/api/agent/chat_stream", "/api/sessions"}
+
+    def _is_allowed_write(path: str) -> bool:
+        """会话管理（V1.0.6）允许 POST / PATCH / DELETE；其余 `/api` 写方法仍 405。"""
+
+        if path in write_allowlist:
+            return True
+        return path.startswith("/api/sessions/")
 
     @application.middleware("http")
     async def enforce_read_only(
@@ -165,7 +203,7 @@ def create_app() -> FastAPI:
         if (
             request.method in read_only_methods
             and request.url.path.startswith("/api")
-            and request.url.path not in write_allowlist
+            and not _is_allowed_write(request.url.path)
         ):
             return read_only_violation_response()
         return await call_next(request)

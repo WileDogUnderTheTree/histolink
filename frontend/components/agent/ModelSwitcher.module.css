@@ -160,12 +160,6 @@
   color: #8b0000;
 }
 
-.optionDesc {
-  color: #9a8a7d;
-  font-size: 10px;
-  line-height: 1.5;
-}
-
 .optionCheck {
   position: absolute;
   right: 9px;
@@ -174,15 +168,6 @@
   color: #8b0000;
   font-size: 11px;
   font-weight: 700;
-}
-
-.menuHint {
-  margin-top: 2px;
-  padding: 5px 8px 3px;
-  border-top: 1px dashed #ecdfd2;
-  color: #a8988b;
-  font-size: 9.5px;
-  line-height: 1.5;
 }
 
 @keyframes modelMenuIn {

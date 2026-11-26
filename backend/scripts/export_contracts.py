@@ -33,14 +33,14 @@ REPO_ROOT = BACKEND_DIR.parent
 CONTRACTS_DIR = REPO_ROOT / "contracts"
 sys.path.insert(0, str(BACKEND_DIR))
 
-from contracts.action_types import (  # noqa: E402
+from contracts.action_types import (
     ACTION_AVAILABILITY,
     ACTION_SURFACE,
     action_type_values,
     surface_values,
 )
-from contracts.models import API_VERSION, SCHEMA_VERSION, UIAction  # noqa: E402
-from contracts.tools import TOOLS_SCHEMA  # noqa: E402
+from contracts.models import API_VERSION, SCHEMA_VERSION, UIAction
+from contracts.tools import TOOLS_SCHEMA
 
 
 def _dump(payload: object) -> str:
@@ -48,7 +48,9 @@ def _dump(payload: object) -> str:
 
 
 def build_openapi() -> dict:
-    from contracts.openapi_app import app  # 延迟导入：导入即建 app，避免 --check 之外的副作用
+    from contracts.openapi_app import (
+        app,  # 延迟导入：导入即建 app，避免 --check 之外的副作用
+    )
 
     spec = app.openapi()
     spec["info"]["version"] = SCHEMA_VERSION
@@ -107,15 +109,22 @@ def main(argv: list[str]) -> int:
             print("[fail] 契约导出校验失败（生成物过期或手改）：", file=sys.stderr)
             for message in diffs:
                 print(f"  - {message}", file=sys.stderr)
-            print("  修复：cd backend; .\\.venv\\Scripts\\python scripts\\export_contracts.py", file=sys.stderr)
+            print(
+                "  修复：cd backend; .\\.venv\\Scripts\\python scripts\\export_contracts.py",
+                file=sys.stderr,
+            )
             return 1
-        print("[ok] 契约一致：api-v1.openapi.json / actions-v1.schema.json / tools-v1.schema.json")
+        print(
+            "[ok] 契约一致：api-v1.openapi.json / actions-v1.schema.json / tools-v1.schema.json"
+        )
         return 0
 
     CONTRACTS_DIR.mkdir(parents=True, exist_ok=True)
     for path, content in outputs.items():
         path.write_text(content, encoding="utf-8")
-        print(f"  写出 {path.relative_to(REPO_ROOT)}（{len(content.encode('utf-8'))} bytes）")
+        print(
+            f"  写出 {path.relative_to(REPO_ROOT)}（{len(content.encode('utf-8'))} bytes）"
+        )
 
     actions = build_actions_schema()
     tool_count = len(TOOLS_SCHEMA["tools"])

@@ -57,7 +57,9 @@ def test_get_relation_from_relation_library(
 def test_get_relation_is_order_insensitive_but_preserves_caller_order(
     tool_context: Any, assert_tool_contract: Callable[[dict[str, Any], str], None]
 ) -> None:
-    forward = get_relation(tool_context, person_id_a=DING_RUCHANG, person_id_b=YIDONG_YOUHENG)
+    forward = get_relation(
+        tool_context, person_id_a=DING_RUCHANG, person_id_b=YIDONG_YOUHENG
+    )
     reversed_result = get_relation(
         tool_context, person_id_a=YIDONG_YOUHENG, person_id_b=DING_RUCHANG
     )
@@ -128,7 +130,9 @@ def test_get_relation_no_record_and_no_shared_event(
 def test_get_relation_rejects_same_person(
     tool_context: Any, assert_tool_contract: Callable[[dict[str, Any], str], None]
 ) -> None:
-    result = get_relation(tool_context, person_id_a=DING_RUCHANG, person_id_b=DING_RUCHANG)
+    result = get_relation(
+        tool_context, person_id_a=DING_RUCHANG, person_id_b=DING_RUCHANG
+    )
     assert_tool_contract(result, "get_relation")
 
     assert result["ok"] is False
@@ -138,7 +142,9 @@ def test_get_relation_rejects_same_person(
 def test_get_relation_unknown_person_returns_entity_not_found(
     tool_context: Any, assert_tool_contract: Callable[[dict[str, Any], str], None]
 ) -> None:
-    result = get_relation(tool_context, person_id_a="p-nobody-0000", person_id_b=DING_RUCHANG)
+    result = get_relation(
+        tool_context, person_id_a="p-nobody-0000", person_id_b=DING_RUCHANG
+    )
     assert_tool_contract(result, "get_relation")
 
     assert result["ok"] is False

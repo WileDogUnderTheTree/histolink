@@ -1,14 +1,14 @@
 {
   "$schema": "./schema.json",
   "version": "golden.v1",
-  "generated_at": "2026-11-25",
+  "generated_at": "2026-11-26",
   "snapshot": {
-    "version": "v1-8fdf1b883355",
-    "hash": "sha256:24268ffa624698d94e69645a874f3f58be0d0f59b340a68b6b21442597a60db0",
+    "version": "v1-961b63160c79",
+    "hash": "sha256:246ccd04387adce266e301897d585ca5f2490336ab7954889c2f393a032c05ea",
     "counts": {
-      "events": 831,
-      "persons": 1164,
-      "relations": 787,
+      "events": 896,
+      "persons": 1217,
+      "relations": 840,
       "eras": 21,
       "scopes": 7,
       "groups": 7,

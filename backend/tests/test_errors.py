@@ -12,11 +12,15 @@ from fastapi.testclient import TestClient
 
 
 def _validate_error(payload: dict[str, Any], spec: dict[str, Any]) -> None:
-    validator = jsonschema.Draft202012Validator({**spec, "$ref": "#/components/schemas/ErrorEnvelope"})
+    validator = jsonschema.Draft202012Validator(
+        {**spec, "$ref": "#/components/schemas/ErrorEnvelope"}
+    )
     validator.validate(payload)
 
 
-def test_unknown_person_returns_404_envelope(client: TestClient, openapi_spec: dict[str, Any]) -> None:
+def test_unknown_person_returns_404_envelope(
+    client: TestClient, openapi_spec: dict[str, Any]
+) -> None:
     response = client.get("/api/entities/person/p-does-not-exist-0000")
     assert response.status_code == 404
     payload = response.json()
@@ -36,7 +40,9 @@ def test_unknown_event_returns_404_envelope(client: TestClient) -> None:
     assert payload["error"]["details"]["event_id"] == "no-such-event"
 
 
-def test_write_method_returns_405_envelope(client: TestClient, openapi_spec: dict[str, Any]) -> None:
+def test_write_method_returns_405_envelope(
+    client: TestClient, openapi_spec: dict[str, Any]
+) -> None:
     response = client.post("/api/entities/person", json={"person_id": "x"})
     assert response.status_code == 405
     payload = response.json()
@@ -47,7 +53,11 @@ def test_write_method_returns_405_envelope(client: TestClient, openapi_spec: dic
 
 
 def test_delete_is_rejected(client: TestClient) -> None:
-    for api_path in ["/api/meta", "/api/entities/event/xixia-09", "/api/entities/person/p-liangtaihou-xixia-0d0f"]:
+    for api_path in [
+        "/api/meta",
+        "/api/entities/event/xixia-09",
+        "/api/entities/person/p-liangtaihou-xixia-0d0f",
+    ]:
         response = client.delete(api_path)
         assert response.status_code == 405, api_path
         assert response.json()["error"]["code"] == "METHOD_NOT_ALLOWED"
@@ -63,7 +73,9 @@ def test_missing_query_param_returns_400_envelope(client: TestClient) -> None:
 
 
 def test_limit_out_of_range_returns_400(client: TestClient) -> None:
-    response = client.get("/api/entities/persons", params={"name": "梁太后", "limit": 999})
+    response = client.get(
+        "/api/entities/persons", params={"name": "梁太后", "limit": 999}
+    )
     assert response.status_code == 400
     assert response.json()["error"]["code"] == "INVALID_REQUEST"
 
@@ -92,9 +104,18 @@ def test_snapshot_not_loaded_returns_503(client: TestClient) -> None:
 
 
 def test_no_write_endpoints_in_openapi(openapi_spec: dict[str, Any]) -> None:
-    methods = set()
-    for path_item in openapi_spec["paths"].values():
-        methods.update(path_item.keys())
-    assert "delete" not in methods
-    assert "put" not in methods
-    assert "patch" not in methods
+    """V1.0.6.2：写方法只允许出现在「问答入口 + 流式直答 + 会话管理」路径上，其余接口保持只读。"""
+
+    write_methods = {"post", "put", "patch", "delete"}
+    for path, path_item in openapi_spec["paths"].items():
+        used = write_methods & set(path_item)
+        if (
+            path == "/api/agent/ask"
+            or path == "/api/agent/chat_stream"
+            or path == "/api/sessions"
+        ):
+            assert used == {"post"}, path
+        elif path == "/api/sessions/{session_id}":
+            assert used == {"patch", "delete"}, path
+        else:
+            assert used == set(), f"{path} 不得暴露写方法：{used}"

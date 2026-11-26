@@ -976,7 +976,8 @@
           "ROUTE_NOT_FOUND",
           "SNAPSHOT_NOT_LOADED",
           "LLM_NOT_CONFIGURED",
-          "LLM_UPSTREAM_ERROR"
+          "LLM_UPSTREAM_ERROR",
+          "SESSION_NOT_FOUND"
         ],
         "title": "ErrorCode",
         "type": "string"
@@ -1180,6 +1181,72 @@
         "title": "EventSurface",
         "type": "object"
       },
+      "FactCheckTrace": {
+        "additionalProperties": false,
+        "description": "V1.0.6.1 新增可选：文本级事实核查（`FactCheck`）观测。\n\n对应 `agent.factcheck.FactCheckReport`；仅作为 `trace.fact_check` 下发，不改变回答语义：\n\n- `passed`：模型 markdown 通过文本级核查，已作为 `answer.markdown` 展示；\n- `fallback`：核查连续不通过，已回退服务端事实实证正文；\n- `server_fallback`：模型未提供 markdown / 对比兜底等，使用服务端事实实证正文；\n- `skipped`：本轮未执行文本级核查（insufficient / refusal / 兜底降级）。",
+        "properties": {
+          "checked_books": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Checked Books",
+            "type": "integer"
+          },
+          "checked_numbers": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Checked Numbers",
+            "type": "integer"
+          },
+          "checked_persons": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Checked Persons",
+            "type": "integer"
+          },
+          "checked_quotes": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Checked Quotes",
+            "type": "integer"
+          },
+          "checked_years": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Checked Years",
+            "type": "integer"
+          },
+          "issues": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Issues",
+            "type": "array"
+          },
+          "status": {
+            "default": "skipped",
+            "enum": [
+              "passed",
+              "failed",
+              "fallback",
+              "server_fallback",
+              "skipped"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "title": "FactCheckTrace",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -1203,7 +1270,7 @@
             "type": "boolean"
           },
           "version": {
-            "default": "1.0.5.2",
+            "default": "1.0.7",
             "title": "Version",
             "type": "string"
           }
@@ -1266,7 +1333,7 @@
         "additionalProperties": false,
         "properties": {
           "api_version": {
-            "default": "1.0.5.2",
+            "default": "1.0.7",
             "title": "Api Version",
             "type": "string"
           },
@@ -1372,7 +1439,7 @@
         "description": "`GET /api/agent/models`：供前端模型切换窗口渲染，无需配置 API key 即可读取。",
         "properties": {
           "api_version": {
-            "default": "1.0.5.2",
+            "default": "1.0.7",
             "title": "Api Version",
             "type": "string"
           },
@@ -1599,6 +1666,387 @@
         "title": "PingLLMResponse",
         "type": "object"
       },
+      "SessionCreateRequest": {
+        "additionalProperties": false,
+        "description": "`POST /api/sessions`：新建会话（session_id 可由前端生成以保证刷新后一致）。",
+        "properties": {
+          "session_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "title": "SessionCreateRequest",
+        "type": "object"
+      },
+      "SessionDeleteResponse": {
+        "additionalProperties": false,
+        "description": "`DELETE /api/sessions/{session_id}` 的响应。",
+        "properties": {
+          "api_version": {
+            "default": "1.0.7",
+            "title": "Api Version",
+            "type": "string"
+          },
+          "ok": {
+            "const": true,
+            "default": true,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "schema_version": {
+            "const": "1.0",
+            "default": "1.0",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "session_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Session Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id"
+        ],
+        "title": "SessionDeleteResponse",
+        "type": "object"
+      },
+      "SessionDetail": {
+        "additionalProperties": false,
+        "description": "完整会话（点击历史记录 / 刷新页面恢复时使用）。",
+        "properties": {
+          "created_at": {
+            "description": "创建时间（epoch 毫秒）",
+            "minimum": 0.0,
+            "title": "Created At",
+            "type": "integer"
+          },
+          "entity_memory": {
+            "$ref": "#/components/schemas/SessionEntityMemory"
+          },
+          "pinned": {
+            "default": false,
+            "title": "Pinned",
+            "type": "boolean"
+          },
+          "session_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Session Id",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "turn_count": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Turn Count",
+            "type": "integer"
+          },
+          "turns": {
+            "items": {
+              "$ref": "#/components/schemas/SessionTurn"
+            },
+            "maxItems": 200,
+            "title": "Turns",
+            "type": "array"
+          },
+          "updated_at": {
+            "description": "最后一条消息时间（epoch 毫秒）",
+            "minimum": 0.0,
+            "title": "Updated At",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "session_id",
+          "title",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SessionDetail",
+        "type": "object"
+      },
+      "SessionDetailResponse": {
+        "additionalProperties": false,
+        "description": "`GET /api/sessions/{session_id}` / `POST /api/sessions` 的响应。",
+        "properties": {
+          "api_version": {
+            "default": "1.0.7",
+            "title": "Api Version",
+            "type": "string"
+          },
+          "ok": {
+            "const": true,
+            "default": true,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "schema_version": {
+            "const": "1.0",
+            "default": "1.0",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "session": {
+            "$ref": "#/components/schemas/SessionDetail"
+          }
+        },
+        "required": [
+          "session"
+        ],
+        "title": "SessionDetailResponse",
+        "type": "object"
+      },
+      "SessionEntityMemory": {
+        "additionalProperties": false,
+        "description": "会话实体状态（V1.0.6 指代消解）：上一轮真实工具结果里出现过的人物 / 事件 ID。",
+        "properties": {
+          "event_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 8,
+            "title": "Event Ids",
+            "type": "array"
+          },
+          "person_ids": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 8,
+            "title": "Person Ids",
+            "type": "array"
+          },
+          "person_names": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "maxProperties": 8,
+            "title": "Person Names",
+            "type": "object"
+          }
+        },
+        "title": "SessionEntityMemory",
+        "type": "object"
+      },
+      "SessionListResponse": {
+        "additionalProperties": false,
+        "description": "`GET /api/sessions`：真实历史会话列表（置顶优先，其余按最后消息时间倒序）。",
+        "properties": {
+          "api_version": {
+            "default": "1.0.7",
+            "title": "Api Version",
+            "type": "string"
+          },
+          "ok": {
+            "const": true,
+            "default": true,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "schema_version": {
+            "const": "1.0",
+            "default": "1.0",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "sessions": {
+            "items": {
+              "$ref": "#/components/schemas/SessionSummary"
+            },
+            "maxItems": 100,
+            "title": "Sessions",
+            "type": "array"
+          }
+        },
+        "title": "SessionListResponse",
+        "type": "object"
+      },
+      "SessionMutationResponse": {
+        "additionalProperties": false,
+        "description": "`PATCH /api/sessions/{session_id}` 的响应（返回更新后的摘要）。",
+        "properties": {
+          "api_version": {
+            "default": "1.0.7",
+            "title": "Api Version",
+            "type": "string"
+          },
+          "ok": {
+            "const": true,
+            "default": true,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "schema_version": {
+            "const": "1.0",
+            "default": "1.0",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "session": {
+            "$ref": "#/components/schemas/SessionSummary"
+          }
+        },
+        "required": [
+          "session"
+        ],
+        "title": "SessionMutationResponse",
+        "type": "object"
+      },
+      "SessionPatchRequest": {
+        "additionalProperties": false,
+        "description": "`PATCH /api/sessions/{session_id}`：重命名 / 置顶（至少提供一个字段）。",
+        "properties": {
+          "pinned": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pinned"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "title": "SessionPatchRequest",
+        "type": "object"
+      },
+      "SessionSummary": {
+        "additionalProperties": false,
+        "description": "侧边栏列表用的会话摘要（不含完整 turns，避免列表过重）。",
+        "properties": {
+          "created_at": {
+            "description": "创建时间（epoch 毫秒）",
+            "minimum": 0.0,
+            "title": "Created At",
+            "type": "integer"
+          },
+          "pinned": {
+            "default": false,
+            "title": "Pinned",
+            "type": "boolean"
+          },
+          "session_id": {
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Session Id",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "turn_count": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Turn Count",
+            "type": "integer"
+          },
+          "updated_at": {
+            "description": "最后一条消息时间（epoch 毫秒）",
+            "minimum": 0.0,
+            "title": "Updated At",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "session_id",
+          "title",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SessionSummary",
+        "type": "object"
+      },
+      "SessionTurn": {
+        "additionalProperties": false,
+        "description": "会话中的单轮消息（服务端持久化；前端刷新后据此恢复聊天记录）。",
+        "properties": {
+          "answer": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer"
+          },
+          "content": {
+            "maxLength": 10000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "该轮消息创建时间（epoch 毫秒）",
+            "minimum": 0.0,
+            "title": "Created At",
+            "type": "integer"
+          },
+          "role": {
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "content",
+          "created_at"
+        ],
+        "title": "SessionTurn",
+        "type": "object"
+      },
       "SnapshotMeta": {
         "additionalProperties": false,
         "description": "回答里携带的快照版本；前端据此判断是否降级为纯文字。",
@@ -1689,6 +2137,62 @@
         "title": "SourceRefModel",
         "type": "object"
       },
+      "StreamAskRequest": {
+        "additionalProperties": false,
+        "description": "`POST /api/agent/chat_stream` 的请求体（V1.0.6.2 · 本地模型流式直答）。\n\n与 `AskRequest` 的差异：\n- 不需要页面上下文 `context`（直答模式不注入图谱实体）；\n- `session_id` 可选：为空时服务端创建新会话，回答仍会写入会话库（刷新后可见）；\n- `history` 仅用于「服务端会话为空时的一次性迁移」，已有服务端历史时以服务端为准。\n\n响应不是 JSON，而是 `text/event-stream`（SSE）：\n`{\"type\":\"start\"}` → 若干 `{\"type\":\"delta\",\"text\":...}` → `{\"type\":\"done\", ...}`\n或 `{\"type\":\"error\",\"code\":...,\"message\":...}`；思考过程不会下发。",
+        "properties": {
+          "enable_thinking": {
+            "default": false,
+            "description": "是否开启深度思考（默认关闭；开启后模型先推理再输出最终答案）。",
+            "title": "Enable Thinking",
+            "type": "boolean"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ConversationTurn"
+            },
+            "maxItems": 20,
+            "title": "History",
+            "type": "array"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          },
+          "question": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "StreamAskRequest",
+        "type": "object"
+      },
       "ToolTrace": {
         "additionalProperties": false,
         "properties": {
@@ -1737,6 +2241,16 @@
       "Trace": {
         "additionalProperties": false,
         "properties": {
+          "fact_check": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FactCheckTrace"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "latency_ms": {
             "anyOf": [
               {
@@ -2051,6 +2565,71 @@
           }
         },
         "summary": "Ask",
+        "tags": [
+          "agent"
+        ]
+      }
+    },
+    "/api/agent/chat_stream": {
+      "post": {
+        "description": "流式直答：`data: {...}` SSE 事件（start → delta* → done / error）。",
+        "operationId": "chat_stream_api_agent_chat_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StreamAskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Chat Stream",
         "tags": [
           "agent"
         ]
@@ -2469,6 +3048,239 @@
         "summary": "Search Events",
         "tags": [
           "search"
+        ]
+      }
+    },
+    "/api/sessions": {
+      "get": {
+        "description": "会话列表（置顶优先，其余按最后消息时间倒序）。",
+        "operationId": "list_sessions_api_sessions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Sessions",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "post": {
+        "description": "新建会话（session_id 可由前端生成，刷新后保持稳定）。",
+        "operationId": "create_session_api_sessions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDetailResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/api/sessions/{session_id}": {
+      "delete": {
+        "description": "删除会话。",
+        "operationId": "delete_session_api_sessions__session_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDeleteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Session",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "get": {
+        "description": "会话详情（含全部轮次与实体记忆）。",
+        "operationId": "get_session_api_sessions__session_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDetailResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Session",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "patch": {
+        "description": "重命名 / 置顶会话。",
+        "operationId": "patch_session_api_sessions__session_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionPatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionMutationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Patch Session",
+        "tags": [
+          "sessions"
         ]
       }
     }

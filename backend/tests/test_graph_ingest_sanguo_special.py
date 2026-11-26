@@ -19,7 +19,9 @@ SPEC.loader.exec_module(ingest_graph_data)
 def test_sanguo_special_document_is_included_and_fully_parsed() -> None:
     ingestor = ingest_graph_data.GraphIngestor.__new__(ingest_graph_data.GraphIngestor)
     ingestor.args = argparse.Namespace(pattern=None)
-    ingestor.config = json.loads(ingest_graph_data.CONFIG_PATH.read_text(encoding="utf-8"))
+    ingestor.config = json.loads(
+        ingest_graph_data.CONFIG_PATH.read_text(encoding="utf-8")
+    )
 
     document = ingest_graph_data.DOCS_DIR / "史脉_V1.0.5.4_图谱扩充_三国特化.md"
     included = set(ingestor.resolve_doc_paths())
@@ -34,9 +36,16 @@ def test_sanguo_special_document_is_included_and_fully_parsed() -> None:
     parsed = ingest_graph_data.parse_document(document)
     assert len(parsed.events) == 24
     assert len(parsed.relations) == 36
-    assert any(event.year == 200 and event.title == "孙策遇刺、孙权继位" for event in parsed.events)
-    assert any(event.year == 238 and event.title == "司马懿平定辽东" for event in parsed.events)
-    assert {(relation.person_a, relation.person_b) for relation in parsed.relations} >= {
+    assert any(
+        event.year == 200 and event.title == "孙策遇刺、孙权继位"
+        for event in parsed.events
+    )
+    assert any(
+        event.year == 238 and event.title == "司马懿平定辽东" for event in parsed.events
+    )
+    assert {
+        (relation.person_a, relation.person_b) for relation in parsed.relations
+    } >= {
         ("刘备", "关羽"),
         ("刘备", "张飞"),
         ("孙策", "孙权"),
@@ -75,8 +84,7 @@ def test_special_supplement_expands_grouped_relationships() -> None:
     battle = next(item for item in parsed.events if item.title == "鄱阳湖之战")
     assert battle.dynasty == "明"
     assert {
-        (relation.person_a, relation.person_b)
-        for relation in parsed.relations
+        (relation.person_a, relation.person_b) for relation in parsed.relations
     } >= {
         ("朱元璋", "李善长"),
         ("朱元璋", "蓝玉"),
@@ -91,6 +99,32 @@ def test_special_period_ranges_match_existing_event_years() -> None:
     )
     battle = next(item for item in parsed.events if item.title == "采石之战")
     assert battle.dynasty == "金"
+
+
+@pytest.mark.parametrize(
+    "dynasty",
+    [
+        "三国·魏",
+        "三国·蜀",
+        "三国·吴",
+        "三国-魏",
+        "三国-蜀",
+        "三国-吴",
+        "三国・魏",
+        "曹魏",
+        "蜀汉",
+        "东吴",
+    ],
+)
+def test_sanguo_dynasty_aliases_normalize_to_single_timeline_dynasty(
+    dynasty: str,
+) -> None:
+    ingestor = ingest_graph_data.GraphIngestor.__new__(ingest_graph_data.GraphIngestor)
+    ingestor.dynasty_aliases = json.loads(
+        ingest_graph_data.CONFIG_PATH.read_text(encoding="utf-8")
+    ).get("canonical_dynasty_names", {})
+
+    assert ingestor.canonical_dynasty(dynasty) == "三国"
 
 
 def test_sanguo_special_rejects_ambiguous_multi_person_pairing(tmp_path: Path) -> None:

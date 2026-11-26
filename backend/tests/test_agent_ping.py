@@ -40,7 +40,9 @@ PING_ENV_NAMES = (
 )
 
 
-def _override_client(client: TestClient, handler: Callable[[httpx.Request], httpx.Response]) -> None:
+def _override_client(
+    client: TestClient, handler: Callable[[httpx.Request], httpx.Response]
+) -> None:
     app = client.app
     app.dependency_overrides[get_llm_client] = lambda: LLMClient(
         SETTINGS, transport=httpx.MockTransport(handler)
@@ -48,7 +50,9 @@ def _override_client(client: TestClient, handler: Callable[[httpx.Request], http
 
 
 @pytest.fixture
-def llm_override(client: TestClient) -> Iterator[Callable[[Callable[[httpx.Request], httpx.Response]], None]]:
+def llm_override(
+    client: TestClient,
+) -> Iterator[Callable[[Callable[[httpx.Request], httpx.Response]], None]]:
     def install(handler: Callable[[httpx.Request], httpx.Response]) -> None:
         _override_client(client, handler)
 
@@ -71,7 +75,9 @@ def _success_handler(request: httpx.Request) -> httpx.Response:
 
 
 def _validate_against_contract(instance: Any, model: str, spec: dict[str, Any]) -> None:
-    validator = jsonschema.Draft202012Validator({**spec, "$ref": f"#/components/schemas/{model}"})
+    validator = jsonschema.Draft202012Validator(
+        {**spec, "$ref": f"#/components/schemas/{model}"}
+    )
     validator.validate(instance)
 
 

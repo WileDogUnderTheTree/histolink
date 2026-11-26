@@ -1,5 +1,15 @@
+"use client";
+
+import { useState } from "react";
 import type { ElementType, ReactNode } from "react";
 import Link from "next/link";
+
+import {
+  collectInlineTreeBlock,
+  parseInlineRelationBlock,
+  relationTreeNotice,
+} from "@/lib/relation-tree";
+import type { InlineRelationTree } from "@/lib/relation-tree";
 
 import styles from "./MarkdownMessage.module.css";
 
@@ -54,6 +64,34 @@ function Table({ header, rows }: { header: string[]; rows: string[][] }) {
   );
 }
 
+/**
+ * 内联文字关系树 → 默认折叠卡片（V1.0.6.3 痛点 3）。
+ *
+ * 模型偶尔会在大段正文里画一整棵家族树（十行以上），默认只展示一句提示文案，
+ * 完整交互图交给右侧史引面板；想看原文时仍可展开文字版（不丢信息）。
+ */
+function RelationTreeNotice({ tree }: { tree: InlineRelationTree }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className={styles.relationTree} data-relation-tree="collapsed">
+      <p className={styles.relationTreeText}>{relationTreeNotice(tree)}</p>
+      <button
+        type="button"
+        className={styles.relationTreeToggle}
+        aria-expanded={expanded}
+        onClick={() => setExpanded((value) => !value)}
+      >
+        {expanded ? "收起文字版" : `展开文字版（${tree.count} 行）`}
+      </button>
+      {expanded ? (
+        <pre className={styles.relationTreePre}>
+          <code>{tree.lines.join("\n")}</code>
+        </pre>
+      ) : null}
+    </div>
+  );
+}
+
 /** Safe, dependency-free Markdown subset used by both the drawer and /ask workspace. */
 export function MarkdownMessage({ content }: { content: string }) {
   const lines = content.replace(/\r\n?/g, "\n").split("\n");
@@ -69,7 +107,22 @@ export function MarkdownMessage({ content }: { content: string }) {
       index += 1;
       while (index < lines.length && !lines[index].trim().startsWith("```")) { code.push(lines[index]); index += 1; }
       if (index < lines.length) index += 1;
-      blocks.push(<pre key={`code-${index}`}><code>{code.join("\n")}</code></pre>);
+      // V1.0.6.3：代码块里的关系树（制表符家族树 / Mermaid 箭头边列表）同样默认折叠，
+      // 避免一段树把气泡撑到十几屏。
+      const tree = parseInlineRelationBlock(code);
+      if (tree) {
+        blocks.push(<RelationTreeNotice key={`tree-code-${index}`} tree={tree} />);
+      } else {
+        blocks.push(<pre key={`code-${index}`}><code>{code.join("\n")}</code></pre>);
+      }
+      continue;
+    }
+
+    // V1.0.6.3：正文里未用代码块包裹的关系树（「李渊 / ├── 李建成 …」）默认折叠。
+    const inlineTree = collectInlineTreeBlock(lines, index);
+    if (inlineTree) {
+      blocks.push(<RelationTreeNotice key={`tree-${index}`} tree={inlineTree.tree} />);
+      index = inlineTree.end;
       continue;
     }
 

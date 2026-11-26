@@ -1,7 +1,8 @@
-"""Agent 数据模型测试（V1.0.3）：三态自洽与严格字段。
+"""Agent 数据模型测试（V1.0.3；V1.0.6.1 解绑 markdown 生成权）。
 
-放行后清理：模型协议 `ModelAnswer` 不再包含 `markdown` / `certainty` / 自由 `missing` /
-`claims[].text` / UIAction.label；上述字段一旦出现就会被 `extra="forbid"` 拒绝。
+V1.0.6.1 协议变化：`ModelAnswer.markdown` 重新成为模型可见字段（grounded 正文），
+但要通过服务端双重事实核查才会被采用；`certainty` / 自由 `missing` / `claims[].text` /
+UIAction.label 仍不属于模型协议，出现即被 `extra="forbid"` 拒绝。
 """
 
 from __future__ import annotations
@@ -101,11 +102,27 @@ def test_model_answer_rejects_unknown_fields() -> None:
         )
 
 
-def test_model_answer_rejects_legacy_markdown() -> None:
-    """放行后清理：模型不再提供 markdown。"""
+def test_model_answer_accepts_markdown_v1061() -> None:
+    """V1.0.6.1：grounded 回答的 markdown 重新属于模型协议（核查后采用）。"""
 
+    answer = ModelAnswer(
+        **_grounded(),
+        markdown="### 📜 史料实证\n赤壁之战发生于 208 年。\n\n### 💡 史令分析\n此战奠定三国鼎立。",
+    )
+    assert answer.markdown is not None
+    assert "史料实证" in answer.markdown
+
+
+def test_model_answer_markdown_is_optional_for_legacy_flows() -> None:
+    """兼容旧协议 / 离线脚本：markdown 缺省时服务端回退事实实证正文（不为 None 保险）。"""
+
+    answer = ModelAnswer(**_grounded())
+    assert answer.markdown is None
+
+
+def test_model_answer_rejects_markdown_too_long() -> None:
     with pytest.raises(ValidationError):
-        ModelAnswer(**_grounded(), markdown="赤壁之战中曹操使用了火药。")
+        ModelAnswer(**_grounded(), markdown="史" * 10001)
 
 
 def test_model_answer_rejects_model_supplied_certainty() -> None:
@@ -171,12 +188,21 @@ def test_final_step_uses_model_answer() -> None:
 
 def test_tool_call_step_strict() -> None:
     step = ToolCallStep.model_validate(
-        {"action": "tool_call", "tool": "get_event", "arguments": {"event_id": "xixia-09"}}
+        {
+            "action": "tool_call",
+            "tool": "get_event",
+            "arguments": {"event_id": "xixia-09"},
+        }
     )
     assert isinstance(step, ToolCallStep)
     with pytest.raises(ValidationError):
         ToolCallStep.model_validate(
-            {"action": "tool_call", "tool": "get_event", "arguments": {}, "unexpected": 1}
+            {
+                "action": "tool_call",
+                "tool": "get_event",
+                "arguments": {},
+                "unexpected": 1,
+            }
         )
 
 

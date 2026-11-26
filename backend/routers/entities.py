@@ -37,7 +37,7 @@ _ERROR_RESPONSES = {
 )
 def get_person(
     person_id: str = Path(min_length=1, max_length=128),
-    store: SnapshotStore = Depends(get_store),
+    store: SnapshotStore = Depends(get_store),  # noqa: B008 - FastAPI 依赖注入惯用法
 ) -> PersonResponse:
     """按稳定 person_id 查询人物主数据 + 事件摘要（上限 50 条）。"""
 
@@ -59,7 +59,7 @@ def get_person(
 )
 def get_event(
     event_id: str = Path(min_length=1, max_length=128),
-    store: SnapshotStore = Depends(get_store),
+    store: SnapshotStore = Depends(get_store),  # noqa: B008 - FastAPI 依赖注入惯用法
 ) -> EventResponse:
     """按稳定 event_id 查询事件 + 参与者 person_id + 结构化引用。"""
 
@@ -83,7 +83,7 @@ def find_persons(
     name: str = Query(min_length=1, max_length=100),
     era_id: str | None = Query(default=None, max_length=64),
     limit: int = Query(default=PERSON_CANDIDATE_LIMIT, ge=1, le=50),
-    store: SnapshotStore = Depends(get_store),
+    store: SnapshotStore = Depends(get_store),  # noqa: B008 - FastAPI 依赖注入惯用法
 ) -> PersonCandidatesResponse:
     """姓名 → 候选列表（带消歧副标题）；`era_id` 可按分期收敛。"""
 

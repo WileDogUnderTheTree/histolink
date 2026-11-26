@@ -1,4 +1,4 @@
-# 史脉 · CI（V1.0.1）
+# 史脉 · CI（V1.0.7）
 # 本地 scripts/verify.ps1 为权威门禁；本工作流在 GitHub 上复刻同一组检查。
 # 说明：仓库根目录没有 package.json，所有 Node 依赖都通过 frontend/node_modules 解析，
 # 因此 pnpm install 只在 frontend 目录执行，数据脚本从仓库根目录调用。

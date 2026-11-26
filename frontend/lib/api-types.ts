@@ -23,6 +23,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agent/chat_stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Chat Stream
+         * @description 流式直答：`data: {...}` SSE 事件（start → delta* → done / error）。
+         */
+        post: operations["chat_stream_api_agent_chat_stream_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/agent/models": {
         parameters: {
             query?: never;
@@ -160,6 +180,58 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Sessions
+         * @description 会话列表（置顶优先，其余按最后消息时间倒序）。
+         */
+        get: operations["list_sessions_api_sessions_get"];
+        put?: never;
+        /**
+         * Create Session
+         * @description 新建会话（session_id 可由前端生成，刷新后保持稳定）。
+         */
+        post: operations["create_session_api_sessions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sessions/{session_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Session
+         * @description 会话详情（含全部轮次与实体记忆）。
+         */
+        get: operations["get_session_api_sessions__session_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Session
+         * @description 删除会话。
+         */
+        delete: operations["delete_session_api_sessions__session_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Patch Session
+         * @description 重命名 / 置顶会话。
+         */
+        patch: operations["patch_session_api_sessions__session_id__patch"];
         trace?: never;
     };
 }
@@ -479,7 +551,7 @@ export interface components {
          * @description 冻结错误码（审核报告 §5.7 + TC-06 只读 API 层补充）。
          * @enum {string}
          */
-        ErrorCode: "ENTITY_NOT_FOUND" | "AMBIGUOUS_ENTITY" | "INSUFFICIENT_EVIDENCE" | "OUT_OF_SCOPE" | "LLM_TIMEOUT" | "SNAPSHOT_MISMATCH" | "INTERNAL" | "INVALID_REQUEST" | "METHOD_NOT_ALLOWED" | "ROUTE_NOT_FOUND" | "SNAPSHOT_NOT_LOADED" | "LLM_NOT_CONFIGURED" | "LLM_UPSTREAM_ERROR";
+        ErrorCode: "ENTITY_NOT_FOUND" | "AMBIGUOUS_ENTITY" | "INSUFFICIENT_EVIDENCE" | "OUT_OF_SCOPE" | "LLM_TIMEOUT" | "SNAPSHOT_MISMATCH" | "INTERNAL" | "INVALID_REQUEST" | "METHOD_NOT_ALLOWED" | "ROUTE_NOT_FOUND" | "SNAPSHOT_NOT_LOADED" | "LLM_NOT_CONFIGURED" | "LLM_UPSTREAM_ERROR" | "SESSION_NOT_FOUND";
         /** ErrorEnvelope */
         ErrorEnvelope: {
             error: components["schemas"]["ErrorInfo"];
@@ -563,6 +635,54 @@ export interface components {
             /** Timeline */
             timeline: boolean;
         };
+        /**
+         * FactCheckTrace
+         * @description V1.0.6.1 新增可选：文本级事实核查（`FactCheck`）观测。
+         *
+         *     对应 `agent.factcheck.FactCheckReport`；仅作为 `trace.fact_check` 下发，不改变回答语义：
+         *
+         *     - `passed`：模型 markdown 通过文本级核查，已作为 `answer.markdown` 展示；
+         *     - `fallback`：核查连续不通过，已回退服务端事实实证正文；
+         *     - `server_fallback`：模型未提供 markdown / 对比兜底等，使用服务端事实实证正文；
+         *     - `skipped`：本轮未执行文本级核查（insufficient / refusal / 兜底降级）。
+         */
+        FactCheckTrace: {
+            /**
+             * Checked Books
+             * @default 0
+             */
+            checked_books: number;
+            /**
+             * Checked Numbers
+             * @default 0
+             */
+            checked_numbers: number;
+            /**
+             * Checked Persons
+             * @default 0
+             */
+            checked_persons: number;
+            /**
+             * Checked Quotes
+             * @default 0
+             */
+            checked_quotes: number;
+            /**
+             * Checked Years
+             * @default 0
+             */
+            checked_years: number;
+            /** Issues */
+            issues?: string[];
+            /**
+             * Status
+             * @default skipped
+             * @enum {string}
+             */
+            status: "passed" | "failed" | "fallback" | "server_fallback" | "skipped";
+            /** Warnings */
+            warnings?: string[];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -578,7 +698,7 @@ export interface components {
             ok: true;
             /**
              * Version
-             * @default 1.0.5.2
+             * @default 1.0.7
              */
             version: string;
         };
@@ -603,7 +723,7 @@ export interface components {
         MetaResponse: {
             /**
              * Api Version
-             * @default 1.0.5.2
+             * @default 1.0.7
              */
             api_version: string;
             capabilities: components["schemas"]["Capabilities"];
@@ -658,7 +778,7 @@ export interface components {
         ModelsResponse: {
             /**
              * Api Version
-             * @default 1.0.5.2
+             * @default 1.0.7
              */
             api_version: string;
             /** Default Model Id */
@@ -770,6 +890,223 @@ export interface components {
             } | null;
         };
         /**
+         * SessionCreateRequest
+         * @description `POST /api/sessions`：新建会话（session_id 可由前端生成以保证刷新后一致）。
+         */
+        SessionCreateRequest: {
+            /** Session Id */
+            session_id?: string | null;
+            /** Title */
+            title?: string | null;
+        };
+        /**
+         * SessionDeleteResponse
+         * @description `DELETE /api/sessions/{session_id}` 的响应。
+         */
+        SessionDeleteResponse: {
+            /**
+             * Api Version
+             * @default 1.0.7
+             */
+            api_version: string;
+            /**
+             * Ok
+             * @default true
+             * @constant
+             */
+            ok: true;
+            /**
+             * Schema Version
+             * @default 1.0
+             * @constant
+             */
+            schema_version: "1.0";
+            /** Session Id */
+            session_id: string;
+        };
+        /**
+         * SessionDetail
+         * @description 完整会话（点击历史记录 / 刷新页面恢复时使用）。
+         */
+        SessionDetail: {
+            /**
+             * Created At
+             * @description 创建时间（epoch 毫秒）
+             */
+            created_at: number;
+            entity_memory?: components["schemas"]["SessionEntityMemory"];
+            /**
+             * Pinned
+             * @default false
+             */
+            pinned: boolean;
+            /** Session Id */
+            session_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Turn Count
+             * @default 0
+             */
+            turn_count: number;
+            /** Turns */
+            turns?: components["schemas"]["SessionTurn"][];
+            /**
+             * Updated At
+             * @description 最后一条消息时间（epoch 毫秒）
+             */
+            updated_at: number;
+        };
+        /**
+         * SessionDetailResponse
+         * @description `GET /api/sessions/{session_id}` / `POST /api/sessions` 的响应。
+         */
+        SessionDetailResponse: {
+            /**
+             * Api Version
+             * @default 1.0.7
+             */
+            api_version: string;
+            /**
+             * Ok
+             * @default true
+             * @constant
+             */
+            ok: true;
+            /**
+             * Schema Version
+             * @default 1.0
+             * @constant
+             */
+            schema_version: "1.0";
+            session: components["schemas"]["SessionDetail"];
+        };
+        /**
+         * SessionEntityMemory
+         * @description 会话实体状态（V1.0.6 指代消解）：上一轮真实工具结果里出现过的人物 / 事件 ID。
+         */
+        SessionEntityMemory: {
+            /** Event Ids */
+            event_ids?: string[];
+            /** Person Ids */
+            person_ids?: string[];
+            /** Person Names */
+            person_names?: {
+                [key: string]: string;
+            };
+        };
+        /**
+         * SessionListResponse
+         * @description `GET /api/sessions`：真实历史会话列表（置顶优先，其余按最后消息时间倒序）。
+         */
+        SessionListResponse: {
+            /**
+             * Api Version
+             * @default 1.0.7
+             */
+            api_version: string;
+            /**
+             * Ok
+             * @default true
+             * @constant
+             */
+            ok: true;
+            /**
+             * Schema Version
+             * @default 1.0
+             * @constant
+             */
+            schema_version: "1.0";
+            /** Sessions */
+            sessions?: components["schemas"]["SessionSummary"][];
+        };
+        /**
+         * SessionMutationResponse
+         * @description `PATCH /api/sessions/{session_id}` 的响应（返回更新后的摘要）。
+         */
+        SessionMutationResponse: {
+            /**
+             * Api Version
+             * @default 1.0.7
+             */
+            api_version: string;
+            /**
+             * Ok
+             * @default true
+             * @constant
+             */
+            ok: true;
+            /**
+             * Schema Version
+             * @default 1.0
+             * @constant
+             */
+            schema_version: "1.0";
+            session: components["schemas"]["SessionSummary"];
+        };
+        /**
+         * SessionPatchRequest
+         * @description `PATCH /api/sessions/{session_id}`：重命名 / 置顶（至少提供一个字段）。
+         */
+        SessionPatchRequest: {
+            /** Pinned */
+            pinned?: boolean | null;
+            /** Title */
+            title?: string | null;
+        };
+        /**
+         * SessionSummary
+         * @description 侧边栏列表用的会话摘要（不含完整 turns，避免列表过重）。
+         */
+        SessionSummary: {
+            /**
+             * Created At
+             * @description 创建时间（epoch 毫秒）
+             */
+            created_at: number;
+            /**
+             * Pinned
+             * @default false
+             */
+            pinned: boolean;
+            /** Session Id */
+            session_id: string;
+            /** Title */
+            title: string;
+            /**
+             * Turn Count
+             * @default 0
+             */
+            turn_count: number;
+            /**
+             * Updated At
+             * @description 最后一条消息时间（epoch 毫秒）
+             */
+            updated_at: number;
+        };
+        /**
+         * SessionTurn
+         * @description 会话中的单轮消息（服务端持久化；前端刷新后据此恢复聊天记录）。
+         */
+        SessionTurn: {
+            /** Answer */
+            answer?: {
+                [key: string]: unknown;
+            } | null;
+            /** Content */
+            content: string;
+            /**
+             * Created At
+             * @description 该轮消息创建时间（epoch 毫秒）
+             */
+            created_at: number;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+        };
+        /**
          * SnapshotMeta
          * @description 回答里携带的快照版本；前端据此判断是否降级为纯文字。
          */
@@ -797,6 +1134,35 @@ export interface components {
             /** Raw */
             raw: string;
         };
+        /**
+         * StreamAskRequest
+         * @description `POST /api/agent/chat_stream` 的请求体（V1.0.6.2 · 本地模型流式直答）。
+         *
+         *     与 `AskRequest` 的差异：
+         *     - 不需要页面上下文 `context`（直答模式不注入图谱实体）；
+         *     - `session_id` 可选：为空时服务端创建新会话，回答仍会写入会话库（刷新后可见）；
+         *     - `history` 仅用于「服务端会话为空时的一次性迁移」，已有服务端历史时以服务端为准。
+         *
+         *     响应不是 JSON，而是 `text/event-stream`（SSE）：
+         *     `{"type":"start"}` → 若干 `{"type":"delta","text":...}` → `{"type":"done", ...}`
+         *     或 `{"type":"error","code":...,"message":...}`；思考过程不会下发。
+         */
+        StreamAskRequest: {
+            /**
+             * Enable Thinking
+             * @description 是否开启深度思考（默认关闭；开启后模型先推理再输出最终答案）。
+             * @default false
+             */
+            enable_thinking: boolean;
+            /** History */
+            history?: components["schemas"]["ConversationTurn"][];
+            /** Model Id */
+            model_id?: string | null;
+            /** Question */
+            question: string;
+            /** Session Id */
+            session_id?: string | null;
+        };
         /** ToolTrace */
         ToolTrace: {
             /** Args */
@@ -812,6 +1178,7 @@ export interface components {
         };
         /** Trace */
         Trace: {
+            fact_check?: components["schemas"]["FactCheckTrace"] | null;
             /** Latency Ms */
             latency_ms?: number | null;
             /** Model */
@@ -919,6 +1286,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnswerEnvelope"] | components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    chat_stream_api_agent_chat_stream_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StreamAskRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                    "text/event-stream": string;
                 };
             };
             /** @description Bad Request */
@@ -1245,6 +1664,183 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_sessions_api_sessions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionListResponse"];
+                };
+            };
+        };
+    };
+    create_session_api_sessions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SessionCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_session_api_sessions__session_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionDetailResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_session_api_sessions__session_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionDeleteResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_session_api_sessions__session_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SessionPatchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionMutationResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

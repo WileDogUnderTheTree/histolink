@@ -188,26 +188,47 @@ function findGraphViewForPerson(
   scopeId: PersonGraphScopeId;
   personId: string;
 } | null {
+  /** 关系边数：同一个人跨多个分期出现时，边越多说明该分期越能展示完整关系网。 */
+  const degreeOf = (graph: PersonGraphData, personId: string): number =>
+    graph.edges.filter(
+      (edge) => edge.source === personId || edge.target === personId,
+    ).length;
+
   const eraHit = (era: (typeof PERSON_GRAPH_ERAS)[number]) => {
     const personId = resolvePersonInGraph(value, era.graph);
     if (!personId) return null;
     const scope =
       PERSON_GRAPH_SCOPES.find((item) => item.id === ERA_TO_SCOPE[era.id]) ?? DEFAULT_SCOPE;
-    return { mode: "detail" as const, eraId: era.id, scopeId: scope.id, personId };
+    // V1.0.6.3：优先「该分期默认中心」的分期，其次关系边更多的分期。
+    // 例：李世民同时出现在隋 / 唐，默认中心是唐 → 应打开资料更完整的「唐」，
+    // 而不是只有 3 位直接关系人的「隋」。
+    const score =
+      (era.defaultCenterPersonId === personId ? 1000 : 0) +
+      degreeOf(era.graph, personId);
+    return { mode: "detail" as const, eraId: era.id, scopeId: scope.id, personId, score };
   };
   const scopeHit = (scope: (typeof PERSON_GRAPH_SCOPES)[number]) => {
     const personId = resolvePersonInGraph(value, scope.graph);
     if (!personId) return null;
     const era =
       PERSON_GRAPH_ERAS.find((item) => item.id === SCOPE_TO_ERA[scope.id]) ?? DEFAULT_ERA;
-    return { mode: "brief" as const, eraId: era.id, scopeId: scope.id, personId };
+    const score =
+      (scope.defaultCenterPersonId === personId ? 1000 : 0) +
+      degreeOf(scope.graph, personId);
+    return { mode: "brief" as const, eraId: era.id, scopeId: scope.id, personId, score };
   };
 
-  const candidates =
-    preferredMode === "brief"
-      ? [...PERSON_GRAPH_SCOPES.map(scopeHit), ...PERSON_GRAPH_ERAS.map(eraHit)]
-      : [...PERSON_GRAPH_ERAS.map(eraHit), ...PERSON_GRAPH_SCOPES.map(scopeHit)];
-  return candidates.find((item) => item !== null) ?? null;
+  const pickBest = <T extends { score: number }>(items: (T | null)[]): T | null =>
+    items.reduce<T | null>(
+      (best, item) => (item && (!best || item.score > best.score) ? item : best),
+      null,
+    );
+
+  const eraHits = PERSON_GRAPH_ERAS.map(eraHit);
+  const scopeHits = PERSON_GRAPH_SCOPES.map(scopeHit);
+  return preferredMode === "brief"
+    ? (pickBest(scopeHits) ?? pickBest(eraHits))
+    : (pickBest(eraHits) ?? pickBest(scopeHits));
 }
 
 /**

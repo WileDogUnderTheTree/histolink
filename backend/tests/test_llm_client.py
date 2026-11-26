@@ -127,7 +127,10 @@ def test_settings_missing_key_has_actionable_message() -> None:
 
 def test_settings_rejects_invalid_base_url() -> None:
     with pytest.raises(LLMConfigError, match="http"):
-        load_llm_settings({"MODELSCOPE_API_KEY": API_KEY, "MODELSCOPE_BASE_URL": "api.modelscope.cn"}, load_env_file=False)
+        load_llm_settings(
+            {"MODELSCOPE_API_KEY": API_KEY, "MODELSCOPE_BASE_URL": "api.modelscope.cn"},
+            load_env_file=False,
+        )
 
 
 @pytest.mark.parametrize("raw_timeout", ["abc", "0", "999"])
@@ -141,7 +144,12 @@ def test_settings_rejects_invalid_timeout(raw_timeout: str) -> None:
 
 def test_settings_masked_key() -> None:
     assert SETTINGS.masked_key == "sk***ue"
-    assert LLMSettings(api_key="short", base_url="http://x", model="m", timeout_seconds=1).masked_key == "***"
+    assert (
+        LLMSettings(
+            api_key="short", base_url="http://x", model="m", timeout_seconds=1
+        ).masked_key
+        == "***"
+    )
 
 
 def test_full_endpoint_is_not_double_appended() -> None:
@@ -164,7 +172,11 @@ def test_ping_success() -> None:
     assert result.reply == "OK"
     assert result.model == "Qwen/Qwen3.5-35B-A3B"
     assert result.latency_ms >= 0
-    assert result.usage == {"prompt_tokens": 12, "completion_tokens": 2, "total_tokens": 14}
+    assert result.usage == {
+        "prompt_tokens": 12,
+        "completion_tokens": 2,
+        "total_tokens": 14,
+    }
 
 
 def test_ping_custom_message() -> None:
@@ -222,7 +234,9 @@ def test_ping_invalid_json() -> None:
 
 def test_ping_missing_content() -> None:
     def handler(_request: httpx.Request) -> httpx.Response:
-        return httpx.Response(200, json={"choices": [{"message": {"role": "assistant"}}]})
+        return httpx.Response(
+            200, json={"choices": [{"message": {"role": "assistant"}}]}
+        )
 
     with pytest.raises(LLMUpstreamError, match="content"):
         make_client(handler).ping()

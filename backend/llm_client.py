@@ -25,13 +25,17 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import time
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import httpx
+
+from think_filter import strip_think_tags
 
 logger = logging.getLogger("histolink.llm")
 
@@ -65,16 +69,46 @@ MAX_REPLY_LENGTH = 2000
 MAX_ERROR_EXCERPT = 200
 #: Agent 对话（chat）参数上限。
 MAX_CHAT_MESSAGES = 40
-MAX_CHAT_MESSAGE_CHARS = 20000
+#: 单条消息字符上限（V1.0.6.1 上调 20000 → 32000）。
+#: V1.0.6.1 的 System Prompt 包含「双重事实核查 + 输出规范 + 完整 Few-Shot 优秀回答示例」
+#: 与工具目录，实测约 23.3k 字；旧上限 20000 会让每次问答都抛 LLMConfigError（503）。
+#: 单条消息仍然有界，避免异常构造的超长消息直接打到上游。
+MAX_CHAT_MESSAGE_CHARS = 32000
 MAX_CHAT_TOKENS = 8192
 MAX_CHAT_CONTENT_CHARS = 40000
 
 #: 环境变量别名（按顺序取第一个非空值）；主推 MODELSCOPE_*，兼容常见 LLM_* / OPENAI_*。
-_API_KEY_ENV_NAMES = ("MODELSCOPE_API_KEY", "MODELSCOPE_KEY", "LLM_API_KEY", "OPENAI_API_KEY")
-_BASE_URL_ENV_NAMES = ("MODELSCOPE_BASE_URL", "MODELSCOPE_URL", "LLM_BASE_URL", "OPENAI_BASE_URL")
+_API_KEY_ENV_NAMES = (
+    "MODELSCOPE_API_KEY",
+    "MODELSCOPE_KEY",
+    "LLM_API_KEY",
+    "OPENAI_API_KEY",
+)
+_BASE_URL_ENV_NAMES = (
+    "MODELSCOPE_BASE_URL",
+    "MODELSCOPE_URL",
+    "LLM_BASE_URL",
+    "OPENAI_BASE_URL",
+)
 _MODEL_ENV_NAMES = ("MODELSCOPE_MODEL", "LLM_MODEL", "OPENAI_MODEL")
 _FALLBACK_MODEL_ENV_NAMES = ("MODELSCOPE_FALLBACK_MODEL", "LLM_FALLBACK_MODEL")
+#: V1.0.6.2 修复：前端模型切换窗口的展示名（id 仍是真实模型名，用于请求上游）。
+#: 例如本地 Ollama 模型 `hf.co/mradermacher/XiaoHong-v1-GGUF:Q4_K_M` 展示为 `XiaoHong-v1`。
+_MODEL_DISPLAY_ENV_NAMES = ("LLM_MODEL_DISPLAY_NAME", "MODELSCOPE_MODEL_DISPLAY_NAME")
+_FALLBACK_MODEL_DISPLAY_ENV_NAMES = (
+    "LLM_FALLBACK_MODEL_DISPLAY_NAME",
+    "MODELSCOPE_FALLBACK_MODEL_DISPLAY_NAME",
+)
 _TIMEOUT_ENV_NAMES = ("LLM_TIMEOUT_SECONDS", "MODELSCOPE_TIMEOUT_SECONDS")
+#: V1.0.6.2：思考开关（none / auto / low / medium / high / off）。
+#: 本地 Ollama 的 Qwen3 模板默认开启思考，XiaoHong-v1 不会输出  收尾标签，
+#: 开启思考时 OpenAI 兼容层会把全部内容放进 reasoning、content 为空，因此 auto 模式
+#: 对「本机回环地址」自动按 none 处理（见 `resolve_reasoning_effort`）。
+_REASONING_EFFORT_ENV_NAMES = ("LLM_REASONING_EFFORT",)
+#: 显式「不发送 reasoning_effort 参数」的取值（关闭思考请用 ``none``）。
+_OMIT_REASONING_EFFORT_VALUES = frozenset({"off", "false", "no", "omit", "disabled"})
+#: 本机回环主机名：auto 模式下本地推理默认关闭思考。
+_LOCAL_BASE_URL_HOSTS = frozenset({"localhost", "127.0.0.1", "::1", "0.0.0.0"})
 
 
 class LLMConfigError(RuntimeError):
@@ -113,6 +147,9 @@ class LLMSettings:
     model: str
     timeout_seconds: float
     fallback_model: str | None = None
+    #: V1.0.6.2：思考开关。``None`` 表示请求体不带该参数；``"none"`` 让 Ollama 关闭思考
+    #: （最终答案写进 content，流式才有内容）；也可为 low / medium / high。
+    reasoning_effort: str | None = None
 
     @property
     def chat_completions_url(self) -> str:
@@ -210,12 +247,81 @@ def _first_non_empty(source: Mapping[str, str], names: tuple[str, ...]) -> str |
     return None
 
 
+def is_local_base_url(base_url: str) -> bool:
+    """``base_url`` 是否指向本机回环地址（auto 模式据此决定是否关闭思考）。"""
+
+    try:
+        host = (urlsplit(base_url).hostname or "").strip().lower()
+    except ValueError:
+        return False
+    return host in _LOCAL_BASE_URL_HOSTS
+
+
+def resolve_reasoning_effort(raw: str | None, base_url: str) -> str | None:
+    """解析 ``LLM_REASONING_EFFORT``（V1.0.6.2）。
+
+    - 未配置 → ``auto``：本机回环地址返回 ``"none"``（关闭思考），云端返回 ``None``
+      （不发送参数，保持 ModelScope 等云端行为不变）；
+    - ``none`` → 原样返回（Ollama 关闭思考，最终答案进 content）；
+    - ``off`` / ``omit`` 等 → ``None``（请求体不带该参数，交给上游默认行为）；
+    - 其它（low / medium / high）→ 原样透传。
+    """
+
+    if raw is None:
+        raw = "auto"
+    lowered = raw.strip().lower()
+    if lowered in _OMIT_REASONING_EFFORT_VALUES:
+        return None
+    if lowered == "auto":
+        return "none" if is_local_base_url(base_url) else None
+    return lowered
+
+
 def _model_names(source: Mapping[str, str]) -> tuple[str, str]:
     """读取主模型 / 备用模型名（只做名称解析，不校验 key，供注册表与配置共用）。"""
 
     primary = _first_non_empty(source, _MODEL_ENV_NAMES) or DEFAULT_MODEL
-    fallback = _first_non_empty(source, _FALLBACK_MODEL_ENV_NAMES) or DEFAULT_FALLBACK_MODEL
+    fallback = (
+        _first_non_empty(source, _FALLBACK_MODEL_ENV_NAMES) or DEFAULT_FALLBACK_MODEL
+    )
     return primary, fallback
+
+
+def model_display_name(model: str) -> str:
+    """模型在前端切换窗口里的展示名（V1.0.6.2 修复）。
+
+    请求上游用的 `id` 必须保持真实模型名（`hf.co/...:Q4_K_M`），但给用户看的名字应该短而
+    易懂。规则：
+    - 只对 HuggingFace GGUF 风格模型名做自动缩写：取最后一段、去 `-GGUF`、去 `:量化后缀`；
+      例如 `hf.co/mradermacher/XiaoHong-v1-GGUF:Q4_K_M` → `XiaoHong-v1`；
+    - 其它模型名（如 `Qwen/Qwen3.5-35B-A3B`）原样返回，避免误伤云端模型命名；
+    - 需要完全自定义时用环境变量 `LLM_MODEL_DISPLAY_NAME` / `LLM_FALLBACK_MODEL_DISPLAY_NAME`。
+    """
+
+    name = (model or "").strip()
+    if not name:
+        return name
+    if "gguf" not in name.lower():
+        return name
+    tail = name.rsplit("/", 1)[-1]
+    base, separator, _quant = tail.partition(":")
+    if separator and not base:
+        base = tail
+    base = re.sub(r"[-_. ]?GGUF$", "", base, flags=re.IGNORECASE)
+    return base or name
+
+
+def _model_labels(source: Mapping[str, str]) -> tuple[str, str]:
+    """读取主模型 / 备用模型的前端展示名（优先环境变量，其次自动缩写）。"""
+
+    primary, fallback = _model_names(source)
+    primary_label = _first_non_empty(
+        source, _MODEL_DISPLAY_ENV_NAMES
+    ) or model_display_name(primary)
+    fallback_label = _first_non_empty(
+        source, _FALLBACK_MODEL_DISPLAY_ENV_NAMES
+    ) or model_display_name(fallback)
+    return primary_label, fallback_label
 
 
 def list_model_options(
@@ -227,16 +333,20 @@ def list_model_options(
 
     该函数**不要求配置 API key**，因此前端启动时即可渲染模型切换窗口；
     实际调用模型仍由 `chat()` 在缺少 key 时抛 `LLMConfigError`（映射为 503）。
+
+    V1.0.6.2：`id` 仍是真实模型名（用于请求上游），`name` 改为前端展示名
+    （如 `hf.co/.../XiaoHong-v1-GGUF:Q4_K_M` → `XiaoHong-v1`）。
     """
 
     if load_env_file:
         _load_env_files()
     source: Mapping[str, str] = os.environ if env is None else env
     primary, fallback = _model_names(source)
+    primary_label, fallback_label = _model_labels(source)
     options = [
         ModelOption(
             id=primary,
-            name=primary,
+            name=primary_label,
             role=MODEL_ROLE_PRIMARY,
             description=_MODEL_DESCRIPTIONS.get(
                 primary, "主模型：默认用于回答所有历史问题。"
@@ -247,7 +357,7 @@ def list_model_options(
         options.append(
             ModelOption(
                 id=fallback,
-                name=fallback,
+                name=fallback_label,
                 role=MODEL_ROLE_FALLBACK,
                 description=_MODEL_DESCRIPTIONS.get(
                     fallback,
@@ -304,7 +414,9 @@ def load_llm_settings(
 
     base_url = _first_non_empty(source, _BASE_URL_ENV_NAMES) or DEFAULT_BASE_URL
     if not base_url.startswith(("http://", "https://")):
-        raise LLMConfigError(f"MODELSCOPE_BASE_URL 必须以 http(s):// 开头，当前值不合法：{base_url!r}")
+        raise LLMConfigError(
+            f"MODELSCOPE_BASE_URL 必须以 http(s):// 开头，当前值不合法：{base_url!r}"
+        )
 
     model, fallback_name = _model_names(source)
 
@@ -315,13 +427,24 @@ def load_llm_settings(
         # 主备同名：没有可切换的模型，禁用降级，避免对同一个已限流模型重复请求。
         fallback_model = None
 
-    raw_timeout = _first_non_empty(source, _TIMEOUT_ENV_NAMES) or str(DEFAULT_TIMEOUT_SECONDS)
+    raw_timeout = _first_non_empty(source, _TIMEOUT_ENV_NAMES) or str(
+        DEFAULT_TIMEOUT_SECONDS
+    )
     try:
         timeout_seconds = float(raw_timeout)
     except ValueError as exc:
-        raise LLMConfigError(f"LLM_TIMEOUT_SECONDS 必须是数字，当前值：{raw_timeout!r}") from exc
+        raise LLMConfigError(
+            f"LLM_TIMEOUT_SECONDS 必须是数字，当前值：{raw_timeout!r}"
+        ) from exc
     if not 1.0 <= timeout_seconds <= 300.0:
-        raise LLMConfigError(f"LLM_TIMEOUT_SECONDS 必须在 1–300 秒之间，当前值：{timeout_seconds}")
+        raise LLMConfigError(
+            f"LLM_TIMEOUT_SECONDS 必须在 1–300 秒之间，当前值：{timeout_seconds}"
+        )
+
+    # V1.0.6.2：思考开关（本地 Ollama 默认关闭思考，否则 content 可能为空）。
+    reasoning_effort = resolve_reasoning_effort(
+        _first_non_empty(source, _REASONING_EFFORT_ENV_NAMES), base_url
+    )
 
     return LLMSettings(
         api_key=api_key,
@@ -329,6 +452,7 @@ def load_llm_settings(
         model=model,
         timeout_seconds=timeout_seconds,
         fallback_model=fallback_model,
+        reasoning_effort=reasoning_effort,
     )
 
 
@@ -389,6 +513,9 @@ class LLMClient:
             "max_tokens": 64,
             "stream": False,
         }
+        # V1.0.6.2：本地 Ollama 需要显式关闭思考，否则 content 可能为空、答案跑到 reasoning。
+        if settings.reasoning_effort is not None:
+            payload["reasoning_effort"] = settings.reasoning_effort
         data, latency_ms = self._post_chat(payload)
         reply = _extract_content(data).strip()
         if len(reply) > MAX_REPLY_LENGTH:
@@ -452,6 +579,10 @@ class LLMClient:
             # spike 结论：顶层 enable_thinking 才生效；不要放进 extra_body。
             "enable_thinking": enable_thinking,
         }
+        # V1.0.6.2：reasoning_effort 与 enable_thinking 是两套上游方言：
+        # ModelScope 用 enable_thinking，Ollama 用 reasoning_effort=none 关闭思考。
+        if settings.reasoning_effort is not None:
+            payload["reasoning_effort"] = settings.reasoning_effort
         if response_format is not None:
             payload["response_format"] = response_format
 
@@ -491,13 +622,17 @@ class LLMClient:
 
         settings = self._settings
         primary = requested_model or settings.model
-        fallback = fallback_model if requested_model is not None else settings.fallback_model
+        fallback = (
+            fallback_model if requested_model is not None else settings.fallback_model
+        )
         try:
             data, latency_ms = self._post_chat(payload, timeout_seconds=timeout_seconds)
             return data, latency_ms, primary
         except (LLMTimeoutError, LLMUpstreamError) as exc:
-            if fallback is None or fallback == primary or not _should_fallback(
-                exc, manual_selection=manual_selection
+            if (
+                fallback is None
+                or fallback == primary
+                or not _should_fallback(exc, manual_selection=manual_selection)
             ):
                 raise
             # 注意：except 块结束后 `exc` 会被删除，先把脱敏摘要存下来。
@@ -533,7 +668,9 @@ class LLMClient:
         self, payload: dict[str, Any], *, timeout_seconds: float | None = None
     ) -> tuple[dict[str, Any], int]:
         settings = self._settings
-        timeout = timeout_seconds if timeout_seconds is not None else settings.timeout_seconds
+        timeout = (
+            timeout_seconds if timeout_seconds is not None else settings.timeout_seconds
+        )
         headers = {
             "Authorization": f"Bearer {settings.api_key}",
             "Content-Type": "application/json",
@@ -583,7 +720,9 @@ class LLMClient:
         except ValueError as exc:
             raise LLMUpstreamError("上游返回的不是合法 JSON", retryable=False) from exc
         if not isinstance(data, dict):
-            raise LLMUpstreamError("上游返回 JSON 结构异常（期望对象）", retryable=False)
+            raise LLMUpstreamError(
+                "上游返回 JSON 结构异常（期望对象）", retryable=False
+            )
         return data, latency_ms
 
 
@@ -601,7 +740,9 @@ def _should_fallback(
         return True
     if exc.upstream_status in FALLBACK_UPSTREAM_STATUSES:
         return True
-    return manual_selection and exc.upstream_status in MANUAL_SELECTION_FALLBACK_STATUSES
+    return (
+        manual_selection and exc.upstream_status in MANUAL_SELECTION_FALLBACK_STATUSES
+    )
 
 
 def _decorate_fallback_error(
@@ -609,9 +750,7 @@ def _decorate_fallback_error(
 ) -> LLMTimeoutError | LLMUpstreamError:
     """给「备用模型也失败」的异常补上降级上下文，便于 API 层 / 日志定位。"""
 
-    message = (
-        f"{exc}（所选模型 {primary} 失败后已自动降级到 {fallback} 重试，仍失败）"
-    )
+    message = f"{exc}（所选模型 {primary} 失败后已自动降级到 {fallback} 重试，仍失败）"
     if isinstance(exc, LLMTimeoutError):
         return LLMTimeoutError(message)
     return LLMUpstreamError(
@@ -629,8 +768,14 @@ def _extract_content(data: Mapping[str, Any]) -> str:
             if isinstance(message_payload, dict):
                 content = message_payload.get("content")
     if not isinstance(content, str) or not content.strip():
-        raise LLMUpstreamError("上游返回缺少 choices[0].message.content", retryable=False)
-    return content
+        raise LLMUpstreamError(
+            "上游返回缺少 choices[0].message.content", retryable=False
+        )
+    # V1.0.6.2：非流式兜底清洗 思考标签（部分 OpenAI 兼容层会把思考写进 content）。
+    cleaned = strip_think_tags(content)
+    if not cleaned:
+        raise LLMUpstreamError("上游返回只有思考过程、没有最终答案", retryable=False)
+    return cleaned
 
 
 def _extract_model(data: Mapping[str, Any], fallback: str) -> str:
@@ -654,6 +799,8 @@ def _normalize_messages(messages: Any) -> list[dict[str, str]]:
         if not isinstance(content, str) or not content.strip():
             raise LLMConfigError(f"messages[{index}].content 不能为空")
         if len(content) > MAX_CHAT_MESSAGE_CHARS:
-            raise LLMConfigError(f"messages[{index}].content 超过 {MAX_CHAT_MESSAGE_CHARS} 字")
+            raise LLMConfigError(
+                f"messages[{index}].content 超过 {MAX_CHAT_MESSAGE_CHARS} 字"
+            )
         normalized.append({"role": role, "content": content})
     return normalized

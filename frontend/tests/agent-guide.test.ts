@@ -12,7 +12,9 @@ import { describe, expect, it } from "vitest";
 import type { AgentAnswerView, Citation, UIAction } from "@/lib/agent-client";
 import {
   isGuideActionType,
+  resolveAnswerGuideTargets,
   resolveGuideFromTranscript,
+  resolveGuideTargetsFromTranscript,
   type GuideSourceTurn,
 } from "@/lib/agent-guide";
 
@@ -207,5 +209,91 @@ describe("resolveGuideFromTranscript", () => {
   it("欢迎语 / 无回答的 transcript 返回 null", () => {
     expect(resolveGuideFromTranscript([])).toBeNull();
     expect(resolveGuideFromTranscript([{ id: "turn-welcome", role: "assistant", answer: null }])).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// V1.0.6.3 双图联动：同一轮回答同时产出时间轴 + 人物图目标
+// ---------------------------------------------------------------------------
+
+describe("resolveGuideTargetsFromTranscript（双图联动）", () => {
+  it("同时命中时间轴与人物图时返回两个目标（按钮并排渲染）", () => {
+    const targets = resolveGuideTargetsFromTranscript([
+      makeTurn(
+        "turn-dual",
+        makeAnswer({
+          uiActions: [
+            makeAction("timeline.focus_event", { event_id: "tang-04" }),
+            makeAction("graph.focus_person", { person_id: "p-lishimin-7efd" }),
+          ],
+        }),
+      ),
+    ]);
+
+    expect(targets).not.toBeNull();
+    expect(targets?.turnId).toBe("turn-dual");
+    expect(targets?.targets).toHaveLength(2);
+    expect(targets?.timeline?.href).toBe("/timeline?event=tang-04");
+    expect(targets?.graph?.href).toBe("/graph?person=p-lishimin-7efd");
+    // 主目标 = 动作顺序里的第一个（问题焦点优先）。
+    expect(targets?.primary.surface).toBe("timeline");
+  });
+
+  it("同一表面只保留第一个目标（多条时间轴动作不会渲染多个按钮）", () => {
+    const targets = resolveGuideTargetsFromTranscript([
+      makeTurn(
+        "turn-multi",
+        makeAnswer({
+          uiActions: [
+            makeAction("timeline.focus_event", { event_id: "tang-04" }),
+            makeAction("timeline.focus_dynasty", { dynasty: "唐" }),
+            makeAction("graph.focus_person", { person_id: "p-lishimin-7efd" }),
+          ],
+        }),
+      ),
+    ]);
+
+    expect(targets?.targets.map((target) => target.surface)).toEqual(["timeline", "graph"]);
+    expect(targets?.timeline?.href).toBe("/timeline?event=tang-04");
+  });
+
+  it("动作缺失时从 grounded 引用的可定位实体补齐另一侧", () => {
+    const targets = resolveAnswerGuideTargets(
+      makeAnswer({
+        uiActions: [makeAction("graph.focus_relation", { person_id_a: "a", person_id_b: "b" })],
+        citations: [
+          makeCitation({ id: "cite-event", event_id: "handong-chibi", person_id: "p-caocao-b012" }),
+        ],
+      }),
+      "turn-fallback",
+    );
+
+    expect(targets?.graph?.href).toContain("/graph?person=a");
+    expect(targets?.timeline?.href).toBe("/timeline?event=handong-chibi&mode=detail");
+  });
+
+  it("只有单侧可定位时返回单个目标（不会伪造另一侧）", () => {
+    const targets = resolveGuideTargetsFromTranscript([
+      makeTurn(
+        "turn-single",
+        makeAnswer({
+          uiActions: [makeAction("graph.focus_person", { person_id: "p-zhouyu-b475" })],
+        }),
+      ),
+    ]);
+
+    expect(targets?.targets).toHaveLength(1);
+    expect(targets?.timeline).toBeNull();
+    expect(targets?.graph?.surface).toBe("graph");
+  });
+
+  it("没有可联动目标时返回 null（不弹面板）", () => {
+    expect(resolveAnswerGuideTargets(null, "turn-null")).toBeNull();
+    expect(
+      resolveAnswerGuideTargets(
+        makeAnswer({ mode: "insufficient", citations: [], uiActions: [] }),
+        "turn-insufficient",
+      ),
+    ).toBeNull();
   });
 });

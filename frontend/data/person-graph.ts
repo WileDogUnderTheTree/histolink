@@ -203,6 +203,7 @@ export function buildPersonGraph(
     .sort((left, right) => right.weight - left.weight || left.id.localeCompare(right.id));
 
   const nodes = [...personEvents.entries()]
+    .filter(([name]) => relatedPeople.has(name))
     .map(([name, relatedEvents]) => {
       const sortedEvents = relatedEvents.sort(compareEvents);
       return {
@@ -306,6 +307,25 @@ const XIJIN_EVENT_IDS: readonly string[] = [
   "weijin-jingu",
   "weijin-erlu",
   "weijin-wenji",
+  "xijin-changshawangyizhujiongyizhuanzheng-17",
+  "xijin-chengduwangyingxiedizhangfangruluo-18",
+  "xijin-dafengzongshimaibawangzhihuo-08",
+  "xijin-jiahoufeitaizisimayu-13",
+  "xijin-jiahouzhuanzhengzhanghuafuzheng-10",
+  "xijin-jiahouzhuyangjunbawangzhiluanxumu-11",
+  "xijin-jinmiewusanjiaguijin-06",
+  "xijin-qiwangjiongzhuanzheng-16",
+  "xijin-qiwannianfanjinzhouchuzhansi-12",
+  "xijin-taikangzhizhibanzhantianzhi-07",
+  "xijin-taishigaizhibanongguanweijunxian-01",
+  "xijin-tufashujinengfanjin-02",
+  "xijin-wudizuhuidijiweiyangjunfuzheng-09",
+  "xijin-yanghududujingzhou-03",
+  "xijin-yanghushangpingwushu-04",
+  "xijin-yanghuzuduyudaizhenjingzhou-05",
+  "xijin-zhaowangluncuanweisanwangqiyi-15",
+  "xijin-zhaowanglunzhujiahoushataizi-14",
+
 ];
 
 /** 东晋十六国期：东晋 10 条 + 前秦、十六国与人物关系补足事件。 */

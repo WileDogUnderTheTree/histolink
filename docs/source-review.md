@@ -5,24 +5,27 @@
 
 ## 1. 总览
 
-- 事件总数：831 条（时间轴 797 + 图谱补足 34）
-- 有引用的事件：830 条；彩蛋（无引用）：1 条
-- 引用条目：1049 条（其中 647 条事件 1 本书，183 条事件 2 本书）
-- 书目标签：363 个；书目（按首个「·」切分）：104 种
-- 括注尾注（如「年代依夏商周断代工程推定」）：41 条
+- 事件总数：896 条（时间轴 862 + 图谱补足 34）
+- 有引用的事件：895 条；彩蛋（无引用）：1 条
+- 引用条目：1182 条（其中 657 条事件 1 本书，238 条事件 2 本书）
+- 书目标签：411 个；书目（按首个「·」切分）：119 种
+- 括注尾注（如「年代依夏商周断代工程推定」）：75 条
 - 特殊解析：裴注引 1 条（按 1 条引用计，见 §4）
 
 > **与任务卡的口径差异**：任务卡记录「书目标签 185 种」，该数字只统计了括注中的**首个**书目；
-> 本实现把并列书目（如「（据《旧唐书》《新唐书》）」）的第二本也作为独立标签，故实测 363 个标签。
+> 本实现把并列书目（如「（据《旧唐书》《新唐书》）」）的第二本也作为独立标签，故实测 411 个标签。
 > 引用条目 823 与任务卡一致（裴注引按 1 条计）。
 
 ## 2. 书目分布
 
 | 书目 | 引用条目 | 标签数 |
 |---|---:|---:|
-| 三国志 | 41 | 24 |
+| 丁奉传 | 1 | 1 |
+| 三国史记 | 1 | 1 |
+| 三国志 | 55 | 35 |
 | 三朝北盟会编 | 1 | 1 |
 | 三杨传 | 1 | 1 |
+| 世本 | 1 | 1 |
 | 于谦传 | 1 | 1 |
 | 仆固怀恩传 | 1 | 1 |
 | 俞大猷传 | 1 | 1 |
@@ -36,25 +39,29 @@
 | 北齐书 | 3 | 2 |
 | 南齐书 | 2 | 1 |
 | 台湾外记 | 1 | 1 |
-| 史记 | 222 | 58 |
-| 后汉书 | 41 | 28 |
+| 史记 | 237 | 59 |
+| 后汉书 | 43 | 29 |
 | 吕氏春秋 | 1 | 1 |
 | 吴书 | 2 | 2 |
+| 吴越春秋 | 1 | 1 |
 | 周书 | 5 | 4 |
 | 哀帝本纪 | 1 | 1 |
-| 国语 | 1 | 1 |
+| 国语 | 4 | 3 |
 | 地理志 | 1 | 1 |
 | 墨子 | 1 | 1 |
 | 大唐西域记 | 1 | 1 |
 | 太宗本纪 | 1 | 1 |
 | 太平公主传 | 1 | 1 |
+| 太平御览 | 3 | 1 |
+| 孙和传 | 1 | 1 |
 | 宁宗本纪 | 1 | 1 |
 | 宋书 | 7 | 5 |
 | 宋史 | 106 | 23 |
 | 宣宗本纪 | 1 | 1 |
 | 宦官传 | 1 | 1 |
 | 宪宗本纪 | 1 | 1 |
-| 左传 | 9 | 8 |
+| 左传 | 20 | 11 |
+| 庄子 | 1 | 1 |
 | 庄烈帝本纪 | 1 | 1 |
 | 庞统传 | 1 | 1 |
 | 建炎以来系年要录 | 1 | 1 |
@@ -64,6 +71,7 @@
 | 徐达传 | 1 | 1 |
 | 成祖本纪 | 1 | 1 |
 | 战国策 | 1 | 1 |
+| 文帝纪 | 1 | 1 |
 | 新五代史 | 25 | 2 |
 | 新唐书 | 54 | 6 |
 | 方伎传 | 1 | 1 |
@@ -73,15 +81,18 @@
 | 明史 | 63 | 18 |
 | 明季北略 | 1 | 1 |
 | 明季南略 | 1 | 1 |
-| 晋书 | 51 | 31 |
+| 晋书 | 77 | 42 |
 | 晏子春秋 | 1 | 1 |
+| 景帝纪 | 1 | 1 |
 | 朱升传 | 1 | 1 |
 | 朱泚传 | 1 | 1 |
 | 李定国传 | 1 | 1 |
 | 李愬传 | 1 | 1 |
 | 李晟传 | 1 | 1 |
+| 杜预传 | 1 | 1 |
 | 梁书 | 6 | 3 |
 | 梦溪笔谈 | 2 | 1 |
+| 楚辞 | 1 | 1 |
 | 武帝纪 | 1 | 1 |
 | 汉书 | 29 | 19 |
 | 洛阳伽蓝记 | 1 | 1 |
@@ -92,11 +103,13 @@
 | 牛僧孺传 | 1 | 1 |
 | 王世充传 | 1 | 1 |
 | 王守仁传 | 1 | 1 |
-| 王濬传 | 1 | 1 |
+| 王濬传 | 2 | 1 |
+| 秃发树机能载记 | 1 | 1 |
 | 秦桧传 | 1 | 1 |
 | 窦建德传 | 1 | 1 |
 | 童贯传 | 1 | 1 |
-| 竹书纪年 | 1 | 1 |
+| 竹书纪年 | 23 | 1 |
+| 纪年 | 5 | 1 |
 | 续资治通鉴长编 | 2 | 1 |
 | 胡惟庸传 | 1 | 1 |
 | 艺文志 | 1 | 1 |
@@ -104,11 +117,11 @@
 | 苏轼传 | 1 | 1 |
 | 范仲淹传 | 1 | 1 |
 | 蓝玉传 | 1 | 1 |
-| 蜀书 | 4 | 3 |
+| 蜀书 | 5 | 4 |
 | 袁崇焕传 | 1 | 1 |
 | 论语 | 1 | 1 |
 | 贾诩传 | 1 | 1 |
-| 资治通鉴 | 2 | 2 |
+| 资治通鉴 | 18 | 4 |
 | 辽史 | 24 | 2 |
 | 选举志 | 1 | 1 |
 | 郭嘉传 | 1 | 1 |
@@ -119,21 +132,33 @@
 | 陈书 | 2 | 2 |
 | 隋书 | 25 | 3 |
 | 青楼集 | 1 | 1 |
+| 韩诗外传 | 1 | 1 |
+| 韩非子 | 2 | 2 |
 | 食货志 | 4 | 1 |
 | 高僧传 | 1 | 1 |
 | 高宗本纪 | 1 | 1 |
 | 魏书 | 13 | 10 |
 | 魏忠贤传 | 1 | 1 |
 
-## 3. 标签清单（全部 363 个）
+## 3. 标签清单（全部 411 个）
 
 | 标签 | 书目 | 篇/章 | 引用次数 | 事件 |
 |---|---|---|---:|---|
+| 丁奉传 | 丁奉传 | — | 1 | sanguo-sunchenfeilianglixiusunxiuzhuchen-17 |
+| 三国史记·高句丽本纪 | 三国史记 | 高句丽本纪 | 1 | sanguo-guanqiujianzhenggaojuli-07 |
+| 三国志·三少帝纪 | 三国志 | 三少帝纪 | 1 | sanguo-simashifeicaofanglicaomao-13 |
+| 三国志·吴主传 | 三国志 | 吴主传 | 2 | sanguo-sunquanergongzhizhengliaojie-08、sanguo-sunquanzuzhugekefuzheng-11 |
 | 三国志·吴书·吴主传 | 三国志 | 吴书·吴主传 | 1 | sanguo-06 |
 | 三国志·吴书·周瑜传 | 三国志 | 吴书·周瑜传 | 1 | handong-chibi |
 | 三国志·吴书·孙破虏传 | 三国志 | 吴书·孙破虏传 | 1 | hanmo-01 |
 | 三国志·吴书·孙讨逆传 | 三国志 | 吴书·孙讨逆传 | 2 | hanmo-03、hanmo-09 |
 | 三国志·吴书·陆逊传 | 三国志 | 吴书·陆逊传 | 1 | sanguo-02 |
+| 三国志·孙休传 | 三国志 | 孙休传 | 1 | sanguo-sunchenfeilianglixiusunxiuzhuchen-17 |
+| 三国志·孙皓传 | 三国志 | 孙皓传 | 1 | xijin-jinmiewusanjiaguijin-06 |
+| 三国志·明帝纪 | 三国志 | 明帝纪 | 1 | sanguo-weimingdituogu-05 |
+| 三国志·曹爽传 | 三国志 | 曹爽传 | 1 | sanguo-caoshuangluoguzhiyi-06 |
+| 三国志·毌丘俭传 | 三国志 | 毌丘俭传 | 2 | sanguo-guanqiujianwenqinzhipanhuainanerpan-15、sanguo-guanqiujianzhenggaojuli-07 |
+| 三国志·王凌传 | 三国志 | 王凌传 | 1 | sanguo-wanglingzhipan-10 |
 | 三国志·蜀书·先主传 | 三国志 | 蜀书·先主传 | 6 | handong-liubeiquyizhou-06、hanmo-02、hanmo-04… |
 | 三国志·蜀书·关羽传 | 三国志 | 蜀书·关羽传 | 1 | handong-fanchang |
 | 三国志·蜀书·刘二牧传 | 三国志 | 蜀书·刘二牧传 | 1 | hanmo-16 |
@@ -142,6 +167,9 @@
 | 三国志·蜀书·马良传 | 三国志 | 蜀书·马良传 | 1 | sanguo-05 |
 | 三国志·蜀书·魏延传 | 三国志 | 蜀书·魏延传 | 1 | hanmo-19 |
 | 三国志·蜀书·黄忠传 | 三国志 | 蜀书·黄忠传 | 2 | handong-hanzhongzhizhanxiangfanzhizhanxiqujingzh-08、hanmo-18 |
+| 三国志·诸葛恪传 | 三国志 | 诸葛恪传 | 1 | sanguo-zhugekexinchengbaisunjunzhuke-12 |
+| 三国志·诸葛诞传 | 三国志 | 诸葛诞传 | 1 | sanguo-zhugedanzhipanhuainansanpan-16 |
+| 三国志·陆抗传 | 三国志 | 陆抗传 | 2 | sanguo-lukangzu-19、xijin-yanghududujingzhou-03 |
 | 三国志·魏书·公孙瓒传 | 三国志 | 魏书·公孙瓒传 | 1 | hanmo-08 |
 | 三国志·魏书·典韦传 | 三国志 | 魏书·典韦传 | 1 | hanmo-06 |
 | 三国志·魏书·刘表传 | 三国志 | 魏书·刘表传 | 1 | hanmo-12 |
@@ -151,10 +179,11 @@
 | 三国志·魏书·文帝纪 | 三国志 | 魏书·文帝纪 | 1 | handong-han-fall |
 | 三国志·魏书·武帝纪 | 三国志 | 魏书·武帝纪 | 5 | handong-beizhengwuhuansangumaolu-04、handong-caocao-emperor、handong-guandu… |
 | 三国志·魏书·诸夏侯曹传 | 三国志 | 魏书·诸夏侯曹传 | 1 | sanguo-08 |
-| 三国志·魏书·邓艾传 | 三国志 | 魏书·邓艾传 | 2 | sanguo-10、sanguo-mieshudaiweimiewu-05 |
+| 三国志·魏书·邓艾传 | 三国志 | 魏书·邓艾传 | 2 | sanguo-10、sanguo-mieshudaiweimiewu-18 |
 | 三国志·魏书·陈群传 | 三国志 | 魏书·陈群传 | 1 | sanguo-jiupinzhongzhengzhichuangli-01 |
 | 三朝北盟会编 | 三朝北盟会编 | — | 1 | jin-jinjueqiyuhaishangzhimeng-01 |
 | 三杨传 | 三杨传 | — | 1 | ming-renxuanzhizhi-05 |
+| 世本·作篇 | 世本 | 作篇 | 1 | xia-zhuzuojiadun-18 |
 | 于谦传 | 于谦传 | — | 1 | ming-tumubaozhibianbeijingbaoweizhan-06 |
 | 仆固怀恩传 | 仆固怀恩传 | — | 1 | tang-fanzhenyuhuanguangejuxingcheng-10 |
 | 俞大猷传 | 俞大猷传 | — | 1 | ming-wohuanyukangwo-10 |
@@ -187,7 +216,7 @@
 | 史记·吴王濞列传 | 史记 | 吴王濞列传 | 1 | han-seven-states |
 | 史记·周本纪 | 史记 | 周本纪 | 21 | chunqiu-01、chunqiu-03、chunqiu-19… |
 | 史记·商君列传 | 史记 | 商君列传 | 2 | zhanguo-08、zhanguo-10 |
-| 史记·夏本纪 | 史记 | 夏本纪 | 16 | shang-02、xia-01、xia-02… |
+| 史记·夏本纪 | 史记 | 夏本纪 | 30 | shang-02、xia-01、xia-02… |
 | 史记·大宛列传 | 史记 | 大宛列传 | 3 | han-zhang-qian、xihan-dawan、xihan-zhangqian-again |
 | 史记·孔子世家 | 史记 | 孔子世家 | 3 | chunqiu-40、chunqiu-45、chunqiu-kongzichuangliruxue-04 |
 | 史记·孙子吴起列传 | 史记 | 孙子吴起列传 | 4 | chunqiu-29、zhanguo-04、zhanguo-07… |
@@ -221,6 +250,7 @@
 | 史记·范睢蔡泽列传 | 史记 | 范睢蔡泽列传 | 1 | zhanguo-30 |
 | 史记·蒙恬列传 | 史记 | 蒙恬列传 | 2 | qin-great-wall、qin-xiongnu |
 | 史记·赵世家 | 史记 | 赵世家 | 2 | zhanguo-21、zhanguo-22 |
+| 史记·越王勾践世家 | 史记 | 越王勾践世家 | 1 | xia-shaokangfengwuyuyuhuiji-15 |
 | 史记·越王句践世家 | 史记 | 越王句践世家 | 3 | chunqiu-32、chunqiu-33、zhanguo-01 |
 | 史记·郑世家 | 史记 | 郑世家 | 2 | chunqiu-02、chunqiu-24 |
 | 史记·陈涉世家 | 史记 | 陈涉世家 | 1 | qin-daze-uprising |
@@ -230,6 +260,7 @@
 | 史记·魏公子列传 | 史记 | 魏公子列传 | 2 | zhanguo-32、zhanguo-36 |
 | 史记·鲁周公世家 | 史记 | 鲁周公世家 | 2 | xizhou-04、xizhou-08 |
 | 史记·齐太公世家 | 史记 | 齐太公世家 | 6 | chunqiu-05、chunqiu-07、chunqiu-09… |
+| 后汉书·东夷传 | 后汉书 | 东夷传 | 2 | xia-huaishijiuyilaichao-20、xia-xiejiajiuyijueming-24 |
 | 后汉书·儒林传 | 后汉书 | 儒林传 | 2 | handong-baihuguan、handong-shuowen |
 | 后汉书·光武帝纪 | 后汉书 | 光武帝纪 | 3 | handong-dutian、handong-founded、xihan-kunyang |
 | 后汉书·党锢列传 | 后汉书 | 党锢列传 | 2 | handong-danggu-1、handong-danggu-2 |
@@ -261,17 +292,22 @@
 | 吕氏春秋·顺民 | 吕氏春秋 | 顺民 | 1 | shang-tangdaosanglin-03 |
 | 吴书·吕蒙传 | 吴书 | 吕蒙传 | 1 | handong-hanzhongzhizhanxiangfanzhizhanxiqujingzh-08 |
 | 吴书·吴主传 | 吴书 | 吴主传 | 1 | handong-caocaoquhanzhongxiangshuihuajie-07 |
+| 吴越春秋 | 吴越春秋 | — | 1 | xia-shaokangfengwuyuyuhuiji-15 |
 | 周书·卢辩传 | 周书 | 卢辩传 | 1 | weijin-beizhou-guanzhi |
 | 周书·文帝纪 | 周书 | 文帝纪 | 1 | weijin-shayuan |
 | 周书·武帝纪 | 周书 | 武帝纪 | 2 | nanbeichao-10、nanbeichao-zhouwudimiefo-07 |
 | 周书·苏绰传 | 周书 | 苏绰传 | 1 | weijin-liutiao |
 | 哀帝本纪 | 哀帝本纪 | — | 1 | tang-huangchaoqiyiyutangchaomiewang-17 |
+| 国语·周语下 | 国语 | 周语下 | 2 | xia-kongjiajiwei-30、xia-kongjialuanxiazhuhoushipan-31 |
 | 国语·晋语 | 国语 | 晋语 | 1 | xizhou-baosihuozhoufeidilishu-02 |
+| 国语·晋语一 | 国语 | 晋语一 | 1 | xia-jiefayoushidemoxi-37 |
 | 地理志 | 地理志 | — | 1 | tang-jingyingxiyu-04 |
 | 墨子·公输 | 墨子 | 公输 | 1 | zhanguo-49 |
 | 大唐西域记 | 大唐西域记 | — | 1 | tang-zhenggaojulixuanzangguiguo-05 |
 | 太宗本纪 | 太宗本纪 | — | 1 | beisong-tongyinanbei-02 |
 | 太平公主传 | 太平公主传 | — | 1 | tang-tanglongxiantianliangzhengbian-08 |
+| 太平御览 | 太平御览 | — | 3 | xia-jinqianxihe-29、xia-zhuzhengdongyi-17、xia-zhuzuojiadun-18 |
+| 孙和传 | 孙和传 | — | 1 | sanguo-sunquanergongzhizhengliaojie-08 |
 | 宁宗本纪 | 宁宗本纪 | — | 1 | nansong-kaixibeifayujiadingheyi-06 |
 | 宋书 | 宋书 | — | 1 | nanbeichao-13 |
 | 宋书·文帝纪 | 宋书 | 文帝纪 | 1 | weijin-yuanjia |
@@ -306,12 +342,16 @@
 | 宪宗本纪 | 宪宗本纪 | — | 1 | tang-hanyujianyingfogu-15 |
 | 左传·僖公二十二年 | 左传 | 僖公二十二年 | 1 | chunqiu-hongshuizhizhan-02 |
 | 左传·僖公四年 | 左传 | 僖公四年 | 1 | chunqiu-zhaolingzhimeng-01 |
+| 左传·哀元年 | 左传 | 哀元年 | 7 | xia-bomibenyougeshouxiazhong-10、xia-houzhumieyiyuge-13、xia-shaokangbenyouyu-08… |
 | 左传·哀公七年 | 左传 | 哀公七年 | 1 | xia-tushanzhihui-02 |
+| 左传·哀公元年 | 左传 | 哀公元年 | 2 | xia-hanzhuomiexiang-06、xia-shaokangchusheng-07 |
 | 左传·宣公十五年 | 左传 | 宣公十五年 | 1 | chunqiu-luguochushuimu-03 |
+| 左传·昭公二十九年 | 左传 | 昭公二十九年 | 2 | xia-kongjiachulongliuleihuanlong-32、xia-liuleijutao-33 |
 | 左传·昭公六年 | 左传 | 昭公六年 | 1 | chunqiu-42 |
 | 左传·昭公四年 | 左传 | 昭公四年 | 1 | xia-qijianxiajuntaizhixiang-01 |
 | 左传·襄公二十七年 | 左传 | 襄公二十七年 | 1 | chunqiu-41 |
 | 左传·襄公四年 | 左传 | 襄公四年 | 2 | xia-hanzhuocuanxia-05、xia-houyidaixia-04 |
+| 庄子·人间世 | 庄子 | 人间世 | 1 | xia-jieshaguanlongpang-38 |
 | 庄烈帝本纪 | 庄烈帝本纪 | — | 1 | ming-nongminqiyimingchaomiewang-16 |
 | 庞统传 | 庞统传 | — | 1 | handong-liubeiquyizhou-06 |
 | 建炎以来系年要录 | 建炎以来系年要录 | — | 1 | nansong-jianyannandu-01 |
@@ -321,6 +361,7 @@
 | 徐达传 | 徐达传 | — | 1 | yuan-miezhangshichengbeifajianming-05 |
 | 成祖本纪 | 成祖本纪 | — | 1 | ming-yongledadianchengshuqiandubeijing-04 |
 | 战国策 | 战国策 | — | 1 | zhanguo-hezonglianheng-01 |
+| 文帝纪 | 文帝纪 | — | 1 | sanguo-simazhaojizhangweizheng-14 |
 | 新五代史 | 新五代史 | — | 24 | wudai-01、wudai-02、wudai-03… |
 | 新五代史·梁本纪 | 新五代史 | 梁本纪 | 1 | tang-huangchaoqiyiyutangchaomiewang-17 |
 | 新唐书 | 新唐书 | — | 49 | tang-01、tang-02、tang-03… |
@@ -374,19 +415,25 @@
 | 晋书·冉闵载记 | 晋书 | 冉闵载记 | 1 | dongjin-ranminmiehouzhao-03 |
 | 晋书·刘元海载记 | 晋书 | 刘元海载记 | 1 | xijin-05 |
 | 晋书·后妃传 | 晋书 | 后妃传 | 1 | weijin-taizifei |
+| 晋书·周处传·惠帝纪 | 晋书 | 周处传·惠帝纪 | 1 | xijin-qiwannianfanjinzhouchuzhansi-12 |
 | 晋书·姚苌载记 | 晋书 | 姚苌载记 | 1 | dongjin-beifangzaifenliehouyanhouqinbingli-09 |
 | 晋书·孙恩传 | 晋书 | 孙恩传 | 1 | dongjin-sunenluxunqiyi-11 |
-| 晋书·宣帝纪 | 晋书 | 宣帝纪 | 1 | sanguo-simayipingdingliaodong-04 |
+| 晋书·宣帝纪 | 晋书 | 宣帝纪 | 4 | sanguo-simayipingdingliaodong-04、sanguo-simayizusimashijizheng-09、sanguo-wanglingzhipan-10… |
 | 晋书·嵇康传 | 晋书 | 嵇康传 | 2 | sanguo-09、weijin-zhulin |
 | 晋书·废帝纪 | 晋书 | 废帝纪 | 1 | dongjin-huanwenfeidilijianwen-07 |
+| 晋书·张华传·惠贾皇后传 | 晋书 | 张华传·惠贾皇后传 | 1 | xijin-jiahouzhuanzhengzhanghuafuzheng-10 |
 | 晋书·怀帝纪 | 晋书 | 怀帝纪 | 1 | xijin-06 |
 | 晋书·惠帝纪 | 晋书 | 惠帝纪 | 2 | xijin-03、xijin-04 |
+| 晋书·惠帝纪·杨骏传·惠贾皇后传 | 晋书 | 惠帝纪·杨骏传·惠贾皇后传 | 1 | xijin-wudizuhuidijiweiyangjunfuzheng-09 |
+| 晋书·惠贾皇后传·杨骏传·楚王玮传 | 晋书 | 惠贾皇后传·杨骏传·楚王玮传 | 1 | xijin-jiahouzhuyangjunbawangzhiluanxumu-11 |
 | 晋书·愍帝纪 | 晋书 | 愍帝纪 | 1 | xijin-07 |
-| 晋书·文帝纪 | 晋书 | 文帝纪 | 2 | weijin-fengjinwang、weijin-shmaohuan |
-| 晋书·景帝纪 | 晋书 | 景帝纪 | 2 | weijin-feicaofang、weijin-simashi-zhuanquan |
+| 晋书·愍怀太子传·惠贾皇后传 | 晋书 | 愍怀太子传·惠贾皇后传 | 1 | xijin-jiahoufeitaizisimayu-13 |
+| 晋书·成都王颖传·河间王颙传·长沙王乂传 | 晋书 | 成都王颖传·河间王颙传·长沙王乂传 | 1 | xijin-chengduwangyingxiedizhangfangruluo-18 |
+| 晋书·文帝纪 | 晋书 | 文帝纪 | 3 | sanguo-zhugedanzhipanhuainansanpan-16、weijin-fengjinwang、weijin-shmaohuan |
+| 晋书·景帝纪 | 晋书 | 景帝纪 | 5 | sanguo-guanqiujianwenqinzhipanhuainanerpan-15、sanguo-simashifeicaofanglicaomao-13、sanguo-simazhaojizhangweizheng-14… |
 | 晋书·桓温传 | 晋书 | 桓温传 | 5 | dongjin-05、dongjin-huanwenbeifafangtouzhizhan-06、dongjin-huanwenbeifaguanzhongbashangzhishi-05… |
 | 晋书·桓玄传 | 晋书 | 桓玄传 | 1 | dongjin-09 |
-| 晋书·武帝纪 | 晋书 | 武帝纪 | 2 | sanguo-mieshudaiweimiewu-05、xijin-01 |
+| 晋书·武帝纪 | 晋书 | 武帝纪 | 6 | sanguo-mieshudaiweimiewu-18、xijin-01、xijin-dafengzongshimaibawangzhihuo-08… |
 | 晋书·殷浩传 | 晋书 | 殷浩传 | 1 | weijin-feiyinhao |
 | 晋书·王敦传 | 晋书 | 王敦传 | 1 | dongjin-02 |
 | 晋书·王濬传 | 晋书 | 王濬传 | 1 | xijin-02 |
@@ -394,23 +441,31 @@
 | 晋书·石勒载记 | 晋书 | 石勒载记 | 2 | dongjin-03、dongjin-shilejianlihouzhao-01 |
 | 晋书·石崇传 | 晋书 | 石崇传 | 2 | weijin-doufu、weijin-jingu |
 | 晋书·祖逖传 | 晋书 | 祖逖传 | 2 | weijin-wenji、weijin-zhongliu |
-| 晋书·羊祜传 | 晋书 | 羊祜传 | 2 | weijin-jingzhou、weijin-yanglu |
+| 晋书·羊祜传 | 晋书 | 羊祜传 | 6 | sanguo-lukangzu-19、weijin-jingzhou、weijin-yanglu… |
 | 晋书·苻坚载记 | 晋书 | 苻坚载记 | 5 | dongjin-06、dongjin-qianqintongyibeifang-08、dongjin-yaochangyishafujian-10… |
 | 晋书·谢安传 | 晋书 | 谢安传 | 1 | weijin-xiean-huanwen |
 | 晋书·谢玄传 | 晋书 | 谢玄传 | 3 | dongjin-07、weijin-beifu、weijin-xiexuan-beifa |
+| 晋书·赵王伦传·惠贾皇后传 | 晋书 | 赵王伦传·惠贾皇后传 | 1 | xijin-zhaowanglunzhujiahoushataizi-14 |
+| 晋书·赵王伦传·齐王冏传·成都王颖传 | 晋书 | 赵王伦传·齐王冏传·成都王颖传 | 1 | xijin-zhaowangluncuanweisanwangqiyi-15 |
+| 晋书·长沙王乂传·齐王冏传 | 晋书 | 长沙王乂传·齐王冏传 | 1 | xijin-changshawangyizhujiongyizhuanzheng-17 |
 | 晋书·阮籍传 | 晋书 | 阮籍传 | 1 | weijin-dazui |
 | 晋书·陆机传 | 晋书 | 陆机传 | 1 | weijin-erlu |
 | 晋书·陶潜传 | 晋书 | 陶潜传 | 1 | weijin-wudoumi |
+| 晋书·食货志·武帝纪 | 晋书 | 食货志·武帝纪 | 1 | xijin-taikangzhizhibanzhantianzhi-07 |
+| 晋书·齐王冏传 | 晋书 | 齐王冏传 | 1 | xijin-qiwangjiongzhuanzheng-16 |
 | 晏子春秋·内篇杂下 | 晏子春秋 | 内篇杂下 | 1 | chunqiu-43 |
+| 景帝纪 | 景帝纪 | — | 1 | sanguo-simayizusimashijizheng-09 |
 | 朱升传 | 朱升传 | — | 1 | yuan-zhuyuanzhangjueqi-04 |
 | 朱泚传 | 朱泚传 | — | 1 | tang-jingyuanbingbian-13 |
 | 李定国传 | 李定国传 | — | 1 | ming-nanmingyumingzheng-17 |
 | 李愬传 | 李愬传 | — | 1 | tang-yuanhezhongxingxueyerucaizhou-14 |
 | 李晟传 | 李晟传 | — | 1 | tang-jingyuanbingbian-13 |
+| 杜预传 | 杜预传 | — | 1 | xijin-yanghuzuduyudaizhenjingzhou-05 |
 | 梁书 | 梁书 | — | 2 | nanbeichao-14、nanbeichao-15 |
 | 梁书·侯景传 | 梁书 | 侯景传 | 2 | nanbeichao-08、weijin-houjing-pan |
 | 梁书·陈庆之传 | 梁书 | 陈庆之传 | 2 | weijin-baipao、weijin-luoyang |
 | 梦溪笔谈 | 梦溪笔谈 | — | 2 | beisong-bishenghuoziyinshua-06、beisong-jingjiyukejifanrong-07 |
+| 楚辞·离骚 | 楚辞 | 离骚 | 1 | xia-shaokangzhongxing-14 |
 | 武帝纪 | 武帝纪 | — | 1 | handong-wangyunzhudongzhuocaocaoshouqingzhoubing-03 |
 | 汉书 | 汉书 | — | 2 | xihan-tuien、xihan-wenjing |
 | 汉书·傅介子传 | 汉书 | 傅介子传 | 1 | xihan-fujiezi |
@@ -442,11 +497,13 @@
 | 牛僧孺传 | 牛僧孺传 | — | 1 | tang-niulidangzheng-16 |
 | 王世充传 | 王世充传 | — | 1 | tang-tongyizhanzheng-02 |
 | 王守仁传 | 王守仁传 | — | 1 | ming-liujinluanzhengwangyangmingxinxuepingche-08 |
-| 王濬传 | 王濬传 | — | 1 | sanguo-mieshudaiweimiewu-05 |
+| 王濬传 | 王濬传 | — | 2 | sanguo-mieshudaiweimiewu-18、xijin-jinmiewusanjiaguijin-06 |
+| 秃发树机能载记 | 秃发树机能载记 | — | 1 | xijin-tufashujinengfanjin-02 |
 | 秦桧传 | 秦桧传 | — | 1 | nansong-yuefeikangjinyushaoxingheyi-02 |
 | 窦建德传 | 窦建德传 | — | 1 | tang-tongyizhanzheng-02 |
 | 童贯传 | 童贯传 | — | 1 | beisong-huizongchaoluanzheng-13 |
-| 竹书纪年 | 竹书纪年 | — | 1 | shang-wudingzhengguifang-05 |
+| 竹书纪年 | 竹书纪年 | — | 23 | shang-wudingzhengguifang-05、xia-bomibenyougeshouxiazhong-10、xia-bujiangfajiuyuan-26… |
+| 纪年 | 纪年 | — | 5 | xia-huaishijiuyilaichao-20、xia-jinqianxihe-29、xia-xiejiajiuyijueming-24… |
 | 续资治通鉴长编 | 续资治通鉴长编 | — | 2 | beisong-xinjiudangzhengyuanyougenghua-09、xixia-08 |
 | 胡惟庸传 | 胡惟庸传 | — | 1 | ming-hongwusidaan-01 |
 | 艺文志 | 艺文志 | — | 1 | ming-yongledadianchengshuqiandubeijing-04 |
@@ -455,13 +512,16 @@
 | 范仲淹传 | 范仲淹传 | — | 1 | beisong-songxiazhanzhengyuqingliheyi-05 |
 | 蓝玉传 | 蓝玉传 | — | 1 | ming-hongwusidaan-01 |
 | 蜀书·先主传 | 蜀书 | 先主传 | 2 | handong-caocaoquhanzhongxiangshuihuajie-07、handong-weinanzhizhanliubeirushu-05 |
-| 蜀书·姜维传 | 蜀书 | 姜维传 | 1 | sanguo-mieshudaiweimiewu-05 |
+| 蜀书·姜维传 | 蜀书 | 姜维传 | 1 | sanguo-mieshudaiweimiewu-18 |
+| 蜀书·王平传 | 蜀书 | 王平传 | 1 | sanguo-caoshuangluoguzhiyi-06 |
 | 蜀书·诸葛亮传 | 蜀书 | 诸葛亮传 | 1 | handong-beizhengwuhuansangumaolu-04 |
 | 袁崇焕传 | 袁崇焕传 | — | 1 | ming-houjinjueqisaerhuningyuan-15 |
 | 论语 | 论语 | — | 1 | chunqiu-kongzichuangliruxue-04 |
 | 贾诩传 | 贾诩传 | — | 1 | handong-weinanzhizhanliubeirushu-05 |
 | 资治通鉴 | 资治通鉴 | — | 1 | tang-50 |
+| 资治通鉴·晋纪 | 资治通鉴 | 晋纪 | 12 | xijin-changshawangyizhujiongyizhuanzheng-17、xijin-chengduwangyingxiedizhangfangruluo-18、xijin-dafengzongshimaibawangzhihuo-08… |
 | 资治通鉴·秦纪一 | 资治通鉴 | 秦纪一 | 1 | zhanguo-hanfeiruqin-03 |
+| 资治通鉴·魏纪 | 资治通鉴 | 魏纪 | 4 | sanguo-guanqiujianwenqinzhipanhuainanerpan-15、sanguo-sunchenfeilianglixiusunxiuzhuchen-17、sanguo-sunquanergongzhizhengliaojie-08… |
 | 辽史 | 辽史 | — | 23 | beisong-16、beisong-17、beisong-19… |
 | 辽史·百官志 | 辽史 | 百官志 | 1 | liao-nanbeimianguanzhi-01 |
 | 选举志 | 选举志 | — | 1 | beisong-jiquanzhidujianshe-01 |
@@ -470,7 +530,7 @@
 | 金史 | 金史 | — | 31 | beisong-32、beisong-34、jin-01… |
 | 金史·哀宗本纪 | 金史 | 哀宗本纪 | 1 | nansong-menggujueqilianmengmiejin-07 |
 | 金史·太祖本纪 | 金史 | 太祖本纪 | 1 | jin-jinjueqiyuhaishangzhimeng-01 |
-| 钟会传 | 钟会传 | — | 1 | sanguo-mieshudaiweimiewu-05 |
+| 钟会传 | 钟会传 | — | 1 | sanguo-mieshudaiweimiewu-18 |
 | 陆九渊集 | 陆九渊集 | — | 1 | nansong-17 |
 | 陈书 | 陈书 | — | 1 | nanbeichao-15 |
 | 陈书·高祖纪 | 陈书 | 高祖纪 | 1 | nanbeichao-chenbaxianxishawangsengbian-06 |
@@ -478,6 +538,9 @@
 | 隋书·韩擒虎传 | 隋书 | 韩擒虎传 | 1 | nanbeichao-12 |
 | 隋书·高祖纪 | 隋书 | 高祖纪 | 2 | nanbeichao-11、weijin-beizhou-waiqi |
 | 青楼集 | 青楼集 | — | 1 | yuan-yuanzajuxingsheng-03 |
+| 韩诗外传 | 韩诗外传 | — | 1 | xia-jieshaguanlongpang-38 |
+| 韩非子·十过 | 韩非子 | 十过 | 1 | xia-jiejiweizhuqinggong-36 |
+| 韩非子·难三 | 韩非子 | 难三 | 1 | xia-jiefayoushidemoxi-37 |
 | 食货志 | 食货志 | — | 4 | beisong-wanganshibianfa-10、ming-kaiguozhidujianshe-02、ming-zhangjuzhenggaige-12… |
 | 高僧传 | 高僧传 | — | 1 | handong-fojiaodongchuanjianbaimasi-02 |
 | 高宗本纪 | 高宗本纪 | — | 1 | nansong-yuefeikangjinyushaoxingheyi-02 |
@@ -497,10 +560,10 @@
 
 1. **彩蛋事件 `special-star-1893`**：`EVENT_SOURCES` 为空数组、`EVENT_SOURCE_STATUS` 为 `easter_egg`，
    不得参与事实回答，也不得作为引用来源。
-2. **裴注引**：`hanmo-10`、`sanguo-zhugeliangwucibeifa-03` 的括注为
+2. **裴注引**：`hanmo-10`、`sanguo-sunquanzuzhugekefuzheng-11`、`sanguo-zhugeliangwucibeifa-03`、`xia-shaokangbenyouyu-08` 的括注为
    「据《三国志·蜀书·诸葛亮传》裴注引《襄阳记》」。按 1 条引用计：
    `label = 三国志·蜀书·诸葛亮传`，`raw` 保留完整括注（含裴注引原文），避免把转引来源伪装成主要来源。
-3. **括注尾注**：41 条事件的括注在书名后还有说明（如「年代依夏商周断代工程推定」），
+3. **括注尾注**：75 条事件的括注在书名后还有说明（如「年代依夏商周断代工程推定」），
    这些说明保留在 `raw` 中，不单独生成引用条目。
 4. **不修改 description 原文**：本卡只做抽取，正文保持 V0.9.0 的展示与 diff 口径。
 
@@ -515,24 +578,24 @@
 
 ## 6. 人工抽查记录（2 书并列 ≥10%）
 
-> 抽查比例要求 ≥10%（183 条 2 书事件 → 至少 19 条）。
+> 抽查比例要求 ≥10%（238 条 2 书事件 → 至少 24 条）。
 > 下表按事件 id 排序等距抽取 12 条，自动校验项为「两个 label 均出现在 raw 中、book 非空、label 可回查」；
 > 人工结论请在「复核」列签字后本卡才算通过评审。
 
 | 事件 | 标签 A | 标签 B | raw 片段 | 自动校验 | 复核 |
 |---|---|---|---|---|---|
 | beisong-16 | 宋史 | 辽史 | （据《宋史》《辽史》） | 通过 | 待人工复核 |
-| chunqiu-luguochushuimu-03 | 左传·宣公十五年 | 公羊传·宣公十五年 | （据《左传·宣公十五年》《公羊传·宣公十五年》） | 通过 | 待人工复核 |
-| jin-15 | 金史 | 元史 | （据《金史》《元史》） | 通过 | 待人工复核 |
-| ming-liujinluanzhengwangyangmingxinxuepingche-08 | 明史·刘瑾传 | 王守仁传 | （据《明史·刘瑾传》《王守仁传》） | 通过 | 待人工复核 |
-| nansong-14 | 宋史 | 金史 | （据《宋史》《金史》） | 通过 | 待人工复核 |
-| nansong-xiangyangbaoweizhan-09 | 宋史·吕文焕传 | 元史·世祖纪 | （据《宋史·吕文焕传》《元史·世祖纪》；《宋史·瀛国公本纪》《元史》） | 通过 | 待人工复核 |
-| tang-12 | 旧唐书 | 新唐书 | （据《旧唐书》《新唐书》） | 通过 | 待人工复核 |
-| tang-27 | 旧唐书 | 新唐书 | （据《旧唐书》《新唐书》） | 通过 | 待人工复核 |
+| handong-fojiaodongchuanjianbaimasi-02 | 后汉书·西域传 | 高僧传 | （据《后汉书·西域传》；《高僧传》《洛阳伽蓝记》） | 通过 | 待人工复核 |
+| ming-21 | 明史 | 元史 | （据《明史》《元史》） | 通过 | 待人工复核 |
+| nanbeichao-15 | 陈书 | 梁书 | （据《陈书》《梁书》） | 通过 | 待人工复核 |
+| nansong-yuefeikangjinyushaoxingheyi-02 | 宋史·岳飞传 | 秦桧传 | （据《宋史·岳飞传》《秦桧传》《高宗本纪》） | 通过 | 待人工复核 |
+| tang-04 | 旧唐书 | 新唐书 | （据《旧唐书》《新唐书》） | 通过 | 待人工复核 |
+| tang-23 | 旧唐书 | 新唐书 | （据《旧唐书》《新唐书》） | 通过 | 待人工复核 |
 | tang-42 | 旧唐书 | 新唐书 | （据《旧唐书》《新唐书》） | 通过 | 待人工复核 |
-| tang-jingyuanbingbian-13 | 旧唐书·德宗本纪 | 朱泚传 | （据《旧唐书·德宗本纪》《朱泚传》《李晟传》） | 通过 | 待人工复核 |
-| wudai-07 | 旧五代史 | 新五代史 | （据《旧五代史》《新五代史》） | 通过 | 待人工复核 |
-| wudai-22 | 旧五代史 | 新五代史 | （据《旧五代史》《新五代史》） | 通过 | 待人工复核 |
+| tang-tanglongxiantianliangzhengbian-08 | 旧唐书·玄宗本纪 | 太平公主传 | （据《旧唐书·玄宗本纪》《太平公主传》） | 通过 | 待人工复核 |
+| wudai-15 | 旧五代史 | 新五代史 | （据《旧五代史》《新五代史》） | 通过 | 待人工复核 |
+| xia-jieshaguanlongpang-38 | 韩诗外传 | 庄子·人间世 | （据《韩诗外传》《庄子·人间世》《竹书纪年》；年代依夏商周断代工程推定） | 通过 | 待人工复核 |
+| xijin-changshawangyizhujiongyizhuanzheng-17 | 晋书·长沙王乂传·齐王冏传 | 资治通鉴·晋纪 | （据《晋书·长沙王乂传·齐王冏传》《资治通鉴·晋纪》） | 通过 | 待人工复核 |
 
 ## 7. 校验命令
 

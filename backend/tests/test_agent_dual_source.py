@@ -23,7 +23,9 @@ CHIBI_EVENT = "handong-chibi"
 ZHOUYU = "p-zhouyu-b475"
 
 
-def _grounded(evidence: list[dict[str, Any]], claims: list[dict[str, Any]]) -> ModelAnswer:
+def _grounded(
+    evidence: list[dict[str, Any]], claims: list[dict[str, Any]]
+) -> ModelAnswer:
     return ModelAnswer.model_validate(
         {
             "mode": "grounded",
@@ -76,13 +78,18 @@ def test_check_dual_source_coverage_by_focus(toolkit: Any) -> None:
         entity for entity in observed.entities.values() if entity.kind == "person"
     ]
     timeline_entities = [
-        entity for entity in observed.entities.values() if entity.kind in ("event", "rag")
+        entity
+        for entity in observed.entities.values()
+        if entity.kind in ("event", "rag")
     ]
     assert check_dual_source_coverage(graph_entities, "person") is None
     assert check_dual_source_coverage(timeline_entities, "person") is not None
     assert check_dual_source_coverage(timeline_entities, "event") is None
     assert check_dual_source_coverage(graph_entities, "event") is not None
-    assert source_coverage(graph_entities) == {SOURCE_TIMELINE: False, SOURCE_GRAPH: True}
+    assert source_coverage(graph_entities) == {
+        SOURCE_TIMELINE: False,
+        SOURCE_GRAPH: True,
+    }
     assert source_coverage(timeline_entities) == {
         SOURCE_TIMELINE: True,
         SOURCE_GRAPH: False,
