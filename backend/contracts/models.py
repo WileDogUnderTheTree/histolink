@@ -28,7 +28,10 @@ SCHEMA_VERSION = "1.0"
 #: V1.0.6.1：markdown 生成权解绑给模型 + 双重事实核查（证据级 + 文本级 FactCheck）。
 #: V1.0.6.2：本地 OpenAI 兼容模型流式直答（POST /api/agent/chat_stream，SSE）。
 #: V1.0.7：终极发版基线（测试依赖告警清理 / 文档重构 / 版本号统一，无业务契约变更）。
-API_VERSION = "1.0.7"
+#: V1.0.8：UI/UX 收尾补丁（移除多轮静态预览与附件占位、图谱自适应缩放、首页联系卡片、
+#:          新 Logo 接入；最终整合补丁：左下角印章 / 点赞悬浮组件 + `GET/POST /api/likes`
+#:          点赞计数持久化），无破坏性契约变更。
+API_VERSION = "1.0.8"
 
 #: 引用许可（Q6）：非商用，沿用 shiji-kb 的 CC BY-NC-SA。
 ATTRIBUTION_TEXT = "史脉事件摘要（依据 shiji-kb，CC BY-NC-SA 4.0）"
@@ -461,6 +464,24 @@ AgentResponse = Annotated[
 class HealthResponse(StrictModel):
     ok: Literal[True] = True
     version: str = API_VERSION
+
+
+class LikeCountResponse(StrictModel):
+    """左下角「点赞」悬浮组件的计数响应（V1.0.8 新增）。
+
+    - `GET  /api/likes`：返回当前总点赞数；
+    - `POST /api/likes`：点赞数 +1 并返回最新总数；
+    - 计数持久化在 `backend/data/likes.json`（`{"count": 0}`，文件不存在时自动创建）。
+    """
+
+    ok: Literal[True] = True
+    schema_version: Literal["1.0"] = SCHEMA_VERSION
+    api_version: str = API_VERSION
+    count: int = Field(
+        ge=0,
+        le=1_000_000_000,
+        description="当前总点赞数（非负整数；数据来自 backend/data/likes.json）",
+    )
 
 
 class PingLLMResponse(StrictModel):

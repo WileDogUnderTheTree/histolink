@@ -142,6 +142,45 @@ describe("归一化：后端会话结构 → 前端渲染模型", () => {
     ).toBeNull();
   });
 
+  it("normalizeStoredSessionAnswer 恢复直答轮次的 ui_actions / streamed（V1.0.8 Bug 1）", () => {
+    const view = normalizeStoredSessionAnswer({
+      answer: {
+        mode: "grounded",
+        markdown: "赤壁之战发生在公元 208 年。",
+        certainty: null,
+        missing: [],
+        reason_code: null,
+      },
+      citations: [],
+      entities: [],
+      ui_actions: [
+        {
+          id: "act-1",
+          type: "timeline.focus_event",
+          payload: { event_id: "handong-chibi" },
+          target: { surface: "timeline", params: { event_id: "handong-chibi" } },
+          auto: true,
+          label: "在时间轴中查看",
+          reason: null,
+        },
+      ],
+      trace: { model_used: "XiaoHong-v1", model_requested: null, sources: null },
+      request_id: "req_stream",
+      snapshot_version: "",
+      streamed: true,
+    });
+    const answer = view as AgentAnswerView;
+    expect(answer.streamed).toBe(true);
+    expect(answer.uiActions).toHaveLength(1);
+    expect(answer.uiActions[0]?.type).toBe("timeline.focus_event");
+    expect(answer.uiActions[0]?.payload).toMatchObject({ event_id: "handong-chibi" });
+  });
+
+  it("normalizeStoredSessionAnswer 对旧数据 streamed 缺省为 false", () => {
+    const view = normalizeStoredSessionAnswer(ASSISTANT_ANSWER_SNAPSHOT);
+    expect((view as AgentAnswerView).streamed).toBe(false);
+  });
+
   it("normalizeSessionDetail 过滤非法轮次并归一化实体记忆", () => {
     const detail = normalizeSessionDetail({
       session_id: "session_a",

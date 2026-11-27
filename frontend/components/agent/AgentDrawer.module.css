@@ -3,11 +3,13 @@
   display: inline-flex; align-items: center; gap: 8px;
   border: 1px solid #d9c7ad; border-radius: 999px; padding: 12px 18px 12px 14px;
   background: #fffdf8; color: #6f160e; font-size: 13px; font-weight: 650; letter-spacing: .1em;
-  cursor: pointer; box-shadow: 0 12px 30px rgb(78 47 24 / 16%), inset 0 1px #fff;
-  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
 }
-.launcher:hover { transform: translateY(-2px); border-color: #9f5449; box-shadow: 0 16px 34px rgb(78 47 24 / 21%), 0 0 0 4px rgb(139 0 0 / 6%); }
-.launcherIcon { display: grid; width: 22px; height: 22px; place-items: center; border: 1px solid #c99a8e; border-radius: 50%; background: #fbf0eb; color: #8b0000; font-size: 12px; }
+/* V1.0.8 最终整合补丁：删除悬浮按钮「底下的图层」（投影）——保持单层纸片感。 */
+.launcher:hover { transform: translateY(-2px); border-color: #9f5449; background: #fdf4ef; }
+.launcherIcon { display: grid; width: 22px; height: 22px; flex: 0 0 auto; place-items: center; }
+.launcherIcon img { display: block; width: 22px; height: auto; }
 .launcher:focus-visible, .close:focus-visible, .fullChat:focus-visible, .send:focus-visible, .confirmButton:focus-visible, .cancelButton:focus-visible, .citation:focus-visible, .fullChatLink:focus-visible { outline: 2px solid #8b0000; outline-offset: 3px; }
 
 .overlay { position: fixed; inset: 0; z-index: 70; display: flex; justify-content: flex-end; background: rgb(67 46 30 / 18%); backdrop-filter: blur(7px); animation: overlayIn 180ms ease-out both; }

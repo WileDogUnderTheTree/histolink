@@ -4,7 +4,8 @@
 - 截图中的真实循环回答（同一事实被复述 3–4 遍）能被折叠到「第一份完整回答」；
 - 流式期循环检测（整句复述 / `依据一/二/三` 小节重开）返回正确截断点；
 - 正常回答（并列结构 / 表格 / 两节 Markdown）不被误删；
-- 幂等：清洗后的文本再清洗不再变化。
+- 幂等：清洗后的文本再清洗不再变化；
+- V1.0.8：开头「用户未提供……无法直接列举」推诿废话被删除，纯推诿回答不清空。
 """
 
 from __future__ import annotations
@@ -14,6 +15,7 @@ from text_hygiene import (
     find_repetition_cut,
     is_repetitive,
     sanitize_model_answer,
+    strip_false_refusal_preamble,
 )
 
 #: 实测截图（会话库 turn 35）：同一事实复述 3 遍。
@@ -220,3 +222,44 @@ def test_drop_rewritten_duplicate_paragraph() -> None:
     assert cleaned.startswith("赤壁之战是东汉时期的关键战役")
     # 第一份完整回答保留，第二份重写段整体丢弃。
     assert cleaned.count("建安十三年") == 1
+
+
+# ---------------------------------------------------------------------------
+# V1.0.8：删除自相矛盾的「推诿式开场白」
+# ---------------------------------------------------------------------------
+
+
+def test_strip_false_refusal_preamble_removes_contradictory_opening() -> None:
+    """「用户未提供……无法直接列举」删掉，后面的真实答案原样保留。"""
+
+    text = (
+        "用户未提供具体战役名称，无法直接列举。\n\n"
+        "韩信参与的主要战役包括：井陉之战、潍水之战、垓下之战。"
+    )
+    cleaned, removed = strip_false_refusal_preamble(text)
+    assert "用户未提供" not in cleaned
+    assert "无法直接列举" not in cleaned
+    assert cleaned.startswith("韩信参与的主要战役")
+    assert removed > 0
+
+    # 常见变体：说法 / 主语不同。
+    for variant in (
+        "您没有提供具体的战役信息，因此无法直接回答。\n韩信打过井陉之战。",
+        "当前问题未提供具体战役名称，难以直接列举。\n韩信打过垓下之战。",
+        "抱歉，用户未说明具体年代，无法确定。井陉之战发生于前204年。",
+    ):
+        cleaned_variant, _removed = strip_false_refusal_preamble(variant)
+        assert "无法" not in cleaned_variant.split("\n")[0] or "无法" not in cleaned_variant
+        assert cleaned_variant.strip()
+
+
+def test_strip_false_refusal_preamble_keeps_pure_refusal_and_normal_answer() -> None:
+    """整段只有推诿（确实没答案）/ 正常回答都不改动。"""
+
+    pure_refusal = "用户未提供具体信息，无法直接回答。"
+    assert strip_false_refusal_preamble(pure_refusal) == (pure_refusal, 0)
+
+    normal = "韩信是西汉开国功臣，主要战役有井陉之战、潍水之战与垓下之战。"
+    assert strip_false_refusal_preamble(normal) == (normal, 0)
+    assert strip_false_refusal_preamble("") == ("", 0)
+    assert strip_false_refusal_preamble(None) == ("", 0)  # type: ignore[arg-type]

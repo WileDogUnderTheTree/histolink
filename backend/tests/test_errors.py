@@ -104,7 +104,7 @@ def test_snapshot_not_loaded_returns_503(client: TestClient) -> None:
 
 
 def test_no_write_endpoints_in_openapi(openapi_spec: dict[str, Any]) -> None:
-    """V1.0.6.2：写方法只允许出现在「问答入口 + 流式直答 + 会话管理」路径上，其余接口保持只读。"""
+    """写方法只允许出现在「问答入口 + 流式直答 + 会话管理 + 点赞」路径上，其余接口保持只读。"""
 
     write_methods = {"post", "put", "patch", "delete"}
     for path, path_item in openapi_spec["paths"].items():
@@ -113,6 +113,8 @@ def test_no_write_endpoints_in_openapi(openapi_spec: dict[str, Any]) -> None:
             path == "/api/agent/ask"
             or path == "/api/agent/chat_stream"
             or path == "/api/sessions"
+            # V1.0.8：点赞计数是 `/api` 下唯一新增的写入口（+1）。
+            or path == "/api/likes"
         ):
             assert used == {"post"}, path
         elif path == "/api/sessions/{session_id}":

@@ -351,7 +351,7 @@ function GraphPageContent() {
             ← 返回首页
           </Link>
           <div className={styles.topbarRight}>
-            <p className={styles.eyebrow}>史脉 HistoLink · V1.0.7</p>
+            <p className={styles.eyebrow}>史脉 HistoLink · V1.0.8</p>
             {agentReturn ? (
               <button type="button" className={styles.returnChat} onClick={returnToChat}>
                 <span aria-hidden="true">💬</span> 返回聊天

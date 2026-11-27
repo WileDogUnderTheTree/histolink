@@ -33,6 +33,10 @@ backend/data/chroma_db/
 backend/data/sessions.v1.sqlite*
 backend/data/sessions.v1.sqlite.bak-*
 
+# ── V1.0.8 点赞计数（本地运行期数据，不入库；文件不存在时后端自动创建）──
+backend/data/likes.json
+backend/data/likes.json.tmp
+
 # ── V1.0.5.4 图谱入库报告（ingest_graph_data.py 每次运行自动覆盖，不入库）──
 docs/图谱数据入库报告.md
 

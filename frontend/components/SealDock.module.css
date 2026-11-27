@@ -1,0 +1,527 @@
+/*
+ * 左下角「史」字印章 + 印章弹窗（V1.0.8 最终整合补丁）。
+ *
+ * 视觉语言沿用全站「宣纸米黄 + 深红」：
+ * - 印章：深红底 + 米黄「史」字，圆形，像盖在纸面上的印章；
+ * - 点赞：位于弹窗【关于】Tab 右下角的米黄胶囊 + 深红心形，点过后整组置灰；
+ * - 弹窗：居中卡片 + 半透明遮罩，关于 / 联系两个 Tab；
+ * - 史引（时间轴 / 人物图）与 iframe 内嵌场景不渲染本组件。
+ */
+
+.dock {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ---------------- 印章按钮 ---------------- */
+.seal {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #6f160e;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 28%, #a8200f 0%, #8b0000 58%, #6f0d05 100%);
+  color: #f8e9c8;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgb(111 22 14 / 22%), inset 0 1px 0 rgb(255 236 199 / 28%);
+  transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 200ms ease;
+}
+
+.seal:hover {
+  transform: scale(1.12) rotate(-3deg);
+  box-shadow: 0 10px 24px rgb(111 22 14 / 28%), inset 0 1px 0 rgb(255 236 199 / 32%);
+}
+
+.seal:active {
+  transform: scale(0.97);
+}
+
+.sealChar {
+  font-family: "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  transform: translateY(-1px);
+  text-shadow: 0 1px 0 rgb(70 8 2 / 45%);
+}
+
+/* ---------------- 点赞按钮 ---------------- */
+.like {
+  display: inline-flex;
+  height: 40px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 14px;
+  border: 1px solid #d9c7ad;
+  border-radius: 999px;
+  background: #fffdf8;
+  color: #8b0000;
+  font: inherit;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgb(78 47 24 / 10%);
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease,
+    color 160ms ease, box-shadow 160ms ease;
+}
+
+.like:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #9f5449;
+  background: #fdf4ef;
+  box-shadow: 0 6px 16px rgb(78 47 24 / 14%);
+}
+
+.like:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.like:disabled {
+  cursor: default;
+}
+
+.like[data-liked="true"],
+.like:disabled {
+  border-color: #e3dbcd;
+  background: #f2eee6;
+  color: #a89f92;
+  box-shadow: none;
+}
+
+.heart {
+  display: inline-grid;
+  place-items: center;
+  color: #b23b2e;
+  transition: color 160ms ease;
+}
+
+.like[data-liked="true"] .heart,
+.like:disabled .heart {
+  color: #b9b1a5;
+}
+
+.heartBouncing {
+  animation: heartBounce 720ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.likeCount {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* ---------------- 弹窗 ---------------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 75;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(43 32 22 / 38%);
+  backdrop-filter: blur(6px);
+  animation: overlayIn 180ms ease-out both;
+}
+
+.modal {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: min(82vh, 680px);
+  overflow-y: auto;
+  padding: 24px 26px 20px;
+  border: 1px solid #e0d3c0;
+  border-radius: 18px;
+  background:
+    radial-gradient(520px 260px at 100% 0%, rgb(139 0 0 / 6%), transparent 62%),
+    #fbf8f1;
+  color: #2d2923;
+  box-shadow: 0 30px 80px rgb(50 30 15 / 26%);
+  animation: modalIn 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.modalHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modalSeal {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #a8200f, #8b0000 60%, #6f0d05);
+  color: #f8e9c8;
+  font-family: "Songti SC", "STSong", "Noto Serif SC", "SimSun", serif;
+  font-size: 19px;
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 rgb(255 236 199 / 26%);
+}
+
+.modalTitleBox {
+  min-width: 0;
+}
+
+.kicker {
+  margin: 0 0 2px;
+  color: #a07d6b;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+}
+
+.close {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  place-items: center;
+  border: 1px solid #ded4c5;
+  border-radius: 10px;
+  background: #fffdf8;
+  color: #71685e;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.close:hover {
+  border-color: #bb8b7e;
+  background: #fbefeb;
+  color: #8b0000;
+}
+
+/* Tab 切换（关于 / 联系） */
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 18px 0 16px;
+  padding: 4px;
+  border: 1px solid #e6ddcf;
+  border-radius: 999px;
+  background: #f3efe6;
+}
+
+.tab {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #7c7264;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.tab[data-active="true"] {
+  background: #fffdf8;
+  color: #8b0000;
+  box-shadow: 0 2px 8px rgb(78 47 24 / 10%);
+}
+
+.tab:hover {
+  color: #8b0000;
+}
+
+/* 面板 */
+.panel {
+  min-height: 210px;
+}
+
+.lead {
+  margin: 0 0 14px;
+  color: #3a352d;
+  font-size: 13.5px;
+  line-height: 1.85;
+}
+
+.lead strong {
+  color: #8b0000;
+}
+
+.features {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.features li {
+  display: grid;
+  gap: 2px;
+  padding: 9px 12px;
+  border: 1px solid #e9e0d1;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 62%);
+}
+
+.features strong {
+  color: #6f160e;
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+}
+
+.features span {
+  color: #6b6459;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.quote {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding-left: 12px;
+  border-left: 2px solid #c99a8e;
+  color: #8a8175;
+  font-family: "Songti SC", "STSong", "Noto Serif SC", serif;
+  font-size: 12.5px;
+  line-height: 1.8;
+}
+
+/* 【关于】Tab 底部一行：左侧点题句 + 右下角点赞按钮（V1.0.8 调整后的位置）。 */
+.aboutFoot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.aboutFoot .like {
+  flex: 0 0 auto;
+  height: 36px;
+  padding: 0 13px;
+  background: #fffdf8;
+}
+
+.panelHint {
+  margin: 0 0 10px;
+  color: #8a8175;
+  font-size: 12px;
+}
+
+.contactList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contactRow {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #e9e0d1;
+  border-radius: 10px;
+  background: #fffdf8;
+  color: #2d2923;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.contactRow:hover {
+  transform: translateY(-1px);
+  border-color: #c99a8e;
+  background: #fdf6f1;
+}
+
+.contactRow[data-copied="true"] {
+  border-color: #a9c3ae;
+  background: #f4f9f3;
+}
+
+.contactLabel {
+  color: #8a8175;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+
+.contactValue {
+  overflow: hidden;
+  color: #3a2f26;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contactAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #8b0000;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.contactRow[data-copied="true"] .contactAction {
+  color: #2f7a4f;
+}
+
+.modalFoot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+  color: #a3978a;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+}
+
+.footRule {
+  width: 26px;
+  height: 1px;
+  background: #d8cbb8;
+}
+
+/* 复制 Toast（弹窗内、底部居中） */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 34px;
+  z-index: 90;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: rgb(35 32 27 / 92%);
+  color: #fdfbf6;
+  font-size: 12.5px;
+  opacity: 0;
+  transform: translate(-50%, 10px);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.toast[data-visible="true"] {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ---------------- 动效 / 响应式 / 无障碍 ---------------- */
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes heartBounce {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.55);
+  }
+  58% {
+    transform: scale(0.88);
+  }
+  80% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.seal:focus-visible,
+.like:focus-visible,
+.tab:focus-visible,
+.close:focus-visible,
+.contactRow:focus-visible {
+  outline: 2px solid #8b0000;
+  outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .dock {
+    left: 16px;
+    bottom: 16px;
+    gap: 8px;
+  }
+
+  .seal {
+    width: 46px;
+    height: 46px;
+  }
+
+  .sealChar {
+    font-size: 21px;
+  }
+
+  .like {
+    height: 36px;
+    padding: 0 12px;
+  }
+
+  .overlay {
+    padding: 14px;
+  }
+
+  .modal {
+    padding: 20px 18px 16px;
+  }
+
+  .contactRow {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+  }
+
+  .contactValue {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .seal,
+  .like,
+  .modal,
+  .overlay,
+  .heartBouncing {
+    animation: none;
+    transition: none;
+  }
+}

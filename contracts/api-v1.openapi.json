@@ -1270,12 +1270,47 @@
             "type": "boolean"
           },
           "version": {
-            "default": "1.0.7",
+            "default": "1.0.8",
             "title": "Version",
             "type": "string"
           }
         },
         "title": "HealthResponse",
+        "type": "object"
+      },
+      "LikeCountResponse": {
+        "additionalProperties": false,
+        "description": "左下角「点赞」悬浮组件的计数响应（V1.0.8 新增）。\n\n- `GET  /api/likes`：返回当前总点赞数；\n- `POST /api/likes`：点赞数 +1 并返回最新总数；\n- 计数持久化在 `backend/data/likes.json`（`{\"count\": 0}`，文件不存在时自动创建）。",
+        "properties": {
+          "api_version": {
+            "default": "1.0.8",
+            "title": "Api Version",
+            "type": "string"
+          },
+          "count": {
+            "description": "当前总点赞数（非负整数；数据来自 backend/data/likes.json）",
+            "maximum": 1000000000.0,
+            "minimum": 0.0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "ok": {
+            "const": true,
+            "default": true,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "schema_version": {
+            "const": "1.0",
+            "default": "1.0",
+            "title": "Schema Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "count"
+        ],
+        "title": "LikeCountResponse",
         "type": "object"
       },
       "MetaCounts": {
@@ -1333,7 +1368,7 @@
         "additionalProperties": false,
         "properties": {
           "api_version": {
-            "default": "1.0.7",
+            "default": "1.0.8",
             "title": "Api Version",
             "type": "string"
           },
@@ -1439,7 +1474,7 @@
         "description": "`GET /api/agent/models`：供前端模型切换窗口渲染，无需配置 API key 即可读取。",
         "properties": {
           "api_version": {
-            "default": "1.0.7",
+            "default": "1.0.8",
             "title": "Api Version",
             "type": "string"
           },
@@ -1705,7 +1740,7 @@
         "description": "`DELETE /api/sessions/{session_id}` 的响应。",
         "properties": {
           "api_version": {
-            "default": "1.0.7",
+            "default": "1.0.8",
             "title": "Api Version",
             "type": "string"
           },
@@ -1799,7 +1834,7 @@
         "description": "`GET /api/sessions/{session_id}` / `POST /api/sessions` 的响应。",
         "properties": {
           "api_version": {
-            "default": "1.0.7",
+            "default": "1.0.8",
             "title": "Api Version",
             "type": "string"
           },
@@ -1862,7 +1897,7 @@
         "description": "`GET /api/sessions`：真实历史会话列表（置顶优先，其余按最后消息时间倒序）。",
         "properties": {
           "api_version": {
-            "default": "1.0.7",
+            "default": "1.0.8",
             "title": "Api Version",
             "type": "string"
           },
@@ -1895,7 +1930,7 @@
         "description": "`PATCH /api/sessions/{session_id}` 的响应（返回更新后的摘要）。",
         "properties": {
           "api_version": {
-            "default": "1.0.7",
+            "default": "1.0.8",
             "title": "Api Version",
             "type": "string"
           },
@@ -2961,6 +2996,48 @@
         "summary": "Health",
         "tags": [
           "meta"
+        ]
+      }
+    },
+    "/api/likes": {
+      "get": {
+        "description": "当前总点赞数（`backend/data/likes.json`）。",
+        "operationId": "read_likes_api_likes_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LikeCountResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Read Likes",
+        "tags": [
+          "likes"
+        ]
+      },
+      "post": {
+        "description": "点赞数 +1 并返回最新总数。",
+        "operationId": "add_like_api_likes_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LikeCountResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Add Like",
+        "tags": [
+          "likes"
         ]
       }
     },

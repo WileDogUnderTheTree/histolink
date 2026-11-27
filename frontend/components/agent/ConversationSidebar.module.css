@@ -382,7 +382,8 @@
 .footer {
   flex: 0 0 auto;
   border-top: 1px solid #ece2d4;
-  padding: 10px 16px 14px;
+  /* V1.0.8：左下角「史」字印章 / 点赞悬浮组固定在同一位置，footer 底部留白避免被压住。 */
+  padding: 10px 16px 88px;
 }
 
 .footerNote {

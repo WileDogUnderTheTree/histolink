@@ -223,6 +223,20 @@ body.askAppShell {
   letter-spacing: 0.08em;
 }
 
+/*
+ * V1.0.8：史引副驾驶分屏时聊天卡片会贴到左下角，全站悬浮组（印章 / 点赞）会压住输入框；
+ * 该模式下暂时淡出悬浮组，关闭分屏后自动恢复（纯 CSS，组件无需感知页面状态）。
+ */
+[data-seal-dock] {
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+body:has(aside[aria-label="史引副驾驶"]) [data-seal-dock] {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+}
+
 .toast {
   position: fixed;
   left: 50%;

@@ -40,6 +40,7 @@ __all__ = [
     "is_repetitive",
     "normalize_repeat_text",
     "sanitize_model_answer",
+    "strip_false_refusal_preamble",
 ]
 
 #: 判定「模型正文循环复述严重、应整体丢弃」的删除字符比例阈值。
@@ -316,6 +317,51 @@ def _drop_duplicated_trailing_lines(text: str) -> str:
             break
         lines = lines[:index]
     return "\n".join(lines).strip()
+
+
+#: 模型「推诿式开场白」：声称用户没提供信息 / 无法直接回答，却紧接着自己给出答案。
+#: V1.0.8 专项修复（XiaoHong-v1 回答「韩信打过什么仗」时开头输出
+#: 「用户未提供具体战役名称，无法直接列举」然后又开始列举战役，逻辑自相矛盾）。
+_FALSE_REFUSAL_PREAMBLE_RE = re.compile(
+    r"^\s*(?:(?:很|非常)?抱歉[，,]\s*|对不起[，,]\s*)?"
+    r"(?:(?:当前)?(?:问题|提问)|用户|您|你)"
+    r"(?:未|没有|并未|没能|没)(?:提供|说明|明确|告诉|给出)"
+    r"[^。！？!?\n]{0,40}?"
+    r"(?:无法|不能|没法|难以)(?:直接)?(?:列举|回答|作答|给出|确定|判断|回复|展开)"
+    r"[^。！？!?\n]{0,30}[。！？!?\n]\s*"
+)
+
+
+def strip_false_refusal_preamble(text: str) -> tuple[str, int]:
+    """删除回答开头「自相矛盾的推诿句」，返回 ``(清洗后正文, 删除字符数)``。
+
+    V1.0.8 专项修复：本地小模型（XiaoHong-v1）对「韩信打过什么仗」这类问题会先输出
+    「用户未提供具体战役名称，无法直接列举」，紧接着又完整列举战役——开头一句纯属废话，
+    且让用户误以为 Agent 在拒答。
+
+    规则（只处理**开头第一句**、且必须命中固定措辞模式）：
+
+    1. 命中「用户/您/问题 + 未提供… + 无法直接列举/回答…」结构的开场句 → 删除；
+    2. 删除后如果还有正文（模型确实给出了答案）→ 返回剩余正文；
+       如果整段回答就只有这一句推诿（确实无法回答）→ 原样保留，不把回答清空；
+    3. 非字符串 / 空串原样返回，删除数为 0。
+
+    这是 Prompt 硬约束之外的**确定性兜底**：Prompt 可能偶发失效，但用户看到的正文
+    不能出现「说不能答、却答了」的自相矛盾开场。
+    """
+
+    if not isinstance(text, str) or not text.strip():
+        return (text or ""), 0
+    stripped = text.lstrip()
+    match = _FALSE_REFUSAL_PREAMBLE_RE.match(stripped)
+    if match is None:
+        return text, 0
+    remainder = stripped[match.end() :].lstrip()
+    if not remainder:
+        # 整段回答都是推诿：保留原样（真实 insuffient 场景不应被清空）。
+        return text, 0
+    removed = len(text) - len(remainder)
+    return remainder, max(0, removed)
 
 
 def sanitize_model_answer(

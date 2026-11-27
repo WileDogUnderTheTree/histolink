@@ -200,6 +200,53 @@ export function recordFromRemoteSession(detail: RemoteSessionDetail): Conversati
   };
 }
 
+/** 可参与「刷新恢复合并」的最小轮次结构（与 AgentContext.AgentTurn 兼容）。 */
+export interface RestorableTurn {
+  role: "user" | "assistant";
+  content: string;
+  answer?: AgentAnswerView | null;
+}
+
+/**
+ * 刷新恢复时，用本标签页 sessionStorage 缓存的 transcript 补齐服务端缺失的回答视图
+ * （V1.0.8 Bug 1：刷新后历史消息的「展开图谱 / 时间轴」按钮消失）。
+ *
+ * 背景：直答轮次早期以 `answer_payload=None` 落库，服务端只有纯 Markdown 正文；
+ * 而同一标签页的 sessionStorage 缓存里仍保留完整 `AgentAnswerView`（含 `uiActions`）。
+ * 这里按「位置 + 角色 + 正文」严格对齐后补回，避免把 A 会话的回答拼到 B 会话：
+ *
+ * 1. 服务端没有 answer、缓存有 → 用缓存补回完整回答视图（含联动动作）；
+ * 2. 服务端 answer 没有 uiActions、缓存有 → 只补 `uiActions` / `streamed`（以服务端为准）；
+ * 3. 角色 / 正文对不上 → 保持服务端原样，绝不跨轮次拼接。
+ */
+export function mergeCachedTurnAnswers<T extends RestorableTurn>(
+  serverTurns: readonly T[],
+  cachedTurns: readonly RestorableTurn[] | null | undefined,
+): T[] {
+  if (!cachedTurns || cachedTurns.length === 0) return serverTurns.map((turn) => ({ ...turn }));
+  return serverTurns.map((turn, index) => {
+    const cached = cachedTurns[index];
+    if (!cached || turn.role !== "assistant" || cached.role !== "assistant") {
+      return { ...turn };
+    }
+    if (cached.content.trim() !== turn.content.trim()) return { ...turn };
+    const cachedAnswer = cached.answer ?? null;
+    if (!cachedAnswer) return { ...turn };
+    if (!turn.answer) return { ...turn, answer: cachedAnswer };
+    if (turn.answer.uiActions.length === 0 && cachedAnswer.uiActions.length > 0) {
+      return {
+        ...turn,
+        answer: {
+          ...turn.answer,
+          uiActions: cachedAnswer.uiActions,
+          streamed: cachedAnswer.streamed === true ? true : turn.answer.streamed,
+        },
+      };
+    }
+    return { ...turn };
+  });
+}
+
 /**
  * 真实持久化仓库（V1.0.6 默认）：全部操作走 `/api/sessions`。
  *

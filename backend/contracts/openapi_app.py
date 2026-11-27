@@ -18,6 +18,7 @@ from contracts.models import (
     EventResponse,
     EventSearchResponse,
     HealthResponse,
+    LikeCountResponse,
     MetaResponse,
     ModelsResponse,
     PersonCandidatesResponse,
@@ -113,6 +114,27 @@ def search_events(
 )
 def list_models() -> ModelsResponse:
     """V1.0.5.2：模型注册表（主模型 / 备用降级模型）。"""
+
+    _not_implemented()
+    raise AssertionError("unreachable")
+
+
+# ---------------------------------------------------------------------------
+# V1.0.8 点赞计数（左下角点赞悬浮组件）
+# ---------------------------------------------------------------------------
+
+
+@app.get("/api/likes", response_model=LikeCountResponse, tags=["likes"])
+def read_likes() -> LikeCountResponse:
+    """当前总点赞数（`backend/data/likes.json`）。"""
+
+    _not_implemented()
+    raise AssertionError("unreachable")
+
+
+@app.post("/api/likes", response_model=LikeCountResponse, tags=["likes"])
+def add_like() -> LikeCountResponse:
+    """点赞数 +1 并返回最新总数。"""
 
     _not_implemented()
     raise AssertionError("unreachable")

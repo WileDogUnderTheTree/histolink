@@ -73,12 +73,12 @@ def _envelope(
 
 
 def read_only_violation_response() -> JSONResponse:
-    """`/api` 除问答与会话管理外不提供写接口：写方法统一返回 405 envelope。"""
+    """`/api` 除问答 / 会话管理 / 点赞外不提供写接口：写方法统一返回 405 envelope。"""
 
     return _envelope(
         status_code=405,
         code=ErrorCode.METHOD_NOT_ALLOWED,
-        message="该接口不支持此 HTTP 方法（/api 除问答入口与会话管理外均为只读）",
+        message="该接口不支持此 HTTP 方法（/api 除问答入口、会话管理与点赞计数外均为只读）",
         headers={"Allow": "GET"},
     )
 

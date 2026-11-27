@@ -2,10 +2,12 @@
 
 覆盖：
 - 正常流：start → delta* → done；`text/event-stream`；思考内容不下发；
-- 成功后写入会话库（answer_payload=None，刷新后按普通 Markdown 消息恢复）；
+- 成功后写入会话库（V1.0.8：命中实体的直答把 `ui_actions` 一起持久化，
+  刷新后历史消息仍能重建联动按钮；无动作时按普通 Markdown 恢复）；
 - 流中错误（LLMUpstreamError）→ error 事件（HTTP 仍是 200）；
 - 参数 / 模型白名单 / 开关类错误在响应开始前返回统一错误信封；
-- 首次请求把客户端 history 迁移进服务端会话（与 /api/agent/ask 语义一致）。
+- 首次请求把客户端 history 迁移进服务端会话（与 /api/agent/ask 语义一致）；
+- V1.0.8 Prompt 兜底：开头「用户未提供……无法直接列举」推诿句被确定性删除。
 """
 
 from __future__ import annotations
@@ -134,25 +136,61 @@ def test_chat_stream_emits_deltas_and_done(client: TestClient, override_stream) 
     assert done["thinking_fallback"] is False
 
 
-def test_chat_stream_persists_exchange_without_structured_answer(
+def test_chat_stream_persists_ui_actions_for_refresh(
     client: TestClient, override_stream
 ) -> None:
+    """V1.0.8 Bug 1：直答轮次的 ui_actions 必须跟着消息一起落库。
+
+    刷新页面后前端 `GET /api/sessions/{id}` 能拿回 `ui_actions`，从而重建历史消息
+    底部的「展开图谱 / 时间轴」按钮并再次拉起右侧史引面板。
+    """
+
     answer = "赤壁之战发生在公元 208 年。"
     override_stream(
         FakeStreamClient(
             [StreamEvent(type="done", answer=answer, model="m", latency_ms=10)]
         )
     )
-    _collect_stream(client, {**STREAM_BODY, "session_id": "stream-persist-1"})
+    _response, events = _collect_stream(
+        client, {**STREAM_BODY, "session_id": "stream-persist-actions"}
+    )
+    done_actions = events[-1]["ui_actions"]
+    assert done_actions, "命中快照事件的直答必须下发 UI 动作"
 
-    detail = client.get("/api/sessions/stream-persist-1")
+    detail = client.get("/api/sessions/stream-persist-actions")
     assert detail.status_code == 200
     payload = detail.json()
     turns = payload["session"]["turns"]
     assert [turn["role"] for turn in turns] == ["user", "assistant"]
     assert turns[0]["content"] == STREAM_BODY["question"]
     assert turns[1]["content"] == answer
-    # 直答没有图谱证据：不写结构化 answer（前端恢复时按普通 Markdown 渲染）。
+    stored = turns[1]["answer"]
+    assert stored is not None
+    # ui_actions 随消息持久化（刷新后可恢复深链接按钮）。
+    assert stored["ui_actions"] == done_actions
+    assert stored["answer"]["markdown"] == answer
+    assert stored["answer"]["mode"] == "grounded"
+    assert stored["streamed"] is True
+    assert stored["request_id"] == events[-1]["request_id"]
+
+
+def test_chat_stream_persists_plain_markdown_without_actions(
+    client: TestClient, override_stream
+) -> None:
+    """没有联动动作的直答仍按纯 Markdown 消息恢复（不伪造结构化回答外观）。"""
+
+    answer = "这个问题与历史无关。"
+    override_stream(
+        FakeStreamClient([StreamEvent(type="done", answer=answer, model="m")])
+    )
+    _collect_stream(
+        client,
+        {"question": "今天天气怎么样？", "session_id": "stream-persist-plain"},
+    )
+
+    detail = client.get("/api/sessions/stream-persist-plain")
+    turns = detail.json()["session"]["turns"]
+    assert turns[1]["content"] == answer
     assert turns[1]["answer"] is None
 
 
@@ -313,6 +351,59 @@ def test_chat_stream_sanitizes_repeated_answer(
     detail = client.get("/api/sessions/stream-dedupe-1")
     turns = detail.json()["session"]["turns"]
     assert turns[1]["content"] == done["answer"]
+
+
+# ---------------------------------------------------------------------------
+# V1.0.8：Prompt 优化 —— 删除「用户未提供……无法直接列举」这类自相矛盾推诿开场白
+# ---------------------------------------------------------------------------
+
+
+def test_chat_stream_strips_false_refusal_preamble(
+    client: TestClient, override_stream
+) -> None:
+    """模型开头说「无法直接列举」、紧接着又列举战役时：服务端删掉开头废话。"""
+
+    contradictory = (
+        "用户未提供具体战役名称，无法直接列举。\n\n"
+        "韩信参与的主要战役包括：\n"
+        "1. 破魏之战（前205年）；\n"
+        "2. 井陉之战（前204年）；\n"
+        "3. 潍水之战（前203年）；\n"
+        "4. 垓下之战（前202年）。"
+    )
+    override_stream(
+        FakeStreamClient([StreamEvent(type="done", answer=contradictory, model="m")])
+    )
+    _response, events = _collect_stream(
+        client,
+        {"question": "韩信打过什么仗？", "session_id": "stream-refusal-preamble"},
+    )
+    done = events[-1]
+
+    assert "用户未提供" not in done["answer"]
+    assert "无法直接列举" not in done["answer"]
+    assert "韩信参与的主要战役" in done["answer"]
+    assert done["refusal_removed_chars"] > 0
+    # 落库正文同样是清洗后的内容（刷新后不会又冒出推诿句）。
+    detail = client.get("/api/sessions/stream-refusal-preamble")
+    assert detail.json()["session"]["turns"][1]["content"] == done["answer"]
+
+
+def test_chat_stream_keeps_pure_refusal_answer(
+    client: TestClient, override_stream
+) -> None:
+    """整段都只有推诿句（确实没有答案）时不得清空回答。"""
+
+    refusal = "用户未提供具体信息，无法直接回答。"
+    override_stream(
+        FakeStreamClient([StreamEvent(type="done", answer=refusal, model="m")])
+    )
+    _response, events = _collect_stream(
+        client,
+        {"question": "某个不存在的问题", "session_id": "stream-refusal-only"},
+    )
+    assert events[-1]["answer"] == refusal
+    assert events[-1].get("refusal_removed_chars") is None
 
 
 # ---------------------------------------------------------------------------

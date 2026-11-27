@@ -148,6 +148,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/likes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read Likes
+         * @description 当前总点赞数（`backend/data/likes.json`）。
+         */
+        get: operations["read_likes_api_likes_get"];
+        put?: never;
+        /**
+         * Add Like
+         * @description 点赞数 +1 并返回最新总数。
+         */
+        post: operations["add_like_api_likes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta": {
         parameters: {
             query?: never;
@@ -698,9 +722,41 @@ export interface components {
             ok: true;
             /**
              * Version
-             * @default 1.0.7
+             * @default 1.0.8
              */
             version: string;
+        };
+        /**
+         * LikeCountResponse
+         * @description 左下角「点赞」悬浮组件的计数响应（V1.0.8 新增）。
+         *
+         *     - `GET  /api/likes`：返回当前总点赞数；
+         *     - `POST /api/likes`：点赞数 +1 并返回最新总数；
+         *     - 计数持久化在 `backend/data/likes.json`（`{"count": 0}`，文件不存在时自动创建）。
+         */
+        LikeCountResponse: {
+            /**
+             * Api Version
+             * @default 1.0.8
+             */
+            api_version: string;
+            /**
+             * Count
+             * @description 当前总点赞数（非负整数；数据来自 backend/data/likes.json）
+             */
+            count: number;
+            /**
+             * Ok
+             * @default true
+             * @constant
+             */
+            ok: true;
+            /**
+             * Schema Version
+             * @default 1.0
+             * @constant
+             */
+            schema_version: "1.0";
         };
         /** MetaCounts */
         MetaCounts: {
@@ -723,7 +779,7 @@ export interface components {
         MetaResponse: {
             /**
              * Api Version
-             * @default 1.0.7
+             * @default 1.0.8
              */
             api_version: string;
             capabilities: components["schemas"]["Capabilities"];
@@ -778,7 +834,7 @@ export interface components {
         ModelsResponse: {
             /**
              * Api Version
-             * @default 1.0.7
+             * @default 1.0.8
              */
             api_version: string;
             /** Default Model Id */
@@ -906,7 +962,7 @@ export interface components {
         SessionDeleteResponse: {
             /**
              * Api Version
-             * @default 1.0.7
+             * @default 1.0.8
              */
             api_version: string;
             /**
@@ -964,7 +1020,7 @@ export interface components {
         SessionDetailResponse: {
             /**
              * Api Version
-             * @default 1.0.7
+             * @default 1.0.8
              */
             api_version: string;
             /**
@@ -1002,7 +1058,7 @@ export interface components {
         SessionListResponse: {
             /**
              * Api Version
-             * @default 1.0.7
+             * @default 1.0.8
              */
             api_version: string;
             /**
@@ -1027,7 +1083,7 @@ export interface components {
         SessionMutationResponse: {
             /**
              * Api Version
-             * @default 1.0.7
+             * @default 1.0.8
              */
             api_version: string;
             /**
@@ -1603,6 +1659,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+        };
+    };
+    read_likes_api_likes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LikeCountResponse"];
+                };
+            };
+        };
+    };
+    add_like_api_likes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LikeCountResponse"];
                 };
             };
         };

@@ -106,6 +106,11 @@ cd backend
 > （V1.0.5.3 体检 finding F-14，排期 V1.0.6 补齐或从契约移除）。
 所有响应带 `ok`、`request_id`（ask）或 `schema_version` 与 `snapshot`（数据接口）。
 
+V1.0.6 起新增会话管理（`GET/POST /api/sessions`、`GET/PATCH/DELETE /api/sessions/{session_id}`）
+与流式直答 `POST /api/agent/chat_stream`（SSE）；V1.0.8 起新增点赞计数
+`GET /api/likes`（读取总数）与 `POST /api/likes`（+1 并返回最新总数，`LikeCountResponse`，
+持久化 `backend/data/likes.json`）。以上均为只增不改的可选接口。
+
 ### 4.7 工具契约
 
 9 个只读工具：`resolve_entity`、`search_events`、`get_event`、`get_person`、

@@ -1,4 +1,5 @@
-"""只读 API 公共依赖（V1.0.1 / TC-06；TC-10 增加 LLM 客户端；V1.0.6 增加会话存储）。"""
+"""只读 API 公共依赖（V1.0.1 / TC-06；TC-10 增加 LLM 客户端；V1.0.6 增加会话存储；
+V1.0.8 增加点赞计数存储）。"""
 
 from __future__ import annotations
 
@@ -6,6 +7,7 @@ from fastapi import Request
 
 from contracts.models import ErrorCode
 from errors import ApiError
+from likes_store import LikesStore
 from llm_client import LLMClient, LLMConfigError
 from llm_stream import StreamChatClient, load_stream_settings
 from session_store import SessionStore
@@ -52,6 +54,24 @@ def get_session_store(request: Request) -> SessionStore:
             status_code=503,
             code=ErrorCode.INTERNAL,
             message="会话存储尚未初始化，请稍后重试",
+            retryable=True,
+        )
+    return store
+
+
+def get_likes_store(request: Request) -> LikesStore:
+    """从 `app.state` 取点赞计数存储（V1.0.8；lifespan 中初始化）。
+
+    默认落盘 `backend/data/likes.json`；测试 / 探针可用 `LIKES_PATH=:memory:`
+    或覆盖本依赖注入临时目录。
+    """
+
+    store = getattr(request.app.state, "likes_store", None)
+    if store is None:
+        raise ApiError(
+            status_code=503,
+            code=ErrorCode.INTERNAL,
+            message="点赞计数存储尚未初始化，请稍后重试",
             retryable=True,
         )
     return store

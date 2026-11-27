@@ -2,6 +2,7 @@
 
 /** V1.0.4 Agent UI：数据由 AgentContext / ActionBus 提供，组件负责视觉呈现。 */
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -149,7 +150,9 @@ export function AgentDrawer() {
     <>
       {hideLauncher ? null : (
         <button type="button" className={styles.launcher} aria-label={isOpen ? "关闭史脉问答抽屉" : "打开史脉问答抽屉"} aria-expanded={isOpen} aria-haspopup="dialog" onClick={isOpen ? closeDrawer : openDrawer}>
-          <span className={styles.launcherIcon} aria-hidden="true">✦</span><span>{isOpen ? "收起问答" : "问史脉"}</span>
+          <span className={styles.launcherIcon} aria-hidden="true">
+            <Image src="/brand/shimai-mark.png" alt="" width={135} height={108} sizes="22px" />
+          </span><span>{isOpen ? "收起问答" : "问史脉"}</span>
         </button>
       )}
 
@@ -169,7 +172,7 @@ export function AgentDrawer() {
               </div>
             </header>
 
-            <div className={styles.statusLine}><span className={styles.statusDot} aria-hidden="true" /><span>史脉数据已连接</span><span className={styles.statusVersion}>{thinkingEnabled ? "V1.0.7 · 深度思考" : "V1.0.7"}</span></div>
+            <div className={styles.statusLine}><span className={styles.statusDot} aria-hidden="true" /><span>史脉数据已连接</span><span className={styles.statusVersion}>{thinkingEnabled ? "V1.0.8 · 深度思考" : "V1.0.8"}</span></div>
 
             <ol className={styles.transcript} aria-live="polite" aria-busy={isAsking} ref={transcriptRef}>
               {transcript.map((turn) => {

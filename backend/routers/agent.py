@@ -76,7 +76,7 @@ from session_store import (
     SessionStore,
 )
 from snapshot_store import SnapshotStore
-from text_hygiene import sanitize_model_answer
+from text_hygiene import sanitize_model_answer, strip_false_refusal_preamble
 
 logger = logging.getLogger("histolink.agent")
 
@@ -281,8 +281,92 @@ _STREAM_HEADERS = {
     "Connection": "keep-alive",
     "X-Accel-Buffering": "no",
 }
-#: 写入会话库的正文上限（避免极端长回答把单条消息撑爆）。
+#: 流式直答会话库快照的正文上限（避免极端长回答把单条消息撑爆）。
 _STREAM_PERSIST_MAX_CHARS = 20000
+
+
+def build_stream_answer_payload(
+    *,
+    answer_text: str,
+    ui_actions: list[dict[str, Any]],
+    model: str,
+    request_id: str,
+    snapshot_version: str,
+    model_requested: str | None = None,
+) -> dict[str, Any] | None:
+    """把直答轮次的结构化快照写进会话库（V1.0.8 Bug 1 修复）。
+
+    背景：刷新页面后历史消息底部的「展开图谱 / 时间轴」按钮会消失，根因是直答轮次
+    以 ``answer_payload=None`` 落库，服务端只保存了纯 Markdown 正文；前端恢复历史时
+    拿不到 ``ui_actions``，也就无法重建深链接按钮 / 拉起右侧史引面板。
+
+    修复口径：
+    - 有 ``ui_actions`` 时，把「正文 + 联动指令 + 直答标记」作为结构化快照持久化，
+      刷新后 `normalizeStoredSessionAnswer` 能完整恢复 `AgentAnswerView`；
+    - 没有任何联动动作时返回 ``None``（沿用旧行为：按普通 Markdown 消息恢复，
+      避免给纯文本回答伪造「已核验」结构化外观）。
+    """
+
+    actions = [item for item in ui_actions if isinstance(item, dict)]
+    text = (answer_text or "").strip()
+    if not text or not actions:
+        return None
+    return {
+        "answer": {
+            "markdown": text,
+            "mode": "grounded",
+            "certainty": None,
+            "claims": [],
+            "missing": [],
+            "reason_code": None,
+            "related_event_ids": [],
+            "comparison_analysis": None,
+        },
+        "citations": [],
+        "entities": [],
+        #: 联动指令：刷新后据此重新渲染深链接按钮 / 拉起右侧史引面板。
+        "ui_actions": actions,
+        "trace": {
+            "model_used": model or None,
+            #: 请求级模型选择回显：刷新后「模型是否被降级」提示与刷新前保持一致。
+            "model_requested": model_requested or None,
+            "sources": None,
+            "fact_check": None,
+        },
+        "request_id": request_id,
+        "snapshot_version": snapshot_version,
+        #: 直答标记：前端恢复后仍显示「直答」，不冒充「已核验」。
+        "streamed": True,
+    }
+
+
+def _persist_stream_exchange(
+    session_store: SessionStore,
+    session_id: str,
+    question: str,
+    answer: str,
+    *,
+    answer_payload: dict[str, Any] | None = None,
+) -> None:
+    """把流式直答的一轮问答写回会话库（失败只记日志，不影响已经下发的回答）。
+
+    V1.0.8：``answer_payload`` 携带本轮 ``ui_actions``（联动指令），刷新页面后
+    历史消息仍能重建「展开图谱 / 时间轴」按钮并拉起右侧史引面板。
+    """
+
+    text = (answer or "").strip()
+    if not text:
+        return
+    try:
+        session_store.append_exchange(
+            session_id,
+            question=question,
+            answer_markdown=text[:_STREAM_PERSIST_MAX_CHARS],
+            answer_payload=answer_payload,
+            entity_memory=None,
+        )
+    except Exception:  # pragma: no cover - 存储异常不得把已完成的回答变成错误
+        logger.exception("流式直答会话持久化失败：session=%s", session_id)
 
 
 def _stream_chat_enabled() -> bool:
@@ -305,33 +389,6 @@ def _validate_requested_model(model_id: str | None) -> None:
             message=f"未知模型：{model_id}（可选：{'、'.join(sorted(allowed_models))}）",
             retryable=False,
         )
-
-
-def _persist_stream_exchange(
-    session_store: SessionStore,
-    session_id: str,
-    question: str,
-    answer: str,
-) -> None:
-    """把流式直答的一轮问答写回会话库（失败只记日志，不影响已经下发的回答）。
-
-    以 ``answer_payload=None`` 持久化：直答模式没有图谱证据 / 引用，前端恢复会话时
-    按「普通 Markdown 消息」渲染，不冒充「已核验」结构化回答。
-    """
-
-    text = (answer or "").strip()
-    if not text:
-        return
-    try:
-        session_store.append_exchange(
-            session_id,
-            question=question,
-            answer_markdown=text[:_STREAM_PERSIST_MAX_CHARS],
-            answer_payload=None,
-            entity_memory=None,
-        )
-    except Exception:  # pragma: no cover - 存储异常不得把已完成的回答变成错误
-        logger.exception("流式直答会话持久化失败：session=%s", session_id)
 
 
 @router.post(
@@ -362,7 +419,11 @@ def chat_stream(
     - **V1.0.6.2「深度思考」开关**：`enable_thinking=false`（默认）沿用关闭思考的快速直答；
       为 true 时请求上游开启思考、Prompt 追加「先推理再给结论」，思考正文仍被过滤；
       若本地模型只产出思考没有最终答案，自动关闭思考重试一次（`done.thinking_fallback=true`）；
-    - 成功后把本轮问答写入会话库（`answer_payload=None`，刷新后仍可看到对话）。
+    - 成功后把本轮问答写入会话库；**V1.0.8 Bug 1**：本轮推断出的 `ui_actions` 会随消息
+      一起持久化（`answer_payload` + `streamed=true`），刷新页面后前端据此恢复历史消息底部
+      的「展开图谱 / 时间轴」按钮，并可再次拉起右侧史引面板；
+    - **V1.0.8 Prompt 兜底**：模型正文开头若出现「用户未提供……无法直接列举」这类
+      自相矛盾推诿句，服务端在下发 / 落库前确定性删除（`refusal_removed_chars` 上报字数）。
 
     事件格式（每帧 `data: {...}\\n\\n`）：
 
@@ -463,11 +524,32 @@ def chat_stream(
                         answer_text, deduped = sanitize_model_answer(
                             event.answer, drop_restated_tail=True
                         )
+                        # V1.0.8：删除「用户未提供……无法直接列举」这类自相矛盾的开场废话
+                        # （模型随后仍会给出答案，开头一句纯属推诿）。
+                        answer_text, refusal_removed = strip_false_refusal_preamble(
+                            answer_text
+                        )
                         payload["answer"] = answer_text
                         if deduped and not payload.get("deduped_chars"):
                             payload["deduped_chars"] = deduped
+                        if refusal_removed and not payload.get("refusal_removed_chars"):
+                            payload["refusal_removed_chars"] = refusal_removed
+                        # V1.0.8 Bug 1：把本轮 ui_actions 一并落库，刷新页面后历史消息
+                        # 仍能重建「展开图谱 / 时间轴」按钮并拉起右侧史引面板。
+                        answer_payload = build_stream_answer_payload(
+                            answer_text=answer_text,
+                            ui_actions=ui_actions_payload,
+                            model=model,
+                            request_id=request_id,
+                            snapshot_version=store.snapshot_meta.version,
+                            model_requested=body.model_id,
+                        )
                         _persist_stream_exchange(
-                            session_store, session_id, question, answer_text
+                            session_store,
+                            session_id,
+                            question,
+                            answer_text,
+                            answer_payload=answer_payload,
                         )
                         yield sse_event(payload)
                     break

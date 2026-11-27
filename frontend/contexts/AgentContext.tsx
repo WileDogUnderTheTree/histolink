@@ -24,6 +24,11 @@
  * 9. **多轮记忆**：会话历史与实体状态由后端 SessionStore 维护（前端继续随请求附带 history
  *    作为首次迁移兜底，已存在服务端会话时以服务端为准）。
  *
+ * V1.0.8（Bug 1）职责：
+ * 10. **刷新不丢联动按钮**：直答轮次的服务端会话快照携带 `ui_actions`；本文件在恢复历史时
+ *     再用 sessionStorage 缓存按「位置 + 角色 + 正文」补齐旧数据缺失的 answer
+ *     （`mergeCachedTurnAnswers`），F5 后历史消息底部按钮仍在、可再次拉起史引面板。
+ *
  * 安全：只展示服务端返回的 `answer.markdown` / 结构化字段，前端不拼接、不改写回答文本。
  */
 import {
@@ -61,6 +66,7 @@ import {
 import {
   getDefaultConversationRepository,
   groupConversationsByTime,
+  mergeCachedTurnAnswers,
   type ConversationGroup,
   type ConversationSummary,
   type StoredConversationTurn,
@@ -421,7 +427,10 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
       // 上一次 E2E 遗留的测试会话 id：绝不持久化 / 恢复。
       clearStoredSessionId();
     }
-    setTranscript(loadStoredTranscript());
+    // V1.0.8 Bug 1：先取出本标签页 sessionStorage 缓存，用于给服务端缺失 answer 的
+    // 历史轮次补回 `ui_actions`（刷新后历史消息底部的联动按钮不再消失）。
+    const cachedTranscript = loadStoredTranscript();
+    setTranscript(cachedTranscript);
 
     const restore = async () => {
       try {
@@ -449,7 +458,12 @@ export function AgentProvider({ children }: Readonly<{ children: React.ReactNode
           activeConversationIdRef.current = record.id;
           setActiveConversationId(record.id);
           if (record.turns.length > 0) {
-            const nextTranscript = record.turns.map((turn) => ({ ...turn }));
+            // V1.0.8 Bug 1：服务端旧轮次可能没有结构化 answer（直答历史数据），
+            // 用本标签页缓存补回 ui_actions，刷新后按钮 / 史引面板仍可再次拉起。
+            const nextTranscript = mergeCachedTurnAnswers(
+              record.turns.map((turn) => ({ ...turn })),
+              cachedTranscript,
+            );
             syncedTurnsSignatureRef.current = transcriptSignature(nextTranscript);
             syncedTurnCountRef.current = nextTranscript.length;
             setTranscript(nextTranscript);

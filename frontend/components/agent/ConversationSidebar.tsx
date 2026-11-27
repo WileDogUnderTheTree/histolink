@@ -377,7 +377,7 @@ export function ConversationSidebar({
 
       <footer className={styles.footer}>
         <p className={styles.footerNote}>
-          V1.0.7 · 历史对话已持久化（刷新后仍可恢复）
+          V1.0.8 · 历史对话已持久化（刷新后仍可恢复）
         </p>
       </footer>
 

@@ -1,4 +1,7 @@
 .layout {
+  /* V1.0.8 体验修复（Bug 2）：作为右侧详情面板绝对定位的包含块，
+     让面板高度跟随「画布所在网格行高」，而不是反过来把行高撑长。 */
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
   gap: 22px;
@@ -8,7 +11,11 @@
 
 .graphHost {
   position: relative;
-  min-height: 520px;
+  width: 100%;
+  /* V1.0.8（比例与缩放专项）：画布固定 16:9 宽高比 + 最小高度，
+     让「夏朝 5 个邻居」与「秦汉 27 个邻居」都在同一块稳定画布内自适应缩放。 */
+  aspect-ratio: 16 / 9;
+  min-height: 500px;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -24,7 +31,6 @@
   display: block;
   width: 100%;
   height: 100%;
-  min-height: 520px;
   overflow: visible;
 }
 
@@ -91,7 +97,9 @@
 /* 填满容器（史引副驾驶 iframe，V1.0.6.3 布局专项）：
    - 画布 `flex:1` 占满面板剩余宽度与高度（`min-height:0` 防止被内容撑破）；
    - 底部「当前中心 / 人物关系」信息卡固定 120px，内部独立滚动，
-     不再按 34% 比例拉伸成一条横杠、也不允许它撑满剩余屏幕。 */
+     不再按 34% 比例拉伸成一条横杠、也不允许它撑满剩余屏幕。
+   - V1.0.8 体验修复（Bug 2）补充：这里回到常规文档流（覆盖基础样式的绝对定位），
+     由 flex 列布局固定 120px——同样是内部滚动、不撑破 iframe。 */
 .layoutFill {
   display: flex;
   flex-direction: column;
@@ -103,6 +111,8 @@
 
 .layoutFill .graphHost {
   flex: 1 1 auto;
+  /* 史引副驾驶 iframe：父容器已给出确定高度，画布填满剩余空间，不再套 16:9。 */
+  aspect-ratio: auto;
   height: auto;
   min-height: 0;
 }
@@ -113,6 +123,9 @@
 }
 
 .layoutFill .panel {
+  /* V1.0.8 体验修复（Bug 2）：iframe 内走 flex 列布局，覆盖基础面板的绝对定位。 */
+  position: static;
+  width: auto;
   flex: 0 0 120px;
   height: 120px;
   max-height: 120px;
@@ -241,13 +254,33 @@
   fill: #fffdf8;
 }
 
+/* V1.0.8 体验修复（Bug 2）：右侧「人物关系 / 共同事件」详情面板。
+   - 绝对定位到右栏（宽度与 `.layout` 第二列 280px 一致）：高度 = 同一行画布高度
+     （画布有固定 16:9 + min-height），面板内容再长也不参与网格行高计算，
+     **绝不会把整页撑长**；
+   - `overflow-y: auto`：共同事件很多时只在面板内部出现滚动条（页面滚动不受影响）；
+   - 切换选中人物时由组件把面板 scrollTop 归零。 */
 .panel {
-  min-height: 220px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 280px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #cdbbab transparent;
   padding: 24px 20px;
   border: 1px solid var(--line);
   border-top: 3px solid var(--accent);
   border-radius: 4px;
   background: #fffdf8;
+}
+
+.panel:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 
 .panelEyebrow {
@@ -346,21 +379,33 @@
     grid-template-columns: 1fr;
   }
 
+  /* V1.0.8 体验修复（Bug 2）· 窄屏单列：详情卡回到常规流并封顶高度，
+     共同事件再多也只在卡片内部滚动，不会再把页面撑长。 */
   .panel {
+    position: static;
+    width: auto;
     min-height: 0;
+    max-height: min(60vh, 520px);
   }
 }
 
 @media (max-width: 620px) {
-  .graphHost,
-  .graph {
-    min-height: 520px;
+  .graphHost {
+    min-height: 460px;
   }
 
+  /* V1.0.8 体验修复：窄屏 / 史引 iframe 下提示文案固定在右下角，
+     横向给左下角缩放按钮留出空间，避免文字压住 ＋ / － / ⟲ 按钮。 */
   .graphHint {
-    left: 10px;
-    right: auto;
-    max-width: calc(100% - 20px);
+    left: auto;
+    right: 10px;
+    max-width: calc(100% - 138px);
+  }
+
+  .layoutFill .graphHint {
+    left: auto;
+    right: 8px;
+    max-width: calc(100% - 138px);
   }
 }
 

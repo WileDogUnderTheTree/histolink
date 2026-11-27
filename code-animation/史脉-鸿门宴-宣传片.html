@@ -1,0 +1,1915 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>史脉 · 鸿门宴 · 宣传片</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #080706; }
+  body { display: flex; align-items: center; justify-content: center; }
+  canvas { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+/* ==========================================================================
+   史脉 HistoLink · 鸿门宴 · 产品宣传片
+   风格：dsh-creation-mode Z1 水墨（宣纸留白 / 墨晕 / 朱砂印 / 描金）
+   纯 Canvas 2D 绘制 · window.renderAt(t) 为纯函数（同一 t 渲染同一帧）
+   无外部资源、无 Math.random、无 Date.now、不自动播放
+   ========================================================================== */
+'use strict';
+
+const W = 1920, H = 1080, DURATION = 44.6, FPS = 30;
+const canvas = document.getElementById('c');
+let ctx = canvas.getContext('2d', { alpha: false });
+
+/* ------------------------------------------------------------------ 数学 */
+const PI = Math.PI, TAU = PI * 2;
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+const lerp = (a, b, u) => a + (b - a) * u;
+const tween = (t, start, dur) => clamp01((t - start) / Math.max(dur, 1e-6));
+const easeOutCubic = (u) => 1 - Math.pow(1 - u, 3);
+const easeInCubic = (u) => u * u * u;
+const easeInOutCubic = (u) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
+const easeOutQuint = (u) => 1 - Math.pow(1 - u, 5);
+const easeInQuint = (u) => u * u * u * u * u;
+const easeOutExpo = (u) => (u >= 1 ? 1 : 1 - Math.pow(2, -10 * u));
+const easeOutBack = (u) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(u - 1, 3) + c1 * Math.pow(u - 1, 2); };
+const easeInOutQuint = (u) => (u < 0.5 ? 16 * u * u * u * u * u : 1 - Math.pow(-2 * u + 2, 5) / 2);
+const smoothstep = (u) => u * u * (3 - 2 * u);
+
+/** 固定种子伪随机：导出与预览逐帧一致。 */
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const rng = mulberry32(20261127);
+function hash01(n) { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453123; return x - Math.floor(x); }
+
+/* ------------------------------------------------------------------ 色板 */
+const P = {
+  ink: '#14100c', ink2: '#211a13', ink3: '#33291e',
+  paper: '#efe6d4', paper2: '#f8f1e2', paper3: '#e4d8c1',
+  red: '#a8322a', red2: '#c0473a', redDeep: '#7d241d',
+  gold: '#d8a94e', goldLight: '#f0cf87', goldDeep: '#9c7530',
+  jade: '#4c6b5c',
+  text: '#2a231a', textSoft: '#4a4033', muted: '#7d7263', line: '#d6c8ae'
+};
+function rgba(hex, a) {
+  const h = hex.replace('#', '');
+  const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16);
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+}
+
+/* ------------------------------------------------------------------ 字体 */
+const FONT = {
+  kai: (size, weight = 400) => `${weight} ${size}px "KaiTi","STKaiti","Kaiti SC","SimSun",serif`,
+  song: (size, weight = 400) => `${weight} ${size}px "SimSun","STSong","Songti SC","Source Han Serif SC",serif`,
+  sans: (size, weight = 400) => `${weight} ${size}px "Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif`,
+  mono: (size, weight = 400) => `${weight} ${size}px ui-monospace,"Cascadia Mono","Consolas","SF Mono",monospace`
+};
+
+/* ------------------------------------------------------------------ 文本 */
+const TEXTS = {
+  question: '两千年前的刘邦和项羽，他们之间到底发生了什么？',
+  timelineNodes: [
+    { label: '秦统一', year: '前 221' },
+    { label: '鸿门宴', year: '前 206', main: true },
+    { label: '楚汉相争', year: '前 206—前 202' },
+    { label: '汉建立', year: '前 202' }
+  ],
+  intro: ['鸿门宴', '公元前 206 年，项羽设宴于鸿门', '刘邦赴宴，席间杀机四伏'],
+  people: [
+    { id: 'liubang', name: '刘邦', role: '沛公', center: true },
+    { id: 'xiangyu', name: '项羽', role: '西楚霸王' },
+    { id: 'zhangliang', name: '张良', role: '谋士' },
+    { id: 'fankuai', name: '樊哙', role: '参乘' },
+    { id: 'xiangzhuang', name: '项庄', role: '项氏子弟' },
+    { id: 'fanzeng', name: '范增', role: '亚父' }
+  ],
+  u1: '项羽为什么被称为西楚霸王？',
+  a1: '项羽分封诸侯，自封为西楚霸王。',
+  u2: '鸿门宴上项羽为什么不杀刘邦？',
+  loading: ['正在检索时间轴与人物图谱…', '比对《史记》原文…'],
+  toast: '已连接本地大模型 XiaoHong-v1',
+  a2: '据《史记》记载，项羽刚愎自用，轻视刘邦，故未杀。',
+  citation: '《史记·项羽本纪》',
+  evidence: '证据 · 时间轴 × 人物图谱',
+  panelTitle: '史引', panelSub: '证据面板',
+  panelTimeline: '时间轴', panelGraph: '人物图谱',
+  panelButtons: ['查看时间轴', '查看人物图谱'],
+  tagline: ['史脉', ' · ', '让每一次好奇都有出处'],
+  github: 'github.com/WileDogUnderTheTree/histolink',
+  sideLeft: '以史为脉', sideRight: '以证为引'
+};
+
+/* ------------------------------------------------------------------ 画布 */
+function makeCanvas(w, h) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  return c;
+}
+function roundRectPath(c, x, y, w, h, r) {
+  const rr = Math.min(r, w / 2, h / 2);
+  c.beginPath();
+  c.moveTo(x + rr, y);
+  c.arcTo(x + w, y, x + w, y + h, rr);
+  c.arcTo(x + w, y + h, x, y + h, rr);
+  c.arcTo(x, y + h, x, y, rr);
+  c.arcTo(x, y, x + w, y, rr);
+  c.closePath();
+}
+function fillRoundRect(c, x, y, w, h, r, fill) {
+  roundRectPath(c, x, y, w, h, r);
+  c.fillStyle = fill; c.fill();
+}
+
+/* ------------------------------------------------------------------ 纹理 */
+/** 噪点贴图（种子固定，只生成一次）。 */
+function makeNoiseTile(size, seed, alpha) {
+  const c = makeCanvas(size, size);
+  const x = c.getContext('2d');
+  const img = x.createImageData(size, size);
+  const r = mulberry32(seed);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = 128 + (r() - 0.5) * 255;
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+    img.data[i + 3] = Math.round(alpha * 255);
+  }
+  x.putImageData(img, 0, 0);
+  return c;
+}
+const NOISE_TILE = makeNoiseTile(256, 7, 1);
+function grainOver(c, alpha, comp) {
+  const pat = c.createPattern(NOISE_TILE, 'repeat');
+  c.save();
+  c.globalAlpha = alpha;
+  c.globalCompositeOperation = comp || 'overlay';
+  c.fillStyle = pat;
+  c.fillRect(0, 0, W, H);
+  c.restore();
+}
+/** 预渲染光斑（可着色）。 */
+function makeGlowSprite(hex, size) {
+  const c = makeCanvas(size, size);
+  const x = c.getContext('2d');
+  const r = size / 2;
+  const g = x.createRadialGradient(r, r, 0, r, r, r);
+  g.addColorStop(0, rgba(hex, 1));
+  g.addColorStop(0.18, rgba(hex, 0.55));
+  g.addColorStop(0.5, rgba(hex, 0.16));
+  g.addColorStop(1, rgba(hex, 0));
+  x.fillStyle = g;
+  x.fillRect(0, 0, size, size);
+  return c;
+}
+const GLOW_GOLD = makeGlowSprite('#f0cf87', 256);
+const GLOW_RED = makeGlowSprite('#c0473a', 256);
+const GLOW_WARM = makeGlowSprite('#d8a94e', 256);
+const GLOW_PAPER = makeGlowSprite('#fbf3df', 256);
+const GLOW_INK = makeGlowSprite('#1a140e', 256);
+
+/** 不规则墨团贴图：多个径向渐变圆并集 + 边缘侵蚀。 */
+function makeInkBlob(seed, size, blobs) {
+  const c = makeCanvas(size, size);
+  const x = c.getContext('2d');
+  const r = mulberry32(seed);
+  const cx = size / 2, cy = size / 2;
+  x.filter = 'blur(6px)';
+  for (let i = 0; i < blobs; i++) {
+    const a = r() * TAU;
+    const d = (r() * 0.34 + 0.05) * size;
+    const rr = (r() * 0.22 + 0.16) * size;
+    const bx = cx + Math.cos(a) * d;
+    const by = cy + Math.sin(a) * d * 0.86;
+    const g = x.createRadialGradient(bx, by, rr * 0.15, bx, by, rr);
+    g.addColorStop(0, 'rgba(255,255,255,0.95)');
+    g.addColorStop(0.62, 'rgba(255,255,255,0.72)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g;
+    x.beginPath(); x.arc(bx, by, rr, 0, TAU); x.fill();
+  }
+  x.filter = 'none';
+  return c;
+}
+const INK_BLOB_A = makeInkBlob(11, 1024, 9);
+const INK_BLOB_B = makeInkBlob(29, 1024, 12);
+/** 墨晕转场遮罩：边缘有毛刺与飞白的不规则白色团（用作 destination-in）。 */
+function makeWipeMask(seed) {
+  const S = 1024;
+  const c = makeCanvas(S, S);
+  const x = c.getContext('2d');
+  const r = mulberry32(seed);
+  const cx = S / 2, cy = S / 2;
+  x.filter = 'blur(4px)';
+  for (let i = 0; i < 22; i++) {
+    const a = r() * TAU;
+    const d = r() * S * 0.16;
+    const rr = S * (0.2 + r() * 0.14);
+    const g = x.createRadialGradient(cx + Math.cos(a) * d, cy + Math.sin(a) * d, rr * 0.4, cx + Math.cos(a) * d, cy + Math.sin(a) * d, rr);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.75, 'rgba(255,255,255,0.98)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.beginPath(); x.arc(cx + Math.cos(a) * d, cy + Math.sin(a) * d, rr, 0, TAU); x.fill();
+  }
+  // 边缘毛刺：沿圆周随机拉出细长墨丝
+  for (let i = 0; i < 90; i++) {
+    const a = r() * TAU;
+    const d0 = S * (0.3 + r() * 0.06);
+    const len = S * (0.02 + r() * 0.1);
+    x.strokeStyle = 'rgba(255,255,255,0.9)';
+    x.lineWidth = S * (0.002 + r() * 0.006);
+    x.lineCap = 'round';
+    x.beginPath();
+    x.moveTo(cx + Math.cos(a) * d0, cy + Math.sin(a) * d0);
+    x.lineTo(cx + Math.cos(a + (r() - 0.5) * 0.16) * (d0 + len), cy + Math.sin(a + (r() - 0.5) * 0.16) * (d0 + len));
+    x.stroke();
+  }
+  // 边缘侵蚀成半透明飞白
+  x.filter = 'blur(2px)';
+  for (let i = 0; i < 260; i++) {
+    const a = r() * TAU;
+    const d = S * (0.3 + r() * 0.12);
+    const rr = S * (0.004 + r() * 0.022);
+    x.globalCompositeOperation = 'destination-out';
+    x.fillStyle = 'rgba(0,0,0,' + (0.35 + r() * 0.5).toFixed(3) + ')';
+    x.beginPath();
+    x.arc(cx + Math.cos(a) * d, cy + Math.sin(a) * d, rr, 0, TAU);
+    x.fill();
+  }
+  x.globalCompositeOperation = 'source-over';
+  x.filter = 'none';
+  return c;
+}
+const WIPE_MASK = makeWipeMask(41);
+
+/* -------------------------------------------------------------- 印章贴图 */
+/** 深红圆形「史」字印章：印泥颗粒 + 边缘缺损 + 内圈。 */
+function makeSeal() {
+  const S = 520, R = 232;
+  const c = makeCanvas(S, S);
+  const x = c.getContext('2d');
+  const r = mulberry32(2026);
+  const cx = S / 2, cy = S / 2;
+  // 底色：朱砂，中心略深
+  const g = x.createRadialGradient(cx, cy - 30, 20, cx, cy, R);
+  g.addColorStop(0, '#b23a2f');
+  g.addColorStop(0.55, '#a13028');
+  g.addColorStop(1, '#8a2620');
+  x.fillStyle = g;
+  x.beginPath(); x.arc(cx, cy, R, 0, TAU); x.fill();
+  // 印泥颗粒
+  x.globalCompositeOperation = 'overlay';
+  x.globalAlpha = 0.35;
+  x.fillStyle = x.createPattern(makeNoiseTile(128, 5, 1), 'repeat');
+  x.beginPath(); x.arc(cx, cy, R, 0, TAU); x.fill();
+  x.globalAlpha = 1;
+  x.globalCompositeOperation = 'source-over';
+  // 外圈与内圈（米黄描边，模仿印面）
+  x.strokeStyle = 'rgba(245,232,204,0.9)';
+  x.lineWidth = 10;
+  x.beginPath(); x.arc(cx, cy, R - 16, 0, TAU); x.stroke();
+  x.lineWidth = 5;
+  x.strokeStyle = 'rgba(245,232,204,0.62)';
+  x.beginPath(); x.arc(cx, cy, R - 58, 0, TAU); x.stroke();
+  // 「史」字（篆意楷体），米黄
+  x.save();
+  x.translate(cx, cy + 6);
+  x.fillStyle = 'rgba(247,236,213,0.96)';
+  x.font = '700 210px "KaiTi","STKaiti","SimSun",serif';
+  x.textAlign = 'center';
+  x.textBaseline = 'middle';
+  x.fillText('史', 0, 0);
+  x.restore();
+  // 边缘缺损（destination-out）
+  x.globalCompositeOperation = 'destination-out';
+  for (let i = 0; i < 420; i++) {
+    const a = r() * TAU;
+    const edge = R - 26 + r() * 34;
+    const rr = 1 + r() * 7;
+    x.fillStyle = 'rgba(0,0,0,' + (0.4 + r() * 0.6).toFixed(3) + ')';
+    x.beginPath(); x.arc(cx + Math.cos(a) * edge, cy + Math.sin(a) * edge, rr, 0, TAU); x.fill();
+  }
+  // 内部斑驳
+  for (let i = 0; i < 120; i++) {
+    const a = r() * TAU, d = r() * (R - 60);
+    x.fillStyle = 'rgba(0,0,0,' + (0.05 + r() * 0.25).toFixed(3) + ')';
+    x.beginPath(); x.arc(cx + Math.cos(a) * d, cy + Math.sin(a) * d, 0.5 + r() * 5, 0, TAU); x.fill();
+  }
+  x.globalCompositeOperation = 'source-over';
+  return c;
+}
+const SEAL = makeSeal();
+
+/* ------------------------------------------------------------- 背景预渲染 */
+function renderBgDark(seed, centerGlow) {
+  const c = makeCanvas(W, H);
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#0b0906');
+  g.addColorStop(0.4, '#14100a');
+  g.addColorStop(0.72, '#0f0c08');
+  g.addColorStop(1, '#060504');
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  // 中心极淡的暖光（像一盏灯打在宣纸上）
+  x.globalCompositeOperation = 'screen';
+  x.globalAlpha = centerGlow;
+  x.drawImage(GLOW_WARM, W / 2 - 900, H / 2 - 900, 1800, 1800);
+  x.globalAlpha = 1;
+  x.globalCompositeOperation = 'source-over';
+  // 暗角
+  const v = x.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.28, W / 2, H / 2, Math.max(W, H) * 0.78);
+  v.addColorStop(0, 'rgba(0,0,0,0)');
+  v.addColorStop(0.65, 'rgba(0,0,0,0.22)');
+  v.addColorStop(1, 'rgba(0,0,0,0.62)');
+  x.fillStyle = v; x.fillRect(0, 0, W, H);
+  const pat = x.createPattern(NOISE_TILE, 'repeat');
+  x.globalAlpha = 0.055; x.globalCompositeOperation = 'overlay';
+  x.fillStyle = pat; x.fillRect(0, 0, W, H);
+  x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
+  return c;
+}
+function renderBgPaper(seed) {
+  const c = makeCanvas(W, H);
+  const x = c.getContext('2d');
+  const r = mulberry32(seed);
+  const g = x.createLinearGradient(0, 0, W * 0.35, H);
+  g.addColorStop(0, '#f6efe1');
+  g.addColorStop(0.45, '#f0e7d5');
+  g.addColorStop(1, '#e7dcc6');
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  // 纸浆纤维：极淡的横向长纹
+  x.globalAlpha = 0.05;
+  x.strokeStyle = '#8b7a5e';
+  for (let i = 0; i < 120; i++) {
+    const y = r() * H;
+    x.lineWidth = 0.5 + r() * 1.2;
+    x.beginPath();
+    x.moveTo(r() * W * 0.5 - 100, y);
+    x.lineTo(r() * W, y + (r() - 0.5) * 6);
+    x.stroke();
+  }
+  x.globalAlpha = 1;
+  // 大块淡墨（宣纸上的水痕）
+  x.globalAlpha = 0.10;
+  x.drawImage(INK_BLOB_A, -260, 620, 1100, 900);
+  x.globalAlpha = 0.06;
+  x.drawImage(INK_BLOB_B, 1180, -320, 1000, 820);
+  // 暖色高光
+  x.globalCompositeOperation = 'screen';
+  x.globalAlpha = 0.22;
+  x.drawImage(GLOW_PAPER, W * 0.28, -700, 1900, 1900);
+  x.globalAlpha = 1;
+  x.globalCompositeOperation = 'source-over';
+  // 暗角（轻）
+  const v = x.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.42, W / 2, H / 2, Math.max(W, H) * 0.8);
+  v.addColorStop(0, 'rgba(0,0,0,0)');
+  v.addColorStop(1, 'rgba(96,74,44,0.20)');
+  x.fillStyle = v; x.fillRect(0, 0, W, H);
+  const pat = x.createPattern(NOISE_TILE, 'repeat');
+  x.globalAlpha = 0.05; x.globalCompositeOperation = 'overlay';
+  x.fillStyle = pat; x.fillRect(0, 0, W, H);
+  x.globalAlpha = 1; x.globalCompositeOperation = 'source-over';
+  return c;
+}
+const BG_DARK = renderBgDark(3, 0.10);
+const BG_PAPER = renderBgPaper(9);
+const BG_END = renderBgDark(5, 0.07);
+
+const TEMP = makeCanvas(W, H);
+const TEMP_CTX = TEMP.getContext('2d');
+
+/* ------------------------------------------------------------------ 通用绘制 */
+function darkOverlay(alpha) {
+  if (alpha <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = clamp01(alpha);
+  ctx.fillStyle = '#070504';
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+function drawGlow(img, x, y, size, alpha, comp) {
+  if (alpha <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = clamp01(alpha);
+  ctx.globalCompositeOperation = comp || 'screen';
+  ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
+  ctx.restore();
+}
+function textLine(str, x, y, font, color, align, baseline, alpha) {
+  ctx.save();
+  ctx.font = font;
+  ctx.fillStyle = color;
+  ctx.textAlign = align || 'left';
+  ctx.textBaseline = baseline || 'alphabetic';
+  ctx.globalAlpha = alpha === undefined ? 1 : clamp01(alpha);
+  ctx.fillText(str, x, y);
+  ctx.restore();
+}
+function measure(str, font) {
+  ctx.save(); ctx.font = font;
+  const w = ctx.measureText(str).width;
+  ctx.restore();
+  return w;
+}
+function wrapCJK(str, maxWidth, font) {
+  ctx.save(); ctx.font = font;
+  const lines = [];
+  let line = '';
+  for (const ch of str) {
+    if (ch === '\n') { lines.push(line); line = ''; continue; }
+    const test = line + ch;
+    if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = ch; }
+    else line = test;
+  }
+  if (line) lines.push(line);
+  ctx.restore();
+  return lines;
+}
+function drawVerticalText(str, x, y, size, fontFn, color, alpha, gap) {
+  ctx.save();
+  ctx.font = fontFn(size, 500);
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.globalAlpha = clamp01(alpha);
+  const step = size + (gap === undefined ? size * 0.35 : gap);
+  for (let i = 0; i < str.length; i++) ctx.fillText(str[i], x, y + i * step);
+  ctx.restore();
+}
+function drawSealMini(x, y, r, alpha) {
+  ctx.save();
+  ctx.globalAlpha = clamp01(alpha);
+  ctx.translate(x, y);
+  ctx.fillStyle = '#a13028';
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill();
+  ctx.strokeStyle = 'rgba(247,236,213,0.78)';
+  ctx.lineWidth = Math.max(1, r * 0.09);
+  ctx.beginPath(); ctx.arc(0, 0, r * 0.84, 0, TAU); ctx.stroke();
+  ctx.fillStyle = 'rgba(248,238,216,0.96)';
+  ctx.font = FONT.kai(Math.round(r * 1.28), 700);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('史', 0, r * 0.06);
+  ctx.restore();
+}
+/** 毛笔笔触线：主线 + 几道飞白 + 收笔圆点，随 progress 生长。 */
+function brushLine(x0, y0, x1, y1, progress, width, color, alpha) {
+  const u = clamp01(progress);
+  if (u <= 0) return;
+  const ex = lerp(x0, x1, u);
+  const ey = lerp(y0, y1, u);
+  const dx = x1 - x0, dy = y1 - y0;
+  const len = Math.max(1, Math.hypot(dx, dy));
+  ctx.save();
+  ctx.globalAlpha = clamp01(alpha);
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  // 主笔：分段变宽，起笔轻、行笔稳、收笔回锋
+  const segs = Math.max(6, Math.round(24 * u));
+  let prevX = x0, prevY = y0;
+  for (let i = 1; i <= segs; i++) {
+    const p = i / segs;
+    const px = lerp(x0, ex, p);
+    const py = lerp(y0, ey, p);
+    const taper = 0.55 + 0.5 * Math.sin(Math.pow(p, 0.8) * PI * 0.92 + 0.22);
+    ctx.lineWidth = Math.max(0.6, width * taper);
+    ctx.beginPath();
+    ctx.moveTo(prevX, prevY);
+    ctx.lineTo(px, py);
+    ctx.stroke();
+    prevX = px; prevY = py;
+  }
+  // 飞白：几道细线沿笔迹轻微波动，模拟宣纸吃墨不匀
+  ctx.lineWidth = Math.max(0.8, width * 0.24);
+  ctx.globalAlpha = clamp01(alpha) * 0.5;
+  for (let k = -1; k <= 1; k++) {
+    if (k === 0) continue;
+    const off = k * width * 0.34;
+    ctx.beginPath();
+    const steps = 12;
+    for (let i = 0; i <= steps; i++) {
+      const p = i / steps;
+      const px = x0 + dx * (u * p);
+      const py = y0 + dy * (u * p) + off + Math.sin(p * 9 + k * 1.7) * width * 0.14;
+      if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
+  // 收笔回锋圆点
+  ctx.globalAlpha = clamp01(alpha);
+  ctx.beginPath();
+  ctx.arc(ex, ey, Math.max(1, width * 0.5), 0, TAU);
+  ctx.fill();
+  ctx.restore();
+}
+/* ==========================================================================
+   第一幕 · 悬念与时间轴（0.0 – 15.2s）
+   ========================================================================== */
+
+/* 金尘粒子：固定种子，逐帧解析位置 */
+const DUST = (() => {
+  const r = mulberry32(77);
+  const list = [];
+  for (let i = 0; i < 46; i++) {
+    list.push({
+      x: r() * W, y: r() * H,
+      r: 0.5 + r() * 1.5,
+      phase: r() * TAU,
+      drift: 5 + r() * 16,
+      tw: 0.5 + r() * 0.9
+    });
+  }
+  return list;
+})();
+function drawDust(t, alpha) {
+  for (const d of DUST) {
+    let y = (d.y - t * d.drift) % H;
+    if (y < 0) y += H;
+    const x = d.x + Math.sin(t * 0.22 + d.phase) * 12;
+    const tw = 0.4 + 0.6 * (0.5 + 0.5 * Math.sin(t * 1.15 * d.tw + d.phase * 3));
+    drawGlow(GLOW_GOLD, x, y, d.r * 13, alpha * tw * 0.34);
+  }
+}
+/** 暖光空气感：两团极淡的光在暗场里缓慢呼吸。 */
+function drawAtmosphere(t, strength) {
+  const s = strength === undefined ? 1 : strength;
+  drawGlow(GLOW_WARM, 780 + Math.sin(t * 0.08) * 42, 400 + Math.cos(t * 0.07) * 26, 1550, 0.065 * s);
+  drawGlow(GLOW_WARM, 1200 + Math.cos(t * 0.055) * 52, 720 + Math.sin(t * 0.091) * 30, 1250, 0.045 * s);
+}
+
+/* ---------------------------------------------------------------- 打字机提问 */
+const QFONT = FONT.song(64, 500);
+function drawQuestion(t) {
+  const fade = 1 - easeInCubic(tween(t, 3.30, 0.55));
+  if (fade <= 0) return;
+  const q = TEXTS.question;
+  ctx.save();
+  ctx.font = QFONT;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  const totalW = ctx.measureText(q).width;
+  const x0 = (W - totalW) / 2;
+  const y0 = H * 0.5 + 8;
+  const lift = 8 * (1 - fade);
+  // 上方小角标
+  const capA = easeOutCubic(tween(t, 0.1, 0.6)) * fade;
+  ctx.save();
+  ctx.font = FONT.song(21, 400);
+  ctx.letterSpacing = '8px';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = rgba(P.gold, 0.5);
+  ctx.globalAlpha = capA * 0.8;
+  ctx.fillText('史脉 · 鸿门宴', W / 2, y0 - 118);
+  ctx.restore();
+  // 原文字宽（不含字距）
+  if (ctx.letterSpacing !== undefined) ctx.letterSpacing = '0px';
+  // 逐字敲出（23 字 × 0.095s ≈ 2.1s，最后停在 2.54s，留 0.7s 让问句被看清）
+  const typed = clamp(Math.floor((t - 0.45) / 0.095) + 1, 0, q.length);
+  let cursorX = x0;
+  for (let i = 0; i < q.length; i++) {
+    const ch = q[i];
+    const w = ctx.measureText(ch).width;
+    const appear = tween(t, 0.45 + i * 0.095, 0.16);
+    if (appear > 0) {
+      const a = easeOutCubic(appear) * fade;
+      ctx.globalAlpha = a;
+      ctx.fillStyle = '#ece2cf';
+      ctx.shadowColor = rgba(P.gold, 0.30);
+      ctx.shadowBlur = 20;
+      ctx.fillText(ch, cursorX, y0 + 12 * (1 - easeOutCubic(appear)) + lift);
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
+    }
+    cursorX += w;
+    if (i === typed - 1) break;
+  }
+  // 光标：方波闪烁，停字后继续闪 0.6s 再整体淡出
+  const blink = Math.floor(t * 2) % 2 === 0;
+  if (t > 0.36 && blink) {
+    const show = typed < q.length ? 1 : 1;
+    ctx.globalAlpha = 0.85 * fade * show;
+    ctx.fillStyle = rgba(P.goldLight, 0.9);
+    ctx.fillRect(cursorX + 8, y0 - 46 + lift, 4, 60);
+    ctx.globalAlpha = 1;
+  }
+  ctx.restore();
+}
+
+/* ---------------------------------------------------------------- 发光时间轴 */
+const TL = { y: 520, x0: 388, x1: 1512 };
+const TL_NODES = [
+  { x: 388, label: '秦统一', year: '前 221' },
+  { x: 930, label: '鸿门宴', year: '前 206', main: true },
+  { x: 1176, label: '楚汉相争', year: '前 206—前 202' },
+  { x: 1452, label: '汉建立', year: '前 202' }
+];
+const TL_SPAN = TL.x1 - TL.x0;
+
+function drawTimeline(t) {
+  const gIn = easeOutCubic(tween(t, 3.95, 0.5));
+  const gOut = 1 - easeInCubic(tween(t, 8.55, 0.45));
+  const gA = gIn * gOut;
+  if (gA <= 0) return;
+  const y = TL.y;
+  const lineU = easeInOutCubic(tween(t, 4.10, 0.95));
+  const reached = TL.x0 + TL_SPAN * lineU;
+
+  ctx.save();
+  ctx.globalAlpha = gA;
+
+  // 笔线：下方墨晕 + 主线
+  brushLine(TL.x0, y, TL.x1, y, lineU, 14, rgba(P.goldDeep, 0.16), 0.9);
+  brushLine(TL.x0, y, TL.x1, y, lineU, 3.6, rgba(P.goldLight, 0.95), 1);
+  // 起笔浓墨点
+  drawGlow(GLOW_GOLD, TL.x0, y, 90, 0.5 * lineU);
+
+  // 刻度节点
+  TL_NODES.forEach((n, i) => {
+    const appear = clamp01((reached - n.x) / 30 + 0.4);
+    if (appear <= 0) return;
+    const a = easeOutCubic(appear);
+    // 竖刻度
+    ctx.globalAlpha = gA * a;
+    ctx.strokeStyle = n.main ? rgba(P.goldLight, 0.9) : rgba(P.gold, 0.5);
+    ctx.lineWidth = n.main ? 2.4 : 1.4;
+    ctx.beginPath();
+    ctx.moveTo(n.x, y - (n.main ? 16 : 11));
+    ctx.lineTo(n.x, y + (n.main ? 16 : 11));
+    ctx.stroke();
+    // 点
+    ctx.fillStyle = n.main ? rgba(P.red2, 1) : rgba(P.paper, 0.9);
+    ctx.beginPath(); ctx.arc(n.x, y, n.main ? 7 : 4.5, 0, TAU); ctx.fill();
+    if (n.main) {
+      ctx.strokeStyle = rgba(P.goldLight, 0.85);
+      ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.arc(n.x, y, 12, 0, TAU); ctx.stroke();
+    }
+    // 年份
+    ctx.font = FONT.song(n.main ? 24 : 20, 400);
+    ctx.fillStyle = n.main ? rgba(P.goldLight, 0.9) : rgba(P.gold, 0.55);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.globalAlpha = gA * a;
+    ctx.fillText(n.year, n.x, y - 34);
+    // 名称（主节点的大字标题放在时间轴下方，避免重复）
+    if (!n.main) {
+      ctx.font = FONT.kai(24, 500);
+      ctx.fillStyle = rgba(P.paper, 0.62);
+      ctx.fillText(n.label, n.x, y + 46);
+    }
+    ctx.globalAlpha = gA;
+  });
+
+  // 主节点：光点滑行并定格
+  const travelU = easeInOutCubic(tween(t, 5.05, 1.50));
+  const dotX = lerp(TL.x0, TL_NODES[1].x, travelU);
+  if (t >= 5.0) {
+    // 拖尾
+    for (let k = 8; k >= 1; k--) {
+      const back = t - k * 0.028;
+      const u2 = easeInOutCubic(tween(back, 5.05, 1.50));
+      const bx = lerp(TL.x0, TL_NODES[1].x, u2);
+      drawGlow(GLOW_GOLD, bx, y, 46 - k * 3.4, (0.30 - k * 0.026) * gA);
+    }
+    drawGlow(GLOW_GOLD, dotX, y, 130, 0.85 * gA);
+    ctx.globalAlpha = gA;
+    ctx.fillStyle = '#fff6e2';
+    ctx.beginPath(); ctx.arc(dotX, y, 5.2, 0, TAU); ctx.fill();
+    ctx.globalAlpha = gA;
+  }
+
+  // 定格冲击：环形光晕
+  if (t >= 6.55) {
+    for (let k = 0; k < 2; k++) {
+      const h = tween(t, 6.55 + k * 0.07, 0.85);
+      if (h <= 0 || h >= 1) continue;
+      const r = 18 + 150 * easeOutCubic(h);
+      ctx.globalAlpha = (1 - h) * 0.7 * gA;
+      ctx.strokeStyle = k === 0 ? rgba(P.goldLight, 0.95) : rgba(P.red2, 0.7);
+      ctx.lineWidth = (k === 0 ? 2.6 : 1.6);
+      ctx.beginPath(); ctx.arc(TL_NODES[1].x, y, r, 0, TAU); ctx.stroke();
+    }
+    ctx.globalAlpha = gA;
+  }
+  ctx.restore();
+
+  // 介绍文字（在时间轴下方的留白里浮现）
+  drawTimelineIntro(t, gOut);
+}
+
+function drawTimelineIntro(t, gOut) {
+  const a = easeOutCubic(tween(t, 6.90, 0.65)) * gOut;
+  if (a <= 0) return;
+  const cxm = 960;
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.globalAlpha = a;
+  // 标题
+  const tu = easeOutCubic(tween(t, 6.98, 0.7));
+  ctx.font = FONT.kai(54, 600);
+  ctx.letterSpacing = '6px';
+  ctx.fillStyle = '#f0e3c8';
+  ctx.shadowColor = rgba(P.gold, 0.35);
+  ctx.shadowBlur = 26;
+  ctx.globalAlpha = a * tu;
+  ctx.fillText(TEXTS.intro[0], cxm, 712 + 10 * (1 - tu));
+  ctx.shadowBlur = 0;
+  if (ctx.letterSpacing !== undefined) ctx.letterSpacing = '0px';
+  // 细金线
+  const lu = easeOutCubic(tween(t, 7.05, 0.5));
+  ctx.globalAlpha = a * lu * 0.8;
+  const lw = 190 * lu;
+  const grad = ctx.createLinearGradient(cxm - lw, 0, cxm + lw, 0);
+  grad.addColorStop(0, rgba(P.gold, 0));
+  grad.addColorStop(0.5, rgba(P.gold, 0.85));
+  grad.addColorStop(1, rgba(P.gold, 0));
+  ctx.fillStyle = grad;
+  ctx.fillRect(cxm - lw, 738, lw * 2, 1.6);
+  // 两行说明
+  for (let i = 0; i < 2; i++) {
+    const u = easeOutCubic(tween(t, 7.20 + i * 0.30, 0.55));
+    ctx.font = FONT.song(30, 400);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = i === 0 ? 'rgba(232,224,206,0.88)' : 'rgba(206,196,176,0.78)';
+    ctx.globalAlpha = a * u;
+    ctx.fillText(TEXTS.intro[1 + i], cxm, 800 + i * 46 + 12 * (1 - u));
+  }
+  ctx.restore();
+}
+
+/* ---------------------------------------------------------------- 人物关系网 */
+const NODES = [
+  { id: 'liubang', x: 960, y: 545, r: 88, t0: 8.90, center: true },
+  { id: 'xiangyu', x: 1330, y: 292, r: 66, t0: 9.45 },
+  { id: 'zhangliang', x: 588, y: 328, r: 62, t0: 9.95 },
+  { id: 'fankuai', x: 578, y: 772, r: 62, t0: 10.45 },
+  { id: 'xiangzhuang', x: 1342, y: 778, r: 62, t0: 10.95 },
+  { id: 'fanzeng', x: 1588, y: 536, r: 62, t0: 11.45 }
+];
+const EDGES = [
+  { a: 'liubang', b: 'xiangyu', label: '相争' },
+  { a: 'liubang', b: 'zhangliang', label: '君臣' },
+  { a: 'liubang', b: 'fankuai', label: '护卫' },
+  { a: 'xiangyu', b: 'fanzeng', label: '亚父' },
+  { a: 'xiangyu', b: 'xiangzhuang', label: '同族', dashed: true }
+];
+const NODE_MAP = {};
+for (const n of NODES) NODE_MAP[n.id] = n;
+const PEOPLE_MAP = {};
+for (const p of TEXTS.people) PEOPLE_MAP[p.id] = p;
+
+function edgeCurve(a, b) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const len = Math.max(1, Math.hypot(dx, dy));
+  const ux = dx / len, uy = dy / len;
+  const ax = a.x + ux * (a.r + 8), ay = a.y + uy * (a.r + 8);
+  const bx = b.x - ux * (b.r + 8), by = b.y - uy * (b.r + 8);
+  const bend = (hash01(a.x * 3 + b.y) - 0.5) * 26;
+  const mx = (ax + bx) / 2 - uy * bend;
+  const my = (ay + by) / 2 + ux * bend;
+  return { ax, ay, bx, by, mx, my };
+}
+function quadPoint(ax, ay, mx, my, bx, by, u) {
+  const v = 1 - u;
+  return {
+    x: v * v * ax + 2 * v * u * mx + u * u * bx,
+    y: v * v * ay + 2 * v * u * my + u * u * by
+  };
+}
+
+function drawNetwork(t) {
+  const gIn = easeOutCubic(tween(t, 8.68, 0.55));
+  const gOut = 1 - easeInCubic(tween(t, 15.05, 0.6));
+  const gA = gIn * gOut;
+  if (gA <= 0) return;
+
+  // 背景聚光：让视线落在中心
+  drawGlow(GLOW_WARM, 960, 548, 1500, 0.10 * gA);
+
+  // 连线（先画线，节点压在上面）
+  EDGES.forEach((e, idx) => {
+    const a = NODE_MAP[e.a], b = NODE_MAP[e.b];
+    const start = Math.max(a.t0, b.t0) + 0.14;
+    const u = easeInOutCubic(tween(t, start, 0.5));
+    if (u <= 0) return;
+    const cv = edgeCurve(a, b);
+    const shimmer = 0.55 + 0.45 * Math.sin(t * 1.6 + idx * 1.7);
+    ctx.save();
+    ctx.globalAlpha = gA * u;
+    // 墨底
+    ctx.strokeStyle = 'rgba(10,8,6,0.55)';
+    ctx.lineWidth = 4.4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cv.ax, cv.ay);
+    ctx.quadraticCurveTo(cv.mx, cv.my, cv.bx, cv.by);
+    ctx.stroke();
+    // 金线
+    const grad = ctx.createLinearGradient(cv.ax, cv.ay, cv.bx, cv.by);
+    grad.addColorStop(0, rgba(P.gold, 0.10 + 0.14 * shimmer));
+    grad.addColorStop(0.5, rgba(P.goldLight, 0.30 + 0.26 * shimmer));
+    grad.addColorStop(1, rgba(P.gold, 0.10 + 0.14 * shimmer));
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 1.5;
+    if (e.dashed) ctx.setLineDash([7, 8]);
+    ctx.beginPath();
+    ctx.moveTo(cv.ax, cv.ay);
+    ctx.quadraticCurveTo(cv.mx, cv.my, cv.bx, cv.by);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  });
+
+  // 关系注记（12.0s 后浮现）
+  EDGES.forEach((e, idx) => {
+    const a = NODE_MAP[e.a], b = NODE_MAP[e.b];
+    const appear = easeOutCubic(tween(t, 12.0 + idx * 0.09, 0.42));
+    if (appear <= 0) return;
+    const cv = edgeCurve(a, b);
+    const mid = quadPoint(cv.ax, cv.ay, cv.mx, cv.my, cv.bx, cv.by, 0.5);
+    const label = e.label;
+    ctx.save();
+    ctx.font = FONT.kai(19, 500);
+    const tw = ctx.measureText(label).width;
+    const bw = tw + 26, bh = 30;
+    ctx.globalAlpha = gA * appear * 0.95;
+    fillRoundRect(ctx, mid.x - bw / 2, mid.y - bh / 2, bw, bh, 15, 'rgba(18,14,10,0.78)');
+    ctx.strokeStyle = rgba(P.gold, 0.28);
+    ctx.lineWidth = 1;
+    roundRectPath(ctx, mid.x - bw / 2, mid.y - bh / 2, bw, bh, 15);
+    ctx.stroke();
+    ctx.fillStyle = rgba(P.goldLight, 0.85);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, mid.x, mid.y + 1);
+    ctx.restore();
+  });
+
+  // 节点
+  NODES.forEach((n, idx) => {
+    const u = tween(t, n.t0, 0.55);
+    if (u <= 0) return;
+    const appear = easeOutCubic(u);
+    const pop = easeOutBack(u);
+    const scale = lerp(0.72, 1, pop) * (1 + 0.012 * Math.sin(t * 1.1 + idx));
+    const alpha = appear * gA;
+    const p = PEOPLE_MAP[n.id];
+    const r = n.r * scale;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    // 光晕
+    drawGlow(n.center ? GLOW_RED : GLOW_WARM, n.x, n.y, r * (n.center ? 6.2 : 4.6), n.center ? 0.34 : 0.16);
+    // 落位墨圈
+    const ringU = tween(t, n.t0 + 0.05, 0.6);
+    if (ringU < 1) {
+      ctx.globalAlpha = (1 - ringU) * 0.5 * gA;
+      ctx.strokeStyle = rgba(P.gold, 0.8);
+      ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.arc(n.x, n.y, r + 22 + 44 * easeOutCubic(ringU), 0, TAU); ctx.stroke();
+      ctx.globalAlpha = alpha;
+    }
+    // 墨底圆
+    const g = ctx.createRadialGradient(n.x, n.y - r * 0.4, r * 0.2, n.x, n.y, r);
+    if (n.center) {
+      g.addColorStop(0, 'rgba(58,32,26,0.98)');
+      g.addColorStop(1, 'rgba(26,17,13,0.98)');
+    } else {
+      g.addColorStop(0, 'rgba(38,30,22,0.98)');
+      g.addColorStop(1, 'rgba(19,15,11,0.98)');
+    }
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, TAU); ctx.fill();
+    // 描边
+    ctx.strokeStyle = n.center ? rgba(P.red2, 0.95) : rgba(P.gold, 0.62);
+    ctx.lineWidth = n.center ? 2.6 : 1.6;
+    ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, TAU); ctx.stroke();
+    if (n.center) {
+      ctx.strokeStyle = rgba(P.goldLight, 0.7);
+      ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(n.x, n.y, r - 10, 0, TAU); ctx.stroke();
+    }
+    // 姓名
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#f4e9d2';
+    ctx.font = FONT.kai(n.center ? 50 : 34, 700);
+    if (n.center) {
+      ctx.fillText(p.name, n.x, n.y - 6);
+      ctx.font = FONT.song(20, 400);
+      ctx.fillStyle = rgba(P.paper3, 0.72);
+      ctx.fillText(p.role, n.x, n.y + 42);
+    } else {
+      ctx.fillText(p.name, n.x, n.y + 2);
+      ctx.font = FONT.song(19, 400);
+      ctx.fillStyle = rgba(P.paper, 0.58);
+      ctx.fillText(p.role, n.x, n.y + r + 30);
+    }
+    ctx.restore();
+  });
+
+  // 成网一瞬：自中心荡开的涟漪
+  if (t >= 12.2) {
+    for (let k = 0; k < 2; k++) {
+      const h = tween(t, 12.2 + k * 0.12, 1.0);
+      if (h <= 0 || h >= 1) continue;
+      ctx.save();
+      ctx.globalAlpha = (1 - h) * 0.32 * gA;
+      ctx.strokeStyle = rgba(P.goldLight, 0.9);
+      ctx.lineWidth = 2 - k * 0.6;
+      ctx.beginPath(); ctx.arc(960, 545, 140 + 420 * easeOutCubic(h), 0, TAU); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // 图谱数据角标（具体信息，落在画面下方留白）
+  const factA = easeOutCubic(tween(t, 12.5, 0.6)) * gA;
+  if (factA > 0) {
+    ctx.save();
+    ctx.globalAlpha = factA * 0.72;
+    ctx.font = FONT.sans(21, 400);
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = 'rgba(214,203,182,0.72)';
+    ctx.letterSpacing = '2px';
+    ctx.fillText('图谱数据 · 1,217 位人物 / 840 对关系 / 5,112 条图谱边', 960, 1002);
+    if (ctx.letterSpacing !== undefined) ctx.letterSpacing = '0px';
+    ctx.restore();
+  }
+}
+
+/* ---------------------------------------------------------------- 第一幕总装 */
+function drawAct1(t) {
+  ctx.drawImage(BG_DARK, 0, 0);
+  drawAtmosphere(t, 1);
+  drawDust(t, 0.85);
+  if (t < 4.0) drawQuestion(t);
+  if (t >= 3.95) drawTimeline(t);
+  if (t >= 8.6) drawNetwork(t);
+}
+/* ==========================================================================
+   第二幕 · Agent 对话（15.2 – 35.4s）
+   左侧约六成：宣纸聊天界面；右侧「史引」证据面板滑出；问答驱动界面联动
+   ========================================================================== */
+const GLOW_JADE = makeGlowSprite('#5cc48a', 256);
+
+const CHAT = { x: 70, y: 110, w: 1050, h: 880, r: 26 };
+const PANEL = { x: 1150, y: 110, w: 700, h: 880, r: 26, xOff: 1920, xTarget: 1150 };
+
+/* -------------------------------------------------------------- 基础组件 */
+function chatCard(x, y, w, h, r, fill, shadowAlpha, border) {
+  ctx.save();
+  ctx.shadowColor = `rgba(74,52,30,${shadowAlpha})`;
+  ctx.shadowBlur = 54;
+  ctx.shadowOffsetY = 20;
+  fillRoundRect(ctx, x, y, w, h, r, fill);
+  ctx.restore();
+  ctx.save();
+  ctx.strokeStyle = border || 'rgba(96,72,44,0.16)';
+  ctx.lineWidth = 1.2;
+  roundRectPath(ctx, x, y, w, h, r);
+  ctx.stroke();
+  // 纸纹
+  ctx.save();
+  roundRectPath(ctx, x, y, w, h, r);
+  ctx.clip();
+  const pat = ctx.createPattern(NOISE_TILE, 'repeat');
+  ctx.globalAlpha = 0.045;
+  ctx.globalCompositeOperation = 'overlay';
+  ctx.fillStyle = pat;
+  ctx.fillRect(x, y, w, h);
+  ctx.restore();
+  ctx.restore();
+}
+function drawChip(t, start, label, x, y, accent, alphaScale) {
+  const u = tween(t, start, 0.45);
+  if (u <= 0) return 0;
+  const a = easeOutCubic(u);
+  const dy = 8 * (1 - a);
+  ctx.save();
+  ctx.font = FONT.sans(19, 400);
+  const tw = ctx.measureText(label).width;
+  const w = tw + 40, h = 32;
+  ctx.globalAlpha = a * (alphaScale === undefined ? 1 : alphaScale);
+  fillRoundRect(ctx, x, y + dy, w, h, 16, 'rgba(243,236,220,0.96)');
+  ctx.strokeStyle = 'rgba(196,176,140,0.55)';
+  ctx.lineWidth = 1;
+  roundRectPath(ctx, x, y + dy, w, h, 16);
+  ctx.stroke();
+  ctx.fillStyle = accent || P.gold;
+  roundRectPath(ctx, x + 10, y + dy + 9, 3, 14, 1.5);
+  ctx.fill();
+  ctx.fillStyle = '#6e6354';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x + 22, y + dy + h / 2 + 1);
+  ctx.restore();
+  return w;
+}
+/** 逐字流式输出（同一 t 决定显示到第几个字）。 */
+function drawStream(text, x, y, font, color, t, start, perChar, lineH, maxW) {
+  ctx.save();
+  ctx.font = font;
+  ctx.fillStyle = color;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  const lines = maxW ? wrapCJK(text, maxW, font) : [text];
+  let idx = 0;
+  let lastX = x, lastY = y;
+  for (let li = 0; li < lines.length; li++) {
+    let cursor = x;
+    for (const ch of lines[li]) {
+      const appear = tween(t, start + idx * perChar, 0.14);
+      const w = ctx.measureText(ch).width;
+      if (appear > 0) {
+        ctx.globalAlpha = easeOutCubic(appear);
+        ctx.fillText(ch, cursor, y + li * lineH);
+      }
+      cursor += w;
+      lastX = cursor; lastY = y + li * lineH;
+      idx++;
+    }
+  }
+  // 光标
+  const typed = Math.floor((t - start) / perChar) + 1;
+  const total = text.length;
+  if (t >= start && typed < total && Math.floor(t * 2) % 2 === 0) {
+    ctx.globalAlpha = 0.75;
+    ctx.fillStyle = rgba(P.red, 0.8);
+    ctx.fillRect(lastX + 4, lastY - 28, 3, 30);
+  }
+  ctx.restore();
+}
+
+/* -------------------------------------------------------------- 聊天窗口 */
+function drawChatWindow(t, A) {
+  const aEnter = A === undefined ? 1 : A;
+  const { x, y, w, h, r } = CHAT;
+  chatCard(x, y, w, h, r, '#fdf9ee', 0.27, 'rgba(96,72,44,0.20)');
+
+  // 顶部细金线
+  ctx.save();
+  const g = ctx.createLinearGradient(x + 60, 0, x + w - 60, 0);
+  g.addColorStop(0, rgba(P.gold, 0));
+  g.addColorStop(0.5, rgba(P.gold, 0.55));
+  g.addColorStop(1, rgba(P.gold, 0));
+  ctx.fillStyle = g;
+  ctx.fillRect(x + 60, y + 1.2, w - 120, 1.2);
+  ctx.restore();
+
+  // 头部
+  drawSealMini(x + 54, y + 46, 24, aEnter);
+  textLine('史令', x + 96, y + 44, FONT.kai(33, 700), '#2a231a', 'left', 'alphabetic', aEnter);
+  textLine('严格史料派 · 引经据典', x + 96, y + 74, FONT.sans(17, 400), 'rgba(120,108,90,0.9)', 'left', 'alphabetic', aEnter);
+  // 模型状态胶囊
+  ctx.save();
+  ctx.font = FONT.sans(16, 400);
+  const pillText = '本地模型 · XiaoHong-v1';
+  const pw = ctx.measureText(pillText).width + 44;
+  const px = x + w - 30 - pw, py = y + 30, ph = 32;
+  fillRoundRect(ctx, px, py, pw, ph, 16, 'rgba(76,107,92,0.10)');
+  ctx.strokeStyle = 'rgba(76,107,92,0.28)';
+  ctx.lineWidth = 1;
+  roundRectPath(ctx, px, py, pw, ph, 16);
+  ctx.stroke();
+  drawGlow(GLOW_JADE, px + 18, py + ph / 2, 34, 0.5);
+  ctx.fillStyle = '#4c6b5c';
+  ctx.beginPath(); ctx.arc(px + 18, py + ph / 2, 3.2, 0, TAU); ctx.fill();
+  ctx.fillStyle = 'rgba(64,88,76,0.92)';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(pillText, px + 30, py + ph / 2 + 1);
+  ctx.restore();
+
+  // 分隔线
+  ctx.fillStyle = 'rgba(120,96,60,0.13)';
+  ctx.fillRect(x + 30, y + 92, w - 60, 1);
+
+  // 开场空态：一句引导，等第一条提问出现前淡出
+  if (t < 17.08) {
+    const ea = 1 - easeInCubic(tween(t, 16.80, 0.26));
+    if (ea > 0) {
+      const cx = x + w / 2, cy = y + h * 0.42;
+      ctx.save();
+      ctx.globalAlpha = ea * 0.85 * aEnter;
+      drawSealMini(cx, cy - 30, 21, 0.55);
+      ctx.font = FONT.sans(22, 400);
+      ctx.fillStyle = 'rgba(124,112,94,0.72)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('向史令提问 · 每条回答都带出处', cx, cy + 34);
+      ctx.restore();
+    }
+  }
+
+  // 消息
+  drawChatMessages(t);
+  // 输入条
+  drawInputBar(t);
+}
+
+/* -------------------------------------------------------------- 消息：用户气泡 */
+function drawUserMsg(t, start, text, top) {
+  const u = tween(t, start, 0.5);
+  if (u <= 0) return;
+  const a = easeOutCubic(u);
+  const dy = 22 * (1 - a);
+  ctx.save();
+  ctx.font = FONT.sans(27, 400);
+  const tw = ctx.measureText(text).width;
+  const bw = Math.min(tw + 58, 790);
+  const bh = 74;
+  const bx = CHAT.x + CHAT.w - 38 - bw;
+  const by = top + dy;
+  ctx.globalAlpha = a;
+  // 阴影 + 气泡
+  ctx.save();
+  ctx.shadowColor = 'rgba(122,40,32,0.24)';
+  ctx.shadowBlur = 22;
+  ctx.shadowOffsetY = 9;
+  const grad = ctx.createLinearGradient(bx, by, bx, by + bh);
+  grad.addColorStop(0, '#b03a30');
+  grad.addColorStop(1, '#8e2a24');
+  fillRoundRect(ctx, bx, by, bw, bh, 20, grad);
+  ctx.restore();
+  // 小尾巴
+  ctx.fillStyle = '#8e2a24';
+  ctx.beginPath();
+  ctx.moveTo(bx + bw - 26, by + bh - 10);
+  ctx.lineTo(bx + bw - 6, by + bh + 10);
+  ctx.lineTo(bx + bw - 44, by + bh - 2);
+  ctx.closePath();
+  ctx.fill();
+  // 文字
+  ctx.fillStyle = '#fbf3e3';
+  ctx.font = FONT.sans(27, 400);
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, bx + bw - 28, by + bh / 2 + 1);
+  ctx.restore();
+}
+/* -------------------------------------------------------------- 消息：史令气泡 */
+function drawAIMsg(t, start, text, top, opts) {
+  const u = tween(t, start, 0.5);
+  if (u <= 0) return;
+  const a = easeOutCubic(u);
+  const dy = 16 * (1 - a);
+  const avX = CHAT.x + 54, avY = top + 26;
+  const bx = CHAT.x + 100;
+  const by = top + 30 + dy;
+  const font = FONT.sans(30, 400);
+  const tw = measure(text, font);
+  const bw = Math.min(tw + 50, 720);
+  const bh = 84;
+  ctx.save();
+  ctx.globalAlpha = a;
+  drawSealMini(avX, avY + 16, 22, 1);
+  textLine('史令', bx, top + 14 + dy, FONT.sans(18, 600), 'rgba(96,84,66,0.9)', 'left', 'alphabetic', 1);
+  ctx.save();
+  ctx.shadowColor = 'rgba(96,72,44,0.13)';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 8;
+  fillRoundRect(ctx, bx, by, bw, bh, 18, '#fffdf6');
+  ctx.restore();
+  ctx.strokeStyle = 'rgba(190,172,140,0.5)';
+  ctx.lineWidth = 1;
+  roundRectPath(ctx, bx, by, bw, bh, 18);
+  ctx.stroke();
+  drawStream(text, bx + 25, by + 52, font, '#2a231a', t, opts.streamStart || start, 0.045, 44, bw - 50);
+  ctx.restore();
+  if (opts.chip && t >= (opts.chipTime || 0)) {
+    drawChip(t, opts.chipTime, opts.chip, bx, by + bh + 12, P.gold);
+  }
+}
+
+/* -------------------------------------------------------------- 思考 / 作答 */
+const ANSWER_TOP = 644;
+const ANSWER_X = CHAT.x + 100;
+const ANSWER_W = 720;
+function drawThinkingAnswer(t) {
+  if (t < 21.35) return;
+  const appear = easeOutCubic(tween(t, 21.35, 0.5));
+  const loadingOut = tween(t, 24.35, 0.22);
+  const isAnswer = t >= 24.45;
+  const avX = CHAT.x + 54, avY = ANSWER_TOP + 26;
+  const bx = ANSWER_X;
+  const bh = isAnswer ? lerp(108, 144, easeOutCubic(tween(t, 24.45, 0.28))) : 108;
+  const by = ANSWER_TOP + 30;
+  ctx.save();
+  ctx.globalAlpha = appear;
+  drawSealMini(avX, avY + 16, 22, 1);
+  textLine('史令', bx, ANSWER_TOP + 14, FONT.sans(18, 600), 'rgba(96,84,66,0.9)', 'left', 'alphabetic', 1);
+  // 气泡
+  ctx.save();
+  ctx.shadowColor = 'rgba(96,72,44,0.13)';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 8;
+  fillRoundRect(ctx, bx, by, ANSWER_W, bh, 18, '#fffdf6');
+  ctx.restore();
+  ctx.strokeStyle = 'rgba(190,172,140,0.5)';
+  ctx.lineWidth = 1;
+  roundRectPath(ctx, bx, by, ANSWER_W, bh, 18);
+  ctx.stroke();
+
+  // —— 加载态：三个墨点 + 检索文案（3 秒）——
+  if (t < 24.45) {
+    const loadA = 1 - easeInCubic(loadingOut);
+    ctx.save();
+    ctx.globalAlpha = appear * loadA;
+    // 墨点
+    for (let i = 0; i < 3; i++) {
+      const bounce = Math.abs(Math.sin(t * 3.4 + i * 0.85)) * 8;
+      const dx = bx + 42 + i * 34;
+      const dy = by + 56 - bounce;
+      drawGlow(GLOW_INK, dx, dy, 40, 0.20);
+      ctx.fillStyle = 'rgba(58,47,34,' + (0.55 + 0.35 * (1 - bounce / 9)).toFixed(3) + ')';
+      ctx.beginPath(); ctx.arc(dx, dy, 5.2, 0, TAU); ctx.fill();
+    }
+    // 扫描光
+    const sweepU = (t * 0.5) % 1;
+    ctx.save();
+    roundRectPath(ctx, bx, by, ANSWER_W, bh, 18);
+    ctx.clip();
+    const sx = bx - 160 + sweepU * (ANSWER_W + 320);
+    const gg = ctx.createLinearGradient(sx, 0, sx + 240, 0);
+    gg.addColorStop(0, 'rgba(216,169,78,0)');
+    gg.addColorStop(0.5, 'rgba(216,169,78,0.10)');
+    gg.addColorStop(1, 'rgba(216,169,78,0)');
+    ctx.fillStyle = gg;
+    ctx.fillRect(bx, by, ANSWER_W, bh);
+    ctx.restore();
+    // 文案交叉淡入
+    const swap = easeInOutCubic(tween(t, 22.62, 0.4));
+    const line1 = TEXTS.loading[0], line2 = TEXTS.loading[1];
+    ctx.font = FONT.sans(22, 400);
+    ctx.fillStyle = 'rgba(110,99,84,0.95)';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.globalAlpha = appear * (1 - swap);
+    ctx.fillText(line1, bx + 140, by + 56);
+    ctx.globalAlpha = appear * swap;
+    ctx.fillText(line2, bx + 140, by + 56);
+    ctx.restore();
+  }
+
+  // —— 作答态：答案逐字输出 + 引文徽章 ——
+  if (t >= 24.45) {
+    const ansA = appear;
+    ctx.save();
+    ctx.globalAlpha = ansA;
+    const font = FONT.sans(30, 400);
+    drawStream(TEXTS.a2, bx + 25, by + 52, font, '#2a231a', t, 24.45, 0.055, 46, ANSWER_W - 50);
+    ctx.restore();
+    // 徽章
+    if (t >= 25.95) {
+      let cx = bx;
+      const w1 = drawChip(t, 25.95, TEXTS.citation, cx, by + bh + 12, P.gold, ansA);
+      cx += w1 + 10;
+      drawChip(t, 26.10, TEXTS.evidence, cx, by + bh + 12, P.jade, ansA);
+      // 联动高亮：徽章外一圈金环
+      if (t >= 29.95 && t < 31.4) {
+        const pulse = Math.sin(clamp01((t - 29.95) / 1.45) * PI);
+        ctx.save();
+        ctx.globalAlpha = pulse * 0.55;
+        ctx.strokeStyle = rgba(P.goldLight, 0.9);
+        ctx.lineWidth = 2;
+        roundRectPath(ctx, bx - 4, by + bh + 8, ANSWER_W + 8, 40, 20);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
+  ctx.restore();
+}
+
+/* -------------------------------------------------------------- 输入条 */
+function drawInputBar(t) {
+  const u = easeOutCubic(tween(t, 16.95, 0.5));
+  if (u <= 0) return;
+  const { x, w } = CHAT;
+  const bx = x + 36, bw = w - 72, bh = 58;
+  const by = CHAT.y + CHAT.h - 92;
+  ctx.save();
+  ctx.globalAlpha = u;
+  fillRoundRect(ctx, bx, by, bw, bh, 29, '#f4eddd');
+  ctx.strokeStyle = 'rgba(196,176,140,0.5)';
+  ctx.lineWidth = 1;
+  roundRectPath(ctx, bx, by, bw, bh, 29);
+  ctx.stroke();
+  ctx.font = FONT.sans(20, 400);
+  ctx.fillStyle = 'rgba(140,126,106,0.85)';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('追问「鸿门宴」里的人物与时间…', bx + 28, by + bh / 2 + 1);
+  // 发送按钮
+  const sx = bx + bw - 28, sy = by + bh / 2;
+  drawGlow(GLOW_RED, sx, sy, 90, 0.28);
+  const g = ctx.createLinearGradient(sx, sy - 22, sx, sy + 22);
+  g.addColorStop(0, '#b03a30');
+  g.addColorStop(1, '#8e2a24');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(sx, sy, 22, 0, TAU); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,246,226,0.85)';
+  ctx.lineWidth = 2.4;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(sx, sy + 8);
+  ctx.lineTo(sx, sy - 8);
+  ctx.moveTo(sx - 6, sy - 2);
+  ctx.lineTo(sx, sy - 8);
+  ctx.lineTo(sx + 6, sy - 2);
+  ctx.stroke();
+  // 右下角小字
+  ctx.font = FONT.sans(15, 400);
+  ctx.fillStyle = 'rgba(150,136,114,0.75)';
+  ctx.textAlign = 'right';
+  ctx.fillText('Enter 发送 · Shift + Enter 换行', bx + bw - 62, by - 12);
+  ctx.restore();
+}
+
+/* -------------------------------------------------------------- Toast */
+function drawToast(t) {
+  if (t < 22.45 || t > 25.65) return;
+  const inU = tween(t, 22.50, 0.42);
+  const outU = tween(t, 25.05, 0.42);
+  const a = easeOutCubic(inU) * (1 - easeInCubic(outU));
+  if (a <= 0) return;
+  const y = lerp(-18, 34, easeOutQuint(inU)) - 18 * easeInCubic(outU);
+  const w = 640, h = 64, x = (W - w) / 2;
+  ctx.save();
+  ctx.globalAlpha = a;
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.45)';
+  ctx.shadowBlur = 34;
+  ctx.shadowOffsetY = 12;
+  fillRoundRect(ctx, x, y, w, h, 32, 'rgba(25,20,14,0.95)');
+  ctx.restore();
+  ctx.strokeStyle = rgba(P.gold, 0.35);
+  ctx.lineWidth = 1;
+  roundRectPath(ctx, x, y, w, h, 32);
+  ctx.stroke();
+  // 绿色状态点
+  const pulse = 0.6 + 0.4 * Math.sin(t * 4.2);
+  drawGlow(GLOW_JADE, x + 34, y + h / 2, 60, 0.35 * pulse);
+  ctx.fillStyle = '#6fc894';
+  ctx.beginPath(); ctx.arc(x + 34, y + h / 2, 5.4, 0, TAU); ctx.fill();
+  // 文案
+  ctx.font = FONT.sans(24, 400);
+  ctx.fillStyle = '#f3ead9';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(TEXTS.toast, x + 58, y + h / 2 + 1);
+  ctx.restore();
+}
+
+/* -------------------------------------------------------------- 史引面板 */
+function drawPanelTimeline(px, py, t) {
+  // 标题
+  const hA = easeOutCubic(tween(t, 27.58, 0.5));
+  if (hA <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = hA;
+  ctx.fillStyle = rgba(P.red, 0.9);
+  ctx.beginPath(); ctx.arc(px + 52, py + 150, 3.4, 0, TAU); ctx.fill();
+  ctx.font = FONT.sans(19, 600);
+  ctx.fillStyle = 'rgba(96,84,66,0.95)';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(TEXTS.panelTimeline, px + 66, py + 151);
+  ctx.fillStyle = 'rgba(196,176,140,0.45)';
+  ctx.fillRect(px + 48, py + 176, 604, 1);
+  ctx.restore();
+
+  const y = py + 250;
+  const x0 = px + 52, x1 = px + 648;
+  const lineU = easeInOutCubic(tween(t, 27.62, 0.55));
+  ctx.save();
+  ctx.globalAlpha = hA;
+  brushLine(x0, y, x1, y, lineU, 6, rgba(P.goldDeep, 0.20), 0.8);
+  brushLine(x0, y, x1, y, lineU, 2, rgba(P.gold, 0.75), 0.9);
+  const nodes = [
+    { x: px + 96, label: '秦统一', year: '前 221' },
+    { x: px + 288, label: '鸿门宴', year: '前 206', main: true },
+    { x: px + 452, label: '楚汉相争', year: '前 206—202' },
+    { x: px + 610, label: '汉建立', year: '前 202' }
+  ];
+  nodes.forEach((n, i) => {
+    const u = easeOutCubic(tween(t, 27.74 + i * 0.08, 0.4));
+    if (u <= 0) return;
+    ctx.globalAlpha = hA * u;
+    ctx.fillStyle = n.main ? P.red2 : rgba(P.ink3, 0.75);
+    ctx.beginPath(); ctx.arc(n.x, y, n.main ? 5.4 : 3.6, 0, TAU); ctx.fill();
+    if (n.main) {
+      ctx.strokeStyle = rgba(P.red2, 0.45);
+      ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.arc(n.x, y, 10, 0, TAU); ctx.stroke();
+    }
+    ctx.font = FONT.sans(14, 400);
+    ctx.fillStyle = 'rgba(140,126,106,0.9)';
+    ctx.textAlign = 'center';
+    ctx.fillText(n.year, n.x, y - 18);
+    ctx.font = FONT.sans(16, n.main ? 600 : 400);
+    ctx.fillStyle = n.main ? P.red : 'rgba(86,74,58,0.9)';
+    ctx.fillText(n.label, n.x, y + 30);
+    ctx.globalAlpha = hA;
+  });
+  // 32.6 时间轴节点脉冲
+  if (t >= 32.6 && t < 33.6) {
+    const p = tween(t, 32.6, 1.0);
+    const n = nodes[1];
+    ctx.save();
+    ctx.globalAlpha = (1 - p) * 0.6 * hA;
+    ctx.strokeStyle = rgba(P.red2, 0.9);
+    ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(n.x, y, 10 + 26 * easeOutCubic(p), 0, TAU); ctx.stroke();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+function drawPanelGraph(px, py, t) {
+  const hA = easeOutCubic(tween(t, 27.90, 0.5));
+  if (hA <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = hA;
+  ctx.fillStyle = rgba(P.jade, 0.9);
+  ctx.beginPath(); ctx.arc(px + 52, py + 372, 3.4, 0, TAU); ctx.fill();
+  ctx.font = FONT.sans(19, 600);
+  ctx.fillStyle = 'rgba(96,84,66,0.95)';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(TEXTS.panelGraph, px + 66, py + 373);
+  ctx.fillStyle = 'rgba(196,176,140,0.45)';
+  ctx.fillRect(px + 48, py + 398, 604, 1);
+  ctx.restore();
+
+  const cn = { x: px + 226, y: py + 556, r: 32, name: '刘邦' };
+  const nodes = [
+    { x: px + 452, y: py + 486, r: 22, name: '项羽' },
+    { x: px + 124, y: py + 470, r: 20, name: '张良' },
+    { x: px + 116, y: py + 668, r: 20, name: '樊哙' },
+    { x: px + 430, y: py + 676, r: 20, name: '项庄' },
+    { x: px + 572, y: py + 560, r: 20, name: '范增' }
+  ];
+  const edges = [
+    [cn, nodes[0]], [cn, nodes[1]], [cn, nodes[2]], [nodes[0], nodes[3]], [nodes[0], nodes[4]]
+  ];
+  const lineU = easeInOutCubic(tween(t, 27.95, 0.6));
+  ctx.save();
+  ctx.globalAlpha = hA;
+  edges.forEach(([a, b], idx) => {
+    const appear = easeInOutCubic(tween(t, 27.95 + idx * 0.1, 0.45)) * lineU;
+    if (appear <= 0) return;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const len = Math.max(1, Math.hypot(dx, dy));
+    const ux = dx / len, uy = dy / len;
+    const ax = a.x + ux * (a.r + 4), ay = a.y + uy * (a.r + 4);
+    const bx2 = b.x - ux * (b.r + 4), by2 = b.y - uy * (b.r + 4);
+    ctx.strokeStyle = rgba(P.gold, 0.42);
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(lerp(ax, bx2, appear), lerp(ay, by2, appear));
+    ctx.stroke();
+  });
+  // 中心节点
+  const popC = easeOutCubic(tween(t, 28.0, 0.45));
+  ctx.globalAlpha = hA * popC;
+  drawGlow(GLOW_RED, cn.x, cn.y, 190, 0.28);
+  ctx.fillStyle = 'rgba(50,29,24,0.97)';
+  ctx.beginPath(); ctx.arc(cn.x, cn.y, cn.r, 0, TAU); ctx.fill();
+  ctx.strokeStyle = rgba(P.red2, 0.85);
+  ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.arc(cn.x, cn.y, cn.r, 0, TAU); ctx.stroke();
+  ctx.fillStyle = '#f4e9d2';
+  ctx.font = FONT.kai(24, 700);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(cn.name, cn.x, cn.y + 1);
+  // 外围节点
+  nodes.forEach((n, i) => {
+    const u = easeOutCubic(tween(t, 28.08 + i * 0.08, 0.45));
+    if (u <= 0) return;
+    const pulse = 1 + 0.02 * Math.sin(t * 1.6 + i);
+    ctx.globalAlpha = hA * u;
+    ctx.fillStyle = 'rgba(36,27,20,0.95)';
+    ctx.beginPath(); ctx.arc(n.x, n.y, n.r * pulse, 0, TAU); ctx.fill();
+    ctx.strokeStyle = rgba(P.gold, 0.55);
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.arc(n.x, n.y, n.r * pulse, 0, TAU); ctx.stroke();
+    ctx.fillStyle = 'rgba(240,230,210,0.92)';
+    ctx.font = FONT.kai(17, 600);
+    ctx.fillText(n.name, n.x, n.y + 1);
+  });
+  // 31.6 图谱节点脉冲
+  if (t >= 31.6 && t < 32.7) {
+    const p = tween(t, 31.6, 1.1);
+    ctx.globalAlpha = (1 - p) * 0.55 * hA;
+    ctx.strokeStyle = rgba(P.goldLight, 0.9);
+    ctx.lineWidth = 1.4;
+    nodes.forEach((n) => {
+      ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 6 + 18 * easeOutCubic(p), 0, TAU); ctx.stroke();
+    });
+  }
+  ctx.restore();
+}
+function drawPanelButtons(px, py, t) {
+  const u = easeOutCubic(tween(t, 28.12, 0.5));
+  if (u <= 0) return;
+  const specs = [
+    { label: TEXTS.panelButtons[0], primary: true },
+    { label: TEXTS.panelButtons[1], primary: false }
+  ];
+  let x = px + 48;
+  ctx.save();
+  specs.forEach((s) => {
+    const w = 296, h = 56, y = py + 762;
+    ctx.globalAlpha = u;
+    fillRoundRect(ctx, x, y, w, h, 28, s.primary ? 'rgba(168,50,42,0.07)' : 'rgba(216,169,78,0.07)');
+    ctx.strokeStyle = s.primary ? rgba(P.red, 0.45) : rgba(P.goldDeep, 0.4);
+    ctx.lineWidth = 1.2;
+    roundRectPath(ctx, x, y, w, h, 28);
+    ctx.stroke();
+    ctx.font = FONT.sans(20, 500);
+    ctx.fillStyle = s.primary ? 'rgba(150,48,40,0.95)' : 'rgba(96,80,58,0.92)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(s.label, x + w / 2, y + h / 2 + 1);
+    x += w + 12;
+  });
+  ctx.restore();
+}
+function drawPanel(t) {
+  if (t < 27.2) return;
+  const slide = easeOutQuint(tween(t, 27.2, 0.85));
+  const px = lerp(PANEL.xOff, PANEL.xTarget, slide);
+  const { y, w, h, r } = PANEL;
+  chatCard(px, y, w, h, r, '#fdf8ec', 0.30, 'rgba(96,72,44,0.22)');
+  // 顶部细金线
+  ctx.save();
+  const g = ctx.createLinearGradient(px + 60, 0, px + w - 60, 0);
+  g.addColorStop(0, rgba(P.gold, 0));
+  g.addColorStop(0.5, rgba(P.gold, 0.6));
+  g.addColorStop(1, rgba(P.gold, 0));
+  ctx.fillStyle = g;
+  ctx.fillRect(px + 60, y + 1.2, w - 120, 1.2);
+  ctx.restore();
+  // 头部
+  const hA = easeOutCubic(tween(t, 27.32, 0.5));
+  drawSealMini(px + 56, y + 56, 25, hA);
+  textLine('史引', px + 102, y + 52, FONT.kai(38, 700), '#2a231a', 'left', 'alphabetic', hA);
+  textLine('证据面板 · 与回答同步', px + 102, y + 84, FONT.sans(18, 400), 'rgba(120,108,90,0.9)', 'left', 'alphabetic', hA);
+  if (hA > 0) {
+    ctx.save();
+    ctx.globalAlpha = hA * 0.9;
+    ctx.fillStyle = 'rgba(120,96,60,0.14)';
+    ctx.fillRect(px + 48, y + 108, w - 96, 1);
+    ctx.restore();
+  }
+  drawPanelTimeline(px, y, t);
+  drawPanelGraph(px, y, t);
+  drawPanelButtons(px, y, t);
+}
+/** 引文徽章 → 史引面板 的联动虚线。 */
+function drawConnector(t) {
+  if (t < 29.9 || t > 33.9) return;
+  const u = easeOutCubic(tween(t, 29.9, 0.8));
+  const fadeOut = 1 - easeInCubic(tween(t, 33.3, 0.55));
+  const a = u * fadeOut;
+  if (a <= 0) return;
+  const x1 = CHAT.x + CHAT.w - 20, y1 = 806;
+  const x2 = PANEL.xTarget + 1, y2 = 372;
+  ctx.save();
+  ctx.globalAlpha = 0.55 * a;
+  ctx.strokeStyle = rgba(P.goldLight, 0.8);
+  ctx.lineWidth = 1.6;
+  ctx.setLineDash([9, 9]);
+  ctx.lineDashOffset = -t * 42;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.bezierCurveTo(x1 + 30, y1 + 110, x2 - 110, y2 + 150, x2, y2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  drawGlow(GLOW_GOLD, x1, y1, 70, 0.45 * a);
+  drawGlow(GLOW_GOLD, x2, y2, 110 * (0.85 + 0.15 * Math.sin(t * 4)), 0.55 * a);
+  ctx.fillStyle = rgba(P.goldLight, 0.9 * a);
+  ctx.beginPath(); ctx.arc(x2, y2, 3.4, 0, TAU); ctx.fill();
+  ctx.restore();
+}
+
+/* -------------------------------------------------------------- 第二幕装饰 */
+function drawAct2Decor(t) {
+  const a = easeOutCubic(tween(t, 16.5, 0.8));
+  if (a <= 0) return;
+  ctx.save();
+  // 右上角品牌角标（按文字宽度右对齐，避免超出画面）
+  const markText = '史脉 HistoLink';
+  const markW = measure(markText, FONT.kai(27, 600));
+  const markX = 1872 - markW;
+  drawSealMini(markX - 32, 74, 20, a * 0.85);
+  textLine(markText, markX, 84, FONT.kai(27, 600), 'rgba(58,47,34,0.72)', 'left', 'alphabetic', a);
+  // 大号淡墨「史」字水印（面板滑出后被覆盖）
+  ctx.save();
+  ctx.globalAlpha = a * 0.055;
+  ctx.font = FONT.kai(330, 700);
+  ctx.fillStyle = P.ink;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('史', 1446, 640);
+  ctx.restore();
+  // 竖排小字
+  drawVerticalText('问答驱动 · 界面联动', 1786, 300, 23, FONT.kai, 'rgba(80,66,48,0.32)', a, 12);
+  drawVerticalText('让每一次好奇都有出处', 1836, 620, 19, FONT.kai, 'rgba(80,66,48,0.20)', a, 10);
+  // 地面淡金线
+  ctx.globalAlpha = a * 0.5;
+  const g = ctx.createLinearGradient(120, 0, 1800, 0);
+  g.addColorStop(0, rgba(P.gold, 0));
+  g.addColorStop(0.5, rgba(P.gold, 0.35));
+  g.addColorStop(1, rgba(P.gold, 0));
+  ctx.fillStyle = g;
+  ctx.fillRect(120, 1024, 1680, 1.2);
+  ctx.restore();
+}
+
+/* -------------------------------------------------------------- 第二幕总装 */
+function drawChatMessages(t) {
+  if (t >= 17.05) drawUserMsg(t, 17.05, TEXTS.u1, 236);
+  if (t >= 18.20) drawAIMsg(t, 18.20, TEXTS.a1, 344, { streamStart: 18.35, chip: TEXTS.citation, chipTime: 19.55 });
+  if (t >= 19.95) drawUserMsg(t, 19.95, TEXTS.u2, 520);
+  drawThinkingAnswer(t);
+}
+function drawAct2(t) {
+  ctx.drawImage(BG_PAPER, 0, 0);
+  drawAct2Decor(t);
+  const enter = easeOutQuint(tween(t, 16.20, 0.62));
+  ctx.save();
+  ctx.globalAlpha = enter;
+  ctx.translate(0, 40 * (1 - enter));
+  drawChatWindow(t, enter);
+  ctx.restore();
+  drawPanel(t);
+  drawConnector(t);
+  drawToast(t);
+}
+/* ==========================================================================
+   第三幕 · 片尾落印（35.4 – 44.6s）
+   ========================================================================== */
+const SEAL_C = { x: 960, y: 424, base: 300 / 520 };
+const SEAL_GLOW_POS = { x: 960, y: 430 };
+
+function drawSealStamp(t) {
+  if (t < 36.05) return;
+  const u = tween(t, 36.05, 0.85);
+  const appear = easeOutCubic(u);
+  const pop = easeOutQuint(u);
+  const scale = lerp(1.62, 1, pop);
+  const rot = lerp(-0.16, 0, easeOutQuint(u));
+
+  // —— 36.85 落印：闪光、涟漪、印泥飞溅 ——
+  if (t >= 36.85) {
+    const f = tween(t, 36.85, 0.24);
+    if (f < 1) {
+      drawGlow(GLOW_RED, SEAL_C.x, SEAL_C.y, 980 * (0.55 + 0.7 * f), (1 - f) * 0.55);
+      drawGlow(GLOW_WARM, SEAL_C.x, SEAL_C.y, 1700, (1 - f) * 0.20);
+    }
+    for (let k = 0; k < 2; k++) {
+      const h = tween(t, 36.85 + k * 0.06, 1.15);
+      if (h <= 0 || h >= 1) continue;
+      ctx.save();
+      ctx.globalAlpha = (1 - h) * (k === 0 ? 0.38 : 0.22);
+      ctx.strokeStyle = k === 0 ? rgba(P.red2, 0.9) : rgba(P.gold, 0.7);
+      ctx.lineWidth = k === 0 ? 2.4 : 1.4;
+      ctx.beginPath();
+      ctx.arc(SEAL_C.x, SEAL_C.y, 138 + 300 * easeOutCubic(h), 0, TAU);
+      ctx.stroke();
+      ctx.restore();
+    }
+    // 印泥飞溅
+    const sp = tween(t, 36.85, 0.6);
+    if (sp > 0 && sp < 1) {
+      for (let i = 0; i < 16; i++) {
+        const ang = hash01(i * 3.1 + 1) * TAU;
+        const dist = 150 + (90 + hash01(i * 7.7) * 190) * easeOutCubic(sp);
+        const px = SEAL_C.x + Math.cos(ang) * dist;
+        const py = SEAL_C.y + Math.sin(ang) * dist * 0.9;
+        const rr = 1.6 + hash01(i * 5.3) * 4.4;
+        ctx.save();
+        ctx.globalAlpha = (1 - easeInCubic(sp)) * 0.55;
+        ctx.fillStyle = i % 3 === 0 ? rgba(P.red2, 0.9) : rgba(P.redDeep, 0.8);
+        ctx.beginPath(); ctx.arc(px, py, rr, 0, TAU); ctx.fill();
+        ctx.restore();
+      }
+    }
+    // 印泥晕开（37.15）
+    const spread = easeOutCubic(tween(t, 37.15, 1.2));
+    if (spread > 0) {
+      drawGlow(GLOW_RED, SEAL_C.x, SEAL_C.y, 420 + 260 * spread, 0.16 * (1 - spread * 0.6) * appear);
+    }
+  }
+
+  // —— 印章本体 ——
+  ctx.save();
+  ctx.translate(SEAL_C.x, SEAL_C.y);
+  ctx.rotate(rot);
+  const sc = scale * SEAL_C.base;
+  ctx.scale(sc, sc);
+  ctx.globalAlpha = appear;
+  drawGlow(GLOW_RED, 0, 0, 900, 0.20 * appear);
+  if (t >= 36.85) {
+    const breathe = 0.10 + 0.03 * Math.sin((t - 36.85) * 2.2);
+    drawGlow(GLOW_RED, 0, 0, 1000, breathe);
+  }
+  ctx.drawImage(SEAL, -SEAL.width / 2, -SEAL.height / 2);
+  ctx.restore();
+
+  // 落印后的纸面压痕：淡淡一圈暗影
+  if (t >= 36.85) {
+    const d = easeOutCubic(tween(t, 36.85, 0.5));
+    ctx.save();
+    ctx.globalAlpha = 0.35 * d;
+    ctx.strokeStyle = 'rgba(20,12,8,0.55)';
+    ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.arc(SEAL_C.x, SEAL_C.y, 126, 0, TAU); ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawTagline(t) {
+  const a = easeOutCubic(tween(t, 37.90, 0.35));
+  if (a <= 0) return;
+  const u = easeOutQuint(tween(t, 37.90, 1.05));
+  const font = FONT.kai(70, 600);
+  const p1 = TEXTS.tagline[0], p3 = TEXTS.tagline[2];
+  ctx.save();
+  ctx.font = font;
+  const w1 = ctx.measureText(p1).width;
+  const w3 = ctx.measureText(p3).width;
+  const dotW = 58;
+  const total = w1 + dotW + w3;
+  const x0 = (W - total) / 2;
+  const y = 664;
+  drawGlow(GLOW_WARM, W / 2, y - 26, 1320, 0.10 * a);
+  // 从左往右揭示
+  const revealW = (total + 60) * u;
+  ctx.beginPath();
+  ctx.rect(x0 - 30, y - 120, revealW, 210);
+  ctx.clip();
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  // 史脉（金）
+  ctx.font = font;
+  ctx.fillStyle = rgba(P.goldLight, 0.97);
+  ctx.shadowColor = rgba(P.gold, 0.5);
+  ctx.shadowBlur = 26;
+  ctx.fillText(p1, x0, y);
+  ctx.shadowBlur = 0;
+  // 间隔点：实心金点，比文字「·」干净
+  ctx.fillStyle = rgba(P.gold, 0.72);
+  ctx.beginPath();
+  ctx.arc(x0 + w1 + dotW / 2, y - 24, 4.6, 0, TAU);
+  ctx.fill();
+  // 标语
+  ctx.fillStyle = 'rgba(242,233,214,0.97)';
+  ctx.fillText(p3, x0 + w1 + dotW, y);
+  ctx.restore();
+  // 标题下方毛笔短横
+  const lu = easeOutCubic(tween(t, 38.85, 0.65));
+  if (lu > 0) {
+    ctx.save();
+    brushLine(x0 + total * 0.18, y + 30, x0 + total * 0.82, y + 30, lu, 3.2, rgba(P.gold, 0.55), a * 0.85);
+    ctx.restore();
+  }
+}
+
+function drawSideTexts(t) {
+  const a = easeOutCubic(tween(t, 39.0, 0.9));
+  if (a <= 0) return;
+  drawVerticalText(TEXTS.sideLeft, 286, 330, 27, FONT.kai, 'rgba(206,186,150,0.34)', a, 14);
+  drawVerticalText(TEXTS.sideRight, 1634, 330, 27, FONT.kai, 'rgba(206,186,150,0.34)', a, 14);
+}
+
+function drawGithub(t) {
+  const a = easeOutCubic(tween(t, 40.0, 0.65));
+  if (a <= 0) return;
+  const y = 752 + 12 * (1 - a);
+  ctx.save();
+  ctx.font = FONT.mono(25, 400);
+  const w = ctx.measureText(TEXTS.github).width;
+  const x = (W - w) / 2 + 12;
+  drawGlow(GLOW_GOLD, x - 30, y - 9, 64, 0.45 * a);
+  ctx.fillStyle = rgba(P.gold, 0.92);
+  ctx.beginPath(); ctx.arc(x - 30, y - 9, 3.2, 0, TAU); ctx.fill();
+  ctx.fillStyle = 'rgba(184,170,144,0.92)';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.globalAlpha = a;
+  ctx.fillText(TEXTS.github, x, y);
+  ctx.font = FONT.sans(17, 400);
+  ctx.fillStyle = 'rgba(150,136,114,0.7)';
+  ctx.textAlign = 'center';
+  ctx.fillText('开源 · 可核验的历史问答', W / 2, y + 42);
+  ctx.restore();
+}
+
+function drawAct3(t) {
+  ctx.drawImage(BG_END, 0, 0);
+  drawAtmosphere(t, 0.62);
+  drawDust(t, 0.5);
+  // 落印前的墨色涌动
+  if (t > 35.9 && t < 37.2) {
+    const u = tween(t, 35.9, 1.3);
+    drawGlow(GLOW_WARM, 960, 430, 900 + 500 * u, 0.05 + 0.05 * Math.sin(u * PI));
+  }
+  drawSealStamp(t);
+  drawSideTexts(t);
+  drawTagline(t);
+  drawGithub(t);
+}
+/* ==========================================================================
+   总装：时间轴调度 + 墨晕转场 + window.renderAt
+   ========================================================================== */
+
+/** 第一幕 → 第二幕：墨从画面中心晕开，宣纸底色透出。 */
+function drawTransitionInk(t) {
+  drawAct1(t);
+  const u = easeInOutCubic(tween(t, 15.30, 1.15));
+  // 把第二幕画进临时画布，再用墨团遮罩开窗
+  const mainCtx = ctx;
+  ctx = TEMP_CTX;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.filter = 'none';
+  ctx.clearRect(0, 0, W, H);
+  drawAct2(t);
+  // 初段把刚透出的纸面压暗一点，亮度差不会像闪白
+  if (u < 1) {
+    ctx.fillStyle = 'rgba(20,14,9,' + (0.40 * (1 - u)).toFixed(3) + ')';
+    ctx.fillRect(0, 0, W, H);
+  }
+  const r = lerp(60, 2450, u);
+  ctx.globalCompositeOperation = 'destination-in';
+  ctx.drawImage(WIPE_MASK, W / 2 - r, H * 0.46 - r * 0.94, r * 2, r * 2);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx = mainCtx;
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(TEMP, 0, 0);
+  ctx.restore();
+  // 墨晕边缘：一圈深墨，像纸面被墨「吃」出来
+  const rimR = Math.max(2, r);
+  const rim = ctx.createRadialGradient(W / 2, H * 0.46, rimR * 0.76, W / 2, H * 0.46, rimR * 1.22);
+  rim.addColorStop(0, 'rgba(16,11,7,0)');
+  rim.addColorStop(0.6, 'rgba(16,11,7,0)');
+  rim.addColorStop(0.87, 'rgba(13,9,6,' + (0.5 * (1 - u * 0.55)).toFixed(3) + ')');
+  rim.addColorStop(1, 'rgba(13,9,6,0)');
+  ctx.save();
+  ctx.fillStyle = rim;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+
+window.renderAt = function (t) {
+  t = clamp(t, 0, DURATION);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.filter = 'none';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+  ctx.letterSpacing = '0px';
+
+  if (t < 15.2) {
+    drawAct1(t);
+  } else if (t < 16.9) {
+    drawTransitionInk(t);
+  } else if (t < 34.6) {
+    drawAct2(t);
+  } else if (t < 35.4) {
+    drawAct2(t);
+    darkOverlay(easeInCubic(tween(t, 34.6, 0.8)) * 0.98);
+  } else {
+    drawAct3(t);
+  }
+
+  // 片尾收黑
+  if (t > 43.4) {
+    darkOverlay(easeInOutCubic(tween(t, 43.4, 1.2)));
+  }
+};
+
+window.__ANIM = { duration: DURATION, fps: FPS, width: W, height: H };
+
+// 首帧：载入即定格开场，避免预览框闪黑
+window.renderAt(0);
+</script>
+</body>
+</html>

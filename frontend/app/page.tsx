@@ -38,13 +38,14 @@ export default function HomePage() {
 
   return (
     <main className="page">
+      {/* V1.0.8 最终整合补丁：按产品要求删除首页顶部横版 Logo（保留页内文字品牌）。 */}
       <header className="hero">
         <p className="eyebrow">中国历史探索</p>
         <h1>从一个入口开始</h1>
         <p className="subtitle">
           时间轴覆盖夏—清（约前 2070—1912，含新莽、三国两晋十六国、五代辽宋夏金）；人物关系图已覆盖先秦、秦汉、三国、魏晋南北朝、隋唐、宋辽金夏与元明清。
         </p>
-        <p className="version">V1.0.7</p>
+        <p className="version">V1.0.8</p>
       </header>
 
       <nav className="entries" aria-label="模块入口">
@@ -86,7 +87,7 @@ export default function HomePage() {
         {statusText}
       </div>
 
-      <footer className="site-footer">史脉 HistoLink · V1.0.7</footer>
+      <footer className="site-footer">史脉 HistoLink · V1.0.8</footer>
 
     </main>
   );

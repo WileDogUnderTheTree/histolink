@@ -6,8 +6,8 @@
 
 一个以结构化历史数据为骨架、以知识图谱 + RAG 混合检索为支撑的中国历史探索 Web 应用。
 
-[![Version](https://img.shields.io/badge/version-1.0.7-8a1f1f?style=flat-square)](CHANGELOG.md)
-[![Tests](https://img.shields.io/badge/tests-597%20pytest%20%2B%20244%20vitest-2ea44f?style=flat-square)](backend/tests)
+[![Version](https://img.shields.io/badge/version-1.0.8-8a1f1f?style=flat-square)](CHANGELOG.md)
+[![Tests](https://img.shields.io/badge/tests-610%20pytest%20%2B%20265%20vitest-2ea44f?style=flat-square)](backend/tests)
 [![Next.js](https://img.shields.io/badge/Next.js-16.4.6-black?style=flat-square)](frontend)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python%203.11-009688?style=flat-square)](backend)
 [![License: MIT](https://img.shields.io/badge/code-MIT-blue?style=flat-square)](LICENSE)
@@ -39,7 +39,7 @@
 
 - 基于 **D3.js（forceSimulation）+ SVG** 的力导向关系网络，**1,217 位人物 · 840 对人工裁定的关系 · 5,112 条图谱边**，覆盖全朝代核心人物。
 - **21 期细览图谱 + 7 组简阅图谱**（共 28 张图）：夏 / 商 / 西周 / 春秋 / 战国 / 秦汉 / 三国 / 西晋 / 东晋十六国 / 南北朝 / 隋 / 唐 / 五代十国 / 北宋 / 南宋 / 辽 / 西夏 / 金 / 元 / 明 / 清。
-- **点击**相邻人物即可查看两人关系、共同事件与事件简述；**长按约 500ms** 换中心；**拖拽**节点调整布局；画布按包围盒**自动 fit**，嵌入右侧副驾驶时也能撑满视口。
+- **点击**相邻人物即可查看两人关系、共同事件与事件简述；**长按约 500ms** 换中心；**拖拽**节点调整布局；**滚轮只滚动页面**（不会误缩放图谱），缩放用画布左下角 ＋ / － 按钮；画布按包围盒**自动 fit**，右侧详情面板内部独立滚动，嵌入右侧副驾驶时也能撑满视口且不撑破页面。
 - 支持**本名 / 庙号 / 别名**搜索（如「拓跋宏」→ 孝文帝、「清圣祖」→ 康熙帝），人物搜索 + 名人堂 + 三国阵营快捷入口直达任意中心。
 
 ### 🎭 智能历史问答：史令 × 史引 双人格
@@ -52,9 +52,20 @@
 | **🧭 史引** | 图表的领航员 | 当问题涉及事件、人物或关系时，「史引」自动弹出右侧**副驾驶分屏**，把答案对应的时间轴 / 人物关系图直接推到眼前，并排渲染「查看人物图谱 / 查看时间轴」双按钮，实现**问答驱动 UI 联动**。 |
 
 - **一句话双图联动**：同一次提问可同时下发 `timeline.focus_event` + `graph.focus_person`，左侧对话、右侧双视图自由切换。
+- **刷新不丢联动**：直答轮次的 `ui_actions` 随消息一起持久化（服务端快照 + 本地缓存双保险），按 F5 后历史回答底部的
+  「展开人物图谱 / 时间轴」按钮仍然可用，点击可再次拉起右侧史引面板。
 - **逐字作答**：SSE 流式直答（`start → delta → done`），思考过程由服务端过滤，只把最终答案交给前端；「深度思考」开关默认关闭，可随时开启慢思考。
 - **多轮记忆**：SQLite 服务端会话持久化，自动注入最近 3 轮历史与会话实体状态，让「他们」「这两人」「双方」稳定指代上一轮的真实人物。
 - **会话工作区**：历史对话侧边栏（置顶 / 重命名 / 删除）、刷新不丢会话、模型一键切换。
+
+### 🧧 纸感细节：繁体「史」印章与点赞
+
+- 全站左下角固定一枚**圆形「史」字印章**（深红底 + 米黄繁体字，悬浮放大）；点击弹出居中模态框，
+  分【关于】/【联系】两个 Tab：关于介绍双 RAG 架构与史令 × 史引；联系保留抖音 / GitHub / 邮箱一键复制。
+- **点赞按钮位于【关于】Tab 右下角**（红心 + 纯数字，米黄 + 深红）；史引（时间轴 / 人物图）页面与
+  iframe 内嵌场景不渲染「关于」模块。
+- 点赞计数由 `GET/POST /api/likes` 提供并持久化在 `backend/data/likes.json`；`localStorage.has_liked_shimai`
+  防刷——同一浏览器点过一次后按钮置灰、禁用点击，数字继续展示。
 
 ### 🛡️ 绝对防幻觉：服务端强制校验证据链，无史料依据绝不编造
 
@@ -79,11 +90,11 @@
 
 | 维度 | 现状 |
 |---|---|
-| 自动化测试 | 后端 **597** 条 pytest / 前端 **244** 条 vitest / **30** 条 golden 评测（contract 模式），全部离线可跑 |
+| 自动化测试 | 后端 **610** 条 pytest / 前端 **265** 条 vitest / **30** 条 golden 评测（contract 模式），全部离线可跑 |
 | 权威门禁 | `scripts/verify.ps1` **12 步**串行门禁（tsc → build → 6 层数据/契约 `--check` → pytest → vitest → evals → 契约测试），任一失败即非 0 退出；GitHub Actions 同源复刻 |
 | 契约冻结 | 后端 Pydantic 为唯一事实源 → OpenAPI 3.1 / Action / Tool 三份契约 → `openapi-typescript` 生成前端类型；破坏性变更必须升 `SCHEMA_VERSION` |
 | 确定性数据 | 内容寻址快照（sha256）+ 事件 / 人物 / 计数锁文件，所有生成脚本支持 `--check` 幂等校验 |
-| 安全边界 | 只读 API 闸门（仅问答与会话管理为写入口）、工具参数 `extra="forbid"` + 严格类型、日志脱敏（API Key / Bearer / 可选 PII） |
+| 安全边界 | 只读 API 闸门（仅问答 / 会话管理 / 点赞为写入口）、工具参数 `extra="forbid"` + 严格类型、日志脱敏（API Key / Bearer / 可选 PII） |
 
 ---
 
@@ -213,11 +224,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -Only 11,
 | 时间轴 | <http://localhost:3000/timeline> | 全朝代事件时间轴（简阅 / 细览） |
 | 人物关系图 | <http://localhost:3000/graph> | D3 力导向图谱（21 期 + 7 组） |
 | 智能问答 | <http://localhost:3000/ask> | 史令 / 史引双人格对话工作区 |
-| 健康检查 | `GET /api/health` | 返回 `{"ok": true, "version": "1.0.7"}` |
+| 健康检查 | `GET /api/health` | 返回 `{"ok": true, "version": "1.0.8"}` |
 | 问答（非流式） | `POST /api/agent/ask` | 规划 → 工具 → 双重核查 → `AnswerEnvelope` |
 | 问答（流式） | `POST /api/agent/chat_stream` | SSE：`start → delta* → done` |
 | 会话管理 | `GET/POST /api/sessions` · `GET/PATCH/DELETE /api/sessions/{id}` | 多轮记忆与历史持久化 |
 | 模型注册表 | `GET /api/agent/models` | 主 / 备模型选项（无需 Key 即可读取） |
+| 点赞计数 | `GET /api/likes` · `POST /api/likes` | 左下角点赞按钮；持久化 `backend/data/likes.json` |
 | 数据接口 | `GET /api/meta` · `/api/entities/*` | 快照版本 / counts / 人物 / 事件 / 搜索 |
 
 ---
@@ -234,7 +246,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 -Only 11,
 | 模型 | OpenAI 兼容端点：本机 Ollama（XiaoHong-v1）或云端 ModelScope（Qwen3.5） |
 | 持久化 | SQLite 会话库（`backend/data/sessions.v1.sqlite`）· 内容寻址 JSON 快照 |
 | 契约 | Pydantic → OpenAPI 3.1 / Actions / Tools → `openapi-typescript` 前端类型 |
-| 质量 | pytest 597 · vitest 244 · golden evals 30 · `verify.ps1` 12 步门禁 · GitHub Actions |
+| 质量 | pytest 597 · vitest 253 · golden evals 30 · `verify.ps1` 12 步门禁 · GitHub Actions |
 
 ---
 
@@ -287,7 +299,7 @@ histolink/
 | 文档 | 内容 |
 |---|---|
 | [docs/README.md](docs/README.md) | **文档总索引**：设计 / 数据 / 语料 / 归档全目录 |
-| [SPEC.md](SPEC.md) | 产品规格与验收标准（V1.0.7 实现基线） |
+| [SPEC.md](SPEC.md) | 产品规格与验收标准（V1.0.8 实现基线） |
 | [CHANGELOG.md](CHANGELOG.md) | 按大版本里程碑组织的更新日志 |
 | [docs/V1.0.3-Agent-Core设计.md](docs/V1.0.3-Agent-Core设计.md) | Agent Core：数据结构、JSON 协议、工具注册表、证据校验 |
 | [docs/V1.0.5-RAG混合检索设计.md](docs/V1.0.5-RAG混合检索设计.md) | RAG 入库管道、embedding 选型、混合检索与冲突标注 |
@@ -313,7 +325,7 @@ histolink/
 
 ## 🧭 版本规划
 
-**V1.0 系列已全部完成** —— 从数据基线到可核验的智能问答，V1.0.7 是首个面向开源的终极发版：
+**V1.0 系列已全部完成** —— 从数据基线到可核验的智能问答，V1.0.7 是首个面向开源的终极发版，V1.0.8 为 UI/UX 细节打磨收尾补丁（最终整合补丁修复刷新后联动按钮丢失、新增左下角印章 / 点赞组件与点赞 API）：
 
 | 里程碑 | 主题 | 状态 |
 |---|---|---|
@@ -324,7 +336,8 @@ histolink/
 | **V1.0.4 – V1.0.5** | 动作联动（Agent → UI）· RAG 混合检索 · 自动降级 | ✅ 已完成 |
 | **V1.0.5.1 – V1.0.5.4** | 对比任务 · 对话工作区 · 双数据源 · 全自动数据入库 | ✅ 已完成 |
 | **V1.0.6 – V1.0.6.3** | 多轮记忆 · 双重事实核查 · 本地 Ollama 流式 · 双图联动 | ✅ 已完成 |
-| **V1.0.7** | 终极发版：全量体检、文档重构、版本统一、开源发布准备 | 🚀 **当前版本** |
+| **V1.0.7** | 终极发版：全量体检、文档重构、版本统一、开源发布准备 | ✅ 已完成 |
+| **V1.0.8** | UI/UX 收尾补丁 + 最终整合：刷新恢复联动按钮、左下角「史」印章 / 点赞、点赞 API、Prompt 去推诿、Logo 清理 | 🚀 **当前版本** |
 
 ### 🔮 V1.1 · 终极视觉重构（规划中）
 
@@ -340,7 +353,7 @@ V1.0 系列保留 2D 版本以控制开发成本与验证效率；项目正式�
 
 <div align="center">
 
-**史脉 HistoLink** · v1.0.7 · 以史为脉，让每一次好奇都有出处。
+**史脉 HistoLink** · v1.0.8 · 以史为脉，让每一次好奇都有出处。
 
 <sub>代码 MIT · 数据 CC BY-NC-SA 4.0 · © 2026 WileDogUnderTheTree</sub>
 

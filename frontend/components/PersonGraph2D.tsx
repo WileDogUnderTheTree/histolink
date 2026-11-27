@@ -5,6 +5,7 @@ import {
   forceCollide,
   forceLink,
   forceManyBody,
+  forceRadial,
   forceSimulation,
   type SimulationNodeDatum,
 } from "d3-force";
@@ -13,6 +14,11 @@ import type { Selection } from "d3-selection";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { PersonGraphData, PersonGraphEdge, PersonGraphNode } from "@/data/person-graph";
+import {
+  computeFitTransform,
+  computeGraphLayout,
+  GRAPH_NODE_RADIUS,
+} from "@/lib/graph-layout";
 import {
   findRelationship,
   normalizeHighlightedPersonIds,
@@ -24,7 +30,7 @@ import styles from "./PersonGraph2D.module.css";
 
 const LONG_PRESS_MS = 500;
 const DRAG_THRESHOLD_PX = 7;
-const NODE_RADIUS = 22;
+const NODE_RADIUS = GRAPH_NODE_RADIUS;
 
 interface ForceNode extends PersonGraphNode, SimulationNodeDatum {
   isCenter: boolean;
@@ -116,6 +122,8 @@ export function PersonGraph2D({
 }: PersonGraph2DProps) {
   const graphHostRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  /** 右侧「人物关系 / 共同事件」详情面板：V1.0.8 起为内部独立滚动容器。 */
+  const panelRef = useRef<HTMLElement>(null);
   const interactionRef = useRef<PointerInteraction | null>(null);
   const [size, setSize] = useState({ width: 860, height: 620 });
   const [selectedRelationship, setSelectedRelationship] = useState<SelectedRelationshipState | null>(null);
@@ -165,6 +173,14 @@ export function PersonGraph2D({
     applyNodeStatesRef.current?.();
   }, [activeRelationship, highlightedIds]);
 
+  /**
+   * V1.0.8 体验修复（Bug 2）：详情面板改为内部独立滚动后，切换查看的人物 / 关闭面板时
+   * 回到顶部，避免上一个长事件列表的滚动位置残留到新关系上（只动面板，不动整页滚动）。
+   */
+  useEffect(() => {
+    if (panelRef.current) panelRef.current.scrollTop = 0;
+  }, [activeRelationship]);
+
   useEffect(() => {
     const host = graphHostRef.current;
     if (!host) return;
@@ -172,13 +188,9 @@ export function PersonGraph2D({
     const observer = new ResizeObserver(([entry]) => {
       const width = Math.max(320, Math.round(entry.contentRect.width));
       const observedHeight = Math.round(entry.contentRect.height);
-      // V1.0.6.2（痛点 3）/ V1.0.6.3：史引副驾驶中图表填满容器高度（不再回退固定 520/620），
-      // 普通页面仍沿用固定高度策略（窄图 520 / 宽图 620）。
-      const height = fillContainer
-        ? Math.max(240, observedHeight)
-        : width < 620
-          ? 520
-          : 620;
+      // V1.0.8（比例与缩放专项）：画布容器已改为固定宽高比（CSS `aspect-ratio: 16 / 9`
+      // + `min-height: 500px`），这里直接跟随实测高度；史引副驾驶 iframe 中依旧填满容器。
+      const height = Math.max(320, observedHeight || Math.round((width * 9) / 16));
       setSize((current) =>
         current.width === width && current.height === height ? current : { width, height },
       );
@@ -204,20 +216,60 @@ export function PersonGraph2D({
 
     if (!centerNode) return;
 
-    centerNode.fx = width / 2;
-    centerNode.fy = height / 2;
+    /**
+     * V1.0.8（比例与缩放专项）：按「画布尺寸 + 一跳邻居数量」推导自适应布局参数。
+     * 邻居少（如夏朝 5 人）时环半径收敛、斥力减弱，不再「飞得太散」；
+     * 邻居多（如秦汉 27 人）时环半径增大、斥力增强，再由 fit 视图整体缩小。
+     */
+    const layout = computeGraphLayout({
+      width,
+      height,
+      neighborCount: nodes.length - 1,
+    });
+
+    // 中心人物固定居中（fit 视图会再次保证整个包围盒中心 = 画布中心）。
+    centerNode.fx = layout.centerX;
+    centerNode.fy = layout.centerY;
+
+    // 邻居从正上方开始均匀铺在初始环上：模拟一开始就分布均匀，避免随机初值导致的单侧堆积。
+    let neighborIndex = 0;
+    for (const node of nodes) {
+      if (node.isCenter) {
+        node.x = layout.centerX;
+        node.y = layout.centerY;
+        continue;
+      }
+      const angle = layout.initialAngles[neighborIndex] ?? 0;
+      neighborIndex += 1;
+      node.x = layout.centerX + Math.cos(angle) * layout.initialRadius;
+      node.y = layout.centerY + Math.sin(angle) * layout.initialRadius;
+      node.vx = 0;
+      node.vy = 0;
+    }
 
     const simulation = forceSimulation(nodes)
       .force(
         "link",
         forceLink<ForceNode, ForceEdge>(edges)
           .id((node) => node.id)
-          .distance((edge) => Math.max(110, 190 - edge.weight * 18))
-          .strength(0.85),
+          .distance(layout.linkDistance)
+          .strength(0.72),
       )
-      .force("charge", forceManyBody().strength(-520))
-      .force("collide", forceCollide<ForceNode>().radius(NODE_RADIUS + 16).strength(0.9))
-      .force("center", forceCenter(width / 2, height / 2));
+      .force(
+        "charge",
+        forceManyBody().strength(layout.chargeStrength).distanceMax(layout.chargeDistanceMax),
+      )
+      .force("collide", forceCollide<ForceNode>().radius(layout.collideRadius).strength(0.9))
+      // 径向力把邻居约束在目标环上：少量邻居不散、多量邻居均匀铺满。
+      .force(
+        "radial",
+        forceRadial<ForceNode>(
+          (node) => (node.isCenter ? 0 : layout.ringRadius),
+          layout.centerX,
+          layout.centerY,
+        ).strength((node) => (node.isCenter ? 0 : 0.4)),
+      )
+      .force("center", forceCenter(layout.centerX, layout.centerY));
 
     const svg = select(svgElement)
       .attr("viewBox", `0 0 ${width} ${height}`)
@@ -243,36 +295,40 @@ export function PersonGraph2D({
     applyViewTransform();
 
     /**
-     * V1.0.6.3（布局专项）：把整张关系图（含节点半径与标签）自动适配进当前画布。
+     * V1.0.8（比例与缩放专项）：把整张关系图（含节点半径与标签）等比装进当前画布。
      *
-     * 力导向图稳定后节点分布半径是未知的，之前固定 viewBox 导致图偏小、四周留大片白边。
-     * 这里按节点实际包围盒计算缩放 / 平移，让图尽可能撑满画布；「复位视图」也复用该逻辑。
+     * 视图变换由纯函数 `computeFitTransform` 计算：包围盒中心精确落在画布中心，
+     * 邻居少（包围盒小）时自动放大、邻居多（包围盒大）时自动缩小。
+     * 「复位视图」也复用该逻辑。
      */
     const fitViewToNodes = () => {
       if (nodes.length === 0) return;
-      const xs = nodes.map((node) => node.x ?? width / 2);
-      const ys = nodes.map((node) => node.y ?? height / 2);
-      const minX = Math.min(...xs) - NODE_RADIUS - 18;
-      const maxX = Math.max(...xs) + NODE_RADIUS + 18;
-      // 节点标签在圆点下方（dy = r + 15），底部多留一点空间避免文字被裁。
-      const minY = Math.min(...ys) - NODE_RADIUS - 18;
-      const maxY = Math.max(...ys) + NODE_RADIUS + 34;
-      const contentWidth = Math.max(1, maxX - minX);
-      const contentHeight = Math.max(1, maxY - minY);
-      const padding = Math.max(12, Math.min(width, height) * 0.04);
-      const fittedScale = Math.min(
-        (width - padding * 2) / contentWidth,
-        (height - padding * 2) / contentHeight,
-      );
-      const scale = Math.min(2.2, Math.max(0.5, fittedScale));
-      viewState.k = scale;
-      viewState.x = width / 2 - scale * ((minX + maxX) / 2);
-      viewState.y = height / 2 - scale * ((minY + maxY) / 2);
+      const fitted = computeFitTransform({
+        width,
+        height,
+        points: nodes.map((node) => ({
+          x: node.x ?? layout.centerX,
+          y: node.y ?? layout.centerY,
+        })),
+        nodeRadius: NODE_RADIUS,
+      });
+      viewState.k = fitted.k;
+      viewState.x = fitted.x;
+      viewState.y = fitted.y;
       applyViewTransform();
     };
 
-    /** 以 SVG 坐标系中的 (cx, cy) 为锚点缩放（滚轮 / 按钮共用）。 */
+    /**
+     * 用户是否已手动缩放（＋ / － 按钮）/ 平移 / 拖拽节点。
+     *
+     * 模拟收敛前视图会持续自适应（从中心自然舒展到完整装进画布）；一旦用户主动操作，
+     * 立即把视图控制权交还用户，后续 tick 不再覆盖用户的缩放 / 平移。
+     */
+    let userAdjustedView = false;
+
+    /** 以 SVG 坐标系中的 (cx, cy) 为锚点缩放（仅左下角 ＋ / － 按钮调用）。 */
     const zoomAt = (factor: number, cx: number, cy: number) => {
+      userAdjustedView = true;
       const nextScale = Math.min(3, Math.max(0.45, viewState.k * factor));
       const ratio = nextScale / viewState.k;
       viewState.x = cx - ratio * (cx - viewState.x);
@@ -288,6 +344,9 @@ export function PersonGraph2D({
       zoomOut: () => zoomAt(1 / 1.2, width / 2, height / 2),
       reset: resetView,
     };
+
+    // 首帧先按初始分布 fit 一次，避免「先居中原始坐标、再跳变缩放」的闪烁。
+    fitViewToNodes();
 
     const linkLayer = viewport.append("g").attr("aria-hidden", "true");
     const nodeLayer = viewport.append("g");
@@ -349,7 +408,7 @@ export function PersonGraph2D({
       interactionRef.current = null;
     };
 
-    /** 屏幕坐标 → SVG viewBox 坐标（不受视图缩放影响，供滚轮锚点使用）。 */
+    /** 屏幕坐标 → SVG viewBox 坐标（节点拖拽坐标换算的中间步骤）。 */
     const pointInViewBox = (event: { clientX: number; clientY: number }) => {
       const bounds = svgElement.getBoundingClientRect();
       return {
@@ -367,13 +426,10 @@ export function PersonGraph2D({
       };
     };
 
-    // V1.0.6.2（痛点 3）：滚轮缩放 + 空白处拖拽平移（图表内部交互，不滚动外层页面）。
-    svg.on("wheel.zoom", (event: WheelEvent) => {
-      event.preventDefault();
-      const anchor = pointInViewBox(event);
-      zoomAt(event.deltaY < 0 ? 1.15 : 1 / 1.15, anchor.x, anchor.y);
-    });
-
+    // V1.0.8 体验修复（Bug 1）：**不再绑定 wheel.zoom**。
+    // 旧实现 `svg.on("wheel.zoom", ...)` 会 preventDefault 并在滚轮时缩放画布，
+    // 用户想滚动页面时经常误触；现在滚轮事件完全不拦截，交给浏览器正常滚动页面，
+    // 缩放只保留左下角 ＋ / － / ⟲ 按钮，此外保留空白处拖拽平移。
     let panState: {
       pointerId: number;
       startClientX: number;
@@ -387,6 +443,8 @@ export function PersonGraph2D({
         if (event.button !== 0) return;
         const target = event.target as Element | null;
         if (target?.closest?.(`.${styles.node}`)) return;
+        // 用户开始平移即交还视图控制权，模拟收敛期间不再自动 fit 覆盖。
+        userAdjustedView = true;
         panState = {
           pointerId: event.pointerId,
           startClientX: event.clientX,
@@ -473,6 +531,7 @@ export function PersonGraph2D({
         if (interaction.mode === "dragging") {
           interaction.node.fx = point.x;
           interaction.node.fy = point.y;
+          userAdjustedView = true;
           simulation.alphaTarget(0.22).restart();
         }
       })
@@ -529,21 +588,25 @@ export function PersonGraph2D({
       fitViewToNodes();
       render();
     } else {
-      // V1.0.6.3：前 45 帧持续自适应视图——图从中心自然舒展到撑满画布，
-      // 之后的 45 帧内用户仍可滚轮缩放 / 拖拽平移，不会被自动视图覆盖。
-      let ticks = 0;
+      // V1.0.8（比例与缩放专项）：模拟收敛前持续自适应视图——图从中心自然舒展并始终保持完整居中；
+      // 用户一旦拖拽平移 / 拖动节点（或点击缩放按钮），就停止自动 fit，把视图完全交还用户。
       simulation.on("tick", () => {
         render();
-        ticks += 1;
-        if (ticks <= 45) fitViewToNodes();
+        if (!userAdjustedView) fitViewToNodes();
+      });
+      // 模拟自然停止后再补一次最终 fit，保证终态一定居中且完整装进画布。
+      simulation.on("end", () => {
+        render();
+        if (!userAdjustedView) fitViewToNodes();
       });
     }
 
     return () => {
       clearInteraction();
       simulation.stop();
+      simulation.on("tick", null);
+      simulation.on("end", null);
       svg.on("contextmenu", null);
-      svg.on(".zoom", null);
       svg.on(".pan", null);
       svg.selectAll("*").remove();
       nodeSelectionRef.current = null;
@@ -594,12 +657,19 @@ export function PersonGraph2D({
           </button>
         </div>
         <p className={styles.graphHint}>
-          单击人物查看两人关系与共同事件；长按约 0.5 秒切换中心；拖拽节点调整位置；
-          滚轮缩放、拖拽空白处平移。
+          单击人物看关系与共同事件；长按 0.5 秒换中心；拖拽节点或空白处调整；
+          左下角 ＋ / － 缩放。
         </p>
       </div>
 
-      <aside className={styles.panel} aria-live="polite" data-graph-info-card="true">
+      <aside
+        ref={panelRef}
+        className={styles.panel}
+        aria-live="polite"
+        aria-label="人物关系与共同事件详情"
+        tabIndex={0}
+        data-graph-info-card="true"
+      >
         {activeRelationship ? (
           <>
             <p className={styles.panelEyebrow}>人物关系</p>

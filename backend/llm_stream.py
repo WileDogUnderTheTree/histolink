@@ -62,7 +62,11 @@ from llm_client import (
     load_llm_settings,
     resolve_reasoning_effort,
 )
-from text_hygiene import find_repetition_cut, sanitize_model_answer
+from text_hygiene import (
+    find_repetition_cut,
+    sanitize_model_answer,
+    strip_false_refusal_preamble,
+)
 from think_filter import ThinkTagFilter
 
 logger = logging.getLogger("histolink.llm.stream")
@@ -97,7 +101,10 @@ DEFAULT_STREAM_SYSTEM_PROMPT: Final[str] = (
     "   **写完最后一条依据立即结束**：不要再写总结段 / 复述段 / 「综上」段落；\n"
     "3. 用简体中文 Markdown 回答，不要输出 JSON，不要输出思考过程；\n"
     "4. 不确定的内容直说不确定，不要编造具体年份、人名或引文；\n"
-    "5. 与历史无关的问题礼貌说明超出范围。"
+    "5. 与历史无关的问题礼貌说明超出范围。\n"
+    "6. **禁止推诿废话（v1.0.8 硬性约束）**：如果问题涉及的历史事实你能够回答，"
+    "就直接给出结论和依据；**绝对禁止**输出「用户未提供……无法直接列举 / 无法回答 / "
+    "无法确认」之类的推诿开场白，也禁止先声称无法回答、紧接着又自相矛盾地给出答案。"
 )
 #: V1.0.6.2「深度思考」开启时追加的 System Prompt 约束（Prompt 级深度思考）。
 #:
@@ -617,7 +624,10 @@ class StreamChatClient:
         sanitized, deduped_chars = sanitize_model_answer(
             raw_answer, drop_restated_tail=True
         )
-        answer = sanitized.strip()
+        # V1.0.8：删除「用户未提供……无法直接列举」这类自相矛盾的推诿开场白
+        # （模型随后仍会给出答案；Prompt 硬约束之外的确定性兜底）。
+        answer, refusal_removed_chars = strip_false_refusal_preamble(sanitized.strip())
+        answer = answer.strip()
         latency_ms = int((time.perf_counter() - started) * 1000)
         if not answer:
             if reasoning_chars:
@@ -630,7 +640,8 @@ class StreamChatClient:
 
         logger.info(
             "流式直答完成：model=%s latency=%dms first_token=%sms answer_chars=%d "
-            "reasoning_chars=%d filtered_chars=%d deduped_chars=%d repetition=%s finish=%s",
+            "reasoning_chars=%d filtered_chars=%d deduped_chars=%d refusal_removed=%d "
+            "repetition=%s finish=%s",
             chosen_model,
             latency_ms,
             first_token_ms if first_token_ms is not None else -1,
@@ -638,6 +649,7 @@ class StreamChatClient:
             reasoning_chars,
             filtered.filtered_chars,
             deduped_chars,
+            refusal_removed_chars,
             repetition_stopped,
             finish_reason,
         )

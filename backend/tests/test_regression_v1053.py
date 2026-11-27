@@ -934,7 +934,7 @@ def test_契约版本与实现版本各自一致且解耦(
         "契约生成物 info.version 冻结为 1.0（README §3.3），不跟随 API_VERSION"
     )
     assert API_VERSION == APP_VERSION
-    assert API_VERSION.startswith("1.0.7"), f"当前实现版本基线异常：{API_VERSION}"
+    assert API_VERSION.startswith("1.0.8"), f"当前实现版本基线异常：{API_VERSION}"
     assert AnswerEnvelope.model_fields["schema_version"].default == SCHEMA_VERSION
     assert ModelsResponse.model_fields["api_version"].default == API_VERSION
 
@@ -991,14 +991,17 @@ def test_错误码_路径与Agent响应字段基线不漂移(
         "/api/sessions/{session_id}",
         # V1.0.6.2：本地 OpenAI 兼容模型流式直答（SSE）。
         "/api/agent/chat_stream",
+        # V1.0.8：点赞计数（GET 读取 / POST +1）。
+        "/api/likes",
     }
     assert set(spec["paths"]) == expected_paths
-    assert len(expected_paths) == 12
+    assert len(expected_paths) == 13
     expected_methods = {
         "/api/agent/ask": {"post"},
         "/api/agent/chat_stream": {"post"},
         "/api/sessions": {"get", "post"},
         "/api/sessions/{session_id}": {"get", "patch", "delete"},
+        "/api/likes": {"get", "post"},
     }
     for path, path_item in spec["paths"].items():
         methods = {

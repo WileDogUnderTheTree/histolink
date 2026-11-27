@@ -41,6 +41,9 @@ os.environ["SESSION_DB_PATH"] = ":memory:"
 # V1.0.6.2：可丢弃会话（test_ / e2e_ 前缀）单独写测试库；单测同样固定为内存库，
 # 防止开发者本机 .env 配了 SESSION_TEST_DB_PATH 时测试写出落盘文件。
 os.environ["SESSION_TEST_DB_PATH"] = ":memory:"
+# V1.0.8：点赞计数同样固定内存模式，测试进程绝不写用户本机 backend/data/likes.json。
+# 需要验证落盘的用例用 tmp_path 直接构造 LikesStore / 覆盖 get_likes_store 依赖。
+os.environ["LIKES_PATH"] = ":memory:"
 
 
 @pytest.fixture(autouse=True)

@@ -1,5 +1,5 @@
 """史脉 HistoLink · FastAPI 后端入口（V1.0.1 只读数据服务 + V1.0.3 问答入口 + V1.0.6 会话管理
-+ V1.0.6.1 生成权解绑 + V1.0.6.2 本地 Ollama 流式直答 / 日志脱敏）。
++ V1.0.6.1 生成权解绑 + V1.0.6.2 本地 Ollama 流式直答 / 日志脱敏 + V1.0.8 点赞计数）。
 
 V1.0.1 职责：
 - 启动时一次性加载 `backend/data/snapshot.v1.json`（schema/counts/hash 校验失败即拒绝启动）；
@@ -40,6 +40,7 @@ CORS 说明（内测分享的关键）：
 环境变量（可选）：
 - `SNAPSHOT_PATH` / `SNAPSHOT_META_PATH`：覆盖默认快照路径（默认 backend/data/snapshot.v1.json）。
 - `SESSION_DB_PATH`：覆盖会话 SQLite 路径（默认 backend/data/sessions.v1.sqlite；`:memory:` 为内存库）。
+- `LIKES_PATH`：覆盖点赞计数 JSON 路径（默认 backend/data/likes.json；`:memory:` 为纯内存计数）。
 """
 
 from __future__ import annotations
@@ -56,6 +57,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import Response
 
 from errors import install_error_handlers, read_only_violation_response
+from likes_store import LikesStore
 from log_safety import install_log_redaction
 from routers import register_routes
 from session_store import SessionStore
@@ -63,7 +65,7 @@ from snapshot_store import SnapshotLoadError, SnapshotStore
 
 logger = logging.getLogger("histolink.main")
 
-APP_VERSION = "1.0.7"
+APP_VERSION = "1.0.8"
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_SNAPSHOT_PATH = BASE_DIR / "data" / "snapshot.v1.json"
@@ -120,12 +122,17 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     session_store = SessionStore()
     app.state.session_store = session_store
     logger.info("会话存储已就绪：%s", session_store.db_path)
+    # V1.0.8：点赞计数存储（JSON 文件；文件不存在时自动创建 `{"count": 0}`）。
+    likes_store = LikesStore()
+    app.state.likes_store = likes_store
+    logger.info("点赞计数存储已就绪：%s", likes_store.path)
     _warm_up_rag()
     try:
         yield
     finally:
         app.state.store = None
         app.state.session_store = None
+        app.state.likes_store = None
         session_store.close()
 
 
@@ -156,8 +163,9 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title="史脉 HistoLink API",
         version=APP_VERSION,
-        description="V1.0.7 Agent 问答服务：快照 API、基于证据校验 + 文本级 FactCheck 的问答、"
-        "会话管理（多轮记忆）、本地 OpenAI 兼容模型流式直答（SSE，思考过程过滤）。",
+        description="V1.0.8 Agent 问答服务：快照 API、基于证据校验 + 文本级 FactCheck 的问答、"
+        "会话管理（多轮记忆）、本地 OpenAI 兼容模型流式直答（SSE，思考过程过滤）、"
+        "点赞计数（JSON 持久化）。",
         lifespan=lifespan,
     )
 
@@ -182,11 +190,17 @@ def create_app() -> FastAPI:
 
     install_error_handlers(application)
 
-    # 只读闸门：`/api` 仅放行三类写入口——问答 `/api/agent/ask`、
-    # 流式直答 `/api/agent/chat_stream`（V1.0.6.2）与会话管理 `/api/sessions*`。
+    # 只读闸门：`/api` 仅放行四类写入口——问答 `/api/agent/ask`、
+    # 流式直答 `/api/agent/chat_stream`（V1.0.6.2）、会话管理 `/api/sessions*`、
+    # 点赞计数 `POST /api/likes`（V1.0.8）。
     # 放在路由之前统一拦截，保证 405 也走 ErrorEnvelope，而不是 Starlette 默认 detail。
     read_only_methods = {"POST", "PUT", "PATCH", "DELETE"}
-    write_allowlist = {"/api/agent/ask", "/api/agent/chat_stream", "/api/sessions"}
+    write_allowlist = {
+        "/api/agent/ask",
+        "/api/agent/chat_stream",
+        "/api/sessions",
+        "/api/likes",
+    }
 
     def _is_allowed_write(path: str) -> bool:
         """会话管理（V1.0.6）允许 POST / PATCH / DELETE；其余 `/api` 写方法仍 405。"""

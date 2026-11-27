@@ -4,19 +4,27 @@
  *
  * 覆盖（对照 V1.0.5.2 UI 呼吸感补丁 + V1.0.5.2-layout 布局与侧边栏修复补丁的验收口径；
  *       V1.0.6.2 发版收尾后：分屏比例改为左对话 60% / 右史引 40%，历史库为空时自动跳过
- *       历史列表相关场景，会话持久化 / 测试隔离以 health-check-sessions.mjs 等新脚本为准）：
+ *       历史列表相关场景，会话持久化 / 测试隔离以 health-check-sessions.mjs 等新脚本为准；
+ *       V1.0.8 起：删除 `/ask?preview=multiturn` 静态多轮预览，引用折叠 / 史引分屏改由
+ *       `--live` 真实问答覆盖）：
  *  1) 1600×1000 默认视图：100vh App Shell（无整页滚动）、侧边栏/聊天/史引三栏独立滚动、
  *     气泡 85% / 行高 1.8、模型按钮位置；
+ *  0) V1.0.8 最终整合补丁（首页 + 印章弹窗）：
+ *     - 首页顶部横版 Logo 已删除；右下角「问史脉」保留新 Logo 且底部投影图层已删除；
+ *     - 左下角固定圆形「史」字印章（深红底 + 米黄字）；点击后居中模态框（半透明遮罩），
+ *       【关于】/【联系】两个 Tab 可切换：点赞按钮位于【关于】右下角（红心 + 纯数字），
+ *       联系 Tab 保留抖音 / GitHub / 邮箱三行与复制按钮；
+ *     - 点赞总数来自 `GET /api/likes`；防刷状态与 `localStorage.has_liked_shimai` 一致
+ *       （不在体检中点击 POST，避免污染真实点赞计数）；
+ *     - 点赞按钮已从悬浮组移入【关于】Tab，且史引（时间轴 / 人物图）页面不加入「关于」模块；
  *  2) 会话列表排序稳定性：点击最下面一条历史记录必须**原位变灰**、不重排；聊天列表自动到底部；
  *     中间 / 左侧滚轮互不联动且整页不动（无历史条目时整段 SKIP）；
  *  3) 历史侧边栏交互：悬浮「⋯」菜单（置顶 / 重命名 / 删除）、新建对话清空回欢迎语
  *     （无历史条目时整段 SKIP）；
  *  4) 侧边栏收起 + localStorage 持久化 + 刷新后保持收起 + 顶栏「展开历史对话」入口；
- *  5) 引用 >3 默认折叠、「展开全部 N 条引用」、展开后全部可见；
- *  6) 引用点击打开史引副驾驶：左对话 ~60% / 右面板 ~40% 分屏（V1.0.6.2 起）；
- *  7) 窄屏 820px：侧边栏默认收起、展开为浮层 + 遮罩、点击遮罩可收起、整页仍不滚动；
- *  8) （--live）真实提问：新问题 / 新回答自动滚动到底部 + 长回答 / 引用 / 史引自动分屏；
- *  9) （--live）V1.0.5.4 真实对比问答：/ask 回答卡片展示「💡 史令对比分析」独立卡片，
+ *  5) 窄屏 820px：侧边栏默认收起、展开为浮层 + 遮罩、点击遮罩可收起、整页仍不滚动；
+ *  6) （--live）真实提问：新问题 / 新回答自动滚动到底部 + 长回答 / 引用折叠 / 史引自动分屏；
+ *  7) （--live）V1.0.5.4 真实对比问答：/ask 回答卡片展示「💡 史令对比分析」独立卡片，
  *     同一回答仍保留服务端事实实证（时间轴节）与脚注。
  *
  * 前置条件：
@@ -335,6 +343,118 @@ async function main() {
     await send("Log.enable");
 
     // =====================================================================
+    // 0) V1.0.8 最终整合补丁：首页顶部 Logo 删除 + 左下角「史」印章 / 点赞组合
+    //    （印章弹窗【关于】/【联系】Tab、联系方式、防刷状态；点赞 +1 不在体检里点击，
+    //      避免污染真实 backend/data/likes.json 的点赞计数）
+    // =====================================================================
+    await viewport(1600, 1000);
+    await go("/", 3800);
+    const brandDock = await evaluate(`(() => {
+      const launcher = [...document.querySelectorAll('button')].find((button) => (button.getAttribute('aria-label') || '').includes('史脉问答抽屉'));
+      const launcherImg = launcher?.querySelector('img');
+      const seal = document.querySelector('[data-seal-trigger]');
+      const dock = document.querySelector('[data-seal-dock]');
+      const sealRect = seal?.getBoundingClientRect();
+      const sealStyle = seal ? getComputedStyle(seal) : null;
+      const launcherStyle = launcher ? getComputedStyle(launcher) : null;
+      return {
+        homeLogo: Boolean(document.querySelector('.home-brand, .home-brand-logo')),
+        launcher: Boolean(launcher),
+        launcherImg: launcherImg ? { complete: launcherImg.complete, naturalWidth: launcherImg.naturalWidth } : null,
+        launcherShadow: launcherStyle ? launcherStyle.boxShadow : null,
+        dockPosition: dock ? getComputedStyle(dock).position : null,
+        dockLike: Boolean(dock?.querySelector('[data-like-button]')),
+        seal: seal ? {
+          text: seal.textContent.trim(),
+          left: Math.round(sealRect.left),
+          bottomFromViewport: Math.round(innerHeight - sealRect.bottom),
+          borderRadius: sealStyle.borderRadius,
+          backgroundImage: sealStyle.backgroundImage,
+          color: sealStyle.color,
+        } : null,
+        docWidth: document.documentElement.scrollWidth,
+        innerWidth,
+      };
+    })()`);
+    log("00-home-brand-and-dock", brandDock);
+    assert("首页顶部横版 Logo 已删除", brandDock.homeLogo === false);
+    assert("右下角「问史脉」悬浮入口保留", brandDock.launcher === true);
+    assert("「问史脉」保留新 Logo 图标且加载成功", brandDock.launcherImg?.complete === true && brandDock.launcherImg?.naturalWidth > 0, JSON.stringify(brandDock.launcherImg));
+    assert("「问史脉」底部投影图层已删除（无 box-shadow）", brandDock.launcherShadow === "none", brandDock.launcherShadow);
+    assert("左下角固定「史」字印章（点赞已移入弹窗）", brandDock.dockPosition === "fixed" && brandDock.dockLike === false && brandDock.seal.left >= 0 && brandDock.seal.left <= 64 && brandDock.seal.bottomFromViewport >= 0 && brandDock.seal.bottomFromViewport <= 80, JSON.stringify({ dockLike: brandDock.dockLike, seal: brandDock.seal }));
+    assert("印章为圆形且写「史」字（深红底 + 米黄字）", brandDock.seal.text === "史" && /50%|999px/.test(brandDock.seal.borderRadius) && /rgb\(139, 0, 0\)|#8b0000/i.test(brandDock.seal.backgroundImage), JSON.stringify(brandDock.seal));
+    assert("首页无横向溢出（悬浮组不撑宽文档）", brandDock.docWidth <= brandDock.innerWidth + 1, { docWidth: brandDock.docWidth, innerWidth: brandDock.innerWidth });
+    await shoot("00-home-brand-and-dock");
+
+    // 点击印章 → 居中模态框（半透明遮罩）→ 【关于】/【联系】Tab 切换
+    await evaluate(`document.querySelector('[data-seal-trigger]').click()`);
+    await waitFor(`Boolean(document.querySelector('[data-seal-modal]'))`, 4000);
+    const sealAbout = await evaluate(`(() => {
+      const modal = document.querySelector('[data-seal-modal]');
+      const rect = modal?.getBoundingClientRect();
+      const overlay = document.querySelector('[data-seal-overlay]');
+      const aboutPanel = document.querySelector('[data-seal-panel="about"]');
+      const like = aboutPanel?.querySelector('[data-like-button]');
+      const likeRect = like?.getBoundingClientRect();
+      return {
+        exists: Boolean(modal),
+        centered: rect ? Math.abs((rect.left + rect.right) / 2 - innerWidth / 2) < 24 && Math.abs((rect.top + rect.bottom) / 2 - innerHeight / 2) < 48 : null,
+        overlayBackdrop: overlay ? getComputedStyle(overlay).backdropFilter : null,
+        tabs: [...document.querySelectorAll('[data-seal-tab]')].map((tab) => tab.textContent.trim()),
+        activeTab: document.querySelector('[data-seal-tab][aria-selected="true"]')?.getAttribute('data-seal-tab') ?? null,
+        aboutText: aboutPanel?.textContent ?? '',
+        like: like ? {
+          count: like.querySelector('[data-likes-count]')?.textContent?.trim() ?? null,
+          liked: like.getAttribute('data-liked'),
+          disabled: like.disabled,
+          stored: localStorage.getItem('has_liked_shimai'),
+          bottomRight: Boolean(rect && likeRect)
+            ? likeRect.right <= rect.right + 1 && rect.right - likeRect.right < 64 && likeRect.top > rect.top + rect.height * 0.45
+            : null,
+        } : null,
+      };
+    })()`);
+    log("00b-seal-about", sealAbout);
+    assert("点击印章弹出居中模态框", sealAbout.exists === true && sealAbout.centered === true, JSON.stringify(sealAbout.centered));
+    assert("模态框带半透明遮罩（backdrop blur）", String(sealAbout.overlayBackdrop).includes("blur"), sealAbout.overlayBackdrop);
+    assert("模态框分为【关于】/【联系】两个 Tab", JSON.stringify(sealAbout.tabs) === JSON.stringify(["关于", "联系"]), JSON.stringify(sealAbout.tabs));
+    assert("默认展示【关于】Tab 与项目介绍", sealAbout.activeTab === "about" && sealAbout.aboutText.includes("双 RAG 架构"), sealAbout.activeTab);
+    assert("点赞按钮已放到【关于】Tab 右下角", sealAbout.like !== null && sealAbout.like.bottomRight === true, JSON.stringify(sealAbout.like));
+    assert("点赞按钮显示纯数字点赞数", /^\d+$/.test(String(sealAbout.like?.count)) || sealAbout.like?.count === "—", JSON.stringify(sealAbout.like));
+    assert("点赞防刷状态与 localStorage 一致", sealAbout.like?.liked === (sealAbout.like?.stored === "1" ? "true" : null) && sealAbout.like?.disabled === (sealAbout.like?.stored === "1"), JSON.stringify(sealAbout.like));
+    await shoot("00b-seal-about");
+
+    await evaluate(`document.querySelector('[data-seal-tab="contact"]').click()`);
+    await delay(350);
+    const sealContact = await evaluate(`(() => {
+      const rows = [...document.querySelectorAll('[data-seal-panel="contact"] button')].map((row) => row.textContent.trim());
+      return {
+        activeTab: document.querySelector('[data-seal-tab][aria-selected="true"]')?.getAttribute('data-seal-tab') ?? null,
+        rows,
+        aboutPanelGone: Boolean(document.querySelector('[data-seal-panel="about"]')),
+        copyButtons: [...document.querySelectorAll('[data-seal-panel="contact"] button [class*="contactAction"]')].map((el) => el.textContent.trim()),
+      };
+    })()`);
+    log("00c-seal-contact", sealContact);
+    assert("切换到【联系】Tab", sealContact.activeTab === "contact" && sealContact.aboutPanelGone === false, JSON.stringify({ activeTab: sealContact.activeTab, aboutPanelGone: sealContact.aboutPanelGone }));
+    assert("联系 Tab 保留抖音 / GitHub / 邮箱三行", sealContact.rows.length === 3 && sealContact.rows[0].includes("抖音") && sealContact.rows[0].includes("树下飞野狗") && sealContact.rows[1].includes("WileDogUnderTheTree") && sealContact.rows[2].includes("2399324139@qq.com"), JSON.stringify(sealContact.rows));
+    assert("每行联系方式都带复制按钮", sealContact.copyButtons.length === 3 && sealContact.copyButtons.every((text) => text.includes("复制")), JSON.stringify(sealContact.copyButtons));
+    await shoot("00c-seal-contact");
+
+    await evaluate(`document.querySelector('[aria-label="关闭弹窗"]').click()`);
+    await delay(350);
+    const sealClosed = await evaluate(`Boolean(document.querySelector('[data-seal-modal]'))`);
+    assert("点击关闭按钮可关闭印章弹窗", sealClosed === false);
+
+    // 史引（时间轴 / 人物图）页面不加入「关于」模块（不渲染印章悬浮组）。
+    await go("/timeline", 3600);
+    const timelineDock = await evaluate(`Boolean(document.querySelector('[data-seal-dock], [data-seal-trigger], [data-seal-modal]'))`);
+    assert("史引·时间轴页面不加入「关于」模块", timelineDock === false);
+    await go("/graph", 3600);
+    const graphDock = await evaluate(`Boolean(document.querySelector('[data-seal-dock], [data-seal-trigger], [data-seal-modal]'))`);
+    assert("史引·人物图页面不加入「关于」模块", graphDock === false);
+
+    // =====================================================================
     // 1) 默认视图（1600×1000，侧边栏展开）
     // =====================================================================
     await viewport(1600, 1000);
@@ -386,6 +506,25 @@ async function main() {
     assert("模型切换按钮位于输入框正上方左侧", layoutMetrics.modelTriggerAboveComposer?.above && layoutMetrics.modelTriggerAboveComposer.leftDelta < 12, JSON.stringify(layoutMetrics.modelTriggerAboveComposer));
     assert("无横向溢出", layoutMetrics.horizontalOverflow === false);
     await shoot("01-default-1600");
+
+    // V1.0.8：左下角「史」字印章在 /ask 同样可见，且不压住侧边栏 footer 文案；
+    // 点赞按钮已移入印章弹窗【关于】右下角，悬浮组内不再有点赞按钮。
+    const askDock = await evaluate(`(() => {
+      const dock = document.querySelector('[data-seal-dock]');
+      const dockRect = dock?.getBoundingClientRect();
+      const sidebarFooter = document.querySelector('aside[aria-label="历史对话"] footer p:last-of-type');
+      const footerRect = sidebarFooter?.getBoundingClientRect();
+      return {
+        seal: Boolean(document.querySelector('[data-seal-trigger]')),
+        dockLike: Boolean(dock?.querySelector('[data-like-button]')),
+        dock: dockRect ? { left: Math.round(dockRect.left), top: Math.round(dockRect.top), bottom: Math.round(dockRect.bottom) } : null,
+        sidebarFooterBottom: footerRect ? Math.round(footerRect.bottom) : null,
+        innerHeight,
+      };
+    })()`);
+    log("01c-ask-seal-dock", askDock);
+    assert("/ask 左下角「史」字印章可见", askDock.seal === true && askDock.dockLike === false, JSON.stringify(askDock));
+    assert("/ask 悬浮组不遮挡侧边栏底部文案", askDock.dock.bottom <= askDock.innerHeight + 1 && (askDock.sidebarFooterBottom === null || askDock.sidebarFooterBottom === undefined || askDock.dock.top >= askDock.sidebarFooterBottom - 2), JSON.stringify(askDock));
 
     // =====================================================================
     // 1b) 100vh App Shell：整页不滚动，左 / 中 / 右各自独立滚动
@@ -692,92 +831,10 @@ async function main() {
     assert("可重新展开侧边栏", reExpanded.sidebar === true && reExpanded.stored === "expanded", JSON.stringify(reExpanded));
 
     // =====================================================================
-    // 5) 引用折叠：多轮预览（6 条引用 → 默认 3 条）
+    // 5) 引用折叠 / 6) 史引副驾驶分屏 → 已在 V1.0.8 合并进「8) 真实问答（--live）」：
+    //    V1.0.8 按产品要求删除 `/ask?preview=multiturn` 静态多轮预览模式，
+    //    引用折叠（>3 条）与引用点击分屏只能由真实回答产生，默认离线体检不再伪造数据。
     // =====================================================================
-    await go("/ask?preview=multiturn", 3000);
-    const previewLayout = await evaluate(`(() => {
-      const chat = document.querySelector('section[aria-labelledby="conversation-title"]');
-      return {
-        sidebar: Boolean(document.querySelector('aside[aria-label="历史对话"]')),
-        chatWidth: chat ? Math.round(chat.getBoundingClientRect().width) : null,
-      };
-    })()`);
-    log("06a-preview-layout", previewLayout);
-    assert("预览模式不渲染历史侧边栏", previewLayout.sidebar === false, JSON.stringify(previewLayout));
-    assert("预览模式（无侧边栏）对话区为 60%–70% 宽版", previewLayout.chatWidth / 1600 >= 0.6, `${previewLayout.chatWidth}/1600`);
-
-    const citationBefore = await evaluate(`(() => {
-      const citations = [...document.querySelectorAll('div[aria-label="回答引用"]')][0];
-      if (!citations) return null;
-      const expand = citations.querySelector('button[aria-expanded]');
-      return {
-        shown: citations.querySelectorAll('.citation, [class*="citation"]').length,
-        visibleCards: [...citations.children[1].children].length,
-        expandText: expand ? expand.textContent.trim() : null,
-        expandAriaExpanded: expand ? expand.getAttribute('aria-expanded') : null,
-      };
-    })()`);
-    log("06-citations-collapsed", citationBefore);
-    assert("默认只展示前 3 条引用", citationBefore.visibleCards === 3, JSON.stringify(citationBefore));
-    assert("折叠按钮文案含「展开全部 6 条引用」", citationBefore.expandText?.includes("展开全部 6 条引用"), citationBefore.expandText);
-    assert("折叠按钮 aria-expanded=false", citationBefore.expandAriaExpanded === "false");
-    await shoot("06-citations-collapsed");
-
-    await evaluate(`document.querySelector('div[aria-label="回答引用"] button[aria-expanded]').click()`);
-    await delay(450);
-    await waitFor('[...document.querySelectorAll(\'div[aria-label="回答引用"] button\')].length >= 6', 5000);
-    const citationAfter = await evaluate(`(() => {
-      const citations = document.querySelector('div[aria-label="回答引用"]');
-      const expand = citations.querySelector('button[aria-expanded]');
-      return {
-        visibleCards: [...citations.children[1].children].length,
-        expandText: expand ? expand.textContent.trim() : null,
-        expandAriaExpanded: expand ? expand.getAttribute('aria-expanded') : null,
-      };
-    })()`);
-    log("07-citations-expanded", citationAfter);
-    assert("展开后 6 条引用全部可见", citationAfter.visibleCards === 6, JSON.stringify(citationAfter));
-    assert("展开后按钮变为「收起引用」", citationAfter.expandText?.includes("收起引用"), citationAfter.expandText);
-    await shoot("07-citations-expanded");
-
-    // =====================================================================
-    // 6) 史引副驾驶分屏（V1.0.6.2 起：左对话 60% / 右面板 40%）
-    // =====================================================================
-    const citationClick = await evaluate(`(() => {
-      const button = document.querySelector('div[aria-label="回答引用"] button[class*="citation"]');
-      if (!button) return { clicked: false, reason: "no citation button" };
-      button.click();
-      return { clicked: true, text: button.textContent.slice(0, 40) };
-    })()`);
-    console.log("  · 点击引用：", JSON.stringify(citationClick));
-    let panelReady = await waitFor(`Boolean(document.querySelector('aside[aria-label="史引副驾驶"]'))`, 10000);
-    if (!panelReady) {
-      // 兜底：dev 服务器偶发整页刷新会丢预览态，重新进入预览后再点一次。
-      console.warn("  ! 首次点击未出现史引面板，重试一次");
-      await go("/ask?preview=multiturn", 2600);
-      await evaluate(`document.querySelector('div[aria-label="回答引用"] button[class*="citation"]').click()`);
-      panelReady = await waitFor(`Boolean(document.querySelector('aside[aria-label="史引副驾驶"]'))`, 12000);
-    }
-    await delay(1200);
-    const split = await evaluate(`(() => {
-      const chat = document.querySelector('section[aria-labelledby="conversation-title"]');
-      const panel = document.querySelector('aside[aria-label="史引副驾驶"]');
-      if (!chat || !panel) return { chat: false, panel: false };
-      const c = chat.getBoundingClientRect();
-      const p = panel.getBoundingClientRect();
-      return {
-        chat: Math.round(c.width),
-        panel: Math.round(p.width),
-        ratio: +(c.width / (c.width + p.width)).toFixed(3),
-        sidebar: Boolean(document.querySelector('aside[aria-label="历史对话"]')),
-        panelHasIframe: Boolean(panel.querySelector('iframe')),
-      };
-    })()`);
-    log("08-copilot-split", split);
-    assert("史引面板已打开", split.panel !== false);
-    assert("分屏比例约 60% / 40%（左对话 / 右史引，V1.0.6.2 痛点 3）", Math.abs(split.ratio - 0.6) < 0.04, split.ratio);
-    assert("史引面板含时间轴 iframe", split.panelHasIframe === true);
-    await shoot("08-copilot-split");
 
     // =====================================================================
     // 7) 窄屏 820px：默认收起 + 浮层展开
@@ -934,6 +991,43 @@ async function main() {
           };
         })()`);
         log("11-real-answer-metrics", realMetrics);
+
+        // V1.0.8：引用折叠（>3 条）改由真实回答覆盖——`?preview=multiturn` 静态预览已删除。
+        // 引用不足 4 条时本轮自然跳过（数据不足不算失败）。
+        const collapseBefore = await evaluate(`(() => {
+          const citations = document.querySelector('div[aria-label="回答引用"]');
+          if (!citations) return null;
+          const expand = citations.querySelector('button[aria-expanded]');
+          const list = citations.children[1];
+          return {
+            hasExpand: Boolean(expand),
+            visibleCards: list ? list.children.length : null,
+            expandText: expand ? expand.textContent.trim() : null,
+            ariaExpanded: expand ? expand.getAttribute('aria-expanded') : null,
+          };
+        })()`);
+        log("11b-citation-collapse", collapseBefore);
+        if (collapseBefore?.hasExpand) {
+          assert("真实回答引用 >3 条时默认只展示前 3 条", collapseBefore.visibleCards === 3, JSON.stringify(collapseBefore));
+          assert("折叠按钮 aria-expanded=false", collapseBefore.ariaExpanded === "false", collapseBefore.ariaExpanded);
+          await evaluate(`document.querySelector('div[aria-label="回答引用"] button[aria-expanded]').click()`);
+          await delay(450);
+          const collapseAfter = await evaluate(`(() => {
+            const citations = document.querySelector('div[aria-label="回答引用"]');
+            const expand = citations.querySelector('button[aria-expanded]');
+            const list = citations.children[1];
+            return {
+              visibleCards: list ? list.children.length : null,
+              expandText: expand ? expand.textContent.trim() : null,
+            };
+          })()`);
+          log("11c-citation-expanded", collapseAfter);
+          assert("展开后全部引用可见", collapseAfter.visibleCards > 3, JSON.stringify(collapseAfter));
+          assert("展开后按钮变为「收起引用」", collapseAfter.expandText?.includes("收起引用"), collapseAfter.expandText);
+        } else {
+          console.log("  · SKIP 引用折叠：本轮真实回答引用 ≤ 3 条（预览模式已于 V1.0.8 删除）");
+        }
+
         assert("新问题 / 新回答落地后聊天列表自动滚动到底部", realMetrics.transcript?.atBottom === true, JSON.stringify(realMetrics.transcript));
         assert("真实回答 / 史引分屏后整页仍无文档滚动", realMetrics.docScrollHeight <= realMetrics.innerHeight + 1, JSON.stringify({ doc: realMetrics.docScrollHeight, viewport: realMetrics.innerHeight }));
         if (realMetrics.panelHeight) {

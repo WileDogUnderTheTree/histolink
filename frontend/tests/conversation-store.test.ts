@@ -9,12 +9,13 @@
 
 import { describe, expect, it } from "vitest";
 
-import type { StoredConversationTurn } from "@/lib/conversation-store";
+import type { RestorableTurn, StoredConversationTurn } from "@/lib/conversation-store";
 import {
   createConversationId,
   createHttpConversationRepository,
   createInMemoryConversationRepository,
   groupConversationsByTime,
+  mergeCachedTurnAnswers,
   recordFromRemoteSession,
   titleFromTurns,
   type ConversationSummary,
@@ -461,5 +462,97 @@ describe("v1.0.6 真实持久化仓库（createHttpConversationRepository）", (
 describe("createConversationId", () => {
   it("生成 conv_ 前缀且可注入时间", () => {
     expect(createConversationId(() => 42)).toMatch(/^conv_[0-9a-z]+_[0-9a-z]+$/);
+  });
+});
+
+/**
+ * V1.0.8 Bug 1：刷新页面后历史消息的「展开图谱 / 时间轴」按钮消失。
+ *
+ * 服务端旧轮次可能只有正文、没有结构化 answer；这里用本标签页 sessionStorage 缓存
+ * 按「位置 + 角色 + 正文」严格对齐后补回 `ui_actions`。
+ */
+describe("mergeCachedTurnAnswers（刷新恢复合并）", () => {
+  const uiActions = [
+    {
+      id: "act-1",
+      type: "timeline.focus_event" as const,
+      payload: { event_id: "handong-chibi" },
+      target: { surface: "timeline" as const, params: { event_id: "handong-chibi" } },
+      auto: true,
+      label: "在时间轴中查看",
+      reason: null,
+    },
+  ];
+
+  const streamedAnswer = {
+    mode: "grounded" as const,
+    markdown: "赤壁之战发生在公元 208 年。",
+    certainty: null,
+    missing: [],
+    reasonCode: null,
+    citations: [],
+    entities: [],
+    uiActions,
+    snapshotVersion: "",
+    requestId: "req_1",
+    modelUsed: "XiaoHong-v1",
+    modelRequested: null,
+    sources: null,
+    comparisonAnalysis: null,
+    factCheck: null,
+    streamed: true,
+  };
+
+  it("服务端没有 answer 时用缓存补回完整回答视图（含 uiActions）", () => {
+    const serverTurns: RestorableTurn[] = [
+      { role: "user", content: "赤壁之战发生在哪一年？", answer: null },
+      { role: "assistant", content: streamedAnswer.markdown, answer: null },
+    ];
+    const cachedTurns: RestorableTurn[] = [
+      { role: "user", content: "赤壁之战发生在哪一年？" },
+      { role: "assistant", content: streamedAnswer.markdown, answer: streamedAnswer },
+    ];
+    const merged = mergeCachedTurnAnswers(serverTurns, cachedTurns);
+    expect(merged[1]?.answer?.uiActions).toEqual(uiActions);
+    expect(merged[1]?.answer?.streamed).toBe(true);
+  });
+
+  it("服务端 answer 缺 uiActions 时只补联动指令（其余以服务端为准）", () => {
+    const serverTurns: RestorableTurn[] = [
+      { role: "user", content: "赤壁之战发生在哪一年？", answer: null },
+      {
+        role: "assistant",
+        content: streamedAnswer.markdown,
+        answer: { ...streamedAnswer, uiActions: [], citations: [] },
+      },
+    ];
+    const cachedTurns: RestorableTurn[] = [
+      { role: "user", content: "赤壁之战发生在哪一年？" },
+      { role: "assistant", content: streamedAnswer.markdown, answer: streamedAnswer },
+    ];
+    const merged = mergeCachedTurnAnswers(serverTurns, cachedTurns);
+    expect(merged[1]?.answer?.uiActions).toEqual(uiActions);
+    // 服务端已有的其它字段不被缓存覆盖。
+    expect(merged[1]?.answer?.citations).toEqual([]);
+    expect(merged[1]?.answer?.mode).toBe("grounded");
+  });
+
+  it("角色 / 正文对不上时不拼接（避免跨会话恢复错答案）", () => {
+    const serverTurns: RestorableTurn[] = [
+      { role: "user", content: "玄武门之变发生在哪一年？", answer: null },
+      { role: "assistant", content: "玄武门之变发生在公元 626 年。", answer: null },
+    ];
+    const cachedTurns: RestorableTurn[] = [
+      { role: "user", content: "赤壁之战发生在哪一年？" },
+      { role: "assistant", content: "赤壁之战发生在公元 208 年。", answer: streamedAnswer },
+    ];
+    const merged = mergeCachedTurnAnswers(serverTurns, cachedTurns);
+    expect(merged[1]?.answer).toBeNull();
+  });
+
+  it("没有缓存 / 缓存为空时原样返回服务端轮次（不抛出）", () => {
+    const serverTurns: RestorableTurn[] = [{ role: "user", content: "问题", answer: null }];
+    expect(mergeCachedTurnAnswers(serverTurns, null)).toEqual(serverTurns);
+    expect(mergeCachedTurnAnswers(serverTurns, [])).toEqual(serverTurns);
   });
 });

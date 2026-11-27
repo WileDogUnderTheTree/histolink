@@ -299,6 +299,9 @@ export function normalizeStoredSessionAnswer(value: unknown): AgentAnswerView | 
     comparisonAnalysis: normalizeComparisonAnalysis(answer.comparison_analysis),
     // V1.0.6.1：刷新后仍能显示「双重事实核查通过 / 已回退服务端实证」状态。
     factCheck: trace ? normalizeFactCheck(trace.fact_check) : null,
+    // V1.0.8 Bug 1：直答轮次持久化了 ui_actions + streamed 标记，刷新后仍按「直答」渲染，
+    // 且能重建回答底部的「展开图谱 / 时间轴」深链接按钮。
+    streamed: value.streamed === true,
   };
 }
 

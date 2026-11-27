@@ -415,3 +415,13 @@ def test_default_stream_system_prompt_forbids_repetition() -> None:
 
     assert "只写一遍" in DEFAULT_STREAM_SYSTEM_PROMPT
     assert "禁止" in DEFAULT_STREAM_SYSTEM_PROMPT
+
+
+def test_default_stream_system_prompt_forbids_refusal_preamble() -> None:
+    """V1.0.8：流式直答（XiaoHong-v1）System Prompt 必须硬性禁止推诿废话。"""
+
+    from llm_stream import DEFAULT_STREAM_SYSTEM_PROMPT
+
+    assert "禁止推诿废话" in DEFAULT_STREAM_SYSTEM_PROMPT
+    assert "无法直接列举" in DEFAULT_STREAM_SYSTEM_PROMPT
+    assert "自相矛盾" in DEFAULT_STREAM_SYSTEM_PROMPT

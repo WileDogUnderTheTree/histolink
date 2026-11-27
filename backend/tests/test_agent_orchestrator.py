@@ -410,6 +410,9 @@ def test_system_prompt_and_context(store: Any) -> None:
     ):
         assert tool_name in system_prompt
     assert "禁止幻觉" in system_prompt
+    # V1.0.8 Prompt 硬约束：检索到事实后禁止推诿废话（「用户未提供……无法直接列举」）。
+    assert "禁止推诿废话" in system_prompt
+    assert "无法直接列举" in system_prompt
     assert (
         "grounded" in system_prompt
         and "insufficient" in system_prompt
