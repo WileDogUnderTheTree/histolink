@@ -32,7 +32,10 @@ function turn(role: "user" | "assistant", content: string): StoredConversationTu
 }
 
 describe("groupConversationsByTime", () => {
-  const now = new Date("2026-11-25T12:00:00+08:00").getTime();
+  // 用「本地时间正午」构造基准，而不是带 +08:00 的绝对时刻：
+  // groupConversationsByTime 以运行环境的本地零点切分「今天」，
+  // 固定时区偏移的夹具在 UTC 机器（CI）上会让 now - 5h 跨过零点，误判进「过去 30 天」。
+  const now = new Date(2026, 10, 25, 12, 0, 0).getTime();
 
   it("按「今天 / 过去 30 天」分组并倒序排列", () => {
     const groups = groupConversationsByTime(

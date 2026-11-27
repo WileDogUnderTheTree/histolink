@@ -38,19 +38,19 @@
 
 ## 2. 能力矩阵（当前进度）
 
-图例：✅ implemented｜🟡 partial｜⬜ planned
+图例：已实现 / 部分实现 / 未实现
 
 | 动作类型 | 目标表面 | 契约可用性 | 现状 | 所需组件能力 | 归属 |
 |---|---|---|---|---|---|
-| `timeline.focus_event` | timeline | available | ✅ | `timeline.select-event` | V1.0.4 |
-| `timeline.focus_dynasty` | timeline | available | ✅ | `timeline.select-dynasty` | V1.0.4 |
-| `graph.focus_person` | graph | available | ✅ | `graph.focus-person` + `graph.center-person` | V1.0.4 |
-| `graph.focus_relation` | graph | available | 🟡 | `graph.focus-person` + `graph.select-relation` + `graph.center-person` | V1.0.4 |
-| `ask.suggest` | ask | available | ⬜ | `ask.suggest-questions` | V1.0.6 |
-| `timeline.highlight_events` | timeline | planned | ⬜ | `timeline.highlight-event-set` | V1.0.4 |
-| `graph.highlight_persons` | graph | planned | 🟡 | `graph.highlight-person-set` | V1.0.4 |
-| `open.event_card` | —（跨页确认） | planned | ⬜ | `overlay.event-card` | V1.0.5 |
-| `open.person_card` | —（跨页确认） | planned | ⬜ | `overlay.person-card` | V1.0.5 |
+| `timeline.focus_event` | timeline | available | 已实现 | `timeline.select-event` | V1.0.4 |
+| `timeline.focus_dynasty` | timeline | available | 已实现 | `timeline.select-dynasty` | V1.0.4 |
+| `graph.focus_person` | graph | available | 已实现 | `graph.focus-person` + `graph.center-person` | V1.0.4 |
+| `graph.focus_relation` | graph | available | 部分实现 | `graph.focus-person` + `graph.select-relation` + `graph.center-person` | V1.0.4 |
+| `ask.suggest` | ask | available | 未实现 | `ask.suggest-questions` | V1.0.6 |
+| `timeline.highlight_events` | timeline | planned | 未实现 | `timeline.highlight-event-set` | V1.0.4 |
+| `graph.highlight_persons` | graph | planned | 部分实现 | `graph.highlight-person-set` | V1.0.4 |
+| `open.event_card` | —（跨页确认） | planned | 未实现 | `overlay.event-card` | V1.0.5 |
+| `open.person_card` | —（跨页确认） | planned | 未实现 | `overlay.person-card` | V1.0.5 |
 
 `graph.focus_relation` 与 `graph.highlight_persons` 标 partial 的原因：
 组件已具备受控选中 / 高亮入参，但页面级入口、关系卡抽屉与边高亮尚未实现。

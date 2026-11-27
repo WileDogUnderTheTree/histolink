@@ -3,7 +3,7 @@
 > 本目录集中存放**核心设计文档**与**数据 / 语料源文件**。产品总览见 [../README.md](../README.md)，
 > 现行产品规格见 [../SPEC.md](../SPEC.md)，版本迭代见 [../CHANGELOG.md](../CHANGELOG.md)。
 >
-> ⚠️ **维护约定**：`docs/` 根目录同时是数据管线的输入契约——
+> **维护约定**：`docs/` 根目录同时是数据管线的输入契约——
 > `01_先秦.md`–`06_元明清.md`、`史脉_RAG语料库_*.md`、`史脉_V1.0.5.4_*.md`、`source-review.md`、
 > `person-same-name-report.md` 被 `scripts/` 与 `backend/scripts/` 直接读取 / 生成，**请勿移动或改名**。
 
@@ -73,9 +73,9 @@
 
 | 位置 | 内容 |
 |---|---|
-| [../README.md](../README.md) | 产品总览、亮点、快速开始与版本规划 |
+| [../README.md](../README.md) | 产品总览、快速开始与版本规划 |
 | [../SPEC.md](../SPEC.md) | 现行产品规格与验收标准 |
-| [../CHANGELOG.md](../CHANGELOG.md) | 按大版本里程碑组织的更新日志 |
+| [../CHANGELOG.md](../CHANGELOG.md) | 按版本号组织的更新日志 |
 | [../contracts/README.md](../contracts/README.md) | 三份冻结契约的规则与字段清单 |
 | [../evals/README.md](../evals/README.md) | 30 条 golden 评测用例说明 |
 | [../backend/data/README.md](../backend/data/README.md) | 数据快照字段与生成方式 |
